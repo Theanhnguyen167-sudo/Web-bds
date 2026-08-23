@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AppProvider } from '@/lib/context/AppContext';
 import { ToastContainer } from '@/components/ui/Toast';
+import { AdminFloatingSwitch } from '@/components/admin/AdminFloatingSwitch';
 
 export const metadata: Metadata = {
   title: 'HaNoi Realty - Nền tảng BĐS & Tra cứu Quy hoạch Hà Nội',
@@ -41,6 +42,7 @@ export default function RootLayout({
         <AppProvider>
           {children}
           <ToastContainer />
+          <AdminFloatingSwitch />
         </AppProvider>
       </body>
     </html>

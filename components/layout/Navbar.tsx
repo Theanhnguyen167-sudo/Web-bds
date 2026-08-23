@@ -18,7 +18,8 @@ import {
   Search,
   LayoutDashboard,
   Navigation,
-  ChevronDown
+  ChevronDown,
+  ShieldCheck
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -114,6 +115,18 @@ export const Navbar: React.FC = () => {
 
         {/* Right Section Actions */}
         <div className="hidden sm:flex items-center gap-3">
+          {/* Admin Portal Quick Switch Button for Admins */}
+          {user?.role === 'admin' && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-1.5 rounded-lg bg-orange-500/20 border border-orange-500/40 px-3 py-2 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white transition-all shadow-sm"
+              title="Chuyển sang trang Quản trị Admin"
+            >
+              <ShieldCheck className="h-4 w-4 text-orange-400" />
+              <span>Admin Portal</span>
+            </Link>
+          )}
+
           {/* Post Listing Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -149,7 +162,7 @@ export const Navbar: React.FC = () => {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 text-text-primary shadow-xl z-50"
+                    className="absolute right-0 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-2 text-text-primary shadow-xl z-50"
                   >
                     <div className="px-3 py-2 border-b border-slate-100 mb-1">
                       <p className="text-xs font-bold text-text-primary truncate">{user.name}</p>
@@ -158,9 +171,25 @@ export const Navbar: React.FC = () => {
                         <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold text-accent uppercase">
                           Gói {user.package}
                         </span>
+                        {user.role === 'admin' && (
+                          <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 uppercase">
+                            Admin
+                          </span>
+                        )}
                         <span className="text-[10px] text-text-muted">HSD: {user.packageExpiry}</span>
                       </div>
                     </div>
+
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors mb-1"
+                      >
+                        <ShieldCheck className="h-4 w-4 text-orange-600" />
+                        <span>Vào trang Quản trị (Admin)</span>
+                      </Link>
+                    )}
 
                     <Link
                       href="/dashboard"
@@ -246,6 +275,16 @@ export const Navbar: React.FC = () => {
               <div className="border-t border-slate-700 pt-3 mt-1 flex flex-col gap-2">
                 {user ? (
                   <>
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-lg bg-orange-500/20 border border-orange-500/40 text-orange-400 px-3 py-2 text-xs font-bold"
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>🛡️ Vào trang Quản trị (Admin)</span>
+                      </Link>
+                    )}
                     <Link
                       href="/dashboard"
                       onClick={() => setMobileMenuOpen(false)}

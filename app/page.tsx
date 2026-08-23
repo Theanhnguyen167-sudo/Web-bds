@@ -1256,13 +1256,14 @@ export default function LandingPage() {
 
           {/* Col 2 - Sản phẩm */}
           <div className="space-y-3">
-            <h4 className="font-bold text-white uppercase text-xs tracking-wider">Sản phẩm</h4>
+            <h4 className="font-bold text-white uppercase text-xs tracking-wider">Sản phẩm & Hệ thống</h4>
             <ul className="space-y-2 text-slate-400">
               <li><Link href="/search" className="hover:text-white transition-colors">Tìm kiếm BĐS</Link></li>
               <li><Link href="/planning" className="hover:text-white transition-colors">Bản đồ quy hoạch</Link></li>
               <li><Link href="/reports/1" className="hover:text-white transition-colors">Báo cáo AI</Link></li>
               <li><Link href="/listings/create" className="hover:text-white transition-colors">Đăng tin BĐS</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Gói thành viên</Link></li>
+              <li><Link href="/admin" className="text-orange-400 hover:text-white transition-colors font-bold flex items-center gap-1">🛡️ Admin Portal</Link></li>
             </ul>
           </div>
 
