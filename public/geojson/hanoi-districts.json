@@ -1,0 +1,51 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zone-cau-giay-01",
+        "name": "Khu đô thị mới Cầu Giấy (H2-2)",
+        "zone_type": "residential",
+        "color": "#3b82f6",
+        "district": "Cầu Giấy",
+        "plan_year": 2030
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [105.7800, 21.0300],
+            [105.7950, 21.0300],
+            [105.7950, 21.0400],
+            [105.7800, 21.0400],
+            [105.7800, 21.0300]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zone-ba-dinh-01",
+        "name": "Khu trung tâm thương mại Liễu Giai",
+        "zone_type": "commercial",
+        "color": "#ef4444",
+        "district": "Ba Đình",
+        "plan_year": 2030
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [105.8100, 21.0300],
+            [105.8200, 21.0300],
+            [105.8200, 21.0380],
+            [105.8100, 21.0380],
+            [105.8100, 21.0300]
+          ]
+        ]
+      }
+    }
+  ]
+}
