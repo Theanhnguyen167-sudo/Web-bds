@@ -17,6 +17,7 @@ const config: Config = {
           light: "#24365d",
           foreground: "#ffffff",
         },
+        navy: "#1a2744",
         accent: {
           DEFAULT: "#f97316", // vibrant orange
           hover: "#ea6c0a",

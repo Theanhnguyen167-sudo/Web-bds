@@ -1,15 +1,25 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { MapContainer } from '@/components/map/MapContainer';
 import { useApp } from '@/lib/context/AppContext';
 import { MapPin, List, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const HybridMap = dynamic(() => import('@/components/map/HybridMap'), { 
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full bg-slate-900 animate-pulse rounded-xl 
+                    flex items-center justify-center">
+      <p className="text-white/50 text-sm">Đang tải bản đồ...</p>
+    </div>
+  )
+});
+
 export default function HomePage() {
-  const { listings } = useApp();
+  const { listings, activeListingId, setActiveListingId } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('Tất cả quận');
   const [selectedType, setSelectedType] = useState('all');
@@ -82,7 +92,11 @@ export default function HomePage() {
             mobileView === 'list' ? 'hidden md:flex' : 'flex'
           }`}
         >
-          <MapContainer listings={filteredListings} />
+          <HybridMap
+            listings={filteredListings}
+            onListingClick={(id) => setActiveListingId(id)}
+            selectedListingId={activeListingId}
+          />
         </section>
 
         {/* Mobile Floating View Switcher Button (Map / List) */}

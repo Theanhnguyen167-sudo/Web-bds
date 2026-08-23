@@ -40,7 +40,7 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Trang chủ', href: '/' },
     { name: 'Tuyến đường', href: '/streets' },
-    { name: 'Quy hoạch', href: '/#planning-view' },
+    { name: 'Quy hoạch', href: '/planning' },
     { name: 'Báo cáo AI', href: '/reports/1' },
     { name: 'Bảng giá VIP', href: '/pricing' },
   ];
