@@ -1,10 +1,7 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/lib/context/AppContext';
 import { ToastContainer } from '@/components/ui/Toast';
-
-const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 
 export const metadata: Metadata = {
   title: 'HaNoi Realty - Nền tảng BĐS & Tra cứu Quy hoạch Hà Nội',
@@ -40,7 +37,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`${inter.className} bg-page-bg text-text-primary antialiased selection:bg-accent selection:text-white`}>
+      <body className="font-sans bg-page-bg text-text-primary antialiased selection:bg-accent selection:text-white">
         <AppProvider>
           {children}
           <ToastContainer />

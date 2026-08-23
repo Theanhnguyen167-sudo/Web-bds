@@ -6,9 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "scrape:planning": "ts-node scripts/scrape-planning.ts",
-    "db:seed": "ts-node scripts/seed-database.ts"
+    "lint": "next lint"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -43,17 +41,12 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.35",
-    "@types/mapbox-gl": "^3.4.0",
     "@types/node": "^20.16.5",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
-    "cheerio": "^1.0.0",
     "postcss": "^8.4.45",
-    "puppeteer": "^23.3.0",
     "tailwindcss": "^3.4.11",
-    "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
   }
 }

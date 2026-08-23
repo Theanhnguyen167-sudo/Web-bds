@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import querystring from 'qs';
 
 interface VNPayConfig {
   tmnCode: string;
@@ -15,20 +14,11 @@ const vnpConfig: VNPayConfig = {
   returnUrl: process.env.VNPAY_RETURN_URL || 'http://localhost:3000/api/payment/vnpay/callback',
 };
 
-function sortObject(obj: Record<string, any>) {
-  const sorted: Record<string, any> = {};
-  const str = [];
-  let key;
-  for (key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      str.push(encodeURIComponent(key));
-    }
-  }
-  str.sort();
-  for (key = 0; key < str.length; key++) {
-    sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+");
-  }
-  return sorted;
+function stringifyParams(obj: Record<string, any>): string {
+  const sortedKeys = Object.keys(obj).sort();
+  return sortedKeys
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key]).replace(/%20/g, '+')}`)
+    .join('&');
 }
 
 export function createVNPayPaymentUrl(params: {
@@ -60,23 +50,21 @@ export function createVNPayPaymentUrl(params: {
     vnp_Params['vnp_BankCode'] = params.bankCode;
   }
 
-  vnp_Params = sortObject(vnp_Params);
-
-  const signData = querystring.stringify(vnp_Params, { encode: false });
+  const signData = stringifyParams(vnp_Params);
   const hmac = crypto.createHmac('sha512', vnpConfig.hashSecret);
   const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
   vnp_Params['vnp_SecureHash'] = signed;
-  return `${vnpConfig.url}?${querystring.stringify(vnp_Params, { encode: false })}`;
+  return `${vnpConfig.url}?${stringifyParams(vnp_Params)}`;
 }
 
 export function verifyVNPayCallback(vnp_Params: Record<string, any>): boolean {
   const secureHash = vnp_Params['vnp_SecureHash'];
-  delete vnp_Params['vnp_SecureHash'];
-  delete vnp_Params['vnp_SecureHashType'];
+  const paramsToVerify = { ...vnp_Params };
+  delete paramsToVerify['vnp_SecureHash'];
+  delete paramsToVerify['vnp_SecureHashType'];
 
-  const sortedParams = sortObject(vnp_Params);
-  const signData = querystring.stringify(sortedParams, { encode: false });
+  const signData = stringifyParams(paramsToVerify);
   const hmac = crypto.createHmac('sha512', vnpConfig.hashSecret);
   const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
