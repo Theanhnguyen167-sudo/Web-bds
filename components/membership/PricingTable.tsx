@@ -6,17 +6,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { mockPackages } from '@/lib/mock-data';
 import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND } from '@/lib/utils';
-import { CheckCircle2, Sparkles, Zap, ShieldCheck, ArrowRight, HelpCircle } from 'lucide-react';
+import { CheckCircle2, Sparkles, Zap, ShieldCheck, ArrowRight, HelpCircle, Lock } from 'lucide-react';
 
 export const PricingTable: React.FC = () => {
   const router = useRouter();
-  const { user, setUser, addToast } = useApp();
+  const { user, addToast } = useApp();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
-  const handleSelectPackage = (pkg: typeof mockPackages[0]) => {
+  const handleSelectPackage = (pkg: (typeof mockPackages)[0]) => {
     if (!user) {
-      addToast('Vui lòng đăng nhập để nâng cấp gói thành viên', 'info');
-      router.push('/login');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pendingPackage', JSON.stringify({ packageId: pkg.id, billing: billingCycle }));
+      }
+      addToast('Vui lòng đăng nhập để tiến hành thanh toán gói thành viên', 'info');
+      router.push(`/login?redirect=/payment/checkout?packageId=${pkg.id}&billing=${billingCycle}`);
       return;
     }
 
@@ -25,21 +28,18 @@ export const PricingTable: React.FC = () => {
       return;
     }
 
-    // Simulate payment / upgrade
-    setUser({
-      ...user,
-      package: pkg.id,
-      packageExpiry: '2026-08-30',
-      aiReportsLimit: pkg.aiReports === -1 ? 999 : pkg.aiReports,
-    });
+    if (user.package?.toLowerCase() === pkg.id.toLowerCase()) {
+      addToast(`Bạn hiện đang kích hoạt và sử dụng Gói ${pkg.name} rồi!`, 'info');
+      router.push('/dashboard');
+      return;
+    }
 
-    addToast(`🎉 Đã kích hoạt thành công Gói ${pkg.name}!`, 'success');
-    router.push('/dashboard');
+    // Navigate to payment checkout page
+    router.push(`/payment/checkout?packageId=${pkg.id}&billing=${billingCycle}`);
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-8 space-y-10">
-      
+    <div className="w-full max-w-6xl mx-auto py-8 space-y-12">
       {/* Header & Toggle */}
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-3.5 py-1 text-xs font-extrabold text-accent">
@@ -57,7 +57,11 @@ export const PricingTable: React.FC = () => {
 
         {/* Monthly / Yearly Switcher */}
         <div className="pt-2 flex items-center justify-center gap-3">
-          <span className={`text-xs font-bold ${billingCycle === 'monthly' ? 'text-primary' : 'text-text-muted'}`}>
+          <span
+            className={`text-xs font-bold ${
+              billingCycle === 'monthly' ? 'text-primary' : 'text-text-muted'
+            }`}
+          >
             Thanh toán theo tháng
           </span>
 
@@ -74,7 +78,11 @@ export const PricingTable: React.FC = () => {
             />
           </button>
 
-          <span className={`text-xs font-bold ${billingCycle === 'yearly' ? 'text-primary' : 'text-text-muted'}`}>
+          <span
+            className={`text-xs font-bold ${
+              billingCycle === 'yearly' ? 'text-primary' : 'text-text-muted'
+            }`}
+          >
             Thanh toán 1 năm
           </span>
 
@@ -184,13 +192,13 @@ export const PricingTable: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => handleSelectPackage(pkg)}
-                className={`mt-8 flex w-full items-center justify-center gap-2 rounded-xl py-3 px-4 text-xs font-extrabold transition-all shadow-sm ${
+                className={`mt-8 flex w-full items-center justify-center gap-2 rounded-xl py-3 px-4 text-xs font-extrabold transition-all shadow-sm cursor-pointer ${
                   isPro
                     ? 'bg-accent text-white shadow-md shadow-accent/25 hover:bg-accent-hover'
                     : 'bg-primary text-white hover:bg-primary-hover'
                 }`}
               >
-                <span>{pkg.id === 'free' ? 'Đang sử dụng' : `Chọn gói ${pkg.name}`}</span>
+                <span>{pkg.id === 'free' ? 'Đang sử dụng' : `Chọn gói ${pkg.name} →`}</span>
                 <ArrowRight className="h-4 w-4" />
               </motion.button>
             </motion.div>
@@ -198,6 +206,41 @@ export const PricingTable: React.FC = () => {
         })}
       </div>
 
+      {/* ── PAYMENT METHODS LOGO ROW ── */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs space-y-3 text-center">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+          Chấp nhận thanh toán bảo mật 100% qua:
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-extrabold text-slate-700">
+          <div className="flex items-center gap-1.5 bg-pink-50 text-[#ae2070] px-3.5 py-2 rounded-xl border border-pink-200">
+            <span className="h-5 w-5 rounded-lg bg-[#ae2070] text-white flex items-center justify-center font-black text-[10px]">M</span>
+            <span>Ví MoMo QR</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-blue-50 text-[#0066cc] px-3.5 py-2 rounded-xl border border-blue-200">
+            <span className="h-5 w-5 rounded-lg bg-[#0066cc] text-white flex items-center justify-center font-black text-[10px]">VNP</span>
+            <span>Cổng VNPay (40+ Ngân hàng)</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl border border-slate-200">
+            <span>💳 Visa / Mastercard / JCB</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3.5 py-2 rounded-xl border border-emerald-200">
+            <span>🏛️ Chuyển khoản Vietcombank</span>
+          </div>
+        </div>
+
+        <div className="pt-2 flex items-center justify-center gap-4 text-[11px] text-slate-400">
+          <span className="flex items-center gap-1">
+            <Lock className="h-3 w-3 text-emerald-500" /> Mã hóa SSL 256-bit
+          </span>
+          <span>·</span>
+          <span>Kích hoạt gói tức thì trong 3 giây</span>
+          <span>·</span>
+          <span>Hỗ trợ hoàn tiền trong 7 ngày</span>
+        </div>
+      </div>
     </div>
   );
 };
