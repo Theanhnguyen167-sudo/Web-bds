@@ -17,7 +17,7 @@ import {
   X,
   Search,
   LayoutDashboard,
-  ShieldCheck,
+  Navigation,
   ChevronDown
 } from 'lucide-react';
 
@@ -39,10 +39,10 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { name: 'Trang chủ', href: '/' },
-    { name: 'Tìm kiếm', href: '/#search-feed' },
+    { name: 'Tuyến đường', href: '/streets' },
     { name: 'Quy hoạch', href: '/#planning-view' },
     { name: 'Báo cáo AI', href: '/reports/1' },
-    { name: 'Bảng giá', href: '/pricing' },
+    { name: 'Bảng giá VIP', href: '/pricing' },
   ];
 
   const handleLogout = () => {
