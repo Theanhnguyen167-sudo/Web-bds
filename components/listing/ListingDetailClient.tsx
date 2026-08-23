@@ -437,7 +437,7 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                   <MapPin className="h-4 w-4 text-accent" />
                   Vị trí trên bản đồ
                 </h4>
-                <Link href="/" className="text-[11px] font-bold text-accent hover:underline">
+                <Link href="/search" className="text-[11px] font-bold text-accent hover:underline">
                   Xem bản đồ lớn
                 </Link>
               </div>
