@@ -1,12 +1,12 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { Database } from './database.types';
 
-export function createServerSupabaseClient() {
+export const createServerSupabaseClient = () => {
   const cookieStore = cookies();
-
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mock.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'mock-anon-key',
     {
       cookies: {
         get(name: string) {
@@ -16,17 +16,17 @@ export function createServerSupabaseClient() {
           try {
             cookieStore.set({ name, value, ...options });
           } catch (error) {
-            // Can be ignored in Server Component
+            // The `set` method was called from a Server Component.
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options });
           } catch (error) {
-            // Can be ignored in Server Component
+            // The `delete` method was called from a Server Component.
           }
         },
       },
     }
   );
-}
+};

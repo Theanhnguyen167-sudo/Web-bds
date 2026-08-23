@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/client';
+import { toggleSavedListing, getSavedListings } from '@/lib/supabase/queries/saved';
 
 export interface ToastItem {
   id: string;
@@ -15,7 +17,7 @@ interface AppContextType {
   listings: ListingItem[];
   setListings: React.Dispatch<React.SetStateAction<ListingItem[]>>;
   savedListingIds: string[];
-  toggleSaveListing: (id: string) => void;
+  toggleSaveListing: (id: string) => Promise<void>;
   activeListingId: string | null;
   setActiveListingId: (id: string | null) => void;
   hoveredListingId: string | null;
@@ -39,6 +41,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [showPlanningOverlay, setShowPlanningOverlay] = useState<boolean>(true);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
+  // Supabase Auth State Listener
+  useEffect(() => {
+    try {
+      const supabase = createClient();
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user) {
+          setUser({
+            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Thành viên',
+            email: session.user.email || 'user@example.com',
+            phone: session.user.user_metadata?.phone || '0988 123 456',
+            avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+            package: 'Pro',
+            packageExpiry: '2026-09-15',
+            listingsCount: 5,
+            aiReportsUsed: 8,
+          });
+
+          // Fetch saved listings from Supabase
+          try {
+            const { data: savedData } = await getSavedListings(session.user.id);
+            if (savedData && savedData.length > 0) {
+              setSavedListingIds(savedData.map((s: any) => s.listing_id));
+            }
+          } catch {
+            // Keep local saved state
+          }
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    } catch {
+      // Offline / dev fallback
+    }
+  }, []);
+
   const addToast = (message: string, type: ToastItem['type'] = 'success') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, message, type }]);
@@ -53,17 +94,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const toggleSaveListing = (id: string) => {
-    setSavedListingIds((prev) => {
-      const isSaved = prev.includes(id);
-      if (isSaved) {
-        addToast('Đã bỏ lưu bất động sản khỏi danh sách', 'info');
-        return prev.filter((item) => item !== id);
-      } else {
-        addToast('❤️ Đã lưu vào danh sách yêu thích', 'success');
-        return [...prev, id];
+  const handleToggleSaveListing = async (id: string) => {
+    const isSaved = savedListingIds.includes(id);
+    if (isSaved) {
+      setSavedListingIds((prev) => prev.filter((item) => item !== id));
+      addToast('Đã bỏ lưu bất động sản khỏi danh sách', 'info');
+    } else {
+      setSavedListingIds((prev) => [...prev, id]);
+      addToast('❤️ Đã lưu vào danh sách yêu thích', 'success');
+    }
+
+    // Attempt Supabase sync if user logged in
+    try {
+      const supabase = createClient();
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session?.user) {
+        await toggleSavedListing(sessionData.session.user.id, id);
       }
-    });
+    } catch {
+      // Local state already updated
+    }
   };
 
   const addNewListing = (newListingData: Partial<ListingItem>): string => {
@@ -110,7 +160,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         listings,
         setListings,
         savedListingIds,
-        toggleSaveListing,
+        toggleSaveListing: handleToggleSaveListing,
         activeListingId,
         setActiveListingId,
         hoveredListingId,

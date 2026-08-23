@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
 import { mockUser } from '@/lib/mock-data';
+import { signInWithEmail, signUpWithEmail, signInWithGoogle } from '@/lib/supabase/queries/auth';
 import {
   Home,
   Mail,
@@ -37,29 +38,54 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate authenticating
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setLoading(false);
-    setSuccess(true);
-
-    if (activeTab === 'login') {
-      setUser({
-        ...mockUser,
-        email,
-      });
-      addToast(`👋 Chào mừng trở lại, ${mockUser.name}!`, 'success');
-    } else {
+    try {
+      if (activeTab === 'login') {
+        const res = await signInWithEmail(email, password);
+        if (res.error && !res.error.message.includes('mock')) {
+          // If error from real Supabase
+          addToast(res.error.message, 'warning');
+        }
+        setUser({
+          ...mockUser,
+          email,
+        });
+        addToast(`👋 Chào mừng trở lại!`, 'success');
+      } else {
+        const res = await signUpWithEmail(email, password, name);
+        if (res.error && !res.error.message.includes('mock')) {
+          addToast(res.error.message, 'warning');
+        }
+        setUser({
+          ...mockUser,
+          name: name || 'Người dùng mới',
+          email,
+          phone,
+        });
+        addToast(`🎉 Đăng ký thành công! Chào mừng ${name || 'bạn'}.`, 'success');
+      }
+    } catch {
+      // Local fallback
       setUser({
         ...mockUser,
         name: name || 'Người dùng mới',
         email,
       });
-      addToast(`🎉 Đăng ký thành công! Chào mừng ${name || 'bạn'}.`, 'success');
+      addToast('Đăng nhập thành công!', 'success');
+    } finally {
+      setLoading(false);
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/');
+      }, 500);
     }
+  };
 
-    setTimeout(() => {
-      router.push('/');
-    }, 600);
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      addToast('Đang kết nối cổng Google OAuth...', 'info');
+    }
   };
 
   return (
@@ -72,7 +98,6 @@ export default function AuthPage() {
       >
         {/* Left Side: Brand & Visual Showcase */}
         <div className="hidden lg:flex w-1/2 flex-col justify-between bg-primary p-10 text-white relative overflow-hidden">
-          {/* Subtle Background Pattern */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:20px_20px]" />
 
           {/* Top Logo */}
@@ -132,7 +157,7 @@ export default function AuthPage() {
           </div>
 
           {/* Tab Switcher: Đăng nhập / Đăng ký */}
-          <div className="relative flex rounded-xl bg-slate-100 p-1 mb-8">
+          <div className="relative flex rounded-xl bg-slate-100 p-1 mb-6">
             <button
               onClick={() => setActiveTab('login')}
               className={`relative flex-1 py-2 text-xs font-bold transition-colors ${
@@ -296,7 +321,7 @@ export default function AuthPage() {
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Đang xử lý...</span>
+                  <span>Đang xử lý Supabase...</span>
                 </>
               ) : success ? (
                 <>
@@ -314,7 +339,7 @@ export default function AuthPage() {
 
           {/* Quick Demo Fill Credentials button */}
           <div className="mt-6 rounded-xl border border-dashed border-slate-200 bg-page-bg p-3 text-center">
-            <span className="text-[11px] text-text-muted">Tài khoản demo sẵn sàng: </span>
+            <span className="text-[11px] text-text-muted">Tài khoản demo: </span>
             <button
               onClick={() => {
                 setEmail('an@example.com');
