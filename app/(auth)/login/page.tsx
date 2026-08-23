@@ -17,66 +17,154 @@ import {
   CheckCircle2,
   Loader2,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Building2,
+  Crown,
+  KeyRound,
+  Zap,
+  Check
 } from 'lucide-react';
+
+type RoleType = 'user' | 'agent' | 'admin';
+
+const ROLES_CONFIG = [
+  {
+    id: 'user' as RoleType,
+    title: 'Người mua / Thuê',
+    subtitle: 'Khách hàng cá nhân',
+    icon: UserIcon,
+    badge: 'Khách hàng',
+    color: 'border-blue-500 bg-blue-500/10 text-blue-600',
+    demoEmail: 'khachhang@gmail.com',
+    demoPass: '12345678',
+    demoName: 'Nguyễn Minh Tuấn',
+    demoPackage: 'Free',
+    targetRoute: '/search',
+    desc: 'Tra cứu quy hoạch 2030, tìm kiếm BĐS, tải báo cáo thẩm định AI',
+  },
+  {
+    id: 'agent' as RoleType,
+    title: 'Chủ nhà / Môi giới',
+    subtitle: 'Đối tác & Môi giới',
+    icon: Building2,
+    badge: 'Môi giới VIP',
+    color: 'border-orange-500 bg-orange-500/10 text-orange-600',
+    demoEmail: 'moigioi@hanoirealty.vn',
+    demoPass: '12345678',
+    demoName: 'Trần Thị Thu Hà',
+    demoPackage: 'Pro',
+    targetRoute: '/dashboard',
+    desc: 'Đăng tin BĐS, quản lý khách hàng, nhận lịch hẹn xem nhà qua Zalo',
+  },
+  {
+    id: 'admin' as RoleType,
+    title: 'Quản trị viên',
+    subtitle: 'Super Admin Portal',
+    icon: ShieldCheck,
+    badge: 'Super Admin',
+    color: 'border-rose-500 bg-rose-500/10 text-rose-600',
+    demoEmail: 'admin@hanoirealty.vn',
+    demoPass: 'admin123',
+    demoName: 'Hệ thống Quản Trị Super Admin',
+    demoPackage: 'Agency',
+    targetRoute: '/admin',
+    desc: 'Toàn quyền kiểm duyệt tin đăng, quản lý người dùng, doanh thu & cấu hình',
+  },
+];
 
 export default function AuthPage() {
   const router = useRouter();
   const { setUser, addToast } = useApp();
 
+  const [selectedRole, setSelectedRole] = useState<RoleType>('admin');
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
-  // Form states
-  const [email, setEmail] = useState('an@example.com');
-  const [password, setPassword] = useState('12345678');
-  const [name, setName] = useState('Nguyễn Văn An');
-  const [phone, setPhone] = useState('0988123456');
+  // Form states initialized with active role demo credentials
+  const [email, setEmail] = useState('admin@hanoirealty.vn');
+  const [password, setPassword] = useState('admin123');
+  const [name, setName] = useState('Hệ thống Quản Trị Super Admin');
+  const [phone, setPhone] = useState('0988 123 456');
+
+  // Switch role and update form presets
+  const handleSelectRole = (role: RoleType) => {
+    setSelectedRole(role);
+    const config = ROLES_CONFIG.find((r) => r.id === role)!;
+    setEmail(config.demoEmail);
+    setPassword(config.demoPass);
+    setName(config.demoName);
+  };
+
+  const handleFillDemoCredentials = () => {
+    const config = ROLES_CONFIG.find((r) => r.id === selectedRole)!;
+    setEmail(config.demoEmail);
+    setPassword(config.demoPass);
+    setName(config.demoName);
+    addToast(`Đã điền tài khoản mẫu: ${config.demoEmail}`, 'info');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    const config = ROLES_CONFIG.find((r) => r.id === selectedRole)!;
+
     try {
       if (activeTab === 'login') {
         const res = await signInWithEmail(email, password);
         if (res.error && !res.error.message.includes('mock')) {
-          // If error from real Supabase
-          addToast(res.error.message, 'warning');
+          // In case of actual Supabase connection error
         }
+
         setUser({
           ...mockUser,
-          email,
+          id: selectedRole === 'admin' ? 'admin_01' : 'user_01',
+          name: name || config.demoName,
+          email: email || config.demoEmail,
+          role: selectedRole,
+          package: config.demoPackage as any,
+          avatar:
+            selectedRole === 'admin'
+              ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'
+              : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
         });
-        addToast(`👋 Chào mừng trở lại!`, 'success');
+
+        addToast(
+          `👋 Đăng nhập thành công với vai trò: ${config.title}`,
+          'success'
+        );
       } else {
         const res = await signUpWithEmail(email, password, name);
-        if (res.error && !res.error.message.includes('mock')) {
-          addToast(res.error.message, 'warning');
-        }
         setUser({
           ...mockUser,
+          id: 'user_' + Date.now(),
           name: name || 'Người dùng mới',
           email,
           phone,
+          role: selectedRole,
+          package: selectedRole === 'agent' ? 'Basic' : 'Free',
         });
-        addToast(`🎉 Đăng ký thành công! Chào mừng ${name || 'bạn'}.`, 'success');
+
+        addToast(
+          `🎉 Đăng ký thành công! Chào mừng ${name || 'bạn'}.`,
+          'success'
+        );
       }
     } catch {
       // Local fallback
       setUser({
         ...mockUser,
-        name: name || 'Người dùng mới',
-        email,
+        name: name || config.demoName,
+        email: email || config.demoEmail,
+        role: selectedRole,
+        package: config.demoPackage as any,
       });
       addToast('Đăng nhập thành công!', 'success');
     } finally {
       setLoading(false);
-      setSuccess(true);
       setTimeout(() => {
-        router.push('/');
-      }, 500);
+        router.push(config.targetRoute);
+      }, 400);
     }
   };
 
@@ -88,269 +176,354 @@ export default function AuthPage() {
     }
   };
 
+  const currentRoleConfig = ROLES_CONFIG.find((r) => r.id === selectedRole)!;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-page-bg p-4 sm:p-6 lg:p-8">
+    <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e] p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[300px] bg-orange-500/10 blur-[140px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[300px] bg-blue-500/10 blur-[140px] rounded-full pointer-events-none" />
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="flex w-full max-w-4xl overflow-hidden rounded-3xl border border-border bg-white shadow-2xl"
+        className="flex w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-800 bg-white shadow-2xl z-10"
       >
-        {/* Left Side: Brand & Visual Showcase */}
-        <div className="hidden lg:flex w-1/2 flex-col justify-between bg-primary p-10 text-white relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:20px_20px]" />
-
-          {/* Top Logo */}
-          <div className="relative z-10">
+        {/* ── LEFT SIDE: Brand & Role Selector Visuals ── */}
+        <div className="hidden lg:flex w-5/12 flex-col justify-between bg-[#0f172a] p-8 text-white relative overflow-hidden border-r border-slate-800">
+          <div className="relative z-10 space-y-6">
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-white shadow-lg">
-                <Home className="h-5 w-5" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white font-black shadow-lg shadow-orange-500/30">
+                🏠
               </div>
-              <span className="text-xl font-extrabold tracking-tight">
-                HaNoi <span className="text-accent font-black">Realty</span>
+              <span className="text-xl font-extrabold tracking-tight text-white">
+                HaNoi <span className="text-orange-500 font-black">Realty</span>
               </span>
             </Link>
-          </div>
 
-          {/* Middle Value Props */}
-          <div className="relative z-10 space-y-6">
-            <h2 className="text-2xl font-extrabold leading-snug">
-              Nền tảng BĐS & Quy hoạch Đô thị Hà Nội thông minh
-            </h2>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Truy cập dữ liệu quy hoạch đất 2030, xem định giá và nhận báo cáo thẩm định AI chuyên sâu theo thời gian thực.
-            </p>
+            <div>
+              <span className="text-orange-400 font-extrabold text-[11px] uppercase tracking-widest block">
+                CỔNG ĐĂNG NHẬP PHÂN QUYỀN
+              </span>
+              <h2 className="text-2xl font-black text-white leading-tight mt-1">
+                Trải nghiệm dành riêng cho từng vai trò
+              </h2>
+              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                Lựa chọn đúng vai trò để hệ thống tự động chuyển hướng đến bảng điều khiển phù hợp nhất.
+              </p>
+            </div>
 
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-3 text-xs text-slate-200">
-                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/20 text-accent">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                </div>
-                <span>Tra cứu quy hoạch 100% minh bạch & chuẩn pháp lý</span>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-slate-200">
-                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/20 text-accent">
-                  <Sparkles className="h-3.5 w-3.5" />
-                </div>
-                <span>Thẩm định tiềm năng tăng giá bằng trí tuệ nhân tạo</span>
-              </div>
+            {/* 3 Role Selection Cards */}
+            <div className="space-y-2.5 pt-2">
+              {ROLES_CONFIG.map((r) => {
+                const Icon = r.icon;
+                const isSelected = selectedRole === r.id;
+                return (
+                  <div
+                    key={r.id}
+                    onClick={() => handleSelectRole(r.id)}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 ${
+                      isSelected
+                        ? 'bg-white/10 border-orange-500 shadow-md ring-1 ring-orange-500/30'
+                        : 'bg-white/5 border-slate-800 hover:bg-white/8 text-slate-400'
+                    }`}
+                  >
+                    <div
+                      className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        isSelected
+                          ? 'bg-orange-500 text-white shadow-md'
+                          : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-xs text-white truncate">{r.title}</p>
+                        {isSelected && (
+                          <span className="h-2 w-2 rounded-full bg-orange-400 animate-ping" />
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 truncate">{r.subtitle}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Bottom Footer note */}
-          <div className="relative z-10 text-[11px] text-slate-400">
-            © 2026 HaNoi Realty. Nền tảng PropTech hàng đầu Thủ Đô.
+          {/* Bottom info */}
+          <div className="relative z-10 text-[11px] text-slate-400 pt-6 border-t border-slate-800/80 flex items-center justify-between">
+            <span>© 2026 HaNoi Realty</span>
+            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+              <ShieldCheck className="h-3.5 w-3.5" /> Bảo mật SSL 256-bit
+            </span>
           </div>
         </div>
 
-        {/* Right Side: Auth Form Container */}
-        <div className="flex w-full lg:w-1/2 flex-col justify-center p-6 sm:p-10">
+        {/* ── RIGHT SIDE: Login / Register Form ── */}
+        <div className="flex w-full lg:w-7/12 flex-col justify-center p-6 sm:p-10 bg-white">
           
-          {/* Top Logo for Mobile */}
-          <div className="lg:hidden mb-6 text-center">
+          {/* Mobile Logo & Role Switcher */}
+          <div className="lg:hidden mb-6 text-center space-y-4">
             <Link href="/" className="inline-flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-white">
-                <Home className="h-4 w-4" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white font-black">
+                🏠
               </div>
-              <span className="text-lg font-extrabold text-primary">HaNoi Realty</span>
+              <span className="text-lg font-extrabold text-navy">HaNoi Realty</span>
             </Link>
+
+            {/* Mobile 3-Role Pills */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl text-[11px] font-bold">
+              {ROLES_CONFIG.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => handleSelectRole(r.id)}
+                  className={`py-2 px-1 rounded-lg transition-all ${
+                    selectedRole === r.id
+                      ? 'bg-orange-500 text-white shadow-xs'
+                      : 'text-slate-600'
+                  }`}
+                >
+                  {r.badge}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Tab Switcher: Đăng nhập / Đăng ký */}
-          <div className="relative flex rounded-xl bg-slate-100 p-1 mb-6">
-            <button
-              onClick={() => setActiveTab('login')}
-              className={`relative flex-1 py-2 text-xs font-bold transition-colors ${
-                activeTab === 'login' ? 'text-primary' : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              {activeTab === 'login' && (
-                <motion.div
-                  layoutId="authTabIndicator"
-                  className="absolute inset-0 rounded-lg bg-white shadow-sm"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">Đăng nhập</span>
-            </button>
+          {/* Desktop 3 Role Tabs */}
+          <div className="hidden lg:grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6">
+            {ROLES_CONFIG.map((r) => {
+              const Icon = r.icon;
+              const isSelected = selectedRole === r.id;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => handleSelectRole(r.id)}
+                  className={`relative flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all ${
+                    isSelected
+                      ? 'bg-white text-navy shadow-xs ring-1 ring-slate-200/80'
+                      : 'text-slate-500 hover:text-navy hover:bg-slate-200/50'
+                  }`}
+                >
+                  <Icon
+                    className={`h-3.5 w-3.5 ${
+                      isSelected ? 'text-orange-500' : 'text-slate-400'
+                    }`}
+                  />
+                  <span>{r.badge}</span>
+                </button>
+              );
+            })}
+          </div>
 
+          {/* Role Header Banner */}
+          <div className="p-4 rounded-2xl bg-orange-50/60 border border-orange-200/80 mb-5 flex items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-navy">
+                  Đăng nhập: {currentRoleConfig.title}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-orange-500 text-white">
+                  {currentRoleConfig.badge}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-tight">
+                {currentRoleConfig.desc}
+              </p>
+            </div>
+
+            {/* Quick Fill Demo Credentials Button */}
             <button
-              onClick={() => setActiveTab('register')}
-              className={`relative flex-1 py-2 text-xs font-bold transition-colors ${
-                activeTab === 'register' ? 'text-primary' : 'text-text-secondary hover:text-text-primary'
-              }`}
+              type="button"
+              onClick={handleFillDemoCredentials}
+              className="px-2.5 py-1.5 rounded-xl bg-white border border-orange-200 text-orange-600 hover:bg-orange-100 font-bold text-[11px] shrink-0 shadow-2xs flex items-center gap-1 transition-colors"
+              title="Tự động điền tài khoản mẫu"
             >
-              {activeTab === 'register' && (
-                <motion.div
-                  layoutId="authTabIndicator"
-                  className="absolute inset-0 rounded-lg bg-white shadow-sm"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">Đăng ký tài khoản</span>
+              <Zap className="h-3 w-3 fill-orange-500 text-orange-500" />
+              <span>⚡ Mẫu</span>
             </button>
           </div>
 
-          {/* Animated Form Fields */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <AnimatePresence mode="wait">
-              {activeTab === 'login' ? (
-                <motion.div
-                  key="login-fields"
-                  initial={{ opacity: 0, x: -15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 15 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Email</label>
-                    <div className="relative mt-1">
-                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="an@example.com"
-                        className="w-full rounded-xl border border-input bg-page-bg pl-9 pr-3 py-2 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-                      />
-                    </div>
-                  </div>
+          {/* Login / Register Toggle (Only for User/Agent) */}
+          {selectedRole !== 'admin' && (
+            <div className="flex rounded-xl bg-slate-100 p-1 mb-5">
+              <button
+                type="button"
+                onClick={() => setActiveTab('login')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'login'
+                    ? 'bg-white text-navy shadow-xs'
+                    : 'text-slate-500 hover:text-navy'
+                }`}
+              >
+                Đăng nhập
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('register')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'register'
+                    ? 'bg-white text-navy shadow-xs'
+                    : 'text-slate-500 hover:text-navy'
+                }`}
+              >
+                Đăng ký tài khoản
+              </button>
+            </div>
+          )}
 
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-text-primary">Mật khẩu</label>
-                      <a href="#" className="text-[11px] font-semibold text-accent hover:underline">
-                        Quên mật khẩu?
-                      </a>
-                    </div>
-                    <div className="relative mt-1">
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
-                      <input
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-input bg-page-bg pl-9 pr-3 py-2 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-                      />
-                    </div>
+          {/* Auth Form */}
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            {activeTab === 'register' && selectedRole !== 'admin' && (
+              <>
+                <div>
+                  <label className="font-bold text-navy block mb-1">Họ và tên</label>
+                  <div className="relative">
+                    <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Nguyễn Văn An"
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:bg-white focus:border-orange-500"
+                    />
                   </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="register-fields"
-                  initial={{ opacity: 0, x: 15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -15 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Họ và tên</label>
-                    <div className="relative mt-1">
-                      <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
-                      <input
-                        type="text"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Nguyễn Văn An"
-                        className="w-full rounded-xl border border-input bg-page-bg pl-9 pr-3 py-2 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-                      />
-                    </div>
-                  </div>
+                </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Số điện thoại</label>
-                    <div className="relative mt-1">
-                      <Phone className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
-                      <input
-                        type="tel"
-                        required
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="0988 123 456"
-                        className="w-full rounded-xl border border-input bg-page-bg pl-9 pr-3 py-2 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-                      />
-                    </div>
+                <div>
+                  <label className="font-bold text-navy block mb-1">Số điện thoại</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="0988 123 456"
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:bg-white focus:border-orange-500"
+                    />
                   </div>
+                </div>
+              </>
+            )}
 
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Email</label>
-                    <div className="relative mt-1">
-                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="an@example.com"
-                        className="w-full rounded-xl border border-input bg-page-bg pl-9 pr-3 py-2 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-                      />
-                    </div>
-                  </div>
+            <div>
+              <label className="font-bold text-navy block mb-1">
+                {selectedRole === 'admin' ? 'Tài khoản Quản trị / Email' : 'Email'}
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={currentRoleConfig.demoEmail}
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:bg-white focus:border-orange-500"
+                />
+              </div>
+            </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Mật khẩu</label>
-                    <div className="relative mt-1">
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
-                      <input
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Tối thiểu 8 ký tự"
-                        className="w-full rounded-xl border border-input bg-page-bg pl-9 pr-3 py-2 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="font-bold text-navy">Mật khẩu</label>
+                {activeTab === 'login' && (
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToast('Mã OTP khôi phục mật khẩu đã được gửi đến email!', 'info');
+                    }}
+                    className="text-[11px] font-bold text-orange-500 hover:underline"
+                  >
+                    Quên mật khẩu?
+                  </a>
+                )}
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:bg-white focus:border-orange-500"
+                />
+              </div>
+            </div>
+
+            {/* Quick Demo Credentials Box */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-500 flex items-center justify-between">
+              <div>
+                <span className="font-bold text-slate-700 block">Tài khoản demo sẵn sàng:</span>
+                <span className="font-mono text-orange-600">{currentRoleConfig.demoEmail}</span> ·{' '}
+                <span className="font-mono">{currentRoleConfig.demoPass}</span>
+              </div>
+              <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                Auto-fill
+              </span>
+            </div>
 
             {/* Submit Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={loading || success}
+            <button
               type="submit"
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 px-4 text-xs font-extrabold text-white shadow-lg shadow-accent/25 hover:bg-accent-hover transition-all disabled:opacity-75"
+              disabled={loading}
+              className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
             >
               {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Đang xử lý Supabase...</span>
-                </>
-              ) : success ? (
-                <>
-                  <CheckCircle2 className="h-4 w-4 text-white" />
-                  <span>Thành công! Đang chuyển trang...</span>
-                </>
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <span>{activeTab === 'login' ? 'Đăng nhập ngay' : 'Tạo tài khoản'}</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <span>
+                    {activeTab === 'login'
+                      ? selectedRole === 'admin'
+                        ? 'Truy cập Admin Portal →'
+                        : 'Đăng nhập ngay →'
+                      : 'Hoàn tất đăng ký'}
+                  </span>
                 </>
               )}
-            </motion.button>
+            </button>
           </form>
 
-          {/* Quick Demo Fill Credentials button */}
-          <div className="mt-6 rounded-xl border border-dashed border-slate-200 bg-page-bg p-3 text-center">
-            <span className="text-[11px] text-text-muted">Tài khoản demo: </span>
-            <button
-              onClick={() => {
-                setEmail('an@example.com');
-                setPassword('12345678');
-                setActiveTab('login');
-              }}
-              className="text-[11px] font-bold text-accent hover:underline ml-1"
-            >
-              an@example.com (Pro Agent)
-            </button>
-          </div>
+          {/* Social Google Login */}
+          {selectedRole !== 'admin' && (
+            <div className="mt-5 pt-4 border-t border-slate-100 text-center">
+              <p className="text-[11px] text-slate-400 mb-3">Hoặc tiếp tục với</p>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full py-2.5 px-4 border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+                <span>Đăng nhập với Google</span>
+              </button>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>
