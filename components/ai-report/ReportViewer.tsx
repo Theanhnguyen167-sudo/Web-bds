@@ -6,9 +6,9 @@ import { motion } from 'framer-motion';
 import { mockAIReport, mockListings } from '@/lib/mock-data';
 import { formatCurrencyVND } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
+import { DownloadPDFButton } from '@/components/ai-report/DownloadPDFButton';
 import {
   Sparkles,
-  Download,
   ArrowLeft,
   CheckCircle2,
   ShieldCheck,
@@ -24,7 +24,7 @@ import {
   Trees,
   Train,
   Check,
-  Loader2
+  Scale
 } from 'lucide-react';
 
 interface ReportViewerProps {
@@ -32,12 +32,11 @@ interface ReportViewerProps {
 }
 
 export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
-  const { addToast } = useApp();
+  const { user } = useApp();
   const listing = mockListings.find((l) => l.id === listingId) || mockListings[0];
   const report = mockAIReport;
 
   const [scoreCount, setScoreCount] = useState(0);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   // Animated Score Counter (0 -> 82)
   useEffect(() => {
@@ -59,24 +58,6 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
 
     return () => clearInterval(timer);
   }, [report.score]);
-
-  const handleDownloadPDF = () => {
-    setIsDownloading(true);
-    setTimeout(() => {
-      setIsDownloading(false);
-      // Trigger virtual PDF download
-      const element = document.createElement('a');
-      const file = new Blob([`BÁO CÁO THẨM ĐỊNH BẤT ĐỘNG SẢN HANOI REALTY\n\nBĐS: ${listing.title}\nĐịa chỉ: ${listing.address}\nĐiểm tiềm năng: ${report.score}/100\nQuy hoạch: ${report.planningZone}\nĐánh giá AI: ${report.aiAnalysis}`], {
-        type: 'text/plain;charset=utf-8',
-      });
-      element.href = URL.createObjectURL(file);
-      element.download = `Bao-cao-tham-dinh-AI-${listing.id}.txt`;
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-      addToast('📄 Đã tải xuống file báo cáo thành công!', 'success');
-    }, 1200);
-  };
 
   return (
     <div className="w-full max-w-5xl mx-auto py-6 space-y-6">
@@ -104,26 +85,33 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
           </p>
         </div>
 
-        {/* Download PDF Button */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          disabled={isDownloading}
-          onClick={handleDownloadPDF}
-          className="flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-xs font-black text-white shadow-lg shadow-accent/25 hover:bg-accent-hover transition-all disabled:opacity-80 shrink-0"
-        >
-          {isDownloading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Đang xuất file PDF...</span>
-            </>
-          ) : (
-            <>
-              <Download className="h-4 w-4" />
-              <span>Tải Báo Cáo PDF</span>
-            </>
-          )}
-        </motion.button>
+        {/* Professional React-PDF Download Button */}
+        <div className="w-full sm:w-auto min-w-[210px]">
+          <DownloadPDFButton
+            reportId={listing.id}
+            report={{
+              ...report,
+              planningStatus: 'Đất ở đô thị ổn định',
+              floorAreaRatio: 3.5,
+              maxHeight: '5 tầng + 1 tum',
+              investmentRecommendation:
+                'Khuyến nghị mua để ở kết hợp kinh doanh hoặc giữ tài sản trung - dài hạn, tỷ suất sinh lời kỳ vọng 12-15%/năm.',
+              legalRisk: 'An toàn tuyệt đối (Sổ đỏ chính chủ)',
+              priceTrendPotential: 8.5,
+              generatedAt: new Date().toISOString(),
+            }}
+            listing={{
+              title: listing.title,
+              address: listing.address,
+              price: listing.price,
+              area: listing.area,
+              pricePerM2: listing.pricePerM2,
+              propertyType: listing.type,
+              district: listing.district,
+            }}
+            userName={user?.name || 'Nguyễn Văn An (Pro Agent)'}
+          />
+        </div>
       </div>
 
       {/* Main Scorecard Section: Circular Gauge + Sub Scores */}
@@ -241,11 +229,11 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border text-center text-xs">
             <div className="rounded-xl bg-page-bg p-2">
               <span className="text-[10px] text-text-muted">Hệ số sử dụng đất</span>
-              <p className="font-bold text-text-primary">{report.floorAreaRatio}</p>
+              <p className="font-bold text-text-primary">3.5</p>
             </div>
             <div className="rounded-xl bg-page-bg p-2">
               <span className="text-[10px] text-text-muted">Chiều cao tối đa</span>
-              <p className="font-bold text-text-primary">{report.maxHeight}</p>
+              <p className="font-bold text-text-primary">5 tầng + 1 tum</p>
             </div>
             <div className="rounded-xl bg-page-bg p-2">
               <span className="text-[10px] text-text-muted">Tăng trưởng dự kiến</span>
@@ -287,7 +275,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
         </div>
       </div>
 
-      {/* Nearby Infrastructure Projects Timeline (Draws from Top to Bottom) */}
+      {/* Nearby Infrastructure Projects Timeline */}
       <div className="rounded-3xl border border-border bg-white p-6 sm:p-8 shadow-sm space-y-6">
         <div>
           <h3 className="text-base font-extrabold text-text-primary flex items-center gap-2">
@@ -301,7 +289,6 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
 
         {/* Timeline container */}
         <div className="relative pl-6 space-y-6">
-          {/* Animated Vertical Line */}
           <motion.div
             className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-accent/40"
             initial={{ scaleY: 0 }}
@@ -318,7 +305,6 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
               transition={{ delay: 0.3 + idx * 0.15 }}
               className="relative flex items-start justify-between gap-4 rounded-2xl bg-page-bg p-4 border border-border"
             >
-              {/* Timeline Dot */}
               <div className="absolute -left-[27px] top-4 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent ring-4 ring-white" />
 
               <div>
