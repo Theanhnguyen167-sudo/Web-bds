@@ -55,3 +55,4 @@ Khi nhận task, AI Agent cần tự xác định context và áp dụng đúng 
 3. **Step 3:** Triển khai code theo module độc lập, không tạo monolithic files (>300 lines tách sub-components).
 4. **Step 4:** Kiểm tra Edge Cases: Loading state, Error state, Empty state, Mobile responsiveness.
 5. **Step 5:** Cập nhật tài liệu / checklist trong `docs/`.
+6. **Step 6:** Tự động đồng bộ lên GitHub (`git add .` ➔ `git commit -m "..."` ➔ `git push origin main`) sau khi hoàn thành task và kiểm tra build thành công.
