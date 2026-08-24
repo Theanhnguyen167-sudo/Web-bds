@@ -290,10 +290,26 @@ export const mockListings: ListingItem[] = [
   },
 ];
 
-export const mockUser = {
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: string;
+  package: string;
+  packageExpiry: string;
+  aiReportsUsed: number;
+  aiReportsLimit: number;
+  listingsCount: number;
+  activeListings: number;
+  avatar: string;
+}
+
+export const mockUser: UserProfile = {
   id: "u1",
   name: "Nguyễn Văn An",
   email: "an@example.com",
+  phone: "0988 123 456",
   role: "agent",
   package: "pro",
   packageExpiry: "2025-09-15",

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         report,
         listing,
         userName: userName || 'Chuyên viên BĐS Hà Nội',
-      })
+      }) as any
     );
 
     const safeId = (report.id || 'report-01').slice(0, 8);

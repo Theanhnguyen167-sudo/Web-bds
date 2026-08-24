@@ -50,14 +50,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user) {
           setUser({
+            id: session.user.id,
             name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Thành viên',
             email: session.user.email || 'user@example.com',
             phone: session.user.user_metadata?.phone || '0988 123 456',
+            role: 'agent',
             avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
             package: 'Pro',
             packageExpiry: '2026-09-15',
             listingsCount: 5,
+            activeListings: 5,
             aiReportsUsed: 8,
+            aiReportsLimit: 30,
           });
 
           // Fetch saved listings from Supabase

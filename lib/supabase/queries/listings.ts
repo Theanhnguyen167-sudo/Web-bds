@@ -51,13 +51,13 @@ export async function getListings({
 export async function getListingById(id: string) {
   const supabase = createServerSupabaseClient();
   try {
-    await supabase.rpc('increment_views', { listing_id: id });
+    await (supabase.rpc as any)('increment_views', { listing_id: id });
   } catch (err) {
     // Ignore RPC error if not deployed yet
   }
 
-  return supabase
-    .from('listings')
+  return (supabase
+    .from('listings') as any)
     .select('*, users(full_name, avatar_url, phone, role)')
     .eq('id', id)
     .single();
@@ -70,7 +70,7 @@ export async function getNearbyListings(
   radiusMeters: number = 2000
 ) {
   const supabase = createServerSupabaseClient();
-  return supabase.rpc('get_nearby_listings', {
+  return (supabase.rpc as any)('get_nearby_listings', {
     lat,
     lng,
     radius_meters: radiusMeters
@@ -83,8 +83,8 @@ export async function createListing(data: CreateListingInput) {
   const locationWKT = `POINT(${data.lng} ${data.lat})`;
   const pricePerM2 = Math.round(data.price / (data.area || 1));
 
-  return supabase
-    .from('listings')
+  return (supabase
+    .from('listings') as any)
     .insert({
       user_id: data.user_id,
       title: data.title,
@@ -109,7 +109,7 @@ export async function createListing(data: CreateListingInput) {
 // Get planning zone for a point using PostGIS
 export async function getPlanningZoneForPoint(lat: number, lng: number) {
   const supabase = createServerSupabaseClient();
-  return supabase.rpc('get_planning_zone_at_point', { lat, lng });
+  return (supabase.rpc as any)('get_planning_zone_at_point', { lat, lng });
 }
 
 // Get projects within radius using PostGIS
@@ -119,7 +119,7 @@ export async function getProjectsNearby(
   radiusMeters: number = 2000
 ) {
   const supabase = createServerSupabaseClient();
-  return supabase.rpc('get_projects_nearby', {
+  return (supabase.rpc as any)('get_projects_nearby', {
     lat,
     lng,
     radius_meters: radiusMeters

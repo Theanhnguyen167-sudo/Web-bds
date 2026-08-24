@@ -51,6 +51,18 @@ export interface ListingFilterParams {
   };
 }
 
+export interface ListingFilters {
+  page?: number;
+  limit?: number;
+  district?: string;
+  propertyType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minArea?: number;
+  maxArea?: number;
+  status?: string;
+}
+
 export interface CreateListingDTO {
   title: string;
   description: string;

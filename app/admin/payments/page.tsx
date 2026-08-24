@@ -273,7 +273,7 @@ export default function AdminPaymentsPage() {
                     color: '#fff',
                     fontSize: '12px',
                   }}
-                  formatter={(v: number) => [`${v} Triệu VNĐ`, '']}
+                  formatter={(v: any) => [`${v} Triệu VNĐ`, '']}
                 />
                 <Legend verticalAlign="top" height={36} />
                 <Area

@@ -16,8 +16,8 @@ export async function toggleSavedListing(userId: string, listingId: string) {
       .eq('user_id', userId)
       .eq('listing_id', listingId);
   } else {
-    return supabase
-      .from('saved_listings')
+    return (supabase
+      .from('saved_listings') as any)
       .insert({ user_id: userId, listing_id: listingId });
   }
 }

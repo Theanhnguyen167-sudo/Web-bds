@@ -82,7 +82,7 @@ export const RevenueChart: React.FC = () => {
                 color: '#fff',
                 fontSize: '12px',
               }}
-              formatter={(val: number) => [`${val} Triệu VNĐ`, '']}
+              formatter={(val: any) => [`${val} Triệu VNĐ`, '']}
             />
             <Legend verticalAlign="top" height={36} iconType="circle" />
             <Area

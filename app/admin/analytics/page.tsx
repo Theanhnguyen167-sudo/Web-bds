@@ -204,7 +204,7 @@ export default function AdminAnalyticsPage() {
                 <YAxis stroke="#94a3b8" fontSize={11} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#0f172a', color: '#fff', borderRadius: '12px', border: 'none' }}
-                  formatter={(v: number) => [`${v} Triệu VNĐ`, '']}
+                  formatter={(v: any) => [`${v} Triệu VNĐ`, '']}
                 />
                 <Legend verticalAlign="top" height={36} />
                 <Line

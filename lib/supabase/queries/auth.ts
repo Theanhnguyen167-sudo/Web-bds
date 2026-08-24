@@ -9,7 +9,7 @@ export async function signUpWithEmail(email: string, password: string, fullName:
   });
 
   if (data.user) {
-    await supabase.from('users').insert({
+    await (supabase.from('users') as any).insert({
       id: data.user.id,
       email,
       full_name: fullName,

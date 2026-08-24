@@ -19,13 +19,21 @@ export async function POST(req: NextRequest) {
     const ipAddr = req.headers.get('x-forwarded-for') || '127.0.0.1';
     const txnRef = `PROPTECH_${Date.now()}`;
 
-    const paymentUrl = createVNPayPaymentUrl({
-      amount: Number(amount),
-      orderInfo: `Thanh toan goi dich vu ${packageId} - Don hang ${txnRef}`,
-      txnRef,
+    const paymentUrl = createVNPayPaymentUrl(
+      {
+        orderId: txnRef,
+        userId: 'user_1',
+        packageId,
+        packageName: `Gói ${packageId}`,
+        amount: Number(amount),
+        description: `Thanh toan goi dich vu ${packageId} - Don hang ${txnRef}`,
+        userEmail: 'user@example.com',
+        userPhone: '0988123456',
+        createdAt: new Date().toISOString(),
+      },
       ipAddr,
-      bankCode,
-    });
+      bankCode
+    );
 
     return NextResponse.json<ApiResponse<{ paymentUrl: string; txnRef: string }>>({
       success: true,

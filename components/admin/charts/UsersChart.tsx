@@ -47,8 +47,8 @@ export const PackageDonutChart: React.FC = () => {
                 color: '#fff',
                 fontSize: '12px',
               }}
-              formatter={(val: number, name: string) => [
-                `${val.toLocaleString()} người dùng`,
+              formatter={(val: any, name: any) => [
+                `${Number(val).toLocaleString()} người dùng`,
                 `Gói ${name}`,
               ]}
             />

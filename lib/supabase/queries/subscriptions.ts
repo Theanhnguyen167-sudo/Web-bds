@@ -25,7 +25,7 @@ export async function checkAIReportQuota(userId: string): Promise<{
     .from('ai_reports')
     .select('id', { count: 'exact' })
     .eq('user_id', userId)
-    .gte('generated_at', new Date(sub.start_date).toISOString());
+    .gte('generated_at', new Date((sub as any).start_date || Date.now()).toISOString());
 
   const features = typeof pkg.features === 'object' && pkg.features !== null ? (pkg.features as any) : {};
   const limit = pkg.has_ai_report ? (features.ai_reports_limit ?? 30) : 0;

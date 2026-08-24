@@ -1,5 +1,3 @@
-import * as cheerio from 'cheerio';
-
 export interface ScrapedPlanningZone {
   name: string;
   district: string;
