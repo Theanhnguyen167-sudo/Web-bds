@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
+import type { LocationData } from '@/components/map/LocationPicker';
 import {
   Home,
   Building2,
@@ -27,6 +29,18 @@ import {
   Check
 } from 'lucide-react';
 
+const LocationPicker = dynamic(
+  () => import('@/components/map/LocationPicker'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-[400px] bg-gray-100 dark:bg-gray-700 rounded-2xl animate-pulse flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Đang tải bản đồ...</p>
+      </div>
+    )
+  }
+);
+
 const HANOI_DISTRICTS = [
   'Đống Đa',
   'Hoàn Kiếm',
@@ -46,6 +60,16 @@ export const CreateListingWizard: React.FC = () => {
   const { addNewListing, addToast } = useApp();
 
   const [currentStep, setCurrentStep] = useState(1);
+
+  const [pickedLocation, setPickedLocation] = useState<LocationData | null>({
+    lat: 21.0315,
+    lng: 105.7825,
+    displayName: 'Phố Duy Tân, Cầu Giấy, Hà Nội',
+    district: 'Cầu Giấy',
+    ward: 'Dịch Vọng Hậu',
+    road: 'Duy Tân',
+    houseNumber: '18',
+  });
 
   // Form Data State
   const [formData, setFormData] = useState({
@@ -79,8 +103,8 @@ export const CreateListingWizard: React.FC = () => {
   ];
 
   const handleNext = () => {
-    if (currentStep === 2 && !formData.street) {
-      addToast('Vui lòng nhập tên đường / phố', 'warning');
+    if (currentStep === 2 && !formData.street && !pickedLocation) {
+      addToast('Vui lòng ghim vị trí hoặc nhập tên đường / phố', 'warning');
       return;
     }
     if (currentStep === 4 && (!formData.price || !formData.area)) {
@@ -245,13 +269,51 @@ export const CreateListingWizard: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="space-y-5"
+              className="space-y-6"
             >
               <div>
                 <h2 className="text-lg font-extrabold text-text-primary">Bước 2: Địa chỉ & Vị trí trên bản đồ</h2>
-                <p className="text-xs text-text-secondary mt-1">Định vị chính xác để người mua dễ dàng tra cứu quy hoạch phân khu</p>
+                <p className="text-xs text-text-secondary mt-1">Định vị chính xác để người mua dễ dàng tra cứu quy hoạch phân khu và tiện ích lân cận</p>
               </div>
 
+              {/* Interactive Leaflet Map Pin Picker */}
+              <div>
+                <label className="text-sm font-semibold text-navy dark:text-white mb-1.5 block">
+                  📍 Chọn vị trí trên bản đồ
+                  <span className="text-orange-500 ml-1">*</span>
+                </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Nhấp vào bản đồ hoặc tìm kiếm địa chỉ để gắn pin vị trí BĐS chính xác
+                </p>
+                <LocationPicker
+                  value={pickedLocation}
+                  onChange={(loc) => {
+                    setPickedLocation(loc);
+                    if (loc) {
+                      setFormData(prev => ({
+                        ...prev,
+                        district: loc.district || prev.district,
+                        ward: loc.ward || prev.ward,
+                        street: loc.road || prev.street,
+                        addressNumber: loc.houseNumber ? `Số ${loc.houseNumber}` : prev.addressNumber,
+                        lat: loc.lat,
+                        lng: loc.lng,
+                      }));
+                      addToast('📍 Đã cập nhật toạ độ & địa chỉ BĐS', 'success');
+                    }
+                  }}
+                  height="380px"
+                />
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                <span className="text-xs text-gray-400">hoặc kiểm tra & điều chỉnh chi tiết bên dưới</span>
+                <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+              </div>
+
+              {/* Address Form Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-text-primary">Quận / Huyện *</label>
@@ -300,36 +362,6 @@ export const CreateListingWizard: React.FC = () => {
                     placeholder="VD: Số 18, Ngõ 72"
                     className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none"
                   />
-                </div>
-              </div>
-
-              {/* Simulated Map Pin Selector */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-text-primary flex items-center justify-between">
-                  <span>Toạ độ vị trí trên bản đồ Hà Nội</span>
-                  <span className="text-[11px] font-semibold text-accent">Bấm lên bản đồ để chọn toạ độ</span>
-                </label>
-                <div
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) / rect.width;
-                    const y = (e.clientY - rect.top) / rect.height;
-                    setFormData({
-                      ...formData,
-                      lng: 105.72 + x * 0.21,
-                      lat: 21.08 - y * 0.12,
-                    });
-                    addToast('📍 Đã ghim toạ độ mới trên bản đồ', 'info');
-                  }}
-                  className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl bg-slate-900 cursor-crosshair border border-slate-700 flex items-center justify-center text-white"
-                >
-                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
-                  <div className="text-center">
-                    <MapPin className="h-8 w-8 text-accent mx-auto animate-bounce drop-shadow-md" />
-                    <p className="text-xs font-bold text-white mt-1">
-                      {formData.district}, Hà Nội ({formData.lat.toFixed(4)}, {formData.lng.toFixed(4)})
-                    </p>
-                  </div>
                 </div>
               </div>
             </motion.div>
