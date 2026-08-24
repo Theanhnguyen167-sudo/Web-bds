@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
@@ -31,6 +32,18 @@ import {
   ChevronRight,
   Layers,
 } from 'lucide-react';
+
+const ListingDetailMap = dynamic(
+  () => import('@/components/map/ListingDetailMap'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] w-full rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse flex items-center justify-center">
+        <span className="text-xs text-slate-400">Đang nạp bản đồ vị trí...</span>
+      </div>
+    ),
+  }
+);
 
 interface ListingDetailClientProps {
   listingId: string;
@@ -430,23 +443,31 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
               </div>
             </div>
 
-            {/* Quick Map Location Preview */}
+            {/* Interactive Leaflet Location Map */}
             <div className="rounded-2xl border border-border bg-white p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-text-primary flex items-center gap-1.5">
                   <MapPin className="h-4 w-4 text-accent" />
-                  Vị trí trên bản đồ
+                  Vị trí & Quy hoạch khu vực
                 </h4>
-                <Link href="/search" className="text-[11px] font-bold text-accent hover:underline">
+                <Link
+                  href={`/search?district=${encodeURIComponent(listing.district)}`}
+                  className="text-[11px] font-bold text-accent hover:underline"
+                >
                   Xem bản đồ lớn
                 </Link>
               </div>
-              <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-900 flex items-center justify-center text-white">
-                <div className="text-center p-3">
-                  <MapPin className="h-6 w-6 text-accent mx-auto mb-1 animate-bounce" />
-                  <span className="text-xs font-bold">{listing.district}, Hà Nội</span>
-                </div>
-              </div>
+              <ListingDetailMap
+                lat={listing.lat || 21.0285}
+                lng={listing.lng || 105.8542}
+                title={listing.title}
+                address={listing.address}
+                price={listing.price}
+                district={listing.district}
+                planningZone={listing.planningZone}
+                planningYear={listing.planningYear}
+                height="280px"
+              />
             </div>
 
           </div>
