@@ -355,7 +355,7 @@ function SearchContent() {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowPriceFilter(!showPriceFilter)}
                       className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
-                        showPriceFilter || maxPrice < 50000000000
+                        showPriceFilter || maxPrice < 50000000000 || minPrice > 0
                           ? 'border-accent bg-accent/10 text-accent'
                           : 'border-input bg-page-bg text-text-secondary hover:bg-slate-200/70'
                       }`}
@@ -388,19 +388,73 @@ function SearchContent() {
                     )}
                   </div>
 
-                  {/* Expandable Price Range Slider */}
+                  {/* Quick District Selection Chips */}
+                  <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
+                    {['Tất cả quận', 'Cầu Giấy', 'Đống Đa', 'Tây Hồ', 'Nam Từ Liêm', 'Thanh Xuân', 'Hoàn Kiếm', 'Hai Bà Trưng', 'Hà Đông', 'Long Biên'].map((dist) => {
+                      const isDistSelected = selectedDistrict === dist;
+                      return (
+                        <button
+                          key={dist}
+                          onClick={() => setSelectedDistrict(dist)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                            isDistSelected
+                              ? 'bg-navy text-white shadow-xs font-bold'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {dist === 'Tất cả quận' ? '📍 Tất cả' : dist}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Expandable Price Range Slider & Preset Chips */}
                   <AnimatePresence>
                     {showPriceFilter && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="rounded-xl border border-border bg-page-bg p-3 space-y-2 overflow-hidden"
+                        className="rounded-xl border border-border bg-page-bg p-3 space-y-2.5 overflow-hidden"
                       >
                         <div className="flex items-center justify-between text-xs font-bold">
-                          <span className="text-text-secondary">Giá tối đa:</span>
-                          <span className="text-accent">{formatCurrencyVND(maxPrice)}</span>
+                          <span className="text-text-secondary">Khoảng giá:</span>
+                          <span className="text-accent">
+                            {minPrice > 0 ? `${formatCurrencyVND(minPrice)} - ` : 'Dưới '}
+                            {formatCurrencyVND(maxPrice)}
+                          </span>
                         </div>
+
+                        {/* Quick Price Range Chips */}
+                        <div className="grid grid-cols-3 gap-1.5">
+                          {[
+                            { label: '< 3 Tỷ', min: 0, max: 3000000000 },
+                            { label: '3 - 7 Tỷ', min: 3000000000, max: 7000000000 },
+                            { label: '7 - 15 Tỷ', min: 7000000000, max: 15000000000 },
+                            { label: '15 - 30 Tỷ', min: 15000000000, max: 30000000000 },
+                            { label: '> 30 Tỷ', min: 30000000000, max: 50000000000 },
+                            { label: 'Tất cả giá', min: 0, max: 50000000000 },
+                          ].map((range) => {
+                            const isMatch = minPrice === range.min && maxPrice === range.max;
+                            return (
+                              <button
+                                key={range.label}
+                                onClick={() => {
+                                  setMinPrice(range.min);
+                                  setMaxPrice(range.max);
+                                }}
+                                className={`py-1 px-1.5 rounded-lg text-[10px] font-bold text-center border transition-all ${
+                                  isMatch
+                                    ? 'bg-accent text-white border-accent shadow-xs'
+                                    : 'bg-white text-text-primary border-border hover:bg-orange-50 hover:border-orange-200'
+                                }`}
+                              >
+                                {range.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+
                         <input
                           type="range"
                           min={2000000000}
@@ -517,6 +571,7 @@ function SearchContent() {
                   listings={filteredListings}
                   selectedListingId={activeListingId}
                   hoveredListingId={hoveredId}
+                  targetDistrict={selectedDistrict}
                   onMarkerClick={(id) => {
                     setActiveListingId(id);
                     document.getElementById(`listing-card-${id}`)?.scrollIntoView({

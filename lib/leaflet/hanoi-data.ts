@@ -168,3 +168,23 @@ export const PLANNING_ZONE_TYPES = {
   industrial:  { label: 'Công nghiệp', color: '#6b7280' },
   mixed:       { label: 'Đất hỗn hợp', color: '#8b5cf6' },
 }
+
+export const HANOI_DISTRICT_CENTERS: Record<string, { lat: number; lng: number; zoom: number }> = {
+  'Đống Đa': { lat: 21.0185, lng: 105.8300, zoom: 14.5 },
+  'Hoàn Kiếm': { lat: 21.0310, lng: 105.8525, zoom: 15 },
+  'Cầu Giấy': { lat: 21.0360, lng: 105.7905, zoom: 14.5 },
+  'Tây Hồ': { lat: 21.0650, lng: 105.8230, zoom: 14 },
+  'Long Biên': { lat: 21.0420, lng: 105.8900, zoom: 13.5 },
+  'Nam Từ Liêm': { lat: 21.0020, lng: 105.7600, zoom: 14 },
+  'Bắc Từ Liêm': { lat: 21.0600, lng: 105.7600, zoom: 13.5 },
+  'Ba Đình': { lat: 21.0340, lng: 105.8250, zoom: 14.5 },
+  'Thanh Xuân': { lat: 20.9950, lng: 105.8080, zoom: 14.5 },
+  'Hai Bà Trưng': { lat: 21.0080, lng: 105.8550, zoom: 14.5 },
+  'Hà Đông': { lat: 20.9700, lng: 105.7750, zoom: 13.5 },
+  'Hoàng Mai': { lat: 20.9750, lng: 105.8500, zoom: 13.5 },
+  'Gia Lâm': { lat: 21.0100, lng: 105.9300, zoom: 13 },
+  'Đông Anh': { lat: 21.1350, lng: 105.8450, zoom: 12.5 },
+  'Hoài Đức': { lat: 21.0200, lng: 105.6950, zoom: 12.5 },
+  'Thanh Trì': { lat: 20.9400, lng: 105.8500, zoom: 12.5 },
+}
+

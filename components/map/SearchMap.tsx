@@ -6,7 +6,7 @@ import {
   Layers, ZoomIn, ZoomOut, Locate, 
   X, MapPin, Eye, ExternalLink 
 } from 'lucide-react'
-import { HANOI_CENTER, HANOI_PLANNING_ZONES, PLANNING_ZONE_TYPES } from '@/lib/leaflet/hanoi-data'
+import { HANOI_CENTER, HANOI_PLANNING_ZONES, PLANNING_ZONE_TYPES, HANOI_DISTRICT_CENTERS } from '@/lib/leaflet/hanoi-data'
 import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
 
 // ── Types ──
@@ -29,6 +29,7 @@ interface SearchMapProps {
   listings: SearchMapListing[]
   selectedListingId?: string | null
   hoveredListingId?: string | null
+  targetDistrict?: string
   onMarkerClick?: (listingId: string) => void
   onMarkerHover?: (listingId: string | null) => void
   showPlanningLayer?: boolean
@@ -58,6 +59,7 @@ export default function SearchMap({
   listings,
   selectedListingId,
   hoveredListingId,
+  targetDistrict,
   onMarkerClick,
   onMarkerHover,
   showPlanningLayer = false,
@@ -342,12 +344,31 @@ export default function SearchMap({
     if (!selectedListingId || !mapInstanceRef.current) return
     const listing = listings.find(l => l.id === selectedListingId)
     if (listing) {
-      mapInstanceRef.current.flyTo([listing.lat, listing.lng], 15, {
+      mapInstanceRef.current.flyTo([listing.lat, listing.lng], 16, {
         duration: 0.8,
         easeLinearity: 0.5,
       })
     }
-  }, [selectedListingId])
+  }, [selectedListingId, listings])
+
+  // ── FLY TO target district ──
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return
+    if (targetDistrict && targetDistrict !== 'Tất cả quận' && targetDistrict !== 'all') {
+      const target = HANOI_DISTRICT_CENTERS[targetDistrict]
+      if (target) {
+        mapInstanceRef.current.flyTo([target.lat, target.lng], target.zoom, {
+          duration: 1,
+          easeLinearity: 0.25,
+        })
+      }
+    } else if (targetDistrict === 'Tất cả quận' || targetDistrict === 'all') {
+      mapInstanceRef.current.flyTo(HANOI_CENTER, 13, {
+        duration: 1,
+        easeLinearity: 0.25,
+      })
+    }
+  }, [targetDistrict, isMapReady])
 
   // ── GET USER LOCATION ──
   const handleLocateMe = useCallback(() => {

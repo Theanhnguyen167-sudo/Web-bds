@@ -315,66 +315,6 @@ export default function LassoSearch({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── Radius Search Preset Buttons ── */}
-      <AnimatePresence>
-        {mode === 'idle' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[500]
-                       bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl 
-                       border border-gray-200 px-4 py-3"
-          >
-            <p className="text-xs text-gray-500 text-center mb-2 font-medium">
-              🎯 Tìm kiếm nhanh theo bán kính trung tâm
-            </p>
-            <div className="flex gap-2">
-              {[
-                { label: '500m', radius: 500, icon: '🚶' },
-                { label: '1km', radius: 1000, icon: '🚲' },
-                { label: '2km', radius: 2000, icon: '🚗' },
-                { label: '5km', radius: 5000, icon: '🏙️' },
-              ].map(option => (
-                <motion.button
-                  key={option.label}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    const centerLat = (mapBounds.north + mapBounds.south) / 2
-                    const centerLng = (mapBounds.east + mapBounds.west) / 2
-                    
-                    const found = listings.filter(l => {
-                      if (!l.lat || !l.lng) return false
-                      const R = 6371000
-                      const dLat = (l.lat - centerLat) * Math.PI / 180
-                      const dLng = (l.lng - centerLng) * Math.PI / 180
-                      const a = Math.sin(dLat/2)**2 + 
-                                Math.cos(centerLat*Math.PI/180) * 
-                                Math.cos(l.lat*Math.PI/180) * 
-                                Math.sin(dLng/2)**2
-                      const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-                      return distance <= option.radius
-                    })
-                    
-                    setFoundCount(found.length)
-                    setFoundPriceRange(calculatePriceRange(found))
-                    onFilteredListings(found.map(l => l.id))
-                    setMode('drawn')
-                  }}
-                  className="flex flex-col items-center px-3 py-2 rounded-xl 
-                             bg-gray-50 hover:bg-orange-50 border border-gray-200 
-                             hover:border-orange-300 transition-all text-xs cursor-pointer"
-                >
-                  <span className="text-base">{option.icon}</span>
-                  <span className="font-medium text-navy mt-0.5">{option.label}</span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   )
 }
