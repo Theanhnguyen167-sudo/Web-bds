@@ -36,14 +36,17 @@ import {
   Building
 } from 'lucide-react';
 
-const HybridMap = dynamic(() => import('@/components/map/HybridMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full bg-slate-900 animate-pulse rounded-xl flex items-center justify-center">
-      <p className="text-white/50 text-sm">Đang tải bản đồ vệ tinh & quy hoạch...</p>
-    </div>
-  ),
-});
+const SearchMap = dynamic(
+  () => import('@/components/map/SearchMap'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full bg-[#1a2744] flex items-center justify-center">
+        <div className="text-white/50 text-sm">Đang tải bản đồ...</div>
+      </div>
+    )
+  }
+);
 
 const HANOI_DISTRICTS = [
   'Tất cả quận',
@@ -91,6 +94,8 @@ function SearchContent() {
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc' | 'area_desc'>(initialSort);
   const [viewMode, setViewMode] = useState<'map' | 'list' | 'grid'>(initialView);
   const [showPriceFilter, setShowPriceFilter] = useState(false);
+  const [showPlanningLayer, setShowPlanningLayer] = useState(false);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showKeyboardHint, setShowKeyboardHint] = useState(false);
   const [mobileView, setMobileView] = useState<'map' | 'list'>('list');
@@ -273,9 +278,9 @@ function SearchContent() {
           {/* ── MODE A: SPLIT MAP VIEW (DEFAULT) ── */}
           {viewMode === 'map' && (
             <div className="flex w-full h-full overflow-hidden">
-              {/* Left Sidebar Filter + Listings Feed */}
+              {/* Left Sidebar Filter + Listings Feed (30% width) */}
               <section
-                className={`h-full w-full md:w-[48%] lg:w-[45%] xl:w-[42%] flex flex-col z-10 border-r border-border bg-white ${
+                className={`h-full w-full md:w-[30%] min-w-[280px] max-w-[360px] flex-shrink-0 flex flex-col z-10 border-r border-border bg-white ${
                   mobileView === 'map' ? 'hidden md:flex' : 'flex'
                 }`}
               >
@@ -329,7 +334,7 @@ function SearchContent() {
                     })}
                   </div>
 
-                  {/* Quick Filter Row: District Dropdown & Price Slider */}
+                  {/* Quick Filter Row: District Dropdown & Price Slider & Planning Toggle */}
                   <div className="flex items-center gap-2">
                     <div className="relative flex-1">
                       <MapPin className="absolute left-3 top-2.5 h-3.5 w-3.5 text-accent pointer-events-none" />
@@ -359,10 +364,23 @@ function SearchContent() {
                       <span>Mức giá</span>
                     </motion.button>
 
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowPlanningLayer(!showPlanningLayer)}
+                      className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-2 text-xs font-bold transition-all ${
+                        showPlanningLayer
+                          ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
+                          : 'border-input bg-page-bg text-text-secondary hover:bg-slate-200/70'
+                      }`}
+                      title="Bật/tắt lớp quy hoạch Hà Nội"
+                    >
+                      <Layers className="h-3.5 w-3.5" />
+                    </motion.button>
+
                     {hasActiveFilters && (
                       <button
                         onClick={resetFilters}
-                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-text-muted hover:text-danger hover:bg-red-50 transition-colors"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-text-muted hover:text-danger hover:bg-red-50 transition-colors flex-shrink-0"
                         title="Đặt lại bộ lọc"
                       >
                         <FilterX className="h-4 w-4" />
@@ -425,16 +443,19 @@ function SearchContent() {
                 {/* Listings Cards Feed Container */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {isLoading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       {[1, 2, 3, 4].map((i) => (
                         <div key={i} className="h-64 rounded-xl bg-slate-200 animate-pulse" />
                       ))}
                     </div>
                   ) : filteredListings.length > 0 ? (
-                    <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <motion.div layout className="grid grid-cols-1 gap-4">
                       {filteredListings.map((item, idx) => (
                         <motion.div
                           key={item.id}
+                          id={`listing-card-${item.id}`}
+                          onMouseEnter={() => setHoveredId(item.id)}
+                          onMouseLeave={() => setHoveredId(null)}
                           layout
                           initial={{ opacity: 0, y: 15 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -486,16 +507,25 @@ function SearchContent() {
                 </AnimatePresence>
               </section>
 
-              {/* Right Side: Map Container */}
+              {/* Right Side: Map Container (70% width) */}
               <section
                 className={`h-full flex-1 relative ${
                   mobileView === 'list' ? 'hidden md:flex' : 'flex'
                 }`}
               >
-                <HybridMap
+                <SearchMap
                   listings={filteredListings}
-                  onListingClick={(id) => setActiveListingId(id)}
                   selectedListingId={activeListingId}
+                  hoveredListingId={hoveredId}
+                  onMarkerClick={(id) => {
+                    setActiveListingId(id);
+                    document.getElementById(`listing-card-${id}`)?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'center',
+                    });
+                  }}
+                  onMarkerHover={(id) => setHoveredId(id)}
+                  showPlanningLayer={showPlanningLayer}
                 />
               </section>
 
