@@ -42,8 +42,9 @@ export const Navbar: React.FC = () => {
     { name: 'Trang chủ', href: '/' },
     { name: 'Tìm kiếm', href: '/search' },
     { name: 'Quy hoạch', href: '/planning' },
-    { name: 'Báo cáo AI', href: '/reports/1' },
+    { name: 'Báo cáo AI', href: '/reports' },
     { name: 'Bảng giá', href: '/pricing' },
+    { name: 'Về chúng tôi', href: '/about' },
   ];
 
   const handleLogout = () => {
@@ -93,12 +94,17 @@ export const Navbar: React.FC = () => {
         {/* Center Nav Links (Desktop) */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive =
+              link.href === '/'
+                ? pathname === '/'
+                : pathname === link.href || pathname.startsWith(link.href + '/');
             return (
               <Link
                 key={link.name}
                 href={link.href}
-                className="relative px-3.5 py-2 text-xs font-semibold text-slate-200 transition-colors hover:text-white"
+                className={`relative px-3.5 py-2 text-xs font-semibold transition-colors ${
+                  isActive ? 'text-white font-bold' : 'text-slate-200 hover:text-white'
+                }`}
               >
                 <span>{link.name}</span>
                 {isActive && (

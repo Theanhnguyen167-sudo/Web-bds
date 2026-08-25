@@ -64,7 +64,7 @@ function StatsCounterItem({ value, suffix, label }: { value: number; suffix: str
   );
 }
 
-export default function LandingPage() {
+export default function AboutPage() {
   const router = useRouter();
 
   // Search preview states
@@ -190,7 +190,7 @@ export default function LandingPage() {
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
-                href="/reports/1"
+                href="/reports"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-white/20 hover:border-white/40 text-white/80 hover:text-white px-8 py-4 rounded-2xl text-base sm:text-lg font-medium backdrop-blur-sm transition-all"
               >
                 <Sparkles className="h-5 w-5 text-orange-400" />
@@ -251,7 +251,7 @@ export default function LandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 3 — GIỚI THIỆU DOANH NGHIỆP (About)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-white">
+      <section id="about" className="py-24 bg-white">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
@@ -553,7 +553,7 @@ export default function LandingPage() {
               <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                 Gemini 1.5 Pro phân tích toàn diện: quy hoạch, tiềm năng tăng giá, rủi ro pháp lý, tiện ích xung quanh trong 2 phút.
               </p>
-              <Link href="/reports/1" className="text-xs font-bold text-purple-600 hover:underline inline-flex items-center gap-1 pt-1">
+              <Link href="/reports" className="text-xs font-bold text-purple-600 hover:underline inline-flex items-center gap-1 pt-1">
                 <span>Thử miễn phí</span> <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </motion.div>
@@ -613,7 +613,7 @@ export default function LandingPage() {
               <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                 Báo cáo 4 trang A4 đẹp chuẩn nghiệp vụ môi giới — gửi ngay cho khách qua Zalo/Email.
               </p>
-              <Link href="/reports/1" className="text-xs font-bold text-red-600 hover:underline inline-flex items-center gap-1 pt-1">
+              <Link href="/reports" className="text-xs font-bold text-red-600 hover:underline inline-flex items-center gap-1 pt-1">
                 <span>Xem mẫu PDF</span> <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </motion.div>
@@ -645,7 +645,7 @@ export default function LandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 6 — MỤC TIÊU PHÁT TRIỂN (Timeline)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-navy text-white relative overflow-hidden">
+      <section id="careers" className="py-24 bg-navy text-white relative overflow-hidden">
         <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-16">
             <span className="text-orange-400 font-extrabold text-xs tracking-widest uppercase">
@@ -744,7 +744,7 @@ export default function LandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 7 — ĐỘI NGŨ LÃNH ĐẠO
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-slate-50">
+      <section id="team" className="py-24 bg-slate-50">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-14">
             <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase">
@@ -1260,7 +1260,7 @@ export default function LandingPage() {
             <ul className="space-y-2 text-slate-400">
               <li><Link href="/search" className="hover:text-white transition-colors">Tìm kiếm BĐS</Link></li>
               <li><Link href="/planning" className="hover:text-white transition-colors">Bản đồ quy hoạch</Link></li>
-              <li><Link href="/reports/1" className="hover:text-white transition-colors">Báo cáo AI</Link></li>
+              <li><Link href="/reports" className="hover:text-white transition-colors">Báo cáo AI</Link></li>
               <li><Link href="/listings/create" className="hover:text-white transition-colors">Đăng tin BĐS</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Gói thành viên</Link></li>
               <li><Link href="/admin" className="text-orange-400 hover:text-white transition-colors font-bold flex items-center gap-1">🛡️ Admin Portal</Link></li>
@@ -1307,11 +1307,11 @@ export default function LandingPage() {
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>© 2025 HaNoi Realty. Bảo lưu mọi quyền.</p>
           <div className="flex gap-4">
-            <Link href="/" className="hover:text-slate-300 transition-colors">Chính sách bảo mật</Link>
+            <Link href="/about" className="hover:text-slate-300 transition-colors">Chính sách bảo mật</Link>
             <span>·</span>
-            <Link href="/" className="hover:text-slate-300 transition-colors">Điều khoản sử dụng</Link>
+            <Link href="/about" className="hover:text-slate-300 transition-colors">Điều khoản sử dụng</Link>
             <span>·</span>
-            <Link href="/" className="hover:text-slate-300 transition-colors">Cookies</Link>
+            <Link href="/about" className="hover:text-slate-300 transition-colors">Cookies</Link>
           </div>
         </div>
       </footer>
