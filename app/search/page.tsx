@@ -1,968 +1,430 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
-import dynamic from 'next/dynamic';
+import React, { useState, useCallback, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { ListingCard } from '@/components/listing/ListingCard';
 import { useApp } from '@/lib/context/AppContext';
-import { ListingItem } from '@/lib/mock-data';
-import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import {
-  Search,
-  MapPin,
-  SlidersHorizontal,
-  Home,
-  Building2,
-  Trees,
-  Landmark,
-  Compass,
-  FilterX,
-  Map as MapIcon,
-  List as ListIcon,
-  Grid as GridIcon,
-  ArrowUpDown,
-  Maximize2,
-  Bed,
-  Bath,
-  Layers,
-  Heart,
-  ChevronRight,
-  Sparkles,
-  Command,
-  HelpCircle,
-  Building
-} from 'lucide-react';
+  SearchFilters,
+  DEFAULT_SEARCH_FILTERS,
+  filterListings,
+  sortListings,
+} from '@/lib/search/filterListings';
+import { SearchHeader } from '@/components/search/SearchHeader';
+import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
+import { FilterSidebar } from '@/components/search/FilterSidebar';
+import { ListingsPanel } from '@/components/search/ListingsPanel';
+import { ListingListRow } from '@/components/search/ListingListRow';
+import { SaveSearchModal } from '@/components/search/SaveSearchModal';
+import { Sliders, ListFilter, Map as MapIcon, X } from 'lucide-react';
 
-const SearchMap = dynamic(
-  () => import('@/components/map/SearchMap'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full bg-[#1a2744] flex items-center justify-center">
-        <div className="text-white/50 text-sm">Đang tải bản đồ...</div>
-      </div>
-    )
-  }
-);
-
-const HANOI_DISTRICTS = [
-  'Tất cả quận',
-  'Đống Đa',
-  'Hoàn Kiếm',
-  'Cầu Giấy',
-  'Tây Hồ',
-  'Long Biên',
-  'Nam Từ Liêm',
-  'Ba Đình',
-  'Thanh Xuân',
-  'Hai Bà Trưng',
-  'Hà Đông',
-  'Hoàng Mai',
-];
-
-const PROPERTY_TYPES = [
-  { id: 'all', label: 'Tất cả', icon: Compass },
-  { id: 'house', label: 'Nhà phố', icon: Home },
-  { id: 'apartment', label: 'Chung cư', icon: Building2 },
-  { id: 'land', label: 'Đất nền', icon: Trees },
-  { id: 'villa', label: 'Biệt thự', icon: Landmark },
-];
+const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-400 gap-3">
+      <div className="h-8 w-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+      <span className="text-xs font-semibold">Đang tải bản đồ tương tác...</span>
+    </div>
+  ),
+});
 
 function SearchContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { listings, activeListingId, setActiveListingId, savedListingIds, toggleSaveListing } = useApp();
+  const { listings, savedListingIds, toggleSaveListing } = useApp();
 
-  // Read initial filter values from URL params
-  const initialSearch = searchParams.get('search') || '';
-  const initialDistrict = searchParams.get('district') || 'Tất cả quận';
-  const initialType = searchParams.get('type') || 'all';
-  const initialMaxPrice = Number(searchParams.get('maxPrice')) || 50000000000;
-  const initialMinPrice = Number(searchParams.get('minPrice')) || 0;
-  const initialSort = (searchParams.get('sort') as 'newest' | 'price_asc' | 'price_desc' | 'area_desc') || 'newest';
-  const initialView = (searchParams.get('view') as 'map' | 'list' | 'grid') || 'map';
+  // ── FILTER STATE ──
+  const [filters, setFilters] = useState<SearchFilters>(() => {
+    return {
+      keyword: searchParams.get('q') || searchParams.get('search') || '',
+      type: searchParams.get('type') || 'all',
+      listingType: (searchParams.get('purpose') as any) || 'sale',
+      district: searchParams.get('district') || '',
+      ward: searchParams.get('ward') || '',
+      street: searchParams.get('street') || '',
+      minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : null,
+      maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : null,
+      minArea: searchParams.get('minArea') ? Number(searchParams.get('minArea')) : null,
+      maxArea: searchParams.get('maxArea') ? Number(searchParams.get('maxArea')) : null,
+      minBedrooms: searchParams.get('beds') ? Number(searchParams.get('beds')) : null,
+      maxBedrooms: null,
+      minBathrooms: null,
+      minFloors: null,
+      direction: searchParams.get('direction') ? [searchParams.get('direction')!] : [],
+      legalStatus: [],
+      features: [],
+      planningZone: [],
+      minPricePerM2: null,
+      maxPricePerM2: null,
+      minYearBuilt: null,
+      maxYearBuilt: null,
+      featuredOnly: searchParams.get('featured') === 'true',
+      verifiedOnly: false,
+      hasAIReport: false,
+      nearSchool: false,
+      nearHospital: false,
+      nearMetro: searchParams.get('metro') === 'true',
+      nearPark: false,
+      nearRadius: 2,
+    };
+  });
 
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const [selectedDistrict, setSelectedDistrict] = useState(initialDistrict);
-  const [selectedType, setSelectedType] = useState(initialType);
-  const [minPrice, setMinPrice] = useState(initialMinPrice);
-  const [maxPrice, setMaxPrice] = useState(initialMaxPrice);
-  const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc' | 'area_desc'>(initialSort);
-  const [viewMode, setViewMode] = useState<'map' | 'list' | 'grid'>(initialView);
-  const [showPriceFilter, setShowPriceFilter] = useState(false);
-  const [showPlanningLayer, setShowPlanningLayer] = useState(false);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showKeyboardHint, setShowKeyboardHint] = useState(false);
-  const [mobileView, setMobileView] = useState<'map' | 'list'>('list');
+  // ── UI STATE ──
+  const [viewMode, setViewMode] = useState<'map' | 'list' | 'grid'>(
+    (searchParams.get('view') as any) || 'map'
+  );
+  const [sortBy, setSortBy] = useState<string>('newest');
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
+  const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
+  const [sidebarTab, setSidebarTab] = useState<'filters' | 'listings'>('listings');
+  const [showSaveSearchModal, setShowSaveSearchModal] = useState<boolean>(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Sync state to URL Query Params without full reload
-  const updateQueryParams = useCallback(() => {
+  // ── URL PARAM SYNC (Debounced 500ms) ──
+  const updateURL = useCallback(() => {
     const params = new URLSearchParams();
-    if (searchTerm) params.set('search', searchTerm);
-    if (selectedDistrict && selectedDistrict !== 'Tất cả quận') params.set('district', selectedDistrict);
-    if (selectedType && selectedType !== 'all') params.set('type', selectedType);
-    if (minPrice > 0) params.set('minPrice', minPrice.toString());
-    if (maxPrice < 50000000000) params.set('maxPrice', maxPrice.toString());
-    if (sortBy !== 'newest') params.set('sort', sortBy);
+    if (filters.keyword) params.set('q', filters.keyword);
+    if (filters.type !== 'all') params.set('type', filters.type);
+    if (filters.listingType !== 'sale') params.set('purpose', filters.listingType);
+    if (filters.district) params.set('district', filters.district);
+    if (filters.ward) params.set('ward', filters.ward);
+    if (filters.street) params.set('street', filters.street);
+    if (filters.minPrice !== null) params.set('minPrice', filters.minPrice.toString());
+    if (filters.maxPrice !== null) params.set('maxPrice', filters.maxPrice.toString());
+    if (filters.minArea !== null) params.set('minArea', filters.minArea.toString());
+    if (filters.maxArea !== null) params.set('maxArea', filters.maxArea.toString());
+    if (filters.minBedrooms !== null) params.set('beds', filters.minBedrooms.toString());
+    if (filters.featuredOnly) params.set('featured', 'true');
+    if (filters.nearMetro) params.set('metro', 'true');
     if (viewMode !== 'map') params.set('view', viewMode);
 
-    const queryString = params.toString();
-    const targetUrl = queryString ? `${pathname}?${queryString}` : pathname;
-    router.replace(targetUrl, { scroll: false });
-  }, [searchTerm, selectedDistrict, selectedType, minPrice, maxPrice, sortBy, viewMode, pathname, router]);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [filters, viewMode, pathname, router]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      updateQueryParams();
-    }, 300);
+    const timer = setTimeout(updateURL, 500);
     return () => clearTimeout(timer);
-  }, [updateQueryParams]);
+  }, [updateURL]);
 
-  // Keyboard shortcut: Press "/" to focus search input
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === '/' &&
-        document.activeElement?.tagName !== 'INPUT' &&
-        document.activeElement?.tagName !== 'TEXTAREA'
-      ) {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-        searchInputRef.current?.select();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Keyboard Hint auto fade-in after 2s, fade-out after 5s
-  useEffect(() => {
-    const showTimer = setTimeout(() => setShowKeyboardHint(true), 2000);
-    const hideTimer = setTimeout(() => setShowKeyboardHint(false), 7000);
-    return () => {
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
-    };
-  }, []);
-
-  // Reset all filters
-  const resetFilters = () => {
-    setSearchTerm('');
-    setSelectedDistrict('Tất cả quận');
-    setSelectedType('all');
-    setMinPrice(0);
-    setMaxPrice(50000000000);
-    setSortBy('newest');
-  };
-
-  const hasActiveFilters =
-    searchTerm !== '' ||
-    selectedDistrict !== 'Tất cả quận' ||
-    selectedType !== 'all' ||
-    minPrice > 0 ||
-    maxPrice < 50000000000;
-
-  // Filter and sort listings
+  // ── FILTER & SORT DATA ──
   const filteredListings = useMemo(() => {
-    const results = listings.filter((item) => {
-      if (
-        searchTerm &&
-        !item.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !item.address.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !item.district.toLowerCase().includes(searchTerm.toLowerCase())
-      ) {
-        return false;
-      }
-      if (selectedDistrict !== 'Tất cả quận' && item.district !== selectedDistrict) {
-        return false;
-      }
-      if (selectedType !== 'all' && item.type !== selectedType) {
-        return false;
-      }
-      if (item.price < minPrice || item.price > maxPrice) {
-        return false;
-      }
-      return true;
-    });
+    const filtered = filterListings(listings, filters);
+    return sortListings(filtered, sortBy);
+  }, [listings, filters, sortBy]);
 
-    return results.sort((a, b) => {
-      if (sortBy === 'price_asc') return a.price - b.price;
-      if (sortBy === 'price_desc') return b.price - a.price;
-      if (sortBy === 'area_desc') return b.area - a.area;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  // ── ACTIVE FILTER COUNT ──
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.keyword.trim()) count++;
+    if (filters.type !== 'all') count++;
+    if (filters.district) count++;
+    if (filters.ward) count++;
+    if (filters.street) count++;
+    if (filters.minPrice !== null || filters.maxPrice !== null) count++;
+    if (filters.minArea !== null || filters.maxArea !== null) count++;
+    if (filters.minBedrooms !== null) count++;
+    if (filters.direction.length > 0) count += filters.direction.length;
+    if (filters.legalStatus.length > 0) count += filters.legalStatus.length;
+    if (filters.features.length > 0) count += filters.features.length;
+    if (filters.planningZone.length > 0) count += filters.planningZone.length;
+    if (filters.featuredOnly) count++;
+    if (filters.nearMetro) count++;
+    return count;
+  }, [filters]);
+
+  // ── RESET ALL FILTERS ──
+  const handleResetFilters = useCallback(() => {
+    setFilters({ ...DEFAULT_SEARCH_FILTERS });
+  }, []);
+
+  // ── REMOVE INDIVIDUAL FILTER CHIP ──
+  const handleRemoveChip = useCallback((key: keyof SearchFilters, value?: any) => {
+    setFilters((prev) => {
+      if (Array.isArray(prev[key])) {
+        return {
+          ...prev,
+          [key]: (prev[key] as string[]).filter((item) => item !== value),
+        };
+      }
+      return {
+        ...prev,
+        [key]: DEFAULT_SEARCH_FILTERS[key],
+      };
     });
-  }, [listings, searchTerm, selectedDistrict, selectedType, minPrice, maxPrice, sortBy]);
+  }, []);
+
+  // ── UPDATE PARTIAL FILTER STATE ──
+  const handleFilterUpdate = useCallback(
+    (update: Partial<SearchFilters> | ((prev: SearchFilters) => SearchFilters)) => {
+      setFilters((prev) => (typeof update === 'function' ? update(prev) : { ...prev, ...update }));
+    },
+    []
+  );
+
+  // ── BIDIRECTIONAL SYNC HANDLERS ──
+  const handleListingSelect = useCallback((id: string) => {
+    setSelectedListingId(id);
+    // If user clicked marker or card, scroll to card if visible
+    setTimeout(() => {
+      const el = document.getElementById(`listing-card-${id}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }, []);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-page-bg">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-page-bg text-text-primary">
       <Navbar />
 
-      {/* Main Container below navbar */}
-      <div className="relative flex flex-1 flex-col overflow-hidden pt-16">
+      {/* TOP HEADER CONTROLS (56px) */}
+      <div className="pt-16">
+        <SearchHeader
+          filters={filters}
+          onFilterChange={handleFilterUpdate}
+          activeCount={activeFilterCount}
+          resultCount={filteredListings.length}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onReset={handleResetFilters}
+          onOpenSaveSearch={() => setShowSaveSearchModal(true)}
+          onToggleMobileFilter={() => setMobileFilterOpen(true)}
+        />
+
+        {/* ACTIVE FILTER CHIPS BAR */}
+        <ActiveFilterChips
+          filters={filters}
+          onRemove={handleRemoveChip}
+          onReset={handleResetFilters}
+          count={activeFilterCount}
+        />
+      </div>
+
+      {/* MAIN 30 / 70 WORKSPACE */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         
-        {/* ── 1. PAGE HEADER BAR (Breadcrumbs & View Mode Switcher) ── */}
-        <motion.header
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="z-30 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 sm:px-6 py-2.5 shadow-sm"
-        >
-          {/* Left: Breadcrumbs + Count */}
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-1 text-xs font-semibold text-text-muted hover:text-accent transition-colors">
-              <Home className="h-3.5 w-3.5" />
-              <span>Trang chủ</span>
-            </Link>
-            <ChevronRight className="h-3 w-3 text-text-muted" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-navy">🔍 Tìm kiếm BĐS</span>
-              <span className="hidden sm:inline-block text-xs text-gray-500">
-                · Đang hiển thị <strong className="text-accent">{filteredListings.length}</strong> bất động sản tại Hà Nội
-              </span>
-            </div>
-          </div>
-
-          {/* Right: View Toggle Buttons [Danh sách] [Grid] [Bản đồ] */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                viewMode === 'list'
-                  ? 'bg-orange-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-navy hover:bg-slate-200/60'
-              }`}
-              title="Xem dạng danh sách chi tiết"
-            >
-              <ListIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Danh sách</span>
-            </button>
-
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-orange-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-navy hover:bg-slate-200/60'
-              }`}
-              title="Xem dạng lưới nhiều cột"
-            >
-              <GridIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Grid</span>
-            </button>
-
-            <button
-              onClick={() => setViewMode('map')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                viewMode === 'map'
-                  ? 'bg-orange-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-navy hover:bg-slate-200/60'
-              }`}
-              title="Xem bản đồ kết hợp danh sách"
-            >
-              <MapIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Bản đồ</span>
-            </button>
-          </div>
-        </motion.header>
-
-        {/* ── 2. MAIN CONTENT ACCORDING TO VIEW MODE ── */}
-        <div className="relative flex flex-1 overflow-hidden">
+        {/* ━━ LEFT COLUMN (30% Width - Min 280px, Max 380px) ━━ */}
+        <div className="hidden md:flex w-[30%] min-w-[300px] max-w-[380px] flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shrink-0 z-20">
           
-          {/* ── MODE A: SPLIT MAP VIEW (DEFAULT) ── */}
-          {viewMode === 'map' && (
-            <div className="flex w-full h-full overflow-hidden">
-              {/* Left Sidebar Filter + Listings Feed (30% width) */}
-              <section
-                className={`h-full w-full md:w-[30%] min-w-[280px] max-w-[360px] flex-shrink-0 flex flex-col z-10 border-r border-border bg-white ${
-                  mobileView === 'map' ? 'hidden md:flex' : 'flex'
-                }`}
-              >
-                {/* Search & Filter Header Container */}
-                <div className="sticky top-0 z-20 border-b border-border/60 bg-white/95 p-4 backdrop-blur-md space-y-3">
-                  {/* Search Bar Input with shortcut hint */}
-                  <div className="relative flex items-center">
-                    <Search className="absolute left-3.5 h-4 w-4 text-text-muted" />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Tìm kiếm theo đường, dự án, từ khoá... (Nhấn /)"
-                      className="w-full rounded-xl border border-input bg-page-bg pl-10 pr-10 py-2.5 text-xs font-semibold text-text-primary placeholder:text-text-muted focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent transition-all"
-                    />
-                    {searchTerm ? (
-                      <button
-                        onClick={() => setSearchTerm('')}
-                        className="absolute right-3 text-xs text-text-muted hover:text-text-primary"
-                      >
-                        ✕
-                      </button>
-                    ) : (
-                      <kbd className="hidden sm:flex absolute right-3 h-5 items-center gap-0.5 rounded border border-gray-300 bg-gray-100 px-1.5 text-[10px] font-mono text-gray-500">
-                        /
-                      </kbd>
-                    )}
-                  </div>
+          {/* Sidebar Tab Selector: [📋 Danh sách ({count})] vs [⚙️ Bộ lọc ({activeCount})] */}
+          <div className="grid grid-cols-2 p-2 border-b border-slate-100 dark:border-slate-800 gap-1 bg-slate-50 dark:bg-slate-900/50 text-xs font-bold shrink-0">
+            <button
+              onClick={() => setSidebarTab('listings')}
+              className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                sidebarTab === 'listings'
+                  ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <ListFilter className="h-3.5 w-3.5" />
+              <span>Danh sách ({filteredListings.length})</span>
+            </button>
 
-                  {/* Property Type Tabs */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                    {PROPERTY_TYPES.map((type) => {
-                      const Icon = type.icon;
-                      const isSelected = selectedType === type.id;
-                      return (
-                        <motion.button
-                          key={type.id}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedType(type.id)}
-                          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all ${
-                            isSelected
-                              ? 'bg-accent text-white shadow-sm shadow-accent/20'
-                              : 'bg-page-bg text-text-secondary hover:bg-slate-200/70'
-                          }`}
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                          <span>{type.label}</span>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
+            <button
+              onClick={() => setSidebarTab('filters')}
+              className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                sidebarTab === 'filters'
+                  ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Sliders className="h-3.5 w-3.5" />
+              <span>Bộ lọc chi tiết</span>
+              {activeFilterCount > 0 && (
+                <span className="bg-orange-500 text-white text-[10px] px-1.5 rounded-full">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
 
-                  {/* Quick Filter Row: District Dropdown & Price Slider & Planning Toggle */}
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <MapPin className="absolute left-3 top-2.5 h-3.5 w-3.5 text-accent pointer-events-none" />
-                      <select
-                        value={selectedDistrict}
-                        onChange={(e) => setSelectedDistrict(e.target.value)}
-                        className="w-full appearance-none rounded-xl border border-input bg-page-bg pl-9 pr-7 py-2 text-xs font-bold text-text-primary focus:border-accent focus:outline-none cursor-pointer"
-                      >
-                        {HANOI_DISTRICTS.map((d) => (
-                          <option key={d} value={d}>
-                            {d}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+          {/* Sidebar Tab Content */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {sidebarTab === 'filters' ? (
+              <FilterSidebar
+                filters={filters}
+                onChange={handleFilterUpdate}
+                onReset={handleResetFilters}
+                activeCount={activeFilterCount}
+              />
+            ) : (
+              <ListingsPanel
+                listings={filteredListings}
+                selectedId={selectedListingId}
+                hoveredId={hoveredListingId}
+                savedIds={savedListingIds}
+                onSelect={handleListingSelect}
+                onHover={setHoveredListingId}
+                onSaveToggle={toggleSaveListing}
+                onResetFilters={handleResetFilters}
+              />
+            )}
+          </div>
+        </div>
 
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowPriceFilter(!showPriceFilter)}
-                      className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
-                        showPriceFilter || maxPrice < 50000000000 || minPrice > 0
-                          ? 'border-accent bg-accent/10 text-accent'
-                          : 'border-input bg-page-bg text-text-secondary hover:bg-slate-200/70'
-                      }`}
-                    >
-                      <SlidersHorizontal className="h-3.5 w-3.5" />
-                      <span>Mức giá</span>
-                    </motion.button>
-
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowPlanningLayer(!showPlanningLayer)}
-                      className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-2 text-xs font-bold transition-all ${
-                        showPlanningLayer
-                          ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
-                          : 'border-input bg-page-bg text-text-secondary hover:bg-slate-200/70'
-                      }`}
-                      title="Bật/tắt lớp quy hoạch Hà Nội"
-                    >
-                      <Layers className="h-3.5 w-3.5" />
-                    </motion.button>
-
-                    {hasActiveFilters && (
-                      <button
-                        onClick={resetFilters}
-                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-text-muted hover:text-danger hover:bg-red-50 transition-colors flex-shrink-0"
-                        title="Đặt lại bộ lọc"
-                      >
-                        <FilterX className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Quick District Selection Chips */}
-                  <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
-                    {['Tất cả quận', 'Cầu Giấy', 'Đống Đa', 'Tây Hồ', 'Nam Từ Liêm', 'Thanh Xuân', 'Hoàn Kiếm', 'Hai Bà Trưng', 'Hà Đông', 'Long Biên'].map((dist) => {
-                      const isDistSelected = selectedDistrict === dist;
-                      return (
-                        <button
-                          key={dist}
-                          onClick={() => setSelectedDistrict(dist)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
-                            isDistSelected
-                              ? 'bg-navy text-white shadow-xs font-bold'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                          }`}
-                        >
-                          {dist === 'Tất cả quận' ? '📍 Tất cả' : dist}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Expandable Price Range Slider & Preset Chips */}
-                  <AnimatePresence>
-                    {showPriceFilter && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="rounded-xl border border-border bg-page-bg p-3 space-y-2.5 overflow-hidden"
-                      >
-                        <div className="flex items-center justify-between text-xs font-bold">
-                          <span className="text-text-secondary">Khoảng giá:</span>
-                          <span className="text-accent">
-                            {minPrice > 0 ? `${formatCurrencyVND(minPrice)} - ` : 'Dưới '}
-                            {formatCurrencyVND(maxPrice)}
-                          </span>
-                        </div>
-
-                        {/* Quick Price Range Chips */}
-                        <div className="grid grid-cols-3 gap-1.5">
-                          {[
-                            { label: '< 3 Tỷ', min: 0, max: 3000000000 },
-                            { label: '3 - 7 Tỷ', min: 3000000000, max: 7000000000 },
-                            { label: '7 - 15 Tỷ', min: 7000000000, max: 15000000000 },
-                            { label: '15 - 30 Tỷ', min: 15000000000, max: 30000000000 },
-                            { label: '> 30 Tỷ', min: 30000000000, max: 50000000000 },
-                            { label: 'Tất cả giá', min: 0, max: 50000000000 },
-                          ].map((range) => {
-                            const isMatch = minPrice === range.min && maxPrice === range.max;
-                            return (
-                              <button
-                                key={range.label}
-                                onClick={() => {
-                                  setMinPrice(range.min);
-                                  setMaxPrice(range.max);
-                                }}
-                                className={`py-1 px-1.5 rounded-lg text-[10px] font-bold text-center border transition-all ${
-                                  isMatch
-                                    ? 'bg-accent text-white border-accent shadow-xs'
-                                    : 'bg-white text-text-primary border-border hover:bg-orange-50 hover:border-orange-200'
-                                }`}
-                              >
-                                {range.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        <input
-                          type="range"
-                          min={2000000000}
-                          max={50000000000}
-                          step={1000000000}
-                          value={maxPrice}
-                          onChange={(e) => setMaxPrice(Number(e.target.value))}
-                          className="w-full accent-accent cursor-pointer"
-                        />
-                        <div className="flex justify-between text-[10px] text-text-muted">
-                          <span>2 Tỷ</span>
-                          <span>25 Tỷ</span>
-                          <span>50+ Tỷ</span>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Results Count & Sort bar inside sidebar */}
-                <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-border/50 text-xs">
-                  <span className="font-bold text-gray-700">
-                    Tìm thấy <span className="text-accent font-black">{filteredListings.length}</span> bất động sản
-                  </span>
-                  <div className="flex items-center gap-1 text-gray-500">
-                    <span>Sắp xếp:</span>
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as any)}
-                      className="bg-transparent font-semibold text-navy outline-none cursor-pointer"
-                    >
-                      <option value="newest">Mới nhất</option>
-                      <option value="price_asc">Giá tăng dần</option>
-                      <option value="price_desc">Giá giảm dần</option>
-                      <option value="area_desc">Diện tích lớn nhất</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Listings Cards Feed Container */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {isLoading ? (
-                    <div className="grid grid-cols-1 gap-4">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="h-64 rounded-xl bg-slate-200 animate-pulse" />
-                      ))}
-                    </div>
-                  ) : filteredListings.length > 0 ? (
-                    <motion.div layout className="grid grid-cols-1 gap-4">
-                      {filteredListings.map((item, idx) => (
-                        <motion.div
-                          key={item.id}
-                          id={`listing-card-${item.id}`}
-                          onMouseEnter={() => setHoveredId(item.id)}
-                          onMouseLeave={() => setHoveredId(null)}
-                          layout
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.25, delay: Math.min(idx * 0.05, 0.3) }}
-                        >
-                          <ListingCard listing={item} />
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  ) : (
-                    /* Empty state */
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                      className="py-16 text-center space-y-3"
-                    >
-                      <div className="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto">
-                        <Search className="h-8 w-8" />
-                      </div>
-                      <h3 className="text-base font-bold text-navy">Không tìm thấy kết quả phù hợp</h3>
-                      <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                        Thử thay đổi bộ lọc, giảm giá tối đa hoặc mở rộng khu vực tìm kiếm.
-                      </p>
-                      <button
-                        onClick={resetFilters}
-                        className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-colors"
-                      >
-                        Đặt lại bộ lọc
-                      </button>
-                    </motion.div>
-                  )}
-                </div>
-
-                {/* Keyboard Shortcut Floating Hint */}
-                <AnimatePresence>
-                  {showKeyboardHint && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute bottom-4 left-4 z-30 bg-navy/95 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl shadow-lg text-[11px] flex items-center gap-2 border border-slate-700"
-                    >
-                      <span>⌨️ Nhấn phím <kbd className="bg-white/20 px-1 rounded font-mono font-bold">/</kbd> để tìm kiếm nhanh</span>
-                      <button onClick={() => setShowKeyboardHint(false)} className="text-white/60 hover:text-white ml-1">✕</button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </section>
-
-              {/* Right Side: Map Container (70% width) */}
-              <section
-                className={`h-full flex-1 relative ${
-                  mobileView === 'list' ? 'hidden md:flex' : 'flex'
-                }`}
+        {/* ━━ RIGHT COLUMN (70% Width) ━━ */}
+        <div className="flex-1 relative min-h-0 overflow-hidden bg-slate-100 dark:bg-slate-950">
+          <AnimatePresence mode="wait">
+            
+            {/* VIEW MODE 1: Interactive GIS MAP */}
+            {viewMode === 'map' && (
+              <motion.div
+                key="map-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0"
               >
                 <SearchMap
-                  listings={filteredListings}
-                  selectedListingId={activeListingId}
-                  hoveredListingId={hoveredId}
-                  targetDistrict={selectedDistrict}
+                  listings={filteredListings as any}
+                  selectedListingId={selectedListingId}
+                  hoveredListingId={hoveredListingId}
+                  targetDistrict={filters.district}
                   onMarkerClick={(id) => {
-                    setActiveListingId(id);
-                    document.getElementById(`listing-card-${id}`)?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'center',
-                    });
+                    handleListingSelect(id);
+                    setSidebarTab('listings');
                   }}
-                  onMarkerHover={(id) => setHoveredId(id)}
-                  showPlanningLayer={showPlanningLayer}
+                  onMarkerHover={setHoveredListingId}
+                  showPlanningLayer={filters.planningZone.length > 0}
                 />
-              </section>
+              </motion.div>
+            )}
 
-              {/* Mobile View Toggle Button */}
-              <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-                <motion.div
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center rounded-full bg-primary p-1 shadow-2xl border border-slate-700 text-white"
-                >
-                  <button
-                    onClick={() => setMobileView('list')}
-                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                      mobileView === 'list' ? 'bg-accent text-white' : 'text-slate-300'
-                    }`}
-                  >
-                    <ListIcon className="h-4 w-4" />
-                    <span>Danh sách</span>
-                  </button>
-                  <button
-                    onClick={() => setMobileView('map')}
-                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                      mobileView === 'map' ? 'bg-accent text-white' : 'text-slate-300'
-                    }`}
-                  >
-                    <MapPin className="h-4 w-4" />
-                    <span>Bản đồ</span>
-                  </button>
-                </motion.div>
-              </div>
-            </div>
-          )}
-
-          {/* ── MODE B: FULL WIDTH GRID VIEW ── */}
-          {viewMode === 'grid' && (
-            <div className="flex w-full h-full overflow-hidden">
-              {/* Left Filter Sidebar (280px) */}
-              <aside className="w-72 border-r border-border bg-white p-4 overflow-y-auto space-y-4 hidden lg:block">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Bộ lọc tìm kiếm</h3>
-                
-                {/* Search */}
-                <div>
-                  <label className="text-xs font-semibold text-navy block mb-1">Từ khoá</label>
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Tên đường, dự án..."
-                    className="w-full rounded-xl border border-input p-2.5 text-xs outline-none focus:border-accent"
-                  />
-                </div>
-
-                {/* District */}
-                <div>
-                  <label className="text-xs font-semibold text-navy block mb-1">Quận / Huyện</label>
-                  <select
-                    value={selectedDistrict}
-                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                    className="w-full rounded-xl border border-input p-2.5 text-xs outline-none focus:border-accent"
-                  >
-                    {HANOI_DISTRICTS.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Type */}
-                <div>
-                  <label className="text-xs font-semibold text-navy block mb-1">Loại hình BĐS</label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {PROPERTY_TYPES.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => setSelectedType(t.id)}
-                        className={`p-2 rounded-lg text-xs font-bold text-center transition-all ${
-                          selectedType === t.id
-                            ? 'bg-accent text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                      >
-                        {t.label}
-                      </button>
+            {/* VIEW MODE 2: GRID CARDS */}
+            {viewMode === 'grid' && (
+              <motion.div
+                key="grid-view"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 overflow-y-auto p-4 sm:p-6"
+              >
+                <div className="max-w-7xl mx-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {filteredListings.map((listing) => (
+                      <ListingCard key={listing.id} listing={listing} />
                     ))}
                   </div>
                 </div>
+              </motion.div>
+            )}
 
-                {/* Price Slider */}
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Giá tối đa:</span>
-                    <span className="text-accent">{formatCurrencyVND(maxPrice)}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={2000000000}
-                    max={50000000000}
-                    step={1000000000}
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    className="w-full accent-accent cursor-pointer"
-                  />
+            {/* VIEW MODE 3: HORIZONTAL LIST ROWS */}
+            {viewMode === 'list' && (
+              <motion.div
+                key="list-view"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 overflow-y-auto p-4 sm:p-6"
+              >
+                <div className="max-w-4xl mx-auto space-y-3">
+                  {filteredListings.map((listing, idx) => (
+                    <ListingListRow
+                      key={listing.id}
+                      listing={listing}
+                      index={idx}
+                      isSaved={savedListingIds.includes(listing.id)}
+                      onSaveToggle={toggleSaveListing}
+                    />
+                  ))}
                 </div>
+              </motion.div>
+            )}
 
-                {hasActiveFilters && (
-                  <button
-                    onClick={resetFilters}
-                    className="w-full py-2 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-500 rounded-xl text-xs font-bold transition-colors"
-                  >
-                    Đặt lại toàn bộ lọc
-                  </button>
-                )}
-              </aside>
-
-              {/* Right: 3-column Grid Feed */}
-              <main className="flex-1 overflow-y-auto p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-bold text-navy">
-                    Tìm thấy <span className="text-accent">{filteredListings.length}</span> bất động sản
-                  </p>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-medium text-navy outline-none"
-                  >
-                    <option value="newest">Mới nhất</option>
-                    <option value="price_asc">Giá tăng dần</option>
-                    <option value="price_desc">Giá giảm dần</option>
-                    <option value="area_desc">Diện tích lớn nhất</option>
-                  </select>
-                </div>
-
-                {filteredListings.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {filteredListings.map((item, idx) => (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.25, delay: Math.min(idx * 0.04, 0.3) }}
-                      >
-                        <ListingCard listing={item} />
-                      </motion.div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-24 text-center space-y-3">
-                    <Search className="h-12 w-12 text-gray-300 mx-auto" />
-                    <h3 className="text-lg font-bold text-navy">Không tìm thấy kết quả phù hợp</h3>
-                    <button
-                      onClick={resetFilters}
-                      className="px-4 py-2 bg-accent text-white text-xs font-bold rounded-xl"
-                    >
-                      Đặt lại bộ lọc
-                    </button>
-                  </div>
-                )}
-              </main>
-            </div>
-          )}
-
-          {/* ── MODE C: FULL WIDTH DETAILED LIST VIEW (ROW CARDS) ── */}
-          {viewMode === 'list' && (
-            <div className="flex w-full h-full overflow-hidden">
-              {/* Left Filter Sidebar */}
-              <aside className="w-72 border-r border-border bg-white p-4 overflow-y-auto space-y-4 hidden lg:block">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Bộ lọc danh sách</h3>
-                <div>
-                  <label className="text-xs font-semibold text-navy block mb-1">Từ khoá</label>
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Tên đường, dự án..."
-                    className="w-full rounded-xl border border-input p-2.5 text-xs outline-none focus:border-accent"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-navy block mb-1">Quận / Huyện</label>
-                  <select
-                    value={selectedDistrict}
-                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                    className="w-full rounded-xl border border-input p-2.5 text-xs outline-none focus:border-accent"
-                  >
-                    {HANOI_DISTRICTS.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-navy block mb-1">Loại hình BĐS</label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {PROPERTY_TYPES.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => setSelectedType(t.id)}
-                        className={`p-2 rounded-lg text-xs font-bold text-center transition-all ${
-                          selectedType === t.id
-                            ? 'bg-accent text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Giá tối đa:</span>
-                    <span className="text-accent">{formatCurrencyVND(maxPrice)}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={2000000000}
-                    max={50000000000}
-                    step={1000000000}
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    className="w-full accent-accent cursor-pointer"
-                  />
-                </div>
-                {hasActiveFilters && (
-                  <button
-                    onClick={resetFilters}
-                    className="w-full py-2 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-500 rounded-xl text-xs font-bold transition-colors"
-                  >
-                    Đặt lại toàn bộ lọc
-                  </button>
-                )}
-              </aside>
-
-              {/* Right: Table / Row Style Listings */}
-              <main className="flex-1 overflow-y-auto p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-bold text-navy">
-                    Tìm thấy <span className="text-accent">{filteredListings.length}</span> bất động sản
-                  </p>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-medium text-navy outline-none"
-                  >
-                    <option value="newest">Mới nhất</option>
-                    <option value="price_asc">Giá tăng dần</option>
-                    <option value="price_desc">Giá giảm dần</option>
-                    <option value="area_desc">Diện tích lớn nhất</option>
-                  </select>
-                </div>
-
-                {filteredListings.length > 0 ? (
-                  <div className="space-y-3">
-                    {filteredListings.map((item, idx) => {
-                      const isSaved = savedListingIds.includes(item.id);
-                      return (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2, delay: Math.min(idx * 0.03, 0.3) }}
-                          className="flex flex-col sm:flex-row items-center gap-4 bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-md transition-all group"
-                        >
-                          {/* Thumbnail */}
-                          <div className="relative w-full sm:w-48 aspect-[16/10] sm:aspect-square rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                            <img
-                              src={item.images[0]}
-                              alt={item.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div className="absolute top-2 left-2 flex gap-1">
-                              {item.isFeatured && (
-                                <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
-                                  ⭐ VIP
-                                </span>
-                              )}
-                              <span className="bg-navy/80 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
-                                {item.planningZone}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Center Details */}
-                          <div className="flex-1 min-w-0 space-y-1.5 w-full">
-                            <Link href={`/listings/${item.id}`} className="block">
-                              <h4 className="text-sm font-bold text-navy hover:text-orange-500 transition-colors line-clamp-1">
-                                {item.title}
-                              </h4>
-                            </Link>
-                            <p className="text-xs text-gray-500 flex items-center gap-1">
-                              <MapPin className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
-                              <span className="truncate">{item.address}</span>
-                            </p>
-
-                            <div className="flex items-center gap-3 text-xs text-gray-600 pt-1">
-                              <span className="flex items-center gap-1 font-semibold">
-                                <Maximize2 className="h-3.5 w-3.5 text-accent" />
-                                {item.area} m²
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Bed className="h-3.5 w-3.5 text-gray-400" />
-                                {item.bedrooms} PN
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Bath className="h-3.5 w-3.5 text-gray-400" />
-                                {item.bathrooms} PT
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Building className="h-3.5 w-3.5 text-gray-400" />
-                                {item.floors} tầng
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Right: Price & Actions */}
-                          <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 flex-shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
-                            <div className="text-left sm:text-right">
-                              <p className="text-base font-black text-orange-500">
-                                {formatCurrencyVND(item.price)}
-                              </p>
-                              <p className="text-[11px] text-gray-400">
-                                {formatPricePerM2(item.price, item.area)}
-                              </p>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => toggleSaveListing(item.id)}
-                                className={`p-2 rounded-xl border transition-colors ${
-                                  isSaved
-                                    ? 'border-red-200 bg-red-50 text-red-500'
-                                    : 'border-gray-200 text-gray-500 hover:bg-gray-50'
-                                }`}
-                                title={isSaved ? 'Đã lưu' : 'Lưu tin'}
-                              >
-                                <Heart className={`h-4 w-4 ${isSaved ? 'fill-red-500' : ''}`} />
-                              </button>
-                              <Link
-                                href={`/listings/${item.id}`}
-                                className="px-3.5 py-2 bg-navy text-white text-xs font-bold rounded-xl hover:bg-navy/90 transition-colors"
-                              >
-                                Xem chi tiết →
-                              </Link>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="py-24 text-center space-y-3">
-                    <Search className="h-12 w-12 text-gray-300 mx-auto" />
-                    <h3 className="text-lg font-bold text-navy">Không tìm thấy kết quả phù hợp</h3>
-                    <button
-                      onClick={resetFilters}
-                      className="px-4 py-2 bg-accent text-white text-xs font-bold rounded-xl"
-                    >
-                      Đặt lại bộ lọc
-                    </button>
-                  </div>
-                )}
-              </main>
-            </div>
-          )}
-
+          </AnimatePresence>
         </div>
 
       </div>
+
+      {/* ━━ MOBILE BOTTOM SHEET FOR FILTERS ━━ */}
+      <AnimatePresence>
+        {mobileFilterOpen && (
+          <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="bg-white dark:bg-slate-900 rounded-t-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Sheet Header */}
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div className="w-8 h-1 bg-slate-300 rounded-full mx-auto absolute top-2 left-1/2 -translate-x-1/2" />
+                <h3 className="font-extrabold text-sm text-navy dark:text-white">
+                  Bộ lọc tìm kiếm ({activeFilterCount})
+                </h3>
+                <button
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="p-1 rounded-full text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Sheet Content */}
+              <div className="flex-1 overflow-y-auto">
+                <FilterSidebar
+                  filters={filters}
+                  onChange={handleFilterUpdate}
+                  onReset={handleResetFilters}
+                  activeCount={activeFilterCount}
+                />
+              </div>
+
+              {/* Sheet Footer */}
+              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex gap-2">
+                <button
+                  onClick={handleResetFilters}
+                  className="flex-1 py-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700"
+                >
+                  Đặt lại
+                </button>
+                <button
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="flex-2 py-3 rounded-xl bg-orange-500 text-white text-xs font-bold shadow-md shadow-orange-500/20"
+                >
+                  Xem {filteredListings.length} kết quả
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ━━ SAVE SEARCH MODAL ━━ */}
+      <SaveSearchModal
+        isOpen={showSaveSearchModal}
+        onClose={() => setShowSaveSearchModal(false)}
+        filters={filters}
+        activeCount={activeFilterCount}
+      />
     </div>
   );
 }
 
 export default function SearchPage() {
   return (
-    <React.Suspense
+    <Suspense
       fallback={
         <div className="flex h-screen w-full items-center justify-center bg-page-bg">
           <div className="flex flex-col items-center gap-3">
-            <div className="h-9 w-9 animate-spin rounded-full border-3 border-orange-500 border-t-transparent" />
-            <p className="text-xs font-semibold text-gray-500">Đang tải dữ liệu tìm kiếm...</p>
+            <div className="h-8 w-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+            <span className="text-xs font-semibold text-slate-500">Đang tải trang tìm kiếm...</span>
           </div>
         </div>
       }
     >
       <SearchContent />
-    </React.Suspense>
+    </Suspense>
   );
 }
+
