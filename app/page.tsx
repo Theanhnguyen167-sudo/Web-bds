@@ -1,1181 +1,1669 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
-import {
-  sectionVariants,
-  staggerContainer,
-  cardVariant,
-  useCountUp
-} from '@/lib/hooks/useScrollAnimation';
+import { ListingCard } from '@/components/listing/ListingCard';
+import { mockListings, ListingItem } from '@/lib/mock-data';
+import { useCountUp } from '@/lib/hooks/useScrollAnimation';
 import {
   Search,
   MapPin,
+  Home,
+  Building2,
+  TreePine,
+  Castle,
+  ChevronRight,
+  ChevronLeft,
+  ChevronDown,
+  Star,
+  TrendingUp,
+  Newspaper,
+  Users,
+  Award,
+  ArrowRight,
+  Play,
+  Phone,
+  MessageCircle,
+  Eye,
+  Heart,
   Sparkles,
-  Layers,
+  CheckCircle2,
   ShieldCheck,
   Building,
-  Home,
-  Trees,
-  Landmark,
-  ArrowRight,
-  TrendingUp,
-  Award,
-  Users,
-  Compass,
-  CheckCircle2,
-  FileCheck,
-  ChevronDown,
-  ChevronRight,
-  Play,
-  FileText,
-  CreditCard,
-  Target,
-  Rocket,
-  Lock,
-  Globe,
-  Star,
+  Key,
+  Flame,
+  Clock,
+  ExternalLink,
+  Layers,
+  Sliders,
   Check,
-  BarChart3,
-  Calendar,
-  Building2,
-  Cpu,
-  Zap,
-  PhoneCall,
-  Mail,
-  Map
+  Download,
+  Smartphone,
+  Compass,
+  DollarSign,
+  Briefcase
 } from 'lucide-react';
 
-/* ── STATS SECTION COMPONENT WITH COUNT UP ── */
-function StatsCounterItem({ value, suffix, label }: { value: number; suffix: string; label: string }) {
-  const { count, ref } = useCountUp(value, 1600);
+// Dynamic import for Leaflet GIS Map with SSR false
+const MiniSearchMap = dynamic(() => import('@/components/map/SearchMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] w-full rounded-2xl bg-slate-900 flex flex-col items-center justify-center text-slate-400 gap-3 border border-slate-700">
+      <div className="h-8 w-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+      <span className="text-xs font-semibold">Đang tải bản đồ Hà Nội...</span>
+    </div>
+  ),
+});
+
+// Reusable Scroll Animation Wrapper
+function FadeInSection({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
   return (
-    <div ref={ref} className="flex flex-col items-center text-center p-4">
-      <span className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Stats Counter item
+function HeroCounter({ value, suffix, label }: { value: number; suffix: string; label: string }) {
+  const { count, ref } = useCountUp(value, 1500);
+  return (
+    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 py-2">
+      <span className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
         {count.toLocaleString()}{suffix}
       </span>
-      <span className="text-white/85 text-xs sm:text-sm font-medium mt-1">
+      <span className="text-white/70 text-[11px] sm:text-xs font-medium mt-0.5">
         {label}
       </span>
     </div>
   );
 }
 
-export default function LandingPage() {
+export default function HomePage() {
   const router = useRouter();
 
-  // Search preview states
-  const [quickType, setQuickType] = useState('all');
-  const [quickDistrict, setQuickDistrict] = useState('Đống Đa');
-  const [priceMin, setPriceMin] = useState('3');
-  const [priceMax, setPriceMax] = useState('12');
+  // ── Section 1: Hero Search States ──
+  const [searchTab, setSearchTab] = useState<'buy' | 'rent' | 'project' | 'estimate'>('buy');
+  const [selectedType, setSelectedType] = useState<string>('all');
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState<boolean>(false);
+  const [locationQuery, setLocationQuery] = useState<string>('');
+  const [locationDropdownOpen, setLocationDropdownOpen] = useState<boolean>(false);
+  const [priceRange, setPriceRange] = useState<string>('all');
+  const [priceDropdownOpen, setPriceDropdownOpen] = useState<boolean>(false);
+  const [customMinPrice, setCustomMinPrice] = useState<string>('');
+  const [customMaxPrice, setCustomMaxPrice] = useState<string>('');
+  const [areaRange, setAreaRange] = useState<string>('all');
+  const [areaDropdownOpen, setAreaDropdownOpen] = useState<boolean>(false);
 
-  const handleQuickSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Close dropdowns on outside click
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(event.target as Node)) {
+        setTypeDropdownOpen(false);
+        setLocationDropdownOpen(false);
+        setPriceDropdownOpen(false);
+        setAreaDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // ── Types list ──
+  const propertyTypes = [
+    { value: 'all', label: 'Tất cả loại BĐS', icon: '🏠' },
+    { value: 'house', label: 'Nhà phố / Nhà riêng', icon: '🏠' },
+    { value: 'apartment', label: 'Chung cư / Căn hộ', icon: '🏢' },
+    { value: 'land', label: 'Đất nền / Trang trại', icon: '🌿' },
+    { value: 'villa', label: 'Biệt thự / Villa', icon: '🏰' },
+    { value: 'commercial', label: 'Văn phòng / Thương mại', icon: '🏪' },
+  ];
+
+  // ── Popular Districts ──
+  const popularDistricts = [
+    { name: 'Đống Đa', count: 1234, avgPrice: '~85tr/m²' },
+    { name: 'Hoàn Kiếm', count: 891, avgPrice: '~120tr/m²' },
+    { name: 'Cầu Giấy', count: 2102, avgPrice: '~65tr/m²' },
+    { name: 'Tây Hồ', count: 567, avgPrice: '~95tr/m²' },
+    { name: 'Ba Đình', count: 743, avgPrice: '~110tr/m²' },
+    { name: 'Hai Bà Trưng', count: 1089, avgPrice: '~72tr/m²' },
+    { name: 'Hoàng Mai', count: 1456, avgPrice: '~45tr/m²' },
+    { name: 'Long Biên', count: 892, avgPrice: '~38tr/m²' },
+    { name: 'Nam Từ Liêm', count: 1234, avgPrice: '~42tr/m²' },
+    { name: 'Hà Đông', count: 2001, avgPrice: '~35tr/m²' },
+  ];
+
+  // Filtered districts for autocomplete
+  const filteredDistricts = useMemo(() => {
+    if (!locationQuery.trim()) return popularDistricts;
+    return popularDistricts.filter((d) =>
+      d.name.toLowerCase().includes(locationQuery.toLowerCase())
+    );
+  }, [locationQuery]);
+
+  // Price presets
+  const pricePresets = [
+    { label: 'Tất cả mức giá', value: 'all' },
+    { label: 'Dưới 1 tỷ', value: '0-1' },
+    { label: '1 - 3 tỷ', value: '1-3' },
+    { label: '3 - 5 tỷ', value: '3-5' },
+    { label: '5 - 10 tỷ', value: '5-10' },
+    { label: '10 - 20 tỷ', value: '10-20' },
+    { label: 'Trên 20 tỷ', value: '20-999' },
+  ];
+
+  // Area presets
+  const areaPresets = [
+    { label: 'Tất cả diện tích', value: 'all' },
+    { label: 'Dưới 30m²', value: '0-30' },
+    { label: '30 - 50m²', value: '30-50' },
+    { label: '50 - 80m²', value: '50-80' },
+    { label: '80 - 100m²', value: '80-100' },
+    { label: '100 - 150m²', value: '100-150' },
+    { label: 'Trên 150m²', value: '150-9999' },
+  ];
+
+  // Execute Search Navigation
+  const handleExecuteSearch = () => {
     const params = new URLSearchParams();
-    if (quickType !== 'all') params.set('type', quickType);
-    if (quickDistrict && quickDistrict !== 'Tất cả quận') params.set('district', quickDistrict);
-    if (priceMin) params.set('minPrice', (Number(priceMin) * 1e9).toString());
-    if (priceMax) params.set('maxPrice', (Number(priceMax) * 1e9).toString());
+    if (selectedType !== 'all') params.set('type', selectedType);
+    if (locationQuery.trim()) params.set('district', locationQuery.trim());
+    if (searchTab === 'rent') params.set('purpose', 'rent');
+    if (searchTab === 'project') params.set('type', 'project');
+
+    if (customMinPrice) {
+      params.set('minPrice', (Number(customMinPrice) * 1e9).toString());
+    } else if (priceRange !== 'all') {
+      const [min, max] = priceRange.split('-');
+      if (min && min !== '0') params.set('minPrice', (Number(min) * 1e9).toString());
+      if (max && max !== '999') params.set('maxPrice', (Number(max) * 1e9).toString());
+    }
+
+    if (customMaxPrice) {
+      params.set('maxPrice', (Number(customMaxPrice) * 1e9).toString());
+    }
+
+    if (areaRange !== 'all') {
+      const [minA, maxA] = areaRange.split('-');
+      if (minA && minA !== '0') params.set('minArea', minA);
+      if (maxA && maxA !== '9999') params.set('maxArea', maxA);
+    }
+
     router.push(`/search?${params.toString()}`);
   };
+
+  // ── Section 3: Featured Listings Carousel Scroll ──
+  const featuredScrollRef = useRef<HTMLDivElement>(null);
+  const scrollFeatured = (direction: 'left' | 'right') => {
+    if (featuredScrollRef.current) {
+      const offset = direction === 'left' ? -360 : 360;
+      featuredScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
+  // 8 Featured Listings mock
+  const featuredListings = useMemo(() => {
+    return mockListings.slice(0, 8);
+  }, []);
+
+  // ── Section 4: District selection for Mini Map ──
+  const [hoveredDistrict, setHoveredDistrict] = useState<string>('Đống Đa');
+
+  // ── Section 5: Personalized Filter Pill ──
+  const [personalFilter, setPersonalFilter] = useState<string>('all');
+  const personalizedListings = useMemo(() => {
+    if (personalFilter === 'price-3-5') {
+      return mockListings.filter((l) => l.price >= 3e9 && l.price <= 5.5e9);
+    }
+    if (personalFilter === 'dongda') {
+      return mockListings.filter((l) => l.district === 'Đống Đa');
+    }
+    if (personalFilter === 'metro') {
+      return mockListings.filter((l) => l.district === 'Đống Đa' || l.district === 'Cầu Giấy');
+    }
+    return mockListings;
+  }, [personalFilter]);
+
+  // ── Section 7: Projects Carousel ──
+  const projectsScrollRef = useRef<HTMLDivElement>(null);
+  const scrollProjects = (direction: 'left' | 'right') => {
+    if (projectsScrollRef.current) {
+      const offset = direction === 'left' ? -380 : 380;
+      projectsScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
+  const mockProjects = [
+    {
+      id: 'p1',
+      name: 'Vinhomes Smart City Tây Mỗ',
+      location: 'Nam Từ Liêm, Hà Nội',
+      type: 'Chung cư cao cấp & Shophouse',
+      area: '45 - 120m²',
+      price: 'Từ 3.2 tỷ',
+      status: '🔥 Đang mở bán',
+      developer: 'Vingroup',
+      soldPercent: 78,
+      image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'p2',
+      name: 'The Zei Mỹ Đình',
+      location: 'Lê Đức Thọ, Nam Từ Liêm',
+      type: 'Căn hộ Hạng A & Penthouse',
+      area: '84 - 265m²',
+      price: 'Từ 5.8 tỷ',
+      status: '⏰ Sắp ra mắt',
+      developer: 'HD Mon Holdings',
+      soldPercent: 45,
+      image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'p3',
+      name: 'Ecopark Grand The Island',
+      location: 'Văn Giang, Giáp Gia Lâm',
+      type: 'Biệt thự đảo sinh thái',
+      area: '270 - 1000m²',
+      price: 'Từ 28 tỷ',
+      status: '🔥 Đang mở bán',
+      developer: 'Ecopark Group',
+      soldPercent: 92,
+      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'p4',
+      name: 'Sunshine City Ciputra',
+      location: 'KĐT Ciputra, Tây Hồ',
+      type: 'Căn hộ dát vàng & Sky Villa',
+      area: '77 - 142m²',
+      price: 'Từ 4.6 tỷ',
+      status: '🔥 Đang mở bán',
+      developer: 'Sunshine Group',
+      soldPercent: 85,
+      image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'p5',
+      name: 'The Manor Central Park',
+      location: 'Nguyễn Xiển, Hoàng Mai',
+      type: 'Nhà phố thương mại & Liền kề',
+      area: '99 - 220m²',
+      price: 'Từ 18.5 tỷ',
+      status: '⏰ Sắp ra mắt',
+      developer: 'Bitexco Group',
+      soldPercent: 60,
+      image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'p6',
+      name: 'Vinhomes Times City',
+      location: 'Minh Khai, Hai Bà Trưng',
+      type: 'Tổ hợp Căn hộ & TTTM',
+      area: '53 - 160m²',
+      price: 'Từ 3.9 tỷ',
+      status: '🏠 Đang bàn giao',
+      developer: 'Vingroup',
+      soldPercent: 98,
+      image: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800&auto=format&fit=crop&q=80',
+    },
+  ];
+
+  // ── Section 8: Reviews & Testimonials Carousel ──
+  const reviews = [
+    {
+      name: 'Nguyễn Minh Tuấn',
+      role: 'Nhà đầu tư BĐS · Đống Đa',
+      content: 'Báo cáo AI của HaNoi Realty cực kỳ chi tiết và chuyên nghiệp. Giúp tôi thẩm định tiềm năng và quy hoạch phân khu Đống Đa trong tích tắc, an tâm xuống tiền.',
+      rating: 5,
+      date: '20/08/2025',
+    },
+    {
+      name: 'Trần Thu Hương',
+      role: 'Môi giới BĐS · Cầu Giấy',
+      content: 'Bản đồ quy hoạch chuẩn Sở QHKT cùng tính năng Lasso Search hỗ trợ tìm căn hộ theo tuyến Metro cực chuẩn. Khách hàng của tôi rất ấn tượng với file PDF gửi qua Zalo.',
+      rating: 5,
+      date: '18/08/2025',
+    },
+    {
+      name: 'Lê Văn Dũng',
+      role: 'Chủ nhà · Hoàn Kiếm',
+      content: 'Đăng tin buổi sáng, buổi chiều đã có 3 môi giới và khách mua liên hệ. Định giá AI gợi ý mức giá sát với giao dịch thực tế thị trường.',
+      rating: 5,
+      date: '15/08/2025',
+    },
+    {
+      name: 'Phạm Thị Mai',
+      role: 'Người mua nhà lần đầu · Hà Đông',
+      content: 'Giao diện mượt mà và dễ dùng giống batdongsan nhưng hiện đại hơn nhiều. Dữ liệu giá đất từng đường phố giúp vợ chồng mình không bị mua hớ.',
+      rating: 5,
+      date: '12/08/2025',
+    },
+    {
+      name: 'Hoàng Đức Anh',
+      role: 'Nhà đầu tư cá nhân · Tây Hồ',
+      content: 'Khả năng xem trực tiếp lộ trình quy hoạch Vành đai 4 và các tuyến Metro 2, 3 là vũ khí đắc lực giúp tôi đón đầu làn sóng tăng giá.',
+      rating: 5,
+      date: '08/08/2025',
+    },
+    {
+      name: 'Nguyễn Thị Lan',
+      role: 'Sàn BĐS Thủ Đô · Nam Từ Liêm',
+      content: 'Gói thành viên Pro mang lại hiệu quả vượt trội. Báo cáo phân tích AI tự động tạo dựng niềm tin tuyệt đối với khách hàng khó tính.',
+      rating: 5,
+      date: '05/08/2025',
+    },
+  ];
+
+  const [activeReviewIdx, setActiveReviewIdx] = useState<number>(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveReviewIdx((prev) => (prev + 1) % reviews.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [reviews.length]);
 
   return (
     <div className="min-h-screen bg-page-bg text-text-primary overflow-x-hidden font-sans">
       <Navbar />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 1 — HERO (Full viewport height)
+          📌 SECTION 1 — HERO SEARCH (Phong cách batdongsan.com.vn)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden bg-gradient-to-b from-[#0a0f1e] via-[#0e1726] to-[#1a2744] text-white pt-20 pb-16 px-4 sm:px-6 lg:px-8">
-        {/* Subtle dot grid pattern */}
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none" />
+      <section className="relative min-h-[82vh] flex flex-col justify-between items-center overflow-hidden bg-[#0a0f1e] text-white pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+        {/* Hanoi Skyline Background Image Overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none mix-blend-luminosity scale-105 transition-transform duration-1000"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1920&auto=format&fit=crop&q=80')`,
+          }}
+        />
 
-        {/* 6 Floating blurred orange circles */}
+        {/* Dark Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/80 via-[#1a2744]/90 to-[#1a2744] pointer-events-none" />
+
+        {/* Animated Floating Glow Orbs */}
         <motion.div
-          animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+          animate={{ x: [0, 30, 0], y: [0, -25, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-1/4 left-10 w-72 h-72 rounded-full bg-orange-500/10 blur-[100px] pointer-events-none"
+          className="absolute top-1/4 left-12 w-80 h-80 rounded-full bg-orange-500/15 blur-[120px] pointer-events-none"
         />
         <motion.div
-          animate={{ x: [0, -30, 0], y: [0, 40, 0] }}
+          animate={{ x: [0, -30, 0], y: [0, 30, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-1/4 right-10 w-96 h-96 rounded-full bg-orange-500/15 blur-[120px] pointer-events-none"
-        />
-        <motion.div
-          animate={{ x: [0, 20, 0], y: [0, 30, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-1/3 right-1/4 w-60 h-60 rounded-full bg-blue-500/10 blur-[90px] pointer-events-none"
-        />
-        <motion.div
-          animate={{ x: [0, -20, 0], y: [0, -20, 0] }}
-          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-10 left-1/3 w-80 h-80 rounded-full bg-orange-400/10 blur-[110px] pointer-events-none"
-        />
-        <motion.div
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-20 right-1/3 w-40 h-40 rounded-full bg-amber-500/05 blur-[80px] pointer-events-none"
-        />
-        <motion.div
-          animate={{ scale: [1, 1.15, 1] }}
-          transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-orange-500/10 blur-[140px] pointer-events-none"
+          className="absolute bottom-1/3 right-12 w-96 h-96 rounded-full bg-blue-500/15 blur-[130px] pointer-events-none"
         />
 
-        {/* Center Content Container */}
-        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6 sm:space-y-8">
+        {/* Center Search Container */}
+        <div className="max-w-5xl w-full mx-auto text-center relative z-10 my-auto py-6">
           
-          {/* 1. Announcement Badge */}
+          {/* Top Badge */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 border border-orange-500/30 bg-orange-500/10 text-orange-400 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold shadow-inner"
+            transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 border border-orange-500/40 bg-orange-500/20 text-orange-300 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold backdrop-blur-md shadow-lg shadow-orange-500/10 mb-4"
           >
             <span>🏆</span>
-            <span>Nền tảng PropTech #1 Hà Nội 2025</span>
+            <span>Nền tảng BĐS thông minh #1 Hà Nội</span>
           </motion.div>
 
-          {/* 2. Main Headline */}
+          {/* Headline */}
           <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={staggerContainer}
-            className="space-y-1"
-          >
-            <motion.h1
-              variants={cardVariant}
-              className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-[1.15]"
-            >
-              Khám phá Bất động sản
-            </motion.h1>
-            <motion.h1
-              variants={cardVariant}
-              className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 bg-clip-text text-transparent leading-[1.15]"
-            >
-              Hà Nội Thông Minh Hơn
-            </motion.h1>
-          </motion.div>
-
-          {/* 3. Subheadline */}
-          <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-base sm:text-xl text-white/70 max-w-2xl mx-auto text-center font-normal leading-relaxed"
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="space-y-1"
           >
-            Kết hợp dữ liệu quy hoạch thực tế, phân tích AI và bản đồ tương tác — để mọi quyết định BĐS của bạn đều được hỗ trợ bởi thông tin chính xác nhất.
-          </motion.p>
-
-          {/* 4. CTA Button Row */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                href="/search"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-2xl text-base sm:text-lg font-bold shadow-2xl shadow-orange-500/40 transition-colors"
-              >
-                <Search className="h-5 w-5" />
-                <span>Tìm kiếm BĐS ngay</span>
-              </Link>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                href="/reports/1"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-white/20 hover:border-white/40 text-white/80 hover:text-white px-8 py-4 rounded-2xl text-base sm:text-lg font-medium backdrop-blur-sm transition-all"
-              >
-                <Sparkles className="h-5 w-5 text-orange-400" />
-                <span>Xem báo cáo AI mẫu</span>
-              </Link>
-            </motion.div>
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight">
+              Tìm ngôi nhà mơ ước
+            </h1>
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-300 bg-clip-text text-transparent leading-tight">
+              tại Hà Nội
+            </h1>
           </motion.div>
 
-          {/* 5. Trust Indicators */}
+          {/* Subtext */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-white/70 text-sm sm:text-base md:text-lg mt-3 mb-6 max-w-2xl mx-auto font-normal"
+          >
+            Hơn 10,000+ tin đăng · Dữ liệu quy hoạch thực · Phân tích AI chuyên sâu
+          </motion.p>
+
+          {/* ━━ TAB ROW (Mua / Thuê / Dự án / Định giá) ━━ */}
+          <div className="flex items-center justify-center gap-4 sm:gap-8 mb-3 text-sm font-bold">
+            {[
+              { key: 'buy', label: '🏠 Mua bán' },
+              { key: 'rent', label: '🔑 Cho thuê' },
+              { key: 'project', label: '🏗️ Dự án' },
+              { key: 'estimate', label: '💰 Định giá AI' },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setSearchTab(tab.key as any)}
+                className={`relative pb-2 transition-all ${
+                  searchTab === tab.key
+                    ? 'text-white font-extrabold'
+                    : 'text-white/60 hover:text-white/90 font-medium'
+                }`}
+              >
+                <span>{tab.label}</span>
+                {searchTab === tab.key && (
+                  <motion.div
+                    layoutId="searchTabUnderline"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-orange-500"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* ━━ MAIN SEARCH BOX COMPONENT ━━ */}
+          <div ref={searchBoxRef} className="relative z-30">
+            <div className="bg-white rounded-2xl p-2 sm:p-2.5 shadow-2xl flex flex-col md:flex-row items-stretch md:items-center gap-2 text-slate-800 border border-white/20">
+              
+              {/* SEGMENT 1: Loại BĐS */}
+              <div className="relative md:w-44 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTypeDropdownOpen(!typeDropdownOpen);
+                    setLocationDropdownOpen(false);
+                    setPriceDropdownOpen(false);
+                    setAreaDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors text-xs font-bold"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Building2 className="h-4 w-4 text-orange-500 shrink-0" />
+                    <span className="truncate">
+                      {propertyTypes.find((t) => t.value === selectedType)?.label || 'Loại BĐS'}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                </button>
+
+                {/* Dropdown Types */}
+                <AnimatePresence>
+                  {typeDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 mt-2 w-64 rounded-xl bg-white p-2 shadow-2xl border border-slate-100 z-50 text-left"
+                    >
+                      {propertyTypes.map((type) => (
+                        <button
+                          key={type.value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedType(type.value);
+                            setTypeDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+                            selectedType === type.value
+                              ? 'bg-orange-50 text-orange-600 font-bold'
+                              : 'hover:bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          <span className="text-base">{type.icon}</span>
+                          <span>{type.label}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="hidden md:block w-px h-8 bg-slate-200" />
+
+              {/* SEGMENT 2: Vị trí & Autocomplete */}
+              <div className="relative flex-1">
+                <div className="flex items-center gap-2 px-3 py-1">
+                  <MapPin className="h-4 w-4 text-orange-500 shrink-0" />
+                  <input
+                    type="text"
+                    value={locationQuery}
+                    onChange={(e) => {
+                      setLocationQuery(e.target.value);
+                      setLocationDropdownOpen(true);
+                    }}
+                    onFocus={() => setLocationDropdownOpen(true)}
+                    placeholder="Nhập tên đường, quận, phường Hà Nội..."
+                    className="w-full text-xs font-semibold text-slate-800 bg-transparent focus:outline-none placeholder:text-slate-400 py-1.5"
+                  />
+                </div>
+
+                {/* Autocomplete Dropdown */}
+                <AnimatePresence>
+                  {locationDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 right-0 mt-2 rounded-xl bg-white p-3 shadow-2xl border border-slate-100 z-50 text-left max-h-72 overflow-y-auto"
+                    >
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">
+                        Khu vực phổ biến
+                      </p>
+                      <div className="space-y-1">
+                        {filteredDistricts.map((district) => (
+                          <button
+                            key={district.name}
+                            type="button"
+                            onClick={() => {
+                              setLocationQuery(district.name);
+                              setLocationDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-orange-50 text-slate-700 hover:text-orange-600 transition-colors text-xs"
+                          >
+                            <span className="font-semibold flex items-center gap-2">
+                              <span>🏙️</span>
+                              <span>Quận {district.name}, Hà Nội</span>
+                            </span>
+                            <span className="text-[11px] text-slate-400">{district.count} tin</span>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="border-t border-slate-100 mt-2 pt-2 text-center">
+                        <Link
+                          href="/search"
+                          className="text-xs font-bold text-orange-500 hover:underline inline-flex items-center gap-1"
+                        >
+                          <span>Xem tất cả kết quả trên bản đồ</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="hidden md:block w-px h-8 bg-slate-200" />
+
+              {/* SEGMENT 3: Khoảng giá */}
+              <div className="relative md:w-40 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPriceDropdownOpen(!priceDropdownOpen);
+                    setTypeDropdownOpen(false);
+                    setLocationDropdownOpen(false);
+                    setAreaDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors text-xs font-bold"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="text-orange-500 font-extrabold text-sm">₫</span>
+                    <span className="truncate">
+                      {pricePresets.find((p) => p.value === priceRange)?.label || 'Khoảng giá'}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                </button>
+
+                {/* Dropdown Price Range */}
+                <AnimatePresence>
+                  {priceDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 md:right-0 md:left-auto mt-2 w-72 rounded-xl bg-white p-3 shadow-2xl border border-slate-100 z-50 text-left"
+                    >
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        Chọn khoảng giá
+                      </p>
+                      <div className="grid grid-cols-2 gap-1.5 mb-3">
+                        {pricePresets.map((preset) => (
+                          <button
+                            key={preset.value}
+                            type="button"
+                            onClick={() => {
+                              setPriceRange(preset.value);
+                              setCustomMinPrice('');
+                              setCustomMaxPrice('');
+                              setPriceDropdownOpen(false);
+                            }}
+                            className={`px-2.5 py-2 rounded-lg text-xs font-semibold text-left transition-colors ${
+                              priceRange === preset.value
+                                ? 'bg-orange-500 text-white font-bold'
+                                : 'hover:bg-slate-100 text-slate-700'
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Custom Range Inputs */}
+                      <div className="border-t border-slate-100 pt-2 space-y-2">
+                        <span className="text-[11px] font-semibold text-slate-500">Hoặc tự nhập (tỷ VNĐ):</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            placeholder="Từ (tỷ)"
+                            value={customMinPrice}
+                            onChange={(e) => {
+                              setCustomMinPrice(e.target.value);
+                              setPriceRange('custom');
+                            }}
+                            className="p-1.5 text-xs border rounded-lg focus:outline-none focus:border-orange-500"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Đến (tỷ)"
+                            value={customMaxPrice}
+                            onChange={(e) => {
+                              setCustomMaxPrice(e.target.value);
+                              setPriceRange('custom');
+                            }}
+                            className="p-1.5 text-xs border rounded-lg focus:outline-none focus:border-orange-500"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPriceDropdownOpen(false)}
+                          className="w-full py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-colors"
+                        >
+                          Áp dụng
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="hidden md:block w-px h-8 bg-slate-200" />
+
+              {/* SEGMENT 4: Diện tích */}
+              <div className="relative md:w-36 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAreaDropdownOpen(!areaDropdownOpen);
+                    setTypeDropdownOpen(false);
+                    setLocationDropdownOpen(false);
+                    setPriceDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors text-xs font-bold"
+                >
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Compass className="h-4 w-4 text-orange-500 shrink-0" />
+                    <span className="truncate">
+                      {areaPresets.find((a) => a.value === areaRange)?.label || 'Diện tích'}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                </button>
+
+                {/* Dropdown Area */}
+                <AnimatePresence>
+                  {areaDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full right-0 mt-2 w-56 rounded-xl bg-white p-2 shadow-2xl border border-slate-100 z-50 text-left"
+                    >
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 px-2">
+                        Diện tích
+                      </p>
+                      {areaPresets.map((area) => (
+                        <button
+                          key={area.value}
+                          type="button"
+                          onClick={() => {
+                            setAreaRange(area.value);
+                            setAreaDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                            areaRange === area.value
+                              ? 'bg-orange-50 text-orange-600 font-bold'
+                              : 'hover:bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          {area.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* SEARCH BUTTON */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                type="button"
+                onClick={handleExecuteSearch}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 transition-all text-sm shrink-0"
+              >
+                <Search className="h-4 w-4" />
+                <span>Tìm kiếm</span>
+              </motion.button>
+
+            </div>
+          </div>
+
+          {/* Quick Search Preset Tags */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.6 }}
-            className="pt-4 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-white/50 text-xs sm:text-sm font-medium"
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="flex flex-wrap items-center justify-center gap-2 pt-4 text-xs font-medium text-white/80"
           >
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              10,000+ tin đăng
-            </span>
-            <span>·</span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              500+ báo cáo AI/tháng
-            </span>
-            <span>·</span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              Dữ liệu 29 quận/huyện
-            </span>
+            <span className="text-white/60">Tìm kiếm phổ biến:</span>
+            {[
+              { label: 'Nhà phố Đống Đa', href: '/search?district=Đống Đa&type=house' },
+              { label: 'Chung cư Cầu Giấy', href: '/search?district=Cầu Giấy&type=apartment' },
+              { label: 'Đất Hà Đông', href: '/search?district=Hà Đông&type=land' },
+              { label: 'Biệt thự Tây Hồ', href: '/search?district=Tây Hồ&type=villa' },
+              { label: 'Căn hộ 2PN', href: '/search?type=apartment' },
+              { label: 'Nhà dưới 3 tỷ', href: '/search?maxPrice=3000000000' },
+            ].map((tag) => (
+              <Link
+                key={tag.label}
+                href={tag.href}
+                className="bg-white/10 hover:bg-white/20 text-white/90 hover:text-white backdrop-blur-sm border border-white/10 rounded-full px-3 py-1 text-xs transition-all"
+              >
+                {tag.label}
+              </Link>
+            ))}
           </motion.div>
+
         </div>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-6 flex flex-col items-center gap-1 text-white/40 text-xs pointer-events-none"
-        >
-          <span>Khám phá thêm</span>
-          <ChevronDown className="h-4 w-4" />
-        </motion.div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 2 — STATS BAR (số liệu nổi bật)
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-orange-500 py-10 shadow-lg relative z-20">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/20">
-            <StatsCounterItem value={10000} suffix="+" label="Tin đăng BĐS" />
-            <StatsCounterItem value={500} suffix="+" label="Báo cáo AI mỗi tháng" />
-            <StatsCounterItem value={29} suffix="" label="Quận/huyện có dữ liệu" />
-            <StatsCounterItem value={98} suffix="%" label="Khách hàng hài lòng" />
+        {/* BOTTOM STATS BAR */}
+        <div className="w-full max-w-6xl mx-auto rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-3 px-4 relative z-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">
+            <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
+            <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
+            <HeroCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
+            <HeroCounter value={29} suffix="" label="Quận/huyện có dữ liệu" />
           </div>
         </div>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 3 — GIỚI THIỆU DOANH NGHIỆP (About)
+          📌 SECTION 2 — DANH MỤC NHANH (Quick Property Types)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-white">
+      <section className="bg-white py-12 border-b border-slate-100">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            
-            {/* Left Column (Text) */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.6 }}
-              className="space-y-6"
-            >
-              <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase">
-                VỀ CHÚNG TÔI
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+                KHÁM PHÁ THEO NHU CẦU
               </span>
-              
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-navy leading-tight">
-                Tiên phong trong PropTech Hà Nội
+              <h2 className="text-xl sm:text-2xl font-black text-navy">
+                Danh mục bất động sản Hà Nội
               </h2>
-
-              <div className="space-y-4 text-gray-600 leading-relaxed text-base sm:text-lg">
-                <p>
-                  HaNoi Realty được thành lập năm 2024 với sứ mệnh số hóa và minh bạch hóa thị trường bất động sản Hà Nội. Chúng tôi kết hợp công nghệ AI tiên tiến với dữ liệu quy hoạch chính thức từ Sở Quy hoạch Kiến trúc Hà Nội để tạo ra nền tảng thông tin BĐS toàn diện nhất thị trường.
-                </p>
-                <p>
-                  Với đội ngũ hơn 20 kỹ sư công nghệ và chuyên gia BĐS dày dạn kinh nghiệm, chúng tôi cam kết mang đến dữ liệu chính xác, phân tích sâu sắc và trải nghiệm người dùng tốt nhất.
-                </p>
-              </div>
-
-              {/* Achievement Pills */}
-              <div className="flex flex-wrap gap-2.5 pt-2">
-                <span className="bg-navy/5 text-navy text-xs sm:text-sm font-bold px-4 py-2 rounded-full border border-navy/10">
-                  🏆 Top 10 Startup Việt Nam 2024
-                </span>
-                <span className="bg-navy/5 text-navy text-xs sm:text-sm font-bold px-4 py-2 rounded-full border border-navy/10">
-                  🤖 AI Innovation Award 2025
-                </span>
-                <span className="bg-navy/5 text-navy text-xs sm:text-sm font-bold px-4 py-2 rounded-full border border-navy/10">
-                  📊 500K+ người dùng
-                </span>
-              </div>
-
-              <div>
-                <Link
-                  href="/planning"
-                  className="text-orange-500 font-semibold hover:text-orange-600 underline-offset-4 hover:underline inline-flex items-center gap-1.5 mt-4 text-base"
-                >
-                  <span>Tìm hiểu thêm về chúng tôi</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Right Column (Glassmorphism Visual Card) */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.6 }}
-              className="relative"
+            </div>
+            <Link
+              href="/search"
+              className="text-xs sm:text-sm font-bold text-orange-500 hover:text-orange-600 inline-flex items-center gap-1"
             >
-              {/* Main Card */}
-              <div className="bg-navy rounded-3xl p-6 sm:p-8 text-white shadow-2xl border border-slate-700/50 space-y-6">
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-10 w-10 rounded-xl bg-orange-500 flex items-center justify-center font-black text-lg">
-                      🏠
+              <span>Xem tất cả loại BĐS</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+            {[
+              { name: 'Nhà phố', count: '4,231 tin', icon: '🏠', href: '/search?type=house' },
+              { name: 'Chung cư', count: '2,891 tin', icon: '🏢', href: '/search?type=apartment' },
+              { name: 'Đất nền', count: '1,432 tin', icon: '🌿', href: '/search?type=land' },
+              { name: 'Biệt thự', count: '456 tin', icon: '🏰', href: '/search?type=villa' },
+              { name: 'Thương mại', count: '234 tin', icon: '🏪', href: '/search?type=commercial' },
+              { name: 'Dự án mới', count: '89 dự án', icon: '🏗️', href: '/search?type=project' },
+              { name: 'Cho thuê', count: '1,876 tin', icon: '🔑', href: '/search?purpose=rent' },
+              { name: 'Quy hoạch', count: 'Sở QHKT', icon: '🗺️', href: '/planning' },
+            ].map((cat, idx) => (
+              <motion.div
+                key={cat.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.35, delay: idx * 0.04 }}
+                whileHover={{ y: -4, scale: 1.02 }}
+              >
+                <Link
+                  href={cat.href}
+                  className="flex flex-col items-center justify-center text-center p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-orange-300 hover:bg-orange-50/20 hover:shadow-md transition-all group h-full"
+                >
+                  <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">
+                    {cat.icon}
+                  </span>
+                  <span className="font-extrabold text-xs sm:text-sm text-navy group-hover:text-orange-600 transition-colors">
+                    {cat.name}
+                  </span>
+                  <span className="text-[11px] text-slate-400 mt-0.5">{cat.count}</span>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Carousel)
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="bg-slate-50 py-16">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Header Row */}
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-600 font-extrabold text-[11px] px-2.5 py-0.5 rounded-full mb-1">
+                <Flame className="h-3.5 w-3.5 fill-orange-500" />
+                <span>HOT · ĐƯỢC XEM NHIỀU NHẤT</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-navy">
+                Bất động sản nổi bật tuần này
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Các bất động sản có quy hoạch đẹp, giá tốt và lượt quan tâm cao nhất
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => scrollFeatured('left')}
+                className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center shadow-sm transition-all"
+                title="Trước"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => scrollFeatured('right')}
+                className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center shadow-sm transition-all"
+                title="Sau"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+              <Link
+                href="/search"
+                className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-orange-500 hover:underline ml-2"
+              >
+                <span>Xem tất cả</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Carousel container */}
+          <div
+            ref={featuredScrollRef}
+            className="flex gap-5 overflow-x-auto pb-4 pt-1 snap-x scrollbar-thin scrollbar-thumb-slate-200 scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {featuredListings.map((listing) => (
+              <div
+                key={listing.id}
+                className="min-w-[280px] sm:min-w-[320px] max-w-[320px] snap-start shrink-0"
+              >
+                <ListingCard listing={listing} />
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="bg-white py-16 border-y border-slate-100">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            {/* Left 45%: District List */}
+            <div className="lg:col-span-5 space-y-6">
+              <div>
+                <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+                  KHÁM PHÁ THEO KHU VỰC
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-navy mt-1">
+                  Tìm nhà trên bản đồ Hà Nội
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                  Rê chuột vào quận để xem nhanh vị trí hoặc nhấp để lọc tin đăng chính xác
+                </p>
+              </div>
+
+              {/* District Table List */}
+              <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-100 bg-slate-50/50 p-2 divide-y divide-slate-100">
+                {popularDistricts.map((d) => (
+                  <div
+                    key={d.name}
+                    onMouseEnter={() => setHoveredDistrict(d.name)}
+                    onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
+                    className={`flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-all ${
+                      hoveredDistrict === d.name
+                        ? 'bg-orange-500 text-white shadow-md'
+                        : 'hover:bg-white text-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <MapPin className={`h-4 w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-500'}`} />
+                      <span className="font-bold text-xs sm:text-sm">Quận {d.name}</span>
                     </div>
-                    <div>
-                      <h3 className="font-extrabold text-lg text-white">HaNoi Realty</h3>
-                      <p className="text-xs text-orange-400 font-semibold">PropTech Ecosystem</p>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className={hoveredDistrict === d.name ? 'text-white/80' : 'text-slate-400'}>
+                        {d.count} tin
+                      </span>
+                      <span className={`font-mono font-bold ${hoveredDistrict === d.name ? 'text-yellow-200' : 'text-orange-600'}`}>
+                        {d.avgPrice}
+                      </span>
                     </div>
                   </div>
-                  <span className="rounded-full bg-emerald-500/20 text-emerald-400 text-xs px-3 py-1 font-bold border border-emerald-500/30">
-                    Live Hệ thống
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <Link
+                  href={`/search?district=${encodeURIComponent(hoveredDistrict)}`}
+                  className="px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span>Xem tin quận {hoveredDistrict}</span>
+                </Link>
+
+                <Link
+                  href="/planning"
+                  className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Layers className="h-4 w-4 text-orange-500" />
+                  <span>Xem bản đồ quy hoạch</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right 55%: Interactive Mini Leaflet Map */}
+            <div className="lg:col-span-7">
+              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-200 h-[420px] relative bg-slate-900">
+                <MiniSearchMap
+                  listings={mockListings as any}
+                  targetDistrict={hoveredDistrict}
+                  onMarkerClick={(id) => router.push(`/listings/${id}`)}
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          📌 SECTION 5 — BĐS DÀNH CHO BẠN (Gợi ý cá nhân hoá)
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="bg-navy py-20 text-white relative">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <span className="inline-flex items-center gap-1 text-orange-400 font-extrabold text-xs tracking-wider uppercase bg-orange-500/20 px-3 py-1 rounded-full border border-orange-500/30">
+                <Sparkles className="h-3 w-3" />
+                <span>GỢI Ý THÔNG MINH</span>
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mt-2">
+                Bất động sản phù hợp với bạn
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1">
+                Được AI tính toán dựa trên tiềm năng đầu tư, vị trí và pháp lý an toàn
+              </p>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+              {[
+                { id: 'all', label: '✨ Tất cả gợi ý' },
+                { id: 'price-3-5', label: '💰 Giá 3 - 5 tỷ' },
+                { id: 'dongda', label: '📍 Đống Đa' },
+                { id: 'metro', label: '🚆 Gần tuyến Metro' },
+              ].map((pill) => (
+                <button
+                  key={pill.id}
+                  onClick={() => setPersonalFilter(pill.id)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all ${
+                    personalFilter === pill.id
+                      ? 'bg-orange-500 text-white shadow-md'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {personalizedListings.slice(0, 8).map((listing) => (
+              <div key={listing.id} className="text-slate-900">
+                <ListingCard listing={listing} />
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="text-center mt-10">
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm shadow-xl shadow-orange-500/20 transition-all hover:scale-105"
+            >
+              <span>Xem thêm 10,000+ gợi ý BĐS khác</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          📌 SECTION 6 — TIN TỨC & PHÂN TÍCH THỊ TRƯỜNG
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="bg-slate-50 py-16">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+                TIN TỨC & KIẾN THỨC
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-navy mt-1">
+                Cập nhật thị trường BĐS Hà Nội
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Phân tích chuyên sâu từ đội ngũ chuyên gia quy hoạch và định giá
+              </p>
+            </div>
+            <Link
+              href="/streets"
+              className="text-xs sm:text-sm font-bold text-orange-500 hover:underline inline-flex items-center gap-1"
+            >
+              <span>Xem tất cả tin tức</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* News Layout: 1 Big Left + 4 Small Right */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* Big Featured Article (Left 50%) */}
+            <div className="lg:col-span-6">
+              <Link
+                href="/streets"
+                className="group block bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col justify-between"
+              >
+                <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                  <img
+                    src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80"
+                    alt="Metro line Hanoi"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span className="absolute top-3 left-3 bg-orange-500 text-white font-extrabold text-[11px] px-3 py-1 rounded-full shadow-md">
+                    🔥 Nổi bật tuần
+                  </span>
+                  <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] px-2.5 py-0.5 rounded-full font-medium">
+                    22/08/2025
                   </span>
                 </div>
 
-                {/* 3 Mini Stat Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="bg-orange-500/20 border border-orange-500/30 rounded-2xl p-4 space-y-1">
-                    <span className="text-2xl">🗺️</span>
-                    <p className="font-bold text-xs text-white">Dữ liệu quy hoạch</p>
-                    <p className="text-[11px] text-white/60">Cập nhật liên tục</p>
-                  </div>
-
-                  <div className="bg-emerald-500/20 border border-emerald-500/30 rounded-2xl p-4 space-y-1">
-                    <span className="text-2xl">🤖</span>
-                    <p className="font-bold text-xs text-white">AI Gemini 1.5 Pro</p>
-                    <p className="text-[11px] text-white/60">Phân tích chuyên sâu</p>
-                  </div>
-
-                  <div className="bg-blue-500/20 border border-blue-500/30 rounded-2xl p-4 space-y-1">
-                    <span className="text-2xl">💳</span>
-                    <p className="font-bold text-xs text-white">Thanh toán an toàn</p>
-                    <p className="text-[11px] text-white/60">MoMo · VNPay · Visa</p>
+                <div className="p-6 space-y-3">
+                  <h3 className="text-lg sm:text-xl font-black text-navy group-hover:text-orange-600 transition-colors leading-snug">
+                    Thị trường BĐS Hà Nội Q4/2025: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức khởi công
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                    Sự kết nối giữa các trục giao thông hướng tâm và đường vành đai đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố trung tâm và ven đô.
+                  </p>
+                  
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-400 font-medium">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-600 font-bold text-[10px] flex items-center justify-center">
+                        HR
+                      </div>
+                      <span className="font-semibold text-slate-700">Ban biên tập HaNoi Realty</span>
+                    </div>
+                    <span>8 phút đọc</span>
                   </div>
                 </div>
+              </Link>
+            </div>
 
-                <div className="pt-2 text-xs text-slate-300 flex items-center justify-between">
-                  <span>Toạ độ WGS84 Hà Nội</span>
-                  <span className="font-mono text-orange-400 font-bold">105.8342° E, 21.0278° N</span>
-                </div>
-              </div>
-
-              {/* Floating Mini Growth Card */}
-              <div className="absolute -bottom-6 -right-2 sm:-right-6 bg-white shadow-2xl rounded-2xl p-4 border border-gray-100 z-10">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-500" />
-                  <span className="text-xs font-bold text-emerald-600">Giá tăng 8% Q3/2025</span>
-                </div>
-                {/* CSS Bar chart visualization */}
-                <div className="flex items-end gap-1.5 h-10 w-36 pt-1">
-                  <div className="flex-1 bg-gray-200 rounded-t h-4" />
-                  <div className="flex-1 bg-gray-200 rounded-t h-6" />
-                  <div className="flex-1 bg-gray-300 rounded-t h-5" />
-                  <div className="flex-1 bg-orange-400 rounded-t h-8" />
-                  <div className="flex-1 bg-orange-500 rounded-t h-10" />
-                </div>
-              </div>
-            </motion.div>
+            {/* 4 Small Articles (Right 50%) */}
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                {
+                  title: 'Quy hoạch Vành đai 4: Cơ hội vàng cho nhà đầu tư BĐS ven đô',
+                  category: 'Quy hoạch',
+                  date: '20/08/2025',
+                  image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&auto=format&fit=crop&q=80',
+                },
+                {
+                  title: 'Top 5 phường có giá đất tăng mạnh nhất quận Đống Đa 2025',
+                  category: 'Giá đất',
+                  date: '19/08/2025',
+                  image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80',
+                },
+                {
+                  title: 'Lãi suất ngân hàng giảm: Tác động tích cực thế nào đến lực cầu BĐS?',
+                  category: 'Tài chính',
+                  date: '17/08/2025',
+                  image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&auto=format&fit=crop&q=80',
+                },
+                {
+                  title: 'Hướng dẫn kiểm tra quy hoạch phân khu BĐS chuẩn Sở QHKT',
+                  category: 'Pháp lý',
+                  date: '14/08/2025',
+                  image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&auto=format&fit=crop&q=80',
+                },
+              ].map((article, idx) => (
+                <Link
+                  key={idx}
+                  href="/streets"
+                  className="group bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div className="aspect-[16/9] rounded-xl overflow-hidden mb-2 bg-slate-100">
+                    <img
+                      src={article.image}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
+                      {article.category}
+                    </span>
+                    <h4 className="font-bold text-xs text-navy group-hover:text-orange-600 transition-colors line-clamp-2 mt-1.5 leading-snug">
+                      {article.title}
+                    </h4>
+                    <p className="text-[10px] text-slate-400 mt-2">{article.date}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
 
           </div>
+
+          {/* Market Mini Dashboard Row */}
+          <div className="mt-12 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <span>Chỉ số thị trường tuần này</span>
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+              <div className="p-2">
+                <p className="text-xs text-slate-500">Giá TB Đống Đa</p>
+                <p className="text-xl font-black text-navy mt-0.5">85 tr/m²</p>
+                <span className="text-emerald-600 font-bold text-xs">▲ +2.3% so tháng trước</span>
+              </div>
+              <div className="p-2 sm:pl-6">
+                <p className="text-xs text-slate-500">Giá TB Cầu Giấy</p>
+                <p className="text-xl font-black text-navy mt-0.5">65 tr/m²</p>
+                <span className="text-emerald-600 font-bold text-xs">▲ +1.8% so tháng trước</span>
+              </div>
+              <div className="p-2 sm:pl-6">
+                <p className="text-xs text-slate-500">Tin đăng mới hôm nay</p>
+                <p className="text-xl font-black text-navy mt-0.5">127 tin</p>
+                <span className="text-emerald-600 font-bold text-xs">▲ +34 so hôm qua</span>
+              </div>
+              <div className="p-2 sm:pl-6">
+                <p className="text-xs text-slate-500">Giao dịch tháng này</p>
+                <p className="text-xl font-black text-navy mt-0.5">89 căn</p>
+                <span className="text-emerald-600 font-bold text-xs">▲ +12% hoàn thành</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 4 — TẦM NHÌN, SỨ MỆNH, GIÁ TRỊ CỐT LÕI
+          📌 SECTION 7 — DỰ ÁN NỔI BẬT (Hợp tác)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-slate-50">
+      <section className="bg-white py-16">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase">
-              KIM CHỈ NAM PHÁT TRIỂN
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-navy">
-              Tầm nhìn · Sứ mệnh · Giá trị
-            </h2>
-            <p className="text-sm text-gray-500">
-              Những nguyên tắc định hướng mọi hoạt động của HaNoi Realty
-            </p>
+          
+          {/* Header Row */}
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+                DỰ ÁN HỢP TÁC
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-navy mt-1">
+                Dự án bất động sản nổi bật
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                Các dự án chính chủ, pháp lý minh bạch và đang mở bán với chính sách ưu đãi
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => scrollProjects('left')}
+                className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center transition-all"
+                title="Trước"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => scrollProjects('right')}
+                className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center transition-all"
+                title="Sau"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
-          {/* 3 Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-14">
-            
-            {/* Card 1: Vision */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-2xl">
-                  🔭
+          {/* Projects Carousel */}
+          <div
+            ref={projectsScrollRef}
+            className="flex gap-6 overflow-x-auto pb-4 pt-1 snap-x scrollbar-thin scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {mockProjects.map((project) => (
+              <div
+                key={project.id}
+                className="min-w-[300px] sm:min-w-[360px] max-w-[360px] snap-start shrink-0 rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between bg-white"
+              >
+                {/* Hero image area */}
+                <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                  <img
+                    src={project.image}
+                    alt={project.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <span className="absolute top-3 left-3 bg-orange-500 text-white font-extrabold text-[11px] px-3 py-1 rounded-full shadow-md">
+                    {project.status}
+                  </span>
+                  <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-navy font-bold text-[10px] px-2.5 py-1 rounded-lg shadow">
+                    {project.developer}
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-orange-500 uppercase tracking-wide block">
-                  Tầm nhìn 2030
-                </span>
-                <h3 className="text-xl font-bold text-navy">
-                  Nền tảng PropTech #1 Đông Nam Á
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Trở thành hệ sinh thái bất động sản toàn diện nhất khu vực, kết nối hàng triệu giao dịch BĐS được hỗ trợ bởi dữ liệu và AI mỗi năm.
-                </p>
-              </div>
-              <div className="mt-6 bg-orange-50 border-l-4 border-orange-500 p-3 rounded-r-xl">
-                <p className="text-xs font-bold text-orange-700">
-                  🎯 Mục tiêu: 1 triệu người dùng vào 2027
-                </p>
-              </div>
-            </motion.div>
 
-            {/* Card 2: Mission */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-2xl">
-                  🎯
-                </div>
-                <span className="text-xs font-bold text-blue-500 uppercase tracking-wide block">
-                  Sứ mệnh
-                </span>
-                <h3 className="text-xl font-bold text-navy">
-                  Minh bạch hóa thị trường BĐS Hà Nội
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Cung cấp thông tin quy hoạch chính xác, phân tích AI khách quan và dữ liệu thị trường minh bạch — giúp mọi người Hà Nội đưa ra quyết định BĐS thông minh và an toàn hơn.
-                </p>
-              </div>
-              <div className="mt-6 bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-xl">
-                <p className="text-xs font-bold text-blue-700">
-                  ⚡ Mỗi ngày 500+ người nhận báo cáo AI
-                </p>
-              </div>
-            </motion.div>
+                {/* Content */}
+                <div className="p-5 space-y-3">
+                  <div>
+                    <h3 className="font-extrabold text-base text-navy line-clamp-1">{project.name}</h3>
+                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                      <MapPin className="h-3.5 w-3.5 text-orange-500 shrink-0" />
+                      <span>{project.location}</span>
+                    </p>
+                  </div>
 
-            {/* Card 3: Core Values */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl">
-                  💎
-                </div>
-                <span className="text-xs font-bold text-emerald-500 uppercase tracking-wide block">
-                  Giá trị cốt lõi
-                </span>
-                <h3 className="text-xl font-bold text-navy">
-                  4 nguyên tắc bất biến
-                </h3>
-                <div className="space-y-2 pt-1 text-sm text-gray-700">
-                  <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                    <span className="text-emerald-500 font-bold">✓</span>
-                    <span><strong>Minh bạch:</strong> Dữ liệu luôn chính xác, cập nhật</span>
+                  {/* Specs */}
+                  <div className="grid grid-cols-3 gap-1 py-2 border-y border-slate-100 text-[11px] text-slate-600">
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Loại hình</span>
+                      <strong className="text-navy truncate block">Căn hộ</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Diện tích</span>
+                      <strong className="text-navy truncate block">{project.area}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Mức giá</span>
+                      <strong className="text-orange-600 truncate block">{project.price}</strong>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                    <span className="text-emerald-500 font-bold">✓</span>
-                    <span><strong>Đổi mới:</strong> Ứng dụng công nghệ tiên tiến nhất</span>
+
+                  {/* Progress Bar */}
+                  <div>
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                      <span>Tiến độ bán hàng</span>
+                      <span className="text-orange-500 font-bold">{project.soldPercent}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-1000"
+                        style={{ width: `${project.soldPercent}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2.5 py-1.5 border-b border-gray-100">
-                    <span className="text-emerald-500 font-bold">✓</span>
-                    <span><strong>Tin cậy:</strong> Bảo mật thông tin tuyệt đối</span>
-                  </div>
-                  <div className="flex items-start gap-2.5 py-1.5">
-                    <span className="text-emerald-500 font-bold">✓</span>
-                    <span><strong>Tận tâm:</strong> Hỗ trợ 24/7, phản hồi trong 2 giờ</span>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 pt-2">
+                    <a
+                      href="tel:18006868"
+                      className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:border-orange-500 hover:text-orange-500 font-bold text-xs text-center transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                      <span>Liên hệ CĐT</span>
+                    </a>
+                    <Link
+                      href="/search?type=project"
+                      className="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs text-center transition-colors shadow-md shadow-orange-500/20"
+                    >
+                      Xem chi tiết →
+                    </Link>
                   </div>
                 </div>
               </div>
-            </motion.div>
-
+            ))}
           </div>
+
         </div>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 5 — TÍNH NĂNG NỔI BẬT
+          📌 SECTION 8 — ĐÁNH GIÁ KHÁCH HÀNG
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-white">
+      <section className="bg-slate-50 py-16 border-y border-slate-100">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase">
-              TÍNH NĂNG
+          
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+              ⭐ ĐÁNH GIÁ TỪ NGƯỜI DÙNG
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-navy">
-              Tại sao chọn HaNoi Realty?
+            <h2 className="text-2xl sm:text-3xl font-black text-navy mt-1">
+              Khách hàng nói gì về HaNoi Realty?
             </h2>
-            <p className="text-sm text-gray-500">
-              Công nghệ hiện đại kết hợp dữ liệu thực tế
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-14">
-            
-            {/* Feature 1 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-orange-200 hover:shadow-lg transition-all space-y-3"
-            >
-              <div className="w-11 h-11 rounded-xl bg-orange-100 text-orange-500 flex items-center justify-center text-xl">
-                🗺️
+          {/* Rating summary bar */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-3xl mx-auto shadow-sm border border-slate-100 mb-12 flex flex-col sm:flex-row items-center justify-around gap-6">
+            <div className="text-center sm:text-left">
+              <span className="text-5xl font-black text-navy">4.8</span>
+              <span className="text-slate-400 font-bold text-lg"> / 5.0</span>
+              <div className="flex items-center gap-1 text-amber-400 text-lg my-1">
+                ★★★★★
               </div>
-              <h3 className="font-bold text-base text-navy">Bản đồ Quy hoạch Thực tế</h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Xem layer quy hoạch Hà Nội 2030 trực tiếp trên bản đồ. Toggle ON/OFF các phân khu màu sắc chuẩn Sở QHKT.
-              </p>
-              <Link href="/planning" className="text-xs font-bold text-orange-500 hover:underline inline-flex items-center gap-1 pt-1">
-                <span>Xem bản đồ</span> <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </motion.div>
+              <p className="text-xs text-slate-400">Dựa trên 1,247 đánh giá đã kiểm thực</p>
+            </div>
 
-            {/* Feature 2 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-purple-200 hover:shadow-lg transition-all space-y-3"
-            >
-              <div className="w-11 h-11 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl">
-                🤖
+            <div className="w-full sm:w-64 space-y-1.5 text-xs text-slate-500">
+              <div className="flex items-center gap-2">
+                <span>5★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[82%]" />
+                </div>
+                <span>82%</span>
               </div>
-              <h3 className="font-bold text-base text-navy">Báo cáo AI Chuyên sâu</h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Gemini 1.5 Pro phân tích toàn diện: quy hoạch, tiềm năng tăng giá, rủi ro pháp lý, tiện ích xung quanh trong 2 phút.
-              </p>
-              <Link href="/reports/1" className="text-xs font-bold text-purple-600 hover:underline inline-flex items-center gap-1 pt-1">
-                <span>Thử miễn phí</span> <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </motion.div>
-
-            {/* Feature 3 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-200 hover:shadow-lg transition-all space-y-3"
-            >
-              <div className="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
-                📊
+              <div className="flex items-center gap-2">
+                <span>4★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[12%]" />
+                </div>
+                <span>12%</span>
               </div>
-              <h3 className="font-bold text-base text-navy">Dữ liệu Thị trường Live</h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Chỉ số giá BĐS theo từng phường, quận được cập nhật hàng tuần từ 10,000+ giao dịch thực tế.
-              </p>
-              <Link href="/streets" className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-1 pt-1">
-                <span>Khám phá dữ liệu</span> <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </motion.div>
-
-            {/* Feature 4 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-emerald-200 hover:shadow-lg transition-all space-y-3"
-            >
-              <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
-                🔍
+              <div className="flex items-center gap-2">
+                <span>3★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[4%]" />
+                </div>
+                <span>4%</span>
               </div>
-              <h3 className="font-bold text-base text-navy">Tìm kiếm Thông minh</h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Vẽ vùng tìm kiếm tự do trên bản đồ (Lasso Search), lọc theo quy hoạch, bán kính tiện ích, tiềm năng AI.
-              </p>
-              <Link href="/search" className="text-xs font-bold text-emerald-600 hover:underline inline-flex items-center gap-1 pt-1">
-                <span>Vẽ vùng tìm kiếm</span> <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </motion.div>
-
-            {/* Feature 5 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-              className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-red-200 hover:shadow-lg transition-all space-y-3"
-            >
-              <div className="w-11 h-11 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl">
-                📄
+              <div className="flex items-center gap-2">
+                <span>2★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[1%]" />
+                </div>
+                <span>1%</span>
               </div>
-              <h3 className="font-bold text-base text-navy">Xuất PDF Chuyên nghiệp</h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Báo cáo 4 trang A4 đẹp chuẩn nghiệp vụ môi giới — gửi ngay cho khách qua Zalo/Email.
-              </p>
-              <Link href="/reports/1" className="text-xs font-bold text-red-600 hover:underline inline-flex items-center gap-1 pt-1">
-                <span>Xem mẫu PDF</span> <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </motion.div>
-
-            {/* Feature 6 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.6 }}
-              className="bg-white border border-gray-100 rounded-2xl p-6 hover:border-teal-200 hover:shadow-lg transition-all space-y-3"
-            >
-              <div className="w-11 h-11 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center text-xl">
-                💳
+              <div className="flex items-center gap-2">
+                <span>1★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[1%]" />
+                </div>
+                <span>1%</span>
               </div>
-              <h3 className="font-bold text-base text-navy">Thanh toán Linh hoạt</h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Hỗ trợ MoMo, VNPay, chuyển khoản ngân hàng. Hủy bất kỳ lúc nào, hoàn tiền trong 7 ngày.
-              </p>
-              <Link href="/pricing" className="text-xs font-bold text-teal-600 hover:underline inline-flex items-center gap-1 pt-1">
-                <span>Bảng giá dịch vụ</span> <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </motion.div>
-
+            </div>
           </div>
+
+          {/* Testimonial Cards Carousel */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {reviews.slice(activeReviewIdx, activeReviewIdx + 3).concat(
+              reviews.slice(0, Math.max(0, activeReviewIdx + 3 - reviews.length))
+            ).map((review, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-amber-400 text-sm">★★★★★</span>
+                    <span className="text-[11px] text-slate-400">{review.date}</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
+                    "{review.content}"
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 pt-3 border-t border-slate-50">
+                  <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-black text-xs flex items-center justify-center shadow-md">
+                    {review.name[0]}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-xs text-navy flex items-center gap-1.5">
+                      <span>{review.name}</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded font-semibold">
+                        ✓ Verified
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-slate-400">{review.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
         </div>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 6 — MỤC TIÊU PHÁT TRIỂN (Timeline)
+          📌 SECTION 9 — ĐỐI TÁC & THƯƠNG HIỆU (Marquee)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-navy text-white relative overflow-hidden">
-        <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-2xl mx-auto space-y-2 mb-16">
-            <span className="text-orange-400 font-extrabold text-xs tracking-widest uppercase">
-              LỘ TRÌNH
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white">
-              Mục tiêu Phát triển
-            </h2>
-            <p className="text-sm text-slate-400">
-              Hành trình xây dựng nền tảng PropTech hàng đầu
-            </p>
-          </div>
-
-          {/* Timeline list */}
-          <div className="relative border-l-2 border-slate-700 ml-4 sm:ml-32 space-y-10">
-            
-            {/* 2024 */}
-            <div className="relative pl-6 sm:pl-8">
-              <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-navy" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-emerald-400 uppercase">
-                2024 · COMPLETED
-              </div>
-              <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 space-y-1.5">
-                <h3 className="text-base font-bold text-white">Thành lập & Ra mắt MVP</h3>
-                <p className="text-xs sm:text-sm text-slate-300">
-                  Khởi chạy nền tảng với bản đồ quy hoạch, hệ thống đăng tin BĐS, tích hợp AI Gemini.
-                </p>
-                <p className="text-xs font-semibold text-orange-400 pt-1">📈 1,000 tin đăng đầu tiên</p>
-              </div>
-            </div>
-
-            {/* 2025 Q1 */}
-            <div className="relative pl-6 sm:pl-8">
-              <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-navy" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-emerald-400 uppercase">
-                2025 Q1 · COMPLETED
-              </div>
-              <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 space-y-1.5">
-                <h3 className="text-base font-bold text-white">Mở rộng dữ liệu 29 quận/huyện</h3>
-                <p className="text-xs sm:text-sm text-slate-300">
-                  Hoàn thiện dữ liệu quy hoạch toàn bộ Hà Nội, ra mắt báo cáo AI PDF chuyên nghiệp.
-                </p>
-                <p className="text-xs font-semibold text-orange-400 pt-1">📈 10,000 người dùng</p>
-              </div>
-            </div>
-
-            {/* 2025 Q4 */}
-            <div className="relative pl-6 sm:pl-8">
-              <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-orange-500 ring-4 ring-navy animate-pulse" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-orange-400 uppercase">
-                2025 Q4 · IN PROGRESS
-              </div>
-              <div className="bg-slate-800/80 rounded-2xl p-5 border border-orange-500/40 space-y-1.5 shadow-lg shadow-orange-500/10">
-                <h3 className="text-base font-bold text-white">Tích hợp thanh toán & Gói thành viên</h3>
-                <p className="text-xs sm:text-sm text-slate-300">
-                  Ra mắt MoMo, VNPay, hệ thống subscription, admin portal đầy đủ.
-                </p>
-                <p className="text-xs font-semibold text-orange-400 pt-1">🎯 Mục tiêu: 50,000 người dùng</p>
-              </div>
-            </div>
-
-            {/* 2026 */}
-            <div className="relative pl-6 sm:pl-8">
-              <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-navy" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-blue-400 uppercase">
-                2026 · PLANNED
-              </div>
-              <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 space-y-1.5">
-                <h3 className="text-base font-bold text-white">Mobile App iOS & Android</h3>
-                <p className="text-xs sm:text-sm text-slate-300">
-                  Ứng dụng di động native, push notification biến động giá, AR xem nhà ảo.
-                </p>
-                <p className="text-xs font-semibold text-blue-400 pt-1">🎯 Mục tiêu: 200,000 người dùng</p>
-              </div>
-            </div>
-
-            {/* 2027 */}
-            <div className="relative pl-6 sm:pl-8">
-              <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-purple-500 ring-4 ring-navy" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-purple-400 uppercase">
-                2027 · VISION
-              </div>
-              <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 space-y-1.5">
-                <h3 className="text-base font-bold text-white">Mở rộng toàn quốc</h3>
-                <p className="text-xs sm:text-sm text-slate-300">
-                  HCM, Đà Nẵng, Nha Trang, Phú Quốc — PropTech #1 Việt Nam.
-                </p>
-                <p className="text-xs font-semibold text-purple-400 pt-1">🚀 Mục tiêu: 1 triệu người dùng</p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 7 — ĐỘI NGŨ LÃNH ĐẠO
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-slate-50">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto space-y-2 mb-14">
-            <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase">
-              CON NGƯỜI
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-navy">
-              Đội ngũ Sáng lập
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            {/* Member 1 */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-2xl p-6 text-center shadow-sm hover:shadow-lg border border-gray-100 transition-all space-y-3"
-            >
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md">
-                NTA
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-navy">Nguyễn Thanh An</h3>
-                <p className="text-xs font-semibold text-orange-500">CEO & Co-founder</p>
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                15 năm kinh nghiệm BĐS Hà Nội. Cựu Giám đốc CBRE Việt Nam.
-              </p>
-              <span className="inline-block bg-orange-50 text-orange-600 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                🏠 BĐS Expert
-              </span>
-            </motion.div>
-
-            {/* Member 2 */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-2xl p-6 text-center shadow-sm hover:shadow-lg border border-gray-100 transition-all space-y-3"
-            >
-              <div className="w-20 h-20 rounded-full bg-blue-500 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md">
-                TBM
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-navy">Trần Bảo Minh</h3>
-                <p className="text-xs font-semibold text-blue-500">CTO & Co-founder</p>
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Kỹ sư AI tại Google (2018-2023). Chuyên gia Computer Vision và GIS.
-              </p>
-              <span className="inline-block bg-blue-50 text-blue-600 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                🤖 AI Engineer
-              </span>
-            </motion.div>
-
-            {/* Member 3 */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-2xl p-6 text-center shadow-sm hover:shadow-lg border border-gray-100 transition-all space-y-3"
-            >
-              <div className="w-20 h-20 rounded-full bg-emerald-500 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md">
-                LTH
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-navy">Lê Thị Hương</h3>
-                <p className="text-xs font-semibold text-emerald-600">Head of Data</p>
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Tiến sĩ Quy hoạch đô thị, ĐH Kiến trúc Hà Nội.
-              </p>
-              <span className="inline-block bg-emerald-50 text-emerald-600 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                📊 Data Science
-              </span>
-            </motion.div>
-
-            {/* Member 4 */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-2xl p-6 text-center shadow-sm hover:shadow-lg border border-gray-100 transition-all space-y-3"
-            >
-              <div className="w-20 h-20 rounded-full bg-purple-500 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md">
-                PVK
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-navy">Phạm Văn Khải</h3>
-                <p className="text-xs font-semibold text-purple-600">Head of Product</p>
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Ex-Product Lead tại VNPay. UX/UI specialist.
-              </p>
-              <span className="inline-block bg-purple-50 text-purple-600 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                🎨 Product Design
-              </span>
-            </motion.div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 8 — ĐÁNH GIÁ KHÁCH HÀNG (Marquee)
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-white overflow-hidden">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center">
-          <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase">
-            ĐÁNH GIÁ
+      <section className="bg-white py-14 overflow-hidden border-b border-slate-100">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
+          <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+            ĐỐI TÁC CHIẾN LƯỢC & THƯƠNG HIỆU ĐỒNG HÀNH
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-navy mt-1">
-            Khách hàng nói gì về chúng tôi?
-          </h2>
         </div>
 
-        {/* Marquee Container */}
-        <div className="space-y-4 group">
-          {/* Row 1 (scroll left) */}
-          <div className="flex gap-4 w-max animate-[marquee_40s_linear_infinite] group-hover:[animation-play-state:paused]">
-            {[
-              {
-                text: 'Báo cáo AI cực kỳ chi tiết, giúp tôi quyết định mua căn nhà Đống Đa nhanh hơn nhiều!',
-                name: 'Nguyễn Minh T.',
-                role: 'Nhà đầu tư',
-              },
-              {
-                text: 'Layer quy hoạch 2030 là tính năng tôi cần nhất. Không còn mua phải đất quy hoạch nữa!',
-                name: 'Trần Thu H.',
-                role: 'Môi giới BĐS',
-              },
-              {
-                text: 'Giao diện đẹp, dữ liệu chuẩn, PDF báo cáo gửi cho khách rất chuyên nghiệp.',
-                name: 'Lê Văn D.',
-                role: 'Sàn BĐS ABC',
-              },
-              {
-                text: 'Đặt lịch xem nhà qua Zalo tích hợp rất tiện. Tiết kiệm được rất nhiều thời gian.',
-                name: 'Phạm Thị M.',
-                role: 'Chủ nhà',
-              },
-              {
-                text: 'Dữ liệu các tuyến Metro và đường vành đai hiển thị trực quan nhất tôi từng thấy.',
-                name: 'Hoàng Anh K.',
-                role: 'Chuyên gia phân tích',
-              },
-              {
-                text: 'Tính năng vẽ vùng Lasso Search lọc nhà đất siêu nhanh và chính xác.',
-                name: 'Vũ Quốc B.',
-                role: 'Khách mua nhà',
-              },
-            ].concat([
-              {
-                text: 'Báo cáo AI cực kỳ chi tiết, giúp tôi quyết định mua căn nhà Đống Đa nhanh hơn nhiều!',
-                name: 'Nguyễn Minh T.',
-                role: 'Nhà đầu tư',
-              },
-              {
-                text: 'Layer quy hoạch 2030 là tính năng tôi cần nhất. Không còn mua phải đất quy hoạch nữa!',
-                name: 'Trần Thu H.',
-                role: 'Môi giới BĐS',
-              },
-            ]).map((t, idx) => (
-              <div
-                key={idx}
-                className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm min-w-[320px] max-w-[360px] space-y-3"
-              >
-                <div className="flex items-center gap-1 text-amber-400 text-sm">
-                  ⭐⭐⭐⭐⭐
-                  <span className="text-[10px] text-gray-400 ml-auto">Tháng 8/2025</span>
-                </div>
-                <p className="text-xs text-gray-600 leading-relaxed italic">
-                  "{t.text}"
-                </p>
-                <div className="flex items-center gap-2.5 pt-1 border-t border-gray-50">
-                  <div className="w-7 h-7 rounded-full bg-orange-500/10 text-orange-600 font-bold text-xs flex items-center justify-center">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-navy">{t.name}</p>
-                    <p className="text-[10px] text-gray-400">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* Marquee Row 1 (Developers) */}
+        <div className="flex gap-4 w-max animate-[marquee_35s_linear_infinite] hover:[animation-play-state:paused] mb-4">
+          {[
+            'Vinhomes', 'Ecopark Group', 'Sun Group', 'Masterise Homes',
+            'Nam Long', 'Hưng Thịnh Corp', 'Novaland', 'CapitaLand',
+            'Vinhomes', 'Ecopark Group', 'Sun Group', 'Masterise Homes',
+          ].map((brand, idx) => (
+            <div
+              key={idx}
+              className="w-40 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-bold text-xs text-slate-500 hover:text-navy hover:bg-orange-50/40 hover:border-orange-200 transition-all shadow-sm cursor-pointer"
+            >
+              {brand}
+            </div>
+          ))}
+        </div>
 
-          {/* Row 2 (scroll right) */}
-          <div className="flex gap-4 w-max animate-[marquee-reverse_40s_linear_infinite] group-hover:[animation-play-state:paused]">
-            {[
-              {
-                text: 'Tính năng vẽ vùng Lasso Search lọc nhà đất siêu nhanh và chính xác.',
-                name: 'Vũ Quốc B.',
-                role: 'Khách mua nhà',
-              },
-              {
-                text: 'Dữ liệu các tuyến Metro và đường vành đai hiển thị trực quan nhất tôi từng thấy.',
-                name: 'Hoàng Anh K.',
-                role: 'Chuyên gia phân tích',
-              },
-              {
-                text: 'Đặt lịch xem nhà qua Zalo tích hợp rất tiện. Tiết kiệm được rất nhiều thời gian.',
-                name: 'Phạm Thị M.',
-                role: 'Chủ nhà',
-              },
-              {
-                text: 'Giao diện đẹp, dữ liệu chuẩn, PDF báo cáo gửi cho khách rất chuyên nghiệp.',
-                name: 'Lê Văn D.',
-                role: 'Sàn BĐS ABC',
-              },
-              {
-                text: 'Layer quy hoạch 2030 là tính năng tôi cần nhất. Không còn mua phải đất quy hoạch nữa!',
-                name: 'Trần Thu H.',
-                role: 'Môi giới BĐS',
-              },
-              {
-                text: 'Báo cáo AI cực kỳ chi tiết, giúp tôi quyết định mua căn nhà Đống Đa nhanh hơn nhiều!',
-                name: 'Nguyễn Minh T.',
-                role: 'Nhà đầu tư',
-              },
-            ].map((t, idx) => (
-              <div
-                key={idx}
-                className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm min-w-[320px] max-w-[360px] space-y-3"
-              >
-                <div className="flex items-center gap-1 text-amber-400 text-sm">
-                  ⭐⭐⭐⭐⭐
-                  <span className="text-[10px] text-gray-400 ml-auto">Tháng 8/2025</span>
-                </div>
-                <p className="text-xs text-gray-600 leading-relaxed italic">
-                  "{t.text}"
-                </p>
-                <div className="flex items-center gap-2.5 pt-1 border-t border-gray-50">
-                  <div className="w-7 h-7 rounded-full bg-blue-500/10 text-blue-600 font-bold text-xs flex items-center justify-center">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-navy">{t.name}</p>
-                    <p className="text-[10px] text-gray-400">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* Marquee Row 2 (Banks & Tech) */}
+        <div className="flex gap-4 w-max animate-[marquee-reverse_35s_linear_infinite] hover:[animation-play-state:paused]">
+          {[
+            'Techcombank', 'VPBank', 'Vietcombank', 'BIDV',
+            'VNPay', 'MoMo', 'Google Cloud', 'Supabase',
+            'Techcombank', 'VPBank', 'Vietcombank', 'BIDV',
+          ].map((brand, idx) => (
+            <div
+              key={idx}
+              className="w-40 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-bold text-xs text-slate-500 hover:text-navy hover:bg-blue-50/40 hover:border-blue-200 transition-all shadow-sm cursor-pointer"
+            >
+              {brand}
+            </div>
+          ))}
+        </div>
+
+        {/* Trust Badges */}
+        <div className="container max-w-5xl mx-auto px-4 mt-10 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-bold text-slate-600">
+          <span className="flex items-center gap-2">
+            <Award className="h-4 w-4 text-orange-500" />
+            Top 10 Startup VN 2024
+          </span>
+          <span>·</span>
+          <span className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            Bảo mật ISO & SSL 256-bit
+          </span>
+          <span>·</span>
+          <span className="flex items-center gap-2">
+            <Building className="h-4 w-4 text-blue-500" />
+            Đăng ký Bộ TTTT
+          </span>
+          <span>·</span>
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-purple-500" />
+            Dữ liệu Sở QHKT kiểm định
+          </span>
         </div>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 9 — ĐỐI TÁC & CHỨNG NHẬN
+          📌 SECTION 10 — TẢI ỨNG DỤNG MOBILE APP CTA
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-16 bg-slate-50 border-y border-gray-200/60">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-          <h3 className="text-xs font-extrabold uppercase tracking-widest text-gray-400">
-            Đối tác & Chứng nhận Công nghệ
-          </h3>
-
-          {/* Partner Logos */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
-            {['Sở QHKT Hà Nội', 'Google Cloud', 'VNPay', 'MoMo', 'Supabase', 'Vercel'].map((name) => (
-              <div
-                key={name}
-                className="rounded-xl bg-white p-4 shadow-sm border border-gray-100 flex items-center justify-center h-14 w-36 text-gray-500 hover:text-navy font-bold text-xs transition-colors hover:shadow-md"
-              >
-                {name}
-              </div>
-            ))}
-          </div>
-
-          {/* Certifications Row */}
-          <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-xs font-semibold text-gray-600">
-            <span className="flex items-center gap-1.5">
-              <Lock className="h-4 w-4 text-orange-500" />
-              Bảo mật ISO 27001
-            </span>
-            <span>·</span>
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              Dữ liệu được kiểm định
-            </span>
-            <span>·</span>
-            <span className="flex items-center gap-1.5">
-              <Award className="h-4 w-4 text-blue-500" />
-              Đăng ký Bộ TTTT
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 10 — BẢN ĐỒ TÌM KIẾM PREVIEW
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-24 bg-navy text-white relative">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-[#0a0f1e] text-white py-20 relative overflow-hidden">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            {/* Left 45%: Quick Search Form */}
-            <div className="lg:col-span-5 space-y-6">
-              <span className="text-orange-400 font-extrabold text-xs tracking-widest uppercase">
-                TRY IT NOW
+            {/* Left Column */}
+            <div className="lg:col-span-6 space-y-6">
+              <span className="inline-flex items-center gap-1.5 bg-orange-500/20 text-orange-400 font-extrabold text-xs px-3 py-1 rounded-full border border-orange-500/30">
+                <Smartphone className="h-3.5 w-3.5" />
+                <span>ỨNG DỤNG DI ĐỘNG</span>
               </span>
+
               <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
-                Khám phá BĐS Hà Nội ngay hôm nay
+                HaNoi Realty trên điện thoại của bạn
               </h2>
-              <p className="text-sm text-slate-300">
-                Hơn 10,000 tin đăng với đầy đủ thông tin quy hoạch, phân tích AI và bản đồ tương tác.
+
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Tìm kiếm BĐS, kiểm tra quy hoạch phân khu và nhận thông báo biến động giá tức thì ngay trong tầm tay.
               </p>
 
-              {/* Quick Search Form Card */}
-              <form onSubmit={handleQuickSearch} className="bg-white rounded-2xl p-6 text-slate-900 shadow-2xl space-y-4">
-                <h3 className="font-bold text-sm text-navy">Tìm kiếm nhanh</h3>
+              {/* App Features List */}
+              <div className="space-y-2.5 text-xs text-slate-300">
+                <p className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-orange-400 shrink-0" />
+                  <span>Nhận thông báo khi có tin đăng mới đúng bộ lọc của bạn</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-orange-400 shrink-0" />
+                  <span>Tra cứu bản đồ quy hoạch phân khu offline mượt mà</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-orange-400 shrink-0" />
+                  <span>Chat và đặt lịch hẹn xem nhà trực tiếp với môi giới</span>
+                </p>
+              </div>
 
-                {/* Row 1: Type */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">Loại BĐS</label>
-                  <select
-                    value={quickType}
-                    onChange={(e) => setQuickType(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 p-2.5 text-xs font-bold focus:outline-none focus:border-orange-500 bg-gray-50 cursor-pointer"
-                  >
-                    <option value="all">Tất cả loại hình</option>
-                    <option value="house">Nhà phố</option>
-                    <option value="apartment">Chung cư</option>
-                    <option value="land">Đất nền</option>
-                    <option value="villa">Biệt thự</option>
-                  </select>
-                </div>
-
-                {/* Row 2: District */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">Quận / Huyện</label>
-                  <select
-                    value={quickDistrict}
-                    onChange={(e) => setQuickDistrict(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 p-2.5 text-xs font-bold focus:outline-none focus:border-orange-500 bg-gray-50 cursor-pointer"
-                  >
-                    {['Đống Đa', 'Hoàn Kiếm', 'Cầu Giấy', 'Tây Hồ', 'Long Biên', 'Nam Từ Liêm', 'Ba Đình', 'Thanh Xuân', 'Hai Bà Trưng', 'Hà Đông', 'Hoàng Mai', 'Gia Lâm', 'Đông Anh', 'Bắc Từ Liêm'].map((d) => (
-                      <option key={d} value={d}>Quận {d}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Row 3: Price Range */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">Khoảng giá (tỷ VNĐ)</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="number"
-                      value={priceMin}
-                      onChange={(e) => setPriceMin(e.target.value)}
-                      placeholder="Từ"
-                      className="w-full rounded-xl border border-gray-200 p-2.5 text-xs font-bold focus:outline-none focus:border-orange-500 bg-gray-50"
-                    />
-                    <input
-                      type="number"
-                      value={priceMax}
-                      onChange={(e) => setPriceMax(e.target.value)}
-                      placeholder="Đến"
-                      className="w-full rounded-xl border border-gray-200 p-2.5 text-xs font-bold focus:outline-none focus:border-orange-500 bg-gray-50"
-                    />
+              {/* Download Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="px-5 py-3 rounded-2xl bg-white text-slate-900 font-bold text-xs flex items-center gap-2 shadow-xl hover:bg-slate-100 transition-colors cursor-pointer">
+                  <span className="text-lg">🍎</span>
+                  <div>
+                    <span className="text-[10px] text-slate-500 block leading-tight">Tải về trên</span>
+                    <span>App Store</span>
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Search className="h-4 w-4" />
-                  <span>🔍 Tìm kiếm BĐS</span>
-                </button>
-              </form>
-
-              {/* Popular links */}
-              <div className="pt-2">
-                <p className="text-xs text-slate-400 mb-2">Hoặc tìm kiếm theo khu vực phổ biến:</p>
-                <div className="flex flex-wrap gap-2">
-                  {['Hoàn Kiếm', 'Đống Đa', 'Cầu Giấy', 'Tây Hồ', 'Ba Đình', 'Hai Bà Trưng'].map((d) => (
-                    <Link
-                      key={d}
-                      href={`/search?district=${encodeURIComponent(d)}`}
-                      className="text-xs px-3 py-1 rounded-lg bg-white/10 hover:bg-orange-500 hover:text-white transition-colors"
-                    >
-                      {d}
-                    </Link>
-                  ))}
+                <div className="px-5 py-3 rounded-2xl bg-white text-slate-900 font-bold text-xs flex items-center gap-2 shadow-xl hover:bg-slate-100 transition-colors cursor-pointer">
+                  <span className="text-lg">▶️</span>
+                  <div>
+                    <span className="text-[10px] text-slate-500 block leading-tight">Tải về trên</span>
+                    <span>Google Play</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right 55%: Simulated Map Preview */}
-            <div className="lg:col-span-7">
-              <div className="relative rounded-3xl overflow-hidden border border-slate-700 bg-slate-950 aspect-[16/11] shadow-2xl flex items-center justify-center group">
-                <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] opacity-30" />
-                
-                {/* SVG Mock Map Contours */}
-                <svg className="absolute inset-0 w-full h-full opacity-40 pointer-events-none" viewBox="0 0 600 400">
-                  <path d="M 100 50 Q 250 180, 450 200 T 600 350" fill="none" stroke="#38bdf8" strokeWidth="12" opacity="0.3" />
-                  <polygon points="120,80 240,60 210,180 110,150" fill="#22c55e" fillOpacity="0.2" stroke="#22c55e" strokeWidth="1" />
-                  <polygon points="280,120 400,100 370,220 260,200" fill="#ef4444" fillOpacity="0.2" stroke="#ef4444" strokeWidth="1" />
-                  <polygon points="180,240 320,230 300,340 160,310" fill="#3b82f6" fillOpacity="0.2" stroke="#3b82f6" strokeWidth="1" />
-                </svg>
+            {/* Right Column (Phone Mockup) */}
+            <div className="lg:col-span-6 flex justify-center relative">
+              
+              {/* Phone Frame */}
+              <div className="relative w-72 sm:w-80 rounded-[3rem] bg-slate-900 p-4 shadow-2xl border-4 border-slate-700/80">
+                <div className="rounded-[2.4rem] overflow-hidden bg-navy aspect-[9/18] p-4 text-white flex flex-col justify-between border border-white/10 relative">
+                  
+                  {/* Phone UI Top bar */}
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 pb-2 border-b border-white/10">
+                    <span className="font-bold text-white">9:41</span>
+                    <span>HaNoi Realty</span>
+                    <span>5G 🔋</span>
+                  </div>
 
-                {/* Floating Pulsing Marker 1 */}
-                <div className="absolute top-[35%] left-[30%] -translate-x-1/2 -translate-y-1/2">
-                  <div className="relative flex items-center justify-center">
-                    <span className="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-orange-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full px-2 py-1 bg-orange-500 text-white font-bold text-[10px] shadow-lg">
-                      8.5 tỷ · Đống Đa
-                    </span>
+                  {/* Phone App Content Preview */}
+                  <div className="my-auto space-y-3">
+                    <div className="bg-orange-500/20 border border-orange-500/30 rounded-2xl p-3">
+                      <span className="text-[10px] text-orange-400 font-bold block mb-1">🗺️ Layer Quy hoạch 2030</span>
+                      <p className="text-xs font-bold text-white">Quận Đống Đa - Đất ở đô thị</p>
+                      <p className="text-[10px] text-slate-300">Tầng cao: 5-9 tầng · Mật độ: 65%</p>
+                    </div>
+
+                    <div className="bg-slate-800 rounded-2xl p-3 border border-slate-700">
+                      <span className="text-[10px] text-emerald-400 font-bold block mb-1">🤖 AI Phân tích</span>
+                      <p className="text-xs font-bold text-white">Tiềm năng tăng giá: 8.5/10</p>
+                    </div>
+                  </div>
+
+                  <div className="py-2 text-center text-[10px] text-slate-400">
+                    Trượt lên để mở khóa
                   </div>
                 </div>
-
-                {/* Floating Marker 2 */}
-                <div className="absolute top-[55%] left-[65%] -translate-x-1/2 -translate-y-1/2">
-                  <div className="relative flex items-center justify-center">
-                    <span className="relative inline-flex rounded-full px-2 py-1 bg-primary text-white font-bold text-[10px] shadow-lg border border-slate-600">
-                      12.8 tỷ · Cầu Giấy
-                    </span>
-                  </div>
-                </div>
-
-                {/* Floating Marker 3 */}
-                <div className="absolute top-[25%] left-[75%] -translate-x-1/2 -translate-y-1/2">
-                  <div className="relative flex items-center justify-center">
-                    <span className="relative inline-flex rounded-full px-2 py-1 bg-primary text-white font-bold text-[10px] shadow-lg border border-slate-600">
-                      24.5 tỷ · Hồ Tây
-                    </span>
-                  </div>
-                </div>
-
-                {/* Play Button Overlay */}
-                <Link
-                  href="/search"
-                  className="z-20 flex items-center gap-2 px-6 py-3 rounded-2xl bg-orange-500/90 hover:bg-orange-500 text-white font-bold text-sm shadow-2xl backdrop-blur-md transition-transform group-hover:scale-105"
-                >
-                  <Play className="h-4 w-4 fill-white" />
-                  <span>▶ Xem demo bản đồ tương tác</span>
-                </Link>
               </div>
+
+              {/* Floating Notification 1 */}
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute -top-4 -left-2 sm:left-4 bg-white text-slate-900 rounded-2xl p-3 shadow-2xl border border-slate-100 text-xs font-bold flex items-center gap-2 max-w-[220px]"
+              >
+                <div className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs shrink-0">
+                  🔔
+                </div>
+                <div className="truncate">
+                  <p className="text-[10px] text-slate-400">Vừa đăng 2 phút trước</p>
+                  <p className="truncate text-navy font-bold">Nhà phố Đống Đa 8.5 tỷ</p>
+                </div>
+              </motion.div>
+
+              {/* Floating Notification 2 */}
+              <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute -bottom-4 -right-2 sm:right-4 bg-white text-slate-900 rounded-2xl p-3 shadow-2xl border border-slate-100 text-xs font-bold flex items-center gap-2 max-w-[220px]"
+              >
+                <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs shrink-0">
+                  📊
+                </div>
+                <div className="truncate">
+                  <p className="text-[10px] text-slate-400">Báo cáo AI sẵn sàng</p>
+                  <p className="truncate text-navy font-bold">Đã phân tích 100% dữ liệu</p>
+                </div>
+              </motion.div>
+
             </div>
 
           </div>
@@ -1183,40 +1671,45 @@ export default function LandingPage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 11 — CTA CUỐI TRANG
+          📌 SECTION 11 — ĐĂNG TIN CTA
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white text-center relative overflow-hidden">
-        <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-6">
-          <div className="text-4xl sm:text-5xl">🚀</div>
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-            Bắt đầu ngay hôm nay — Miễn phí
-          </h2>
-          <p className="text-sm sm:text-base text-white/90 max-w-xl mx-auto">
-            Không cần thẻ tín dụng · Dùng thử đầy đủ tính năng 7 ngày
-          </p>
+      <section className="bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white py-16 relative overflow-hidden">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+            
+            {/* Left info */}
+            <div className="space-y-3 text-center lg:text-left">
+              <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight">
+                Bạn muốn đăng tin bán hoặc cho thuê nhà?
+              </h2>
+              <p className="text-sm sm:text-base text-white/90 max-w-xl">
+                Tiếp cận hàng nghìn khách mua tiềm năng mỗi ngày. Đăng tin miễn phí, định vị toạ độ chính xác trên bản đồ.
+              </p>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1 text-xs font-semibold text-white/90">
+                <span>✓ Miễn phí không cần thẻ</span>
+                <span>·</span>
+                <span>✓ Hiển thị ngay trên bản đồ GIS</span>
+                <span>·</span>
+                <span>✓ Tự động thẩm định AI</span>
+              </div>
+            </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Link
-              href="/search"
-              className="w-full sm:w-auto px-8 py-4 bg-white text-orange-600 hover:bg-orange-50 font-black rounded-2xl text-base shadow-xl transition-all"
-            >
-              🔍 Tìm kiếm BĐS miễn phí
-            </Link>
+            {/* Right buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+              <Link
+                href="/listings/create"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white text-orange-600 hover:bg-orange-50 font-black text-sm sm:text-base shadow-2xl transition-all hover:scale-105 text-center"
+              >
+                📝 Đăng tin ngay — Miễn phí
+              </Link>
+              <Link
+                href="/pricing"
+                className="w-full sm:w-auto px-6 py-4 rounded-2xl border-2 border-white text-white hover:bg-white/10 font-bold text-sm sm:text-base transition-all text-center"
+              >
+                💎 Xem các gói Pro
+              </Link>
+            </div>
 
-            <Link
-              href="/pricing"
-              className="w-full sm:w-auto px-8 py-4 border-2 border-white text-white hover:bg-white/10 font-bold rounded-2xl text-base transition-all"
-            >
-              💎 Xem các gói dịch vụ
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-4 text-xs font-semibold text-white/80">
-            <span>✅ Không cần thẻ</span>
-            <span>·</span>
-            <span>✅ Hủy bất kỳ lúc nào</span>
-            <span>·</span>
-            <span>✅ Hoàn tiền 7 ngày</span>
           </div>
         </div>
       </section>
@@ -1240,7 +1733,6 @@ export default function LandingPage() {
             <p className="text-xs text-slate-400 leading-relaxed">
               Nền tảng BĐS thông minh nhất Hà Nội. Tiên phong ứng dụng dữ liệu quy hoạch và định giá AI.
             </p>
-            {/* Social Icons */}
             <div className="flex items-center gap-2 pt-1">
               {['Facebook', 'YouTube', 'TikTok', 'LinkedIn'].map((social) => (
                 <div
@@ -1260,7 +1752,7 @@ export default function LandingPage() {
             <ul className="space-y-2 text-slate-400">
               <li><Link href="/search" className="hover:text-white transition-colors">Tìm kiếm BĐS</Link></li>
               <li><Link href="/planning" className="hover:text-white transition-colors">Bản đồ quy hoạch</Link></li>
-              <li><Link href="/reports/1" className="hover:text-white transition-colors">Báo cáo AI</Link></li>
+              <li><Link href="/reports" className="hover:text-white transition-colors">Báo cáo AI</Link></li>
               <li><Link href="/listings/create" className="hover:text-white transition-colors">Đăng tin BĐS</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Gói thành viên</Link></li>
               <li><Link href="/admin" className="text-orange-400 hover:text-white transition-colors font-bold flex items-center gap-1">🛡️ Admin Portal</Link></li>
@@ -1284,15 +1776,15 @@ export default function LandingPage() {
             <h4 className="font-bold text-white uppercase text-xs tracking-wider">Liên hệ</h4>
             <div className="space-y-2 text-slate-400 text-xs">
               <p className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 text-orange-400 shrink-0" />
+                <span className="text-orange-400 font-bold">✉️</span>
                 <span>support@hanoirealty.vn</span>
               </p>
               <p className="flex items-center gap-2">
-                <PhoneCall className="h-3.5 w-3.5 text-orange-400 shrink-0" />
+                <span className="text-orange-400 font-bold">📞</span>
                 <span>1800 6868 (miễn phí)</span>
               </p>
               <p className="flex items-start gap-2">
-                <MapPin className="h-3.5 w-3.5 text-orange-400 shrink-0 mt-0.5" />
+                <span className="text-orange-400 font-bold mt-0.5">📍</span>
                 <span>Tầng 12, Tòa nhà Handico, Phạm Hùng, Nam Từ Liêm, Hà Nội</span>
               </p>
               <p className="text-[11px] text-slate-500 pt-1">
@@ -1307,11 +1799,11 @@ export default function LandingPage() {
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>© 2025 HaNoi Realty. Bảo lưu mọi quyền.</p>
           <div className="flex gap-4">
-            <Link href="/" className="hover:text-slate-300 transition-colors">Chính sách bảo mật</Link>
+            <Link href="/about" className="hover:text-slate-300 transition-colors">Chính sách bảo mật</Link>
             <span>·</span>
-            <Link href="/" className="hover:text-slate-300 transition-colors">Điều khoản sử dụng</Link>
+            <Link href="/about" className="hover:text-slate-300 transition-colors">Điều khoản sử dụng</Link>
             <span>·</span>
-            <Link href="/" className="hover:text-slate-300 transition-colors">Cookies</Link>
+            <Link href="/about" className="hover:text-slate-300 transition-colors">Cookies</Link>
           </div>
         </div>
       </footer>
