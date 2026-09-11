@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,8 +26,65 @@ import {
   Bath,
   Building,
   Compass,
-  Check
+  Check,
+  Star,
+  Loader2,
+  Plus
 } from 'lucide-react';
+
+/**
+ * Hàm nén và đọc file ảnh sang DataURL (JPEG chất lượng cao, tối đa 1600px)
+ * Đảm bảo tải mượt mà từ máy tính và hiển thị ngay tức thì
+ */
+function processImageFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`Không thể đọc file ${file.name}`));
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      if (!dataUrl) {
+        reject(new Error('Dữ liệu file rỗng'));
+        return;
+      }
+      const img = new Image();
+      img.onerror = () => resolve(dataUrl);
+      img.onload = () => {
+        try {
+          const MAX_WIDTH = 1600;
+          const MAX_HEIGHT = 1600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+            if (width > height) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            } else {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(dataUrl);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(compressed);
+        } catch {
+          resolve(dataUrl);
+        }
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 const LocationPicker = dynamic(
   () => import('@/components/map/LocationPicker'),
@@ -102,9 +159,17 @@ export const CreateListingWizard: React.FC = () => {
     { id: 'villa', title: 'Biệt thự / Shophouse', icon: Landmark, desc: 'Biệt thự đơn lập, song lập, nhà thương mại' },
   ];
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
   const handleNext = () => {
     if (currentStep === 2 && !formData.street && !pickedLocation) {
       addToast('Vui lòng ghim vị trí hoặc nhập tên đường / phố', 'warning');
+      return;
+    }
+    if (currentStep === 3 && formData.images.length === 0) {
+      addToast('Vui lòng tải lên ít nhất 1 hình ảnh của bất động sản', 'warning');
       return;
     }
     if (currentStep === 4 && (!formData.price || !formData.area)) {
@@ -118,6 +183,90 @@ export const CreateListingWizard: React.FC = () => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
+  const handleFiles = async (fileList: FileList | File[]) => {
+    const files = Array.from(fileList);
+    if (!files.length) return;
+
+    const MAX_IMAGES = 20;
+    const remainingSlots = MAX_IMAGES - formData.images.length;
+
+    if (remainingSlots <= 0) {
+      addToast(`Đã đạt giới hạn tối đa ${MAX_IMAGES} ảnh. Hãy xóa bớt ảnh trước khi thêm mới.`, 'warning');
+      return;
+    }
+
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const validFiles: File[] = [];
+
+    for (const file of files) {
+      if (!validImageTypes.includes(file.type.toLowerCase()) && !file.type.startsWith('image/')) {
+        addToast(`File "${file.name}" không phải định dạng ảnh (JPG, PNG, WEBP)`, 'warning');
+        continue;
+      }
+      // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
+        addToast(`Ảnh "${file.name}" vượt quá dung lượng tối đa 10MB`, 'error');
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (!validFiles.length) return;
+
+    const filesToProcess = validFiles.slice(0, remainingSlots);
+    if (validFiles.length > remainingSlots) {
+      addToast(`Chỉ có thể tải thêm ${remainingSlots} ảnh (giới hạn tối đa 20 ảnh)`, 'info');
+    }
+
+    setIsUploading(true);
+    try {
+      const processedUrls: string[] = [];
+      for (const file of filesToProcess) {
+        try {
+          const dataUrl = await processImageFile(file);
+          processedUrls.push(dataUrl);
+        } catch {
+          addToast(`Không thể đọc file ảnh: ${file.name}`, 'error');
+        }
+      }
+
+      if (processedUrls.length > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          images: [...prev.images, ...processedUrls],
+        }));
+        addToast(`🎉 Đã tải lên thành công ${processedUrls.length} ảnh từ máy tính!`, 'success');
+      }
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+  };
+
+  const handleSetCoverImage = (index: number) => {
+    if (index === 0) return;
+    setFormData((prev) => {
+      const updated = [...prev.images];
+      const [cover] = updated.splice(index, 1);
+      updated.unshift(cover);
+      return { ...prev, images: updated };
+    });
+    addToast('⭐ Đã đổi ảnh đại diện thành công!', 'success');
+  };
+
+  const handleClearAllImages = () => {
+    setFormData((prev) => ({ ...prev, images: [] }));
+    addToast('Đã xóa tất cả ảnh', 'info');
+  };
+
   const handleAddSampleImage = () => {
     const samples = [
       'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
@@ -127,7 +276,7 @@ export const CreateListingWizard: React.FC = () => {
     const randomImg = samples[Math.floor(Math.random() * samples.length)];
     if (formData.images.length < 20) {
       setFormData((prev) => ({ ...prev, images: [...prev.images, randomImg] }));
-      addToast('Đã thêm 1 hình ảnh mới', 'info');
+      addToast('Đã thêm 1 hình ảnh mẫu', 'info');
     }
   };
 
@@ -382,46 +531,164 @@ export const CreateListingWizard: React.FC = () => {
                   <h2 className="text-lg font-extrabold text-text-primary">Bước 3: Tải ảnh bất động sản</h2>
                   <p className="text-xs text-text-secondary mt-1">Tin đăng có từ 3 ảnh trở lên nhận được gấp 4 lần lượt liên hệ</p>
                 </div>
-                <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-bold text-text-secondary">
-                  {formData.images.length} / 20 ảnh
-                </span>
+                <div className="flex items-center gap-2">
+                  {formData.images.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleClearAllImages}
+                      className="text-xs font-semibold text-red-500 hover:text-red-600 px-2 py-1 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      Xóa tất cả
+                    </button>
+                  )}
+                  <span className={`rounded-lg px-3 py-1 text-xs font-bold ${
+                    formData.images.length >= 3 
+                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' 
+                      : 'bg-slate-100 text-text-secondary'
+                  }`}>
+                    {formData.images.length} / 20 ảnh
+                  </span>
+                </div>
               </div>
+
+              {/* Hidden File Input for Native File Dialog */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                onChange={handleFileInputChange}
+                className="hidden"
+              />
 
               {/* Drag Drop Zone */}
               <div
-                onClick={handleAddSampleImage}
-                className="border-2 border-dashed border-accent/60 bg-orange-50/20 rounded-2xl p-8 text-center cursor-pointer hover:bg-orange-50/40 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(true);
+                }}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(false);
+                  if (e.dataTransfer.files?.length) {
+                    handleFiles(e.dataTransfer.files);
+                  }
+                }}
+                className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 ${
+                  isDragging
+                    ? 'border-accent bg-accent/15 scale-[1.01] ring-4 ring-accent/20'
+                    : 'border-accent/60 bg-orange-50/20 hover:bg-orange-50/40 hover:border-accent'
+                }`}
               >
-                <UploadCloud className="h-10 w-10 text-accent mx-auto mb-2" />
-                <p className="text-xs font-bold text-text-primary">Kéo thả ảnh vào đây hoặc bấm để chọn ảnh</p>
-                <p className="text-[11px] text-text-muted mt-1">Hỗ trợ định dạng JPG, PNG, WEBP tối đa 10MB/ảnh</p>
-                <button
-                  type="button"
-                  className="mt-3 rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white shadow-sm"
-                >
-                  + Tải ảnh từ máy tính
-                </button>
+                {isUploading ? (
+                  <div className="py-4">
+                    <Loader2 className="h-10 w-10 text-accent mx-auto mb-2 animate-spin" />
+                    <p className="text-xs font-bold text-accent">Đang xử lý tải ảnh từ máy tính...</p>
+                    <p className="text-[11px] text-text-muted mt-1">Đang tối ưu dung lượng và chất lượng hiển thị</p>
+                  </div>
+                ) : (
+                  <>
+                    <UploadCloud className={`h-10 w-10 mx-auto mb-2 transition-transform duration-200 ${isDragging ? 'text-accent scale-125' : 'text-accent'}`} />
+                    <p className="text-xs font-bold text-text-primary">
+                      {isDragging ? 'Thả ảnh vào đây để tải lên ngay!' : 'Kéo thả ảnh vào đây hoặc bấm để chọn ảnh'}
+                    </p>
+                    <p className="text-[11px] text-text-muted mt-1">Hỗ trợ định dạng JPG, PNG, WEBP tối đa 10MB/ảnh (chọn được nhiều ảnh)</p>
+                    
+                    <div className="mt-4 flex items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fileInputRef.current?.click();
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-accent/90 hover:shadow-lg transition-all"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Tải ảnh từ máy tính
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddSampleImage();
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-2 text-xs font-semibold text-text-secondary hover:bg-slate-50 hover:text-text-primary transition-colors"
+                      >
+                        + Thêm ảnh mẫu
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Thumbnails preview grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {formData.images.map((imgUrl, idx) => (
-                  <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-border group bg-slate-100">
-                    <img src={imgUrl} alt={`preview-${idx}`} className="h-full w-full object-cover" />
-                    {idx === 0 && (
-                      <span className="absolute top-1.5 left-1.5 rounded bg-black/70 px-1.5 py-0.5 text-[9px] font-bold text-white">
-                        Ảnh đại diện
-                      </span>
-                    )}
-                    <button
-                      onClick={() => handleDeleteImage(idx)}
-                      className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+              {formData.images.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-text-muted">
+                    <span>Di chuột vào ảnh để đặt làm ảnh đại diện hoặc xóa ảnh</span>
+                    <span>Ảnh đầu tiên là ảnh đại diện hiển thị ngoài danh sách</span>
                   </div>
-                ))}
-              </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {formData.images.map((imgUrl, idx) => (
+                      <div
+                        key={idx}
+                        className={`relative aspect-video rounded-xl overflow-hidden border group bg-slate-100 transition-all ${
+                          idx === 0 ? 'ring-2 ring-accent border-accent' : 'border-border hover:border-accent/60'
+                        }`}
+                      >
+                        <img src={imgUrl} alt={`preview-${idx}`} className="h-full w-full object-cover" />
+                        
+                        {/* Number Index Badge */}
+                        <span className="absolute bottom-1.5 left-1.5 rounded bg-black/60 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-bold text-white">
+                          #{idx + 1}
+                        </span>
+
+                        {/* Cover Image Badge */}
+                        {idx === 0 ? (
+                          <span className="absolute top-1.5 left-1.5 inline-flex items-center gap-1 rounded bg-accent px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                            <Star className="h-3 w-3 fill-white" />
+                            Ảnh đại diện
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSetCoverImage(idx)}
+                            className="absolute top-1.5 left-1.5 inline-flex items-center gap-1 rounded bg-black/70 hover:bg-accent px-2 py-0.5 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                            title="Đặt làm ảnh đại diện"
+                          >
+                            <Star className="h-3 w-3" />
+                            Đặt làm đại diện
+                          </button>
+                        )}
+
+                        {/* Delete Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteImage(idx)}
+                          className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-red-600 hover:bg-red-700 text-white opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                          title="Xóa ảnh này"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -580,11 +847,30 @@ export const CreateListingWizard: React.FC = () => {
               {/* Preview Card */}
               <div className="rounded-2xl border border-border bg-page-bg p-5 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <img
-                    src={formData.images[0]}
-                    alt="preview"
-                    className="w-full sm:w-48 aspect-video sm:aspect-square object-cover rounded-xl shadow-sm"
-                  />
+                  <div className="w-full sm:w-48 shrink-0 space-y-2">
+                    <img
+                      src={formData.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'}
+                      alt="preview"
+                      className="w-full aspect-video sm:aspect-square object-cover rounded-xl shadow-sm border border-border"
+                    />
+                    {formData.images.length > 1 && (
+                      <div className="flex gap-1.5 overflow-x-auto pb-1">
+                        {formData.images.slice(1, 5).map((img, i) => (
+                          <img
+                            key={i}
+                            src={img}
+                            alt={`sub-${i}`}
+                            className="h-9 w-9 rounded-lg object-cover border border-border shrink-0"
+                          />
+                        ))}
+                        {formData.images.length > 5 && (
+                          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-bold text-text-muted shrink-0">
+                            +{formData.images.length - 5}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="rounded bg-accent px-2 py-0.5 text-[10px] font-bold text-white uppercase">
