@@ -292,6 +292,15 @@ function SearchContent() {
                   }}
                   onMarkerHover={setHoveredListingId}
                   showPlanningLayer={filters.planningZone.length > 0}
+                  onLocationSelect={(loc) => {
+                    if (loc.category === 'district' && loc.district) {
+                      handleFilterUpdate({ district: loc.district });
+                    }
+                  }}
+                  onFilterNearLocation={(coords, radiusKm, label) => {
+                    handleFilterUpdate({ keyword: label });
+                    setSidebarTab('listings');
+                  }}
                 />
               </motion.div>
             )}
