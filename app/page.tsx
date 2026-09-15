@@ -80,11 +80,11 @@ function FadeInSection({ children, delay = 0, className = '' }: { children: Reac
 function HeroCounter({ value, suffix, label }: { value: number; suffix: string; label: string }) {
   const { count, ref } = useCountUp(value, 1500);
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 py-2">
-      <span className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+    <div ref={ref} className="flex flex-col items-center justify-center text-center px-3 py-1">
+      <span className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight">
         {count.toLocaleString()}{suffix}
       </span>
-      <span className="text-white/70 text-[11px] sm:text-xs font-medium mt-0.5">
+      <span className="text-white/70 text-[10px] sm:text-xs font-medium mt-0.5">
         {label}
       </span>
     </div>
@@ -382,7 +382,7 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1 — HERO SEARCH (Phong cách batdongsan.com.vn)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative min-h-[82vh] flex flex-col justify-between items-center overflow-hidden bg-[#0a0f1e] text-white pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+      <section className="relative flex flex-col items-center overflow-hidden bg-[#0a0f1e] text-white pt-20 pb-4 px-4 sm:px-6 lg:px-8">
         {/* Hanoi Skyline Background Image Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none mix-blend-luminosity scale-105 transition-transform duration-1000"
@@ -407,14 +407,14 @@ export default function HomePage() {
         />
 
         {/* Center Search Container */}
-        <div className="max-w-5xl w-full mx-auto text-center relative z-10 my-auto py-6">
+        <div className="max-w-5xl w-full mx-auto text-center relative z-10 py-1 sm:py-2">
           
           {/* Top Badge */}
           <motion.div
             initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 border border-orange-500/40 bg-orange-500/20 text-orange-300 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold backdrop-blur-md shadow-lg shadow-orange-500/10 mb-4"
+            className="inline-flex items-center gap-2 border border-orange-500/40 bg-orange-500/20 text-orange-300 rounded-full px-3.5 py-1 text-xs font-semibold backdrop-blur-md shadow-lg shadow-orange-500/10 mb-2.5"
           >
             <span>🏆</span>
             <span>Nền tảng BĐS thông minh #1 Hà Nội</span>
@@ -440,13 +440,13 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-white/70 text-sm sm:text-base md:text-lg mt-3 mb-6 max-w-2xl mx-auto font-normal"
+            className="text-white/70 text-xs sm:text-sm md:text-base mt-2 mb-3.5 max-w-2xl mx-auto font-normal"
           >
             Hơn 10,000+ tin đăng · Dữ liệu quy hoạch thực · Phân tích AI chuyên sâu
           </motion.p>
 
           {/* ━━ TAB ROW (Mua / Thuê / Dự án / Định giá) ━━ */}
-          <div className="flex items-center justify-center gap-4 sm:gap-8 mb-3 text-sm font-bold">
+          <div className="flex items-center justify-center gap-4 sm:gap-7 mb-2.5 text-xs sm:text-sm font-bold">
             {[
               { key: 'buy', label: '🏠 Mua bán' },
               { key: 'rent', label: '🔑 Cho thuê' },
@@ -772,7 +772,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-2 pt-4 text-xs font-medium text-white/80"
+            className="flex flex-wrap items-center justify-center gap-1.5 pt-2 text-xs font-medium text-white/80"
           >
             <span className="text-white/60">Tìm kiếm phổ biến:</span>
             {[
@@ -796,7 +796,7 @@ export default function HomePage() {
         </div>
 
         {/* BOTTOM STATS BAR */}
-        <div className="w-full max-w-6xl mx-auto rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-3 px-4 relative z-10">
+        <div className="w-full max-w-6xl mx-auto rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-2 px-3 sm:px-4 mt-2.5 mb-0 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">
             <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
             <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
@@ -809,14 +809,14 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 2 — DANH MỤC NHANH (Quick Property Types)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-white py-12 border-b border-slate-100">
+      <section className="bg-white pt-4 pb-8 sm:pt-5 sm:pb-10 border-b border-slate-100">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3.5">
             <div>
-              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+              <span className="text-orange-500 font-extrabold text-[11px] tracking-wider uppercase">
                 KHÁM PHÁ THEO NHU CẦU
               </span>
-              <h2 className="text-xl sm:text-2xl font-black text-navy">
+              <h2 className="text-lg sm:text-xl font-black text-navy">
                 Danh mục bất động sản Hà Nội
               </h2>
             </div>
@@ -829,7 +829,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3">
             {[
               { name: 'Nhà phố', count: '4,231 tin', icon: '🏠', href: '/search?type=house' },
               { name: 'Chung cư', count: '2,891 tin', icon: '🏢', href: '/search?type=apartment' },
@@ -842,23 +842,23 @@ export default function HomePage() {
             ].map((cat, idx) => (
               <motion.div
                 key={cat.name}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: idx * 0.04 }}
-                whileHover={{ y: -4, scale: 1.02 }}
+                transition={{ duration: 0.3, delay: idx * 0.03 }}
+                whileHover={{ y: -3, scale: 1.02 }}
               >
                 <Link
                   href={cat.href}
-                  className="flex flex-col items-center justify-center text-center p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-orange-300 hover:bg-orange-50/20 hover:shadow-md transition-all group h-full"
+                  className="flex flex-col items-center justify-center text-center p-2.5 sm:p-3 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-orange-300 hover:bg-orange-50/20 hover:shadow-md transition-all group h-full"
                 >
-                  <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-110 transition-transform">
                     {cat.icon}
                   </span>
-                  <span className="font-extrabold text-xs sm:text-sm text-navy group-hover:text-orange-600 transition-colors">
+                  <span className="font-extrabold text-xs text-navy group-hover:text-orange-600 transition-colors">
                     {cat.name}
                   </span>
-                  <span className="text-[11px] text-slate-400 mt-0.5">{cat.count}</span>
+                  <span className="text-[10px] text-slate-400 mt-0.5">{cat.count}</span>
                 </Link>
               </motion.div>
             ))}
