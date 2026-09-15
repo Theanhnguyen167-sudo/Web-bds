@@ -35,7 +35,7 @@ function SearchContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { listings, savedListingIds, toggleSaveListing } = useApp();
+  const { listings, savedListingIds, toggleSaveListing, user, addToast } = useApp();
 
   // ── FILTER STATE ──
   const [filters, setFilters] = useState<SearchFilters>(() => {
@@ -192,7 +192,13 @@ function SearchContent() {
           sortBy={sortBy}
           onSortChange={setSortBy}
           onReset={handleResetFilters}
-          onOpenSaveSearch={() => setShowSaveSearchModal(true)}
+          onOpenSaveSearch={() => {
+            if (!user) {
+              addToast('Đăng nhập để lưu bất động sản này', 'warning');
+              return;
+            }
+            setShowSaveSearchModal(true);
+          }}
           onToggleMobileFilter={() => setMobileFilterOpen(true)}
         />
 

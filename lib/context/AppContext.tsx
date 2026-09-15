@@ -33,7 +33,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<typeof mockUser | null>(mockUser);
+  const [user, setUser] = useState<typeof mockUser | null>(null);
   const [listings, setListings] = useState<ListingItem[]>(mockListings);
   const [savedListingIds, setSavedListingIds] = useState<string[]>(['1', '3']);
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
@@ -99,6 +99,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleToggleSaveListing = async (id: string) => {
+    if (!user) {
+      addToast('Đăng nhập để lưu bất động sản này', 'warning');
+      return;
+    }
     const isSaved = savedListingIds.includes(id);
     if (isSaved) {
       setSavedListingIds((prev) => prev.filter((item) => item !== id));
