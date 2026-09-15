@@ -287,6 +287,45 @@ export const CreateListingWizard: React.FC = () => {
     }));
   };
 
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const cursorPosition = input.selectionStart || 0;
+    const oldValue = input.value;
+
+    // Đếm số chữ số đứng trước vị trí con trỏ hiện tại
+    const digitsBeforeCursor = oldValue.slice(0, cursorPosition).replace(/\D/g, '').length;
+
+    // Trích xuất toàn bộ chữ số
+    const rawDigits = oldValue.replace(/\D/g, '');
+    const numValue = rawDigits ? parseInt(rawDigits, 10) : 0;
+
+    // Giới hạn an toàn tối đa (10.000 tỷ VND)
+    if (numValue > 10_000_000_000_000) return;
+
+    setFormData((prev) => ({ ...prev, price: numValue }));
+
+    // Duy trì vị trí con trỏ sau khi định dạng dấu chấm
+    requestAnimationFrame(() => {
+      if (!input) return;
+      const newFormatted = numValue > 0 ? numValue.toLocaleString('vi-VN') : '';
+      let newCursorPos = 0;
+      let digitCount = 0;
+      for (let i = 0; i < newFormatted.length; i++) {
+        if (/\d/.test(newFormatted[i])) {
+          digitCount++;
+        }
+        if (digitCount === digitsBeforeCursor) {
+          newCursorPos = i + 1;
+          break;
+        }
+      }
+      if (digitCount < digitsBeforeCursor || newCursorPos === 0) {
+        newCursorPos = newFormatted.length;
+      }
+      input.setSelectionRange(newCursorPos, newCursorPos);
+    });
+  };
+
   const handleSubmitListing = () => {
     const fullAddress = `${formData.addressNumber} ${formData.street}, ${formData.ward}, ${formData.district}, Hà Nội`;
     const finalTitle =
@@ -714,13 +753,19 @@ export const CreateListingWizard: React.FC = () => {
                     <label className="text-xs font-bold text-text-primary">Mức giá chào bán (VNĐ) *</label>
                     <span className="text-xs font-black text-accent">{formatCurrencyVND(formData.price)}</span>
                   </div>
-                  <input
-                    type="number"
-                    value={formData.price}
-                    step={100000000}
-                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
-                  />
+                  <div className="relative mt-1">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={formData.price > 0 ? formData.price.toLocaleString('vi-VN') : ''}
+                      onChange={handlePriceChange}
+                      placeholder="VD: 1.000.000.000"
+                      className="w-full rounded-xl border border-input bg-page-bg p-3 pr-14 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
+                    />
+                    <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-text-secondary">
+                      VND
+                    </span>
+                  </div>
                 </div>
 
                 {/* Area */}
