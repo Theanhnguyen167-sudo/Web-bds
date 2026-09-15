@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -112,6 +112,96 @@ const HANOI_DISTRICTS = [
   'Hoàng Mai',
 ];
 
+/**
+ * Quản lý lưu trữ bản nháp (Draft Persistence) qua IndexedDB & LocalStorage
+ * Giúp bảo toàn danh sách ảnh đã tải lên và toàn bộ thông tin đăng tin khi F5 / load lại trang
+ */
+const DRAFT_DB_NAME = 'HanoiRealty_DraftDB';
+const DRAFT_STORE_NAME = 'wizard_store';
+const DRAFT_IMAGES_KEY = 'wizard_uploaded_images';
+const DRAFT_FORM_KEY = 'hanoirealty_wizard_form_draft';
+const DRAFT_STEP_KEY = 'hanoirealty_wizard_step_draft';
+
+function openDraftDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !window.indexedDB) {
+      reject(new Error('IndexedDB không khả dụng'));
+      return;
+    }
+    const request = window.indexedDB.open(DRAFT_DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(DRAFT_STORE_NAME)) {
+        db.createObjectStore(DRAFT_STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveDraftImages(images: string[]): Promise<void> {
+  try {
+    const db = await openDraftDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
+      const store = tx.objectStore(DRAFT_STORE_NAME);
+      store.put(images, DRAFT_IMAGES_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch {
+    try {
+      localStorage.setItem(DRAFT_IMAGES_KEY, JSON.stringify(images));
+    } catch {
+      // Bỏ qua nếu localStorage bị đầy
+    }
+  }
+}
+
+async function loadDraftImages(): Promise<string[] | null> {
+  try {
+    const db = await openDraftDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(DRAFT_STORE_NAME, 'readonly');
+      const store = tx.objectStore(DRAFT_STORE_NAME);
+      const req = store.get(DRAFT_IMAGES_KEY);
+      req.onsuccess = () => {
+        if (req.result !== undefined && Array.isArray(req.result)) {
+          resolve(req.result);
+        } else {
+          resolve(null);
+        }
+      };
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    try {
+      const local = localStorage.getItem(DRAFT_IMAGES_KEY);
+      return local ? JSON.parse(local) : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+async function clearDraftStorage(): Promise<void> {
+  try {
+    const db = await openDraftDB();
+    const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
+    tx.objectStore(DRAFT_STORE_NAME).delete(DRAFT_IMAGES_KEY);
+  } catch {
+    // Bỏ qua lỗi
+  }
+  try {
+    localStorage.removeItem(DRAFT_IMAGES_KEY);
+    localStorage.removeItem(DRAFT_FORM_KEY);
+    localStorage.removeItem(DRAFT_STEP_KEY);
+  } catch {
+    // Bỏ qua lỗi
+  }
+}
+
 export const CreateListingWizard: React.FC = () => {
   const router = useRouter();
   const { addNewListing, addToast } = useApp();
@@ -162,6 +252,86 @@ export const CreateListingWizard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const isHydratedRef = useRef(false);
+
+  // Khôi phục bản nháp (Draft) từ IndexedDB và LocalStorage khi vừa load trang
+  useEffect(() => {
+    let isMounted = true;
+
+    const restoreDraft = async () => {
+      try {
+        // 1. Khôi phục bước hiện tại nếu người dùng đang ở bước khác bước 1
+        const savedStep = localStorage.getItem(DRAFT_STEP_KEY);
+        if (savedStep && isMounted) {
+          const stepNum = parseInt(savedStep, 10);
+          if (stepNum >= 1 && stepNum <= 5) {
+            setCurrentStep(stepNum);
+          }
+        }
+
+        // 2. Khôi phục thông tin đăng tin (địa chỉ, giá, diện tích,...)
+        const savedForm = localStorage.getItem(DRAFT_FORM_KEY);
+        if (savedForm && isMounted) {
+          const parsed = JSON.parse(savedForm);
+          setFormData((prev) => ({
+            ...prev,
+            ...parsed,
+          }));
+
+          if (parsed.lat && parsed.lng) {
+            setPickedLocation({
+              lat: parsed.lat,
+              lng: parsed.lng,
+              displayName: `${parsed.addressNumber || ''} ${parsed.street || ''}, ${parsed.ward || ''}, ${parsed.district || ''}, Hà Nội`.trim(),
+              district: parsed.district || 'Cầu Giấy',
+              ward: parsed.ward || '',
+              road: parsed.street || '',
+              houseNumber: parsed.addressNumber || '',
+            });
+          }
+        }
+
+        // 3. Khôi phục danh sách ảnh đã tải lên từ IndexedDB
+        const savedImages = await loadDraftImages();
+        if (isMounted && savedImages && Array.isArray(savedImages)) {
+          setFormData((prev) => ({
+            ...prev,
+            images: savedImages,
+          }));
+        }
+      } catch (err) {
+        console.error('Lỗi khi khôi phục bản nháp:', err);
+      } finally {
+        if (isMounted) {
+          isHydratedRef.current = true;
+        }
+      }
+    };
+
+    restoreDraft();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Tự động lưu hình ảnh vào IndexedDB khi danh sách ảnh thay đổi
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
+    saveDraftImages(formData.images);
+  }, [formData.images]);
+
+  // Tự động lưu thông tin form và bước hiện tại vào LocalStorage
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
+    try {
+      const { images: _ignored, ...formMeta } = formData;
+      localStorage.setItem(DRAFT_FORM_KEY, JSON.stringify(formMeta));
+      localStorage.setItem(DRAFT_STEP_KEY, currentStep.toString());
+    } catch {
+      // Quota limit fallback
+    }
+  }, [formData, currentStep]);
 
   const handleNext = () => {
     if (currentStep === 2 && !formData.street && !pickedLocation) {
@@ -231,10 +401,14 @@ export const CreateListingWizard: React.FC = () => {
       }
 
       if (processedUrls.length > 0) {
-        setFormData((prev) => ({
-          ...prev,
-          images: [...prev.images, ...processedUrls],
-        }));
+        setFormData((prev) => {
+          const updatedImages = [...prev.images, ...processedUrls];
+          saveDraftImages(updatedImages);
+          return {
+            ...prev,
+            images: updatedImages,
+          };
+        });
         addToast(`🎉 Đã tải lên thành công ${processedUrls.length} ảnh từ máy tính!`, 'success');
       }
     } finally {
@@ -257,6 +431,7 @@ export const CreateListingWizard: React.FC = () => {
       const updated = [...prev.images];
       const [cover] = updated.splice(index, 1);
       updated.unshift(cover);
+      saveDraftImages(updated);
       return { ...prev, images: updated };
     });
     addToast('⭐ Đã đổi ảnh đại diện thành công!', 'success');
@@ -264,6 +439,7 @@ export const CreateListingWizard: React.FC = () => {
 
   const handleClearAllImages = () => {
     setFormData((prev) => ({ ...prev, images: [] }));
+    saveDraftImages([]);
     addToast('Đã xóa tất cả ảnh', 'info');
   };
 
@@ -275,16 +451,24 @@ export const CreateListingWizard: React.FC = () => {
     ];
     const randomImg = samples[Math.floor(Math.random() * samples.length)];
     if (formData.images.length < 20) {
-      setFormData((prev) => ({ ...prev, images: [...prev.images, randomImg] }));
+      setFormData((prev) => {
+        const updated = [...prev.images, randomImg];
+        saveDraftImages(updated);
+        return { ...prev, images: updated };
+      });
       addToast('Đã thêm 1 hình ảnh mẫu', 'info');
     }
   };
 
   const handleDeleteImage = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
+    setFormData((prev) => {
+      const updated = prev.images.filter((_, i) => i !== index);
+      saveDraftImages(updated);
+      return {
+        ...prev,
+        images: updated,
+      };
+    });
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -338,6 +522,8 @@ export const CreateListingWizard: React.FC = () => {
       address: fullAddress,
       pricePerM2: formData.price / formData.area,
     });
+
+    clearDraftStorage(); // Dọn dẹp bản nháp đã lưu sau khi xuất bản thành công
 
     router.push('/dashboard');
   };
