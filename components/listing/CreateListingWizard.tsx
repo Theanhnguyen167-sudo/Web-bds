@@ -891,8 +891,8 @@ export const CreateListingWizard: React.FC = () => {
 
               {/* Preview Card */}
               <div className="rounded-2xl border border-border bg-page-bg p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {/* Bố cục hình ảnh xem trước: Tối đa 4 ảnh, Ảnh 1 (~70%), Cột dọc bên phải (~30%) */}
+                <div className="flex flex-col sm:flex-row gap-5">
+                  {/* Bố cục gallery phong cách BĐS hiện đại: Ảnh chính lớn tạo điểm nhấn, các ảnh phụ xếp dọc bên phải với kích thước lớn rõ nét */}
                   {(() => {
                     const previewImages = formData.images.length > 0
                       ? formData.images
@@ -901,9 +901,9 @@ export const CreateListingWizard: React.FC = () => {
                     const subPreviewImages = previewImages.slice(1, 4);
 
                     return (
-                      <div className="w-full sm:w-72 md:w-80 shrink-0 h-48 sm:h-52 md:h-56">
+                      <div className="w-full sm:w-[50%] md:w-[54%] lg:w-[56%] shrink-0 h-60 sm:h-64 md:h-72 lg:h-[290px]">
                         {subPreviewImages.length === 0 ? (
-                          <div className="h-full w-full overflow-hidden rounded-xl border border-border shadow-xs">
+                          <div className="h-full w-full overflow-hidden rounded-xl border border-border/80 shadow-xs">
                             <img
                               src={mainPreviewImage}
                               alt="Ảnh chính"
@@ -911,32 +911,33 @@ export const CreateListingWizard: React.FC = () => {
                             />
                           </div>
                         ) : (
-                          <div className="flex h-full w-full gap-2 sm:gap-2.5">
-                            {/* Ảnh 1 là ảnh chính, chiếm ~70% chiều rộng */}
-                            <div className="h-full w-[70%] shrink-0 overflow-hidden rounded-xl border border-border shadow-xs">
+                          <div className="flex h-full w-full gap-2">
+                            {/* Ảnh chính lớn tạo điểm nhấn, chiếm khoảng 67-70% chiều rộng */}
+                            <div className="h-full w-[67%] shrink-0 overflow-hidden rounded-xl border border-border/80 shadow-xs">
                               <img
                                 src={mainPreviewImage}
                                 alt="Ảnh chính"
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                               />
                             </div>
 
-                            {/* Cột dọc bên phải chiếm ~30% chiều rộng, chứa ảnh 2, 3, 4 */}
-                            <div className="flex h-full flex-1 min-w-0 flex-col gap-2 sm:gap-2.5">
+                            {/* Cột ảnh phụ xếp dọc bên phải, khoảng cách nhỏ và đồng đều (gap-2 = 8px) */}
+                            <div className="flex h-full flex-1 min-w-0 flex-col gap-2">
                               {subPreviewImages.map((img, i) => (
                                 <div
                                   key={i}
-                                  className="relative h-full flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-border shadow-xs"
+                                  className="relative h-full flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-border/80 shadow-xs"
                                 >
                                   <img
                                     src={img}
                                     alt={`Ảnh phụ ${i + 1}`}
-                                    className="h-full w-full object-cover"
+                                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                                   />
                                   {i === 2 && previewImages.length > 4 && (
-                                    <span className="absolute bottom-1 right-1 rounded-md bg-black/65 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
-                                      +{previewImages.length - 4}
-                                    </span>
+                                    <div className="absolute bottom-1.5 right-1.5 rounded-lg bg-black/75 px-2 py-0.5 text-[10px] font-bold text-white shadow-md backdrop-blur-xs flex items-center gap-1">
+                                      <ImageIcon className="h-3 w-3" />
+                                      <span>+{previewImages.length - 4}</span>
+                                    </div>
                                   )}
                                 </div>
                               ))}
@@ -946,26 +947,29 @@ export const CreateListingWizard: React.FC = () => {
                       </div>
                     );
                   })()}
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded bg-accent px-2 py-0.5 text-[10px] font-bold text-white uppercase">
-                        {formData.type}
-                      </span>
-                      <span className="text-xs font-extrabold text-accent">
-                        {formatCurrencyVND(formData.price)} ({formatPricePerM2(formData.price, formData.area)})
-                      </span>
+
+                  <div className="space-y-3 flex-1 flex flex-col justify-between py-1">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-accent px-2 py-0.5 text-[10px] font-bold text-white uppercase">
+                          {formData.type}
+                        </span>
+                        <span className="text-xs font-extrabold text-accent">
+                          {formatCurrencyVND(formData.price)} ({formatPricePerM2(formData.price, formData.area)})
+                        </span>
+                      </div>
+
+                      <h3 className="text-sm font-extrabold text-text-primary leading-snug">
+                        {formData.title || `Bán BĐS ${formData.area}m² tại ${formData.district}`}
+                      </h3>
+
+                      <p className="text-xs text-text-secondary flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5 text-accent shrink-0" />
+                        {formData.addressNumber} {formData.street}, {formData.ward}, {formData.district}, Hà Nội
+                      </p>
                     </div>
 
-                    <h3 className="text-sm font-extrabold text-text-primary">
-                      {formData.title || `Bán BĐS ${formData.area}m² tại ${formData.district}`}
-                    </h3>
-
-                    <p className="text-xs text-text-secondary flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 text-accent shrink-0" />
-                      {formData.addressNumber} {formData.street}, {formData.ward}, {formData.district}, Hà Nội
-                    </p>
-
-                    <div className="flex items-center gap-4 text-xs text-text-muted pt-2 border-t border-border">
+                    <div className="flex items-center flex-wrap gap-x-4 gap-y-1.5 text-xs text-text-muted pt-3 border-t border-border">
                       <span>{formData.area} m²</span>
                       <span>{formData.floors} tầng</span>
                       <span>{formData.bedrooms} PN</span>
