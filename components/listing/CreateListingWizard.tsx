@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +29,11 @@ import {
   Check,
   Star,
   Loader2,
-  Plus
+  Plus,
+  Pencil,
+  X,
+  ShieldCheck,
+  FileText
 } from 'lucide-react';
 
 /**
@@ -112,96 +116,6 @@ const HANOI_DISTRICTS = [
   'Hoàng Mai',
 ];
 
-/**
- * Quản lý lưu trữ bản nháp (Draft Persistence) qua IndexedDB & LocalStorage
- * Giúp bảo toàn danh sách ảnh đã tải lên và toàn bộ thông tin đăng tin khi F5 / load lại trang
- */
-const DRAFT_DB_NAME = 'HanoiRealty_DraftDB';
-const DRAFT_STORE_NAME = 'wizard_store';
-const DRAFT_IMAGES_KEY = 'wizard_uploaded_images';
-const DRAFT_FORM_KEY = 'hanoirealty_wizard_form_draft';
-const DRAFT_STEP_KEY = 'hanoirealty_wizard_step_draft';
-
-function openDraftDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined' || !window.indexedDB) {
-      reject(new Error('IndexedDB không khả dụng'));
-      return;
-    }
-    const request = window.indexedDB.open(DRAFT_DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(DRAFT_STORE_NAME)) {
-        db.createObjectStore(DRAFT_STORE_NAME);
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function saveDraftImages(images: string[]): Promise<void> {
-  try {
-    const db = await openDraftDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
-      const store = tx.objectStore(DRAFT_STORE_NAME);
-      store.put(images, DRAFT_IMAGES_KEY);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  } catch {
-    try {
-      localStorage.setItem(DRAFT_IMAGES_KEY, JSON.stringify(images));
-    } catch {
-      // Bỏ qua nếu localStorage bị đầy
-    }
-  }
-}
-
-async function loadDraftImages(): Promise<string[] | null> {
-  try {
-    const db = await openDraftDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(DRAFT_STORE_NAME, 'readonly');
-      const store = tx.objectStore(DRAFT_STORE_NAME);
-      const req = store.get(DRAFT_IMAGES_KEY);
-      req.onsuccess = () => {
-        if (req.result !== undefined && Array.isArray(req.result)) {
-          resolve(req.result);
-        } else {
-          resolve(null);
-        }
-      };
-      req.onerror = () => reject(req.error);
-    });
-  } catch {
-    try {
-      const local = localStorage.getItem(DRAFT_IMAGES_KEY);
-      return local ? JSON.parse(local) : null;
-    } catch {
-      return null;
-    }
-  }
-}
-
-async function clearDraftStorage(): Promise<void> {
-  try {
-    const db = await openDraftDB();
-    const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
-    tx.objectStore(DRAFT_STORE_NAME).delete(DRAFT_IMAGES_KEY);
-  } catch {
-    // Bỏ qua lỗi
-  }
-  try {
-    localStorage.removeItem(DRAFT_IMAGES_KEY);
-    localStorage.removeItem(DRAFT_FORM_KEY);
-    localStorage.removeItem(DRAFT_STEP_KEY);
-  } catch {
-    // Bỏ qua lỗi
-  }
-}
-
 export const CreateListingWizard: React.FC = () => {
   const router = useRouter();
   const { addNewListing, addToast } = useApp();
@@ -253,86 +167,7 @@ export const CreateListingWizard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const isHydratedRef = useRef(false);
-
-  // Khôi phục bản nháp (Draft) từ IndexedDB và LocalStorage khi vừa load trang
-  useEffect(() => {
-    let isMounted = true;
-
-    const restoreDraft = async () => {
-      try {
-        // 1. Khôi phục bước hiện tại nếu người dùng đang ở bước khác bước 1
-        const savedStep = localStorage.getItem(DRAFT_STEP_KEY);
-        if (savedStep && isMounted) {
-          const stepNum = parseInt(savedStep, 10);
-          if (stepNum >= 1 && stepNum <= 5) {
-            setCurrentStep(stepNum);
-          }
-        }
-
-        // 2. Khôi phục thông tin đăng tin (địa chỉ, giá, diện tích,...)
-        const savedForm = localStorage.getItem(DRAFT_FORM_KEY);
-        if (savedForm && isMounted) {
-          const parsed = JSON.parse(savedForm);
-          setFormData((prev) => ({
-            ...prev,
-            ...parsed,
-          }));
-
-          if (parsed.lat && parsed.lng) {
-            setPickedLocation({
-              lat: parsed.lat,
-              lng: parsed.lng,
-              displayName: `${parsed.addressNumber || ''} ${parsed.street || ''}, ${parsed.ward || ''}, ${parsed.district || ''}, Hà Nội`.trim(),
-              district: parsed.district || 'Cầu Giấy',
-              ward: parsed.ward || '',
-              road: parsed.street || '',
-              houseNumber: parsed.addressNumber || '',
-            });
-          }
-        }
-
-        // 3. Khôi phục danh sách ảnh đã tải lên từ IndexedDB
-        const savedImages = await loadDraftImages();
-        if (isMounted && savedImages && Array.isArray(savedImages)) {
-          setFormData((prev) => ({
-            ...prev,
-            images: savedImages,
-          }));
-        }
-      } catch (err) {
-        console.error('Lỗi khi khôi phục bản nháp:', err);
-      } finally {
-        if (isMounted) {
-          isHydratedRef.current = true;
-        }
-      }
-    };
-
-    restoreDraft();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Tự động lưu hình ảnh vào IndexedDB khi danh sách ảnh thay đổi
-  useEffect(() => {
-    if (!isHydratedRef.current) return;
-    saveDraftImages(formData.images);
-  }, [formData.images]);
-
-  // Tự động lưu thông tin form và bước hiện tại vào LocalStorage
-  useEffect(() => {
-    if (!isHydratedRef.current) return;
-    try {
-      const { images: _ignored, ...formMeta } = formData;
-      localStorage.setItem(DRAFT_FORM_KEY, JSON.stringify(formMeta));
-      localStorage.setItem(DRAFT_STEP_KEY, currentStep.toString());
-    } catch {
-      // Quota limit fallback
-    }
-  }, [formData, currentStep]);
+  const [editingInlineField, setEditingInlineField] = useState<string | null>(null);
 
   const handleNext = () => {
     if (currentStep === 2 && !formData.street && !pickedLocation) {
@@ -402,14 +237,10 @@ export const CreateListingWizard: React.FC = () => {
       }
 
       if (processedUrls.length > 0) {
-        setFormData((prev) => {
-          const updatedImages = [...prev.images, ...processedUrls];
-          saveDraftImages(updatedImages);
-          return {
-            ...prev,
-            images: updatedImages,
-          };
-        });
+        setFormData((prev) => ({
+          ...prev,
+          images: [...prev.images, ...processedUrls],
+        }));
         addToast(`🎉 Đã tải lên thành công ${processedUrls.length} ảnh từ máy tính!`, 'success');
       }
     } finally {
@@ -432,7 +263,6 @@ export const CreateListingWizard: React.FC = () => {
       const updated = [...prev.images];
       const [cover] = updated.splice(index, 1);
       updated.unshift(cover);
-      saveDraftImages(updated);
       return { ...prev, images: updated };
     });
     addToast('⭐ Đã đổi ảnh đại diện thành công!', 'success');
@@ -440,7 +270,6 @@ export const CreateListingWizard: React.FC = () => {
 
   const handleClearAllImages = () => {
     setFormData((prev) => ({ ...prev, images: [] }));
-    saveDraftImages([]);
     addToast('Đã xóa tất cả ảnh', 'info');
   };
 
@@ -452,63 +281,16 @@ export const CreateListingWizard: React.FC = () => {
     ];
     const randomImg = samples[Math.floor(Math.random() * samples.length)];
     if (formData.images.length < 20) {
-      setFormData((prev) => {
-        const updated = [...prev.images, randomImg];
-        saveDraftImages(updated);
-        return { ...prev, images: updated };
-      });
+      setFormData((prev) => ({ ...prev, images: [...prev.images, randomImg] }));
       addToast('Đã thêm 1 hình ảnh mẫu', 'info');
     }
   };
 
   const handleDeleteImage = (index: number) => {
-    setFormData((prev) => {
-      const updated = prev.images.filter((_, i) => i !== index);
-      saveDraftImages(updated);
-      return {
-        ...prev,
-        images: updated,
-      };
-    });
-  };
-
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target;
-    const cursorPosition = input.selectionStart || 0;
-    const oldValue = input.value;
-
-    // Đếm số chữ số đứng trước vị trí con trỏ hiện tại
-    const digitsBeforeCursor = oldValue.slice(0, cursorPosition).replace(/\D/g, '').length;
-
-    // Trích xuất toàn bộ chữ số
-    const rawDigits = oldValue.replace(/\D/g, '');
-    const numValue = rawDigits ? parseInt(rawDigits, 10) : 0;
-
-    // Giới hạn an toàn tối đa (10.000 tỷ VND)
-    if (numValue > 10_000_000_000_000) return;
-
-    setFormData((prev) => ({ ...prev, price: numValue }));
-
-    // Duy trì vị trí con trỏ sau khi định dạng dấu chấm
-    requestAnimationFrame(() => {
-      if (!input) return;
-      const newFormatted = numValue > 0 ? numValue.toLocaleString('vi-VN') : '';
-      let newCursorPos = 0;
-      let digitCount = 0;
-      for (let i = 0; i < newFormatted.length; i++) {
-        if (/\d/.test(newFormatted[i])) {
-          digitCount++;
-        }
-        if (digitCount === digitsBeforeCursor) {
-          newCursorPos = i + 1;
-          break;
-        }
-      }
-      if (digitCount < digitsBeforeCursor || newCursorPos === 0) {
-        newCursorPos = newFormatted.length;
-      }
-      input.setSelectionRange(newCursorPos, newCursorPos);
-    });
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmitListing = async () => {
@@ -549,7 +331,7 @@ export const CreateListingWizard: React.FC = () => {
             { step: 2, label: 'Vị trí' },
             { step: 3, label: 'Hình ảnh' },
             { step: 4, label: 'Giá & Thông số' },
-            { step: 5, label: 'Xem trước' },
+            { step: 5, label: 'Kiểm tra & xuất bản' },
           ].map((item) => (
             <div key={item.step} className="flex flex-col items-center">
               <motion.div
@@ -971,19 +753,13 @@ export const CreateListingWizard: React.FC = () => {
                     <label className="text-xs font-bold text-text-primary">Mức giá chào bán (VNĐ) *</label>
                     <span className="text-xs font-black text-accent">{formatCurrencyVND(formData.price)}</span>
                   </div>
-                  <div className="relative mt-1">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.price > 0 ? formData.price.toLocaleString('vi-VN') : ''}
-                      onChange={handlePriceChange}
-                      placeholder="VD: 1.000.000.000"
-                      className="w-full rounded-xl border border-input bg-page-bg p-3 pr-14 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
-                    />
-                    <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-text-secondary">
-                      VND
-                    </span>
-                  </div>
+                  <input
+                    type="number"
+                    value={formData.price}
+                    step={100000000}
+                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
+                  />
                 </div>
 
                 {/* Area */}
@@ -1092,7 +868,7 @@ export const CreateListingWizard: React.FC = () => {
             </motion.div>
           )}
 
-          {/* STEP 5: Full Preview & Confirmation */}
+          {/* STEP 5: Kiểm tra & xuất bản */}
           {currentStep === 5 && (
             <motion.div
               key="step5"
@@ -1102,105 +878,648 @@ export const CreateListingWizard: React.FC = () => {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <div>
-                <h2 className="text-lg font-extrabold text-text-primary">Bước 5: Xem trước tin đăng</h2>
-                <p className="text-xs text-text-secondary mt-1">Kiểm tra lại toàn bộ thông tin trước khi xuất bản lên nền tảng</p>
+              {/* Tiêu đề & Mô tả */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <h2 className="text-xl font-black text-text-primary">Bước 5: Kiểm tra & xuất bản</h2>
+                  <p className="text-xs text-text-secondary mt-1">Kiểm tra lại thông tin trước khi tin được hiển thị công khai.</p>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 w-fit">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Bước cuối cùng
+                </span>
               </div>
 
-              {/* Preview Card */}
-              <div className="rounded-2xl border border-border bg-page-bg p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-5">
-                  {/* Bố cục gallery phong cách BĐS hiện đại: Ảnh chính lớn tạo điểm nhấn, các ảnh phụ xếp dọc bên phải với kích thước lớn rõ nét */}
-                  {(() => {
-                    const previewImages = formData.images.length > 0
-                      ? formData.images
-                      : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'];
-                    const mainPreviewImage = previewImages[0];
-                    const subPreviewImages = previewImages.slice(1, 4);
-
-                    return (
-                      <div className="w-full sm:w-[50%] md:w-[54%] lg:w-[56%] shrink-0 h-60 sm:h-64 md:h-72 lg:h-[290px]">
-                        {subPreviewImages.length === 0 ? (
-                          <div className="h-full w-full overflow-hidden rounded-xl border border-border/80 shadow-xs">
-                            <img
-                              src={mainPreviewImage}
-                              alt="Ảnh chính"
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-full w-full gap-2">
-                            {/* Ảnh chính lớn tạo điểm nhấn, chiếm khoảng 67-70% chiều rộng */}
-                            <div className="h-full w-[67%] shrink-0 overflow-hidden rounded-xl border border-border/80 shadow-xs">
-                              <img
-                                src={mainPreviewImage}
-                                alt="Ảnh chính"
-                                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                              />
-                            </div>
-
-                            {/* Cột ảnh phụ xếp dọc bên phải, khoảng cách nhỏ và đồng đều (gap-2 = 8px) */}
-                            <div className="flex h-full flex-1 min-w-0 flex-col gap-2">
-                              {subPreviewImages.map((img, i) => (
-                                <div
-                                  key={i}
-                                  className="relative h-full flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-border/80 shadow-xs"
-                                >
-                                  <img
-                                    src={img}
-                                    alt={`Ảnh phụ ${i + 1}`}
-                                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                                  />
-                                  {i === 2 && previewImages.length > 4 && (
-                                    <div className="absolute bottom-1.5 right-1.5 rounded-lg bg-black/75 px-2 py-0.5 text-[10px] font-bold text-white shadow-md backdrop-blur-xs flex items-center gap-1">
-                                      <ImageIcon className="h-3 w-3" />
-                                      <span>+{previewImages.length - 4}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-
-                  <div className="space-y-3 flex-1 flex flex-col justify-between py-1">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded bg-accent px-2 py-0.5 text-[10px] font-bold text-white uppercase">
-                          {formData.type}
-                        </span>
-                        <span className="text-xs font-extrabold text-accent">
-                          {formatCurrencyVND(formData.price)} ({formatPricePerM2(formData.price, formData.area)})
-                        </span>
-                      </div>
-
-                      <h3 className="text-sm font-extrabold text-text-primary leading-snug">
-                        {formData.title || `Bán BĐS ${formData.area}m² tại ${formData.district}`}
-                      </h3>
-
-                      <p className="text-xs text-text-secondary flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5 text-accent shrink-0" />
-                        {formData.addressNumber} {formData.street}, {formData.ward}, {formData.district}, Hà Nội
-                      </p>
-                    </div>
-
-                    <div className="flex items-center flex-wrap gap-x-4 gap-y-1.5 text-xs text-text-muted pt-3 border-t border-border">
-                      <span>{formData.area} m²</span>
-                      <span>{formData.floors} tầng</span>
-                      <span>{formData.bedrooms} PN</span>
-                      <span>{formData.bathrooms} PT</span>
-                      <span>Hướng {formData.direction}</span>
-                    </div>
+              {/* Trạng thái rất rõ */}
+              <div className="rounded-2xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-teal-50/50 to-emerald-50 p-4 sm:p-5 shadow-xs">
+                <div className="flex items-start gap-3.5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-black text-emerald-950 flex items-center gap-1.5">
+                      <span>✅ Tin đăng đã sẵn sàng</span>
+                    </h4>
+                    <p className="text-xs font-medium text-emerald-800 leading-relaxed">
+                      Bạn đã hoàn tất tất cả thông tin bắt buộc. Hãy kiểm tra lần cuối trước khi xuất bản.
+                    </p>
                   </div>
                 </div>
               </div>
 
+              {/* Layout 2 cột tỉ lệ 1:1 */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                
+                {/* CỘT TRÁI (1 phần): Ảnh bất động sản */}
+                <div className="space-y-3.5 rounded-2xl border border-border bg-page-bg/60 p-4 sm:p-5">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/70">
+                    <span className="text-xs font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
+                      <ImageIcon className="h-3.5 w-3.5 text-accent" />
+                      Hình ảnh BĐS ({formData.images.length})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(3)}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-accent hover:text-accent-hover hover:underline transition-all"
+                    >
+                      <Pencil className="h-3 w-3" />
+                      <span>Sửa ảnh</span>
+                    </button>
+                  </div>
+
+                  {/* Ảnh đại diện lớn */}
+                  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-border bg-slate-100 shadow-inner group">
+                    <img
+                      src={formData.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'}
+                      alt="Ảnh đại diện"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 rounded-lg bg-accent/90 backdrop-blur-xs px-2.5 py-1 text-[11px] font-bold text-white shadow-md">
+                      <Star className="h-3 w-3 fill-white" />
+                      Ảnh đại diện
+                    </span>
+                    <span className="absolute bottom-2.5 right-2.5 rounded-lg bg-black/70 backdrop-blur-xs px-2 py-0.5 text-[10px] font-bold text-white">
+                      1 / {formData.images.length}
+                    </span>
+                  </div>
+
+                  {/* Thumbnail gallery preview */}
+                  {formData.images.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1 pt-1 scrollbar-thin">
+                      {formData.images.map((img, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => handleSetCoverImage(idx)}
+                          className={`relative h-14 w-20 shrink-0 cursor-pointer rounded-lg overflow-hidden border transition-all ${
+                            idx === 0
+                              ? 'ring-2 ring-accent border-accent'
+                              : 'border-border opacity-70 hover:opacity-100 hover:border-accent/60'
+                          }`}
+                          title={idx === 0 ? 'Ảnh đại diện chính' : 'Bấm để đặt làm ảnh đại diện'}
+                        >
+                          <img src={img} alt={`thumb-${idx}`} className="h-full w-full object-cover" />
+                          <span className="absolute bottom-0.5 right-0.5 rounded bg-black/60 px-1 text-[8px] font-bold text-white">
+                            #{idx + 1}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* CỘT PHẢI (1 phần): Thông tin đăng: Giá tiền, diện tích, địa chỉ, tiêu đề */}
+                <div className="space-y-4 rounded-2xl border border-border bg-page-bg/60 p-4 sm:p-5">
+                  
+                  {/* Tiêu đề & Loại hình */}
+                  <div className="space-y-2 pb-3 border-b border-border/70">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-lg bg-accent/15 px-2.5 py-0.5 text-[10px] font-extrabold text-accent uppercase tracking-wider">
+                          {propertyTypes.find((t) => t.id === formData.type)?.title || formData.type}
+                        </span>
+                        <span className="text-[11px] text-text-muted">Hà Nội</span>
+                      </div>
+                      {editingInlineField === 'title' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-xs font-bold text-slate-500 hover:text-text-primary"
+                        >
+                          Đóng
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('title')}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          <span>Sửa tiêu đề</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'title' ? (
+                      <div className="space-y-2 pt-1">
+                        <input
+                          type="text"
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                          placeholder="Nhập tiêu đề tin đăng..."
+                          className="w-full rounded-xl border border-accent bg-white p-2.5 text-xs font-bold text-text-primary focus:outline-none ring-2 ring-accent/20"
+                        />
+                        <div className="flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingInlineField(null);
+                              addToast('Đã cập nhật tiêu đề tin', 'success');
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-accent text-white text-xs font-bold hover:bg-accent-hover"
+                          >
+                            Lưu
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <h3 className="text-base font-extrabold text-text-primary leading-snug">
+                        {formData.title || `Bán ${propertyTypes.find((t) => t.id === formData.type)?.title} ${formData.area}m² tại ${formData.district}`}
+                      </h3>
+                    )}
+                  </div>
+
+                  {/* Giá tiền */}
+                  <div className="p-3.5 rounded-xl bg-white border border-border/80 shadow-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider flex items-center gap-1">
+                        <DollarSign className="h-3.5 w-3.5 text-accent" />
+                        Giá tiền chào bán
+                      </span>
+                      {editingInlineField === 'price' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-xs font-bold text-slate-500 hover:text-text-primary"
+                        >
+                          Đóng
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('price')}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          <span>Sửa</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'price' ? (
+                      <div className="space-y-2 pt-1">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            step={100000000}
+                            value={formData.price}
+                            onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                            className="flex-1 rounded-xl border border-accent bg-white p-2 text-xs font-bold focus:outline-none ring-2 ring-accent/20"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingInlineField(null);
+                              addToast('Đã cập nhật giá bán', 'success');
+                            }}
+                            className="px-3 py-2 rounded-xl bg-accent text-white text-xs font-bold hover:bg-accent-hover"
+                          >
+                            Lưu
+                          </button>
+                        </div>
+                        <p className="text-[11px] font-bold text-accent">{formatCurrencyVND(formData.price)}</p>
+                      </div>
+                    ) : (
+                      <div className="flex items-baseline justify-between flex-wrap gap-2">
+                        <span className="text-xl font-black text-accent tracking-tight">
+                          {formatCurrencyVND(formData.price)}
+                        </span>
+                        <span className="text-xs font-semibold text-text-secondary bg-slate-100 px-2.5 py-1 rounded-lg">
+                          Đơn giá: <strong className="text-text-primary font-bold">{formatPricePerM2(formData.price, formData.area)}</strong>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Địa chỉ */}
+                  <div className="p-3.5 rounded-xl bg-white border border-border/80 shadow-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5 text-accent" />
+                        Địa chỉ bất động sản
+                      </span>
+                      {editingInlineField === 'address' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-xs font-bold text-slate-500 hover:text-text-primary"
+                        >
+                          Đóng
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('address')}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          <span>Sửa</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'address' ? (
+                      <div className="space-y-2 pt-1 text-xs">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] font-bold text-text-muted">Quận / Huyện</label>
+                            <select
+                              value={formData.district}
+                              onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                              className="w-full mt-0.5 rounded-lg border border-accent p-1.5 text-xs font-semibold focus:outline-none"
+                            >
+                              {HANOI_DISTRICTS.map((d) => (
+                                <option key={d} value={d}>{d}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-text-muted">Phường / Xã</label>
+                            <input
+                              type="text"
+                              value={formData.ward}
+                              onChange={(e) => setFormData({ ...formData, ward: e.target.value })}
+                              className="w-full mt-0.5 rounded-lg border border-accent p-1.5 text-xs font-semibold focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] font-bold text-text-muted">Đường / Phố</label>
+                            <input
+                              type="text"
+                              value={formData.street}
+                              onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                              className="w-full mt-0.5 rounded-lg border border-accent p-1.5 text-xs font-semibold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-text-muted">Số nhà / Ngõ</label>
+                            <input
+                              type="text"
+                              value={formData.addressNumber}
+                              onChange={(e) => setFormData({ ...formData, addressNumber: e.target.value })}
+                              className="w-full mt-0.5 rounded-lg border border-accent p-1.5 text-xs font-semibold focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingInlineField(null);
+                              addToast('Đã lưu địa chỉ mới', 'success');
+                            }}
+                            className="px-3 py-1 rounded-lg bg-accent text-white text-xs font-bold hover:bg-accent-hover"
+                          >
+                            Lưu địa chỉ
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs font-bold text-text-primary leading-relaxed">
+                        {formData.addressNumber} {formData.street}, {formData.ward}, {formData.district}, Hà Nội
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* BÊN DƯỚI 2 THÔNG TIN: Thông tin chi tiết có tích hợp ô "Sửa" tại chỗ cho mỗi đầu mục */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-text-muted">
+                    Thông số chi tiết bất động sản
+                  </h4>
+                  <span className="text-[11px] text-text-secondary">
+                    Bấm &quot;Sửa&quot; ở từng đầu mục để điều chỉnh nhanh
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  
+                  {/* 1. Diện tích */}
+                  <div className="rounded-xl border border-border bg-white p-3 shadow-xs space-y-1.5 transition-all hover:border-accent/50">
+                    <div className="flex items-center justify-between text-text-muted">
+                      <span className="text-[11px] font-bold flex items-center gap-1">
+                        <Maximize2 className="h-3 w-3 text-accent" />
+                        Diện tích
+                      </span>
+                      {editingInlineField === 'area' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-[10px] font-bold text-slate-400 hover:text-text-primary"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('area')}
+                          className="inline-flex items-center gap-0.5 text-[11px] font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                          <span>Sửa</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'area' ? (
+                      <div className="space-y-1 pt-1">
+                        <input
+                          type="number"
+                          value={formData.area}
+                          onChange={(e) => setFormData({ ...formData, area: Number(e.target.value) })}
+                          className="w-full rounded-lg border border-accent p-1 text-xs font-bold focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingInlineField(null);
+                            addToast('Đã cập nhật diện tích', 'success');
+                          }}
+                          className="w-full py-0.5 rounded bg-accent text-white text-[10px] font-bold hover:bg-accent-hover"
+                        >
+                          Lưu
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-black text-text-primary">{formData.area} m²</p>
+                    )}
+                  </div>
+
+                  {/* 2. Số tầng */}
+                  <div className="rounded-xl border border-border bg-white p-3 shadow-xs space-y-1.5 transition-all hover:border-accent/50">
+                    <div className="flex items-center justify-between text-text-muted">
+                      <span className="text-[11px] font-bold flex items-center gap-1">
+                        <Building className="h-3 w-3 text-accent" />
+                        Số tầng
+                      </span>
+                      {editingInlineField === 'floors' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-[10px] font-bold text-slate-400 hover:text-text-primary"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('floors')}
+                          className="inline-flex items-center gap-0.5 text-[11px] font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                          <span>Sửa</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'floors' ? (
+                      <div className="space-y-1 pt-1">
+                        <input
+                          type="number"
+                          value={formData.floors}
+                          onChange={(e) => setFormData({ ...formData, floors: Number(e.target.value) })}
+                          className="w-full rounded-lg border border-accent p-1 text-xs font-bold focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingInlineField(null);
+                            addToast('Đã cập nhật số tầng', 'success');
+                          }}
+                          className="w-full py-0.5 rounded bg-accent text-white text-[10px] font-bold hover:bg-accent-hover"
+                        >
+                          Lưu
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-black text-text-primary">{formData.floors} tầng</p>
+                    )}
+                  </div>
+
+                  {/* 3. Số PN */}
+                  <div className="rounded-xl border border-border bg-white p-3 shadow-xs space-y-1.5 transition-all hover:border-accent/50">
+                    <div className="flex items-center justify-between text-text-muted">
+                      <span className="text-[11px] font-bold flex items-center gap-1">
+                        <Bed className="h-3 w-3 text-accent" />
+                        Số PN
+                      </span>
+                      {editingInlineField === 'bedrooms' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-[10px] font-bold text-slate-400 hover:text-text-primary"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('bedrooms')}
+                          className="inline-flex items-center gap-0.5 text-[11px] font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                          <span>Sửa</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'bedrooms' ? (
+                      <div className="space-y-1 pt-1">
+                        <input
+                          type="number"
+                          value={formData.bedrooms}
+                          onChange={(e) => setFormData({ ...formData, bedrooms: Number(e.target.value) })}
+                          className="w-full rounded-lg border border-accent p-1 text-xs font-bold focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingInlineField(null);
+                            addToast('Đã cập nhật số phòng ngủ', 'success');
+                          }}
+                          className="w-full py-0.5 rounded bg-accent text-white text-[10px] font-bold hover:bg-accent-hover"
+                        >
+                          Lưu
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-black text-text-primary">{formData.bedrooms} phòng</p>
+                    )}
+                  </div>
+
+                  {/* 4. Số PT */}
+                  <div className="rounded-xl border border-border bg-white p-3 shadow-xs space-y-1.5 transition-all hover:border-accent/50">
+                    <div className="flex items-center justify-between text-text-muted">
+                      <span className="text-[11px] font-bold flex items-center gap-1">
+                        <Bath className="h-3 w-3 text-accent" />
+                        Số PT
+                      </span>
+                      {editingInlineField === 'bathrooms' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-[10px] font-bold text-slate-400 hover:text-text-primary"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('bathrooms')}
+                          className="inline-flex items-center gap-0.5 text-[11px] font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                          <span>Sửa</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'bathrooms' ? (
+                      <div className="space-y-1 pt-1">
+                        <input
+                          type="number"
+                          value={formData.bathrooms}
+                          onChange={(e) => setFormData({ ...formData, bathrooms: Number(e.target.value) })}
+                          className="w-full rounded-lg border border-accent p-1 text-xs font-bold focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingInlineField(null);
+                            addToast('Đã cập nhật số phòng tắm', 'success');
+                          }}
+                          className="w-full py-0.5 rounded bg-accent text-white text-[10px] font-bold hover:bg-accent-hover"
+                        >
+                          Lưu
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-black text-text-primary">{formData.bathrooms} phòng</p>
+                    )}
+                  </div>
+
+                  {/* 5. Hướng chính */}
+                  <div className="rounded-xl border border-border bg-white p-3 shadow-xs space-y-1.5 transition-all hover:border-accent/50">
+                    <div className="flex items-center justify-between text-text-muted">
+                      <span className="text-[11px] font-bold flex items-center gap-1">
+                        <Compass className="h-3 w-3 text-accent" />
+                        Hướng
+                      </span>
+                      {editingInlineField === 'direction' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-[10px] font-bold text-slate-400 hover:text-text-primary"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('direction')}
+                          className="inline-flex items-center gap-0.5 text-[11px] font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                          <span>Sửa</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'direction' ? (
+                      <div className="space-y-1 pt-1">
+                        <select
+                          value={formData.direction}
+                          onChange={(e) => setFormData({ ...formData, direction: e.target.value })}
+                          className="w-full rounded-lg border border-accent p-1 text-xs font-bold focus:outline-none"
+                        >
+                          <option value="Đông">Đông</option>
+                          <option value="Tây">Tây</option>
+                          <option value="Nam">Nam</option>
+                          <option value="Bắc">Bắc</option>
+                          <option value="Đông Nam">Đông Nam</option>
+                          <option value="Đông Bắc">Đông Bắc</option>
+                          <option value="Tây Nam">Tây Nam</option>
+                          <option value="Tây Bắc">Tây Bắc</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingInlineField(null);
+                            addToast('Đã cập nhật hướng', 'success');
+                          }}
+                          className="w-full py-0.5 rounded bg-accent text-white text-[10px] font-bold hover:bg-accent-hover"
+                        >
+                          Lưu
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-black text-text-primary">{formData.direction}</p>
+                    )}
+                  </div>
+
+                  {/* 6. Pháp lý */}
+                  <div className="rounded-xl border border-border bg-white p-3 shadow-xs space-y-1.5 transition-all hover:border-accent/50">
+                    <div className="flex items-center justify-between text-text-muted">
+                      <span className="text-[11px] font-bold flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3 text-accent" />
+                        Pháp lý
+                      </span>
+                      {editingInlineField === 'legalStatus' ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField(null)}
+                          className="text-[10px] font-bold text-slate-400 hover:text-text-primary"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingInlineField('legalStatus')}
+                          className="inline-flex items-center gap-0.5 text-[11px] font-bold text-accent hover:underline"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                          <span>Sửa</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingInlineField === 'legalStatus' ? (
+                      <div className="space-y-1 pt-1">
+                        <input
+                          type="text"
+                          value={formData.legalStatus}
+                          onChange={(e) => setFormData({ ...formData, legalStatus: e.target.value })}
+                          className="w-full rounded-lg border border-accent p-1 text-xs font-bold focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingInlineField(null);
+                            addToast('Đã cập nhật pháp lý', 'success');
+                          }}
+                          className="w-full py-0.5 rounded bg-accent text-white text-[10px] font-bold hover:bg-accent-hover"
+                        >
+                          Lưu
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-xs font-bold text-text-primary truncate" title={formData.legalStatus}>
+                        {formData.legalStatus || 'Chưa cập nhật'}
+                      </p>
+                    )}
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Thông báo kết nối quy hoạch tự động */}
               <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-800 flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-                <span>Tin đăng của bạn sẽ tự động được kết nối với bản đồ quy hoạch phân khu Hà Nội 2030.</span>
+                <span>Tin đăng của bạn sẽ tự động được ghim toạ độ và kết nối trực tiếp với bản đồ quy hoạch phân khu Hà Nội 2030.</span>
               </div>
             </motion.div>
           )}
