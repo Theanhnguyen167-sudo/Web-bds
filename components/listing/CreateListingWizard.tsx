@@ -892,30 +892,60 @@ export const CreateListingWizard: React.FC = () => {
               {/* Preview Card */}
               <div className="rounded-2xl border border-border bg-page-bg p-5 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="w-full sm:w-48 shrink-0 space-y-2">
-                    <img
-                      src={formData.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'}
-                      alt="preview"
-                      className="w-full aspect-video sm:aspect-square object-cover rounded-xl shadow-sm border border-border"
-                    />
-                    {formData.images.length > 1 && (
-                      <div className="flex gap-1.5 overflow-x-auto pb-1">
-                        {formData.images.slice(1, 5).map((img, i) => (
-                          <img
-                            key={i}
-                            src={img}
-                            alt={`sub-${i}`}
-                            className="h-9 w-9 rounded-lg object-cover border border-border shrink-0"
-                          />
-                        ))}
-                        {formData.images.length > 5 && (
-                          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-bold text-text-muted shrink-0">
-                            +{formData.images.length - 5}
-                          </span>
+                  {/* Bố cục hình ảnh xem trước: Tối đa 4 ảnh, Ảnh 1 (~70%), Cột dọc bên phải (~30%) */}
+                  {(() => {
+                    const previewImages = formData.images.length > 0
+                      ? formData.images
+                      : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'];
+                    const mainPreviewImage = previewImages[0];
+                    const subPreviewImages = previewImages.slice(1, 4);
+
+                    return (
+                      <div className="w-full sm:w-72 md:w-80 shrink-0 h-48 sm:h-52 md:h-56">
+                        {subPreviewImages.length === 0 ? (
+                          <div className="h-full w-full overflow-hidden rounded-xl border border-border shadow-xs">
+                            <img
+                              src={mainPreviewImage}
+                              alt="Ảnh chính"
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-full w-full gap-2 sm:gap-2.5">
+                            {/* Ảnh 1 là ảnh chính, chiếm ~70% chiều rộng */}
+                            <div className="h-full w-[70%] shrink-0 overflow-hidden rounded-xl border border-border shadow-xs">
+                              <img
+                                src={mainPreviewImage}
+                                alt="Ảnh chính"
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+
+                            {/* Cột dọc bên phải chiếm ~30% chiều rộng, chứa ảnh 2, 3, 4 */}
+                            <div className="flex h-full flex-1 min-w-0 flex-col gap-2 sm:gap-2.5">
+                              {subPreviewImages.map((img, i) => (
+                                <div
+                                  key={i}
+                                  className="relative h-full flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-border shadow-xs"
+                                >
+                                  <img
+                                    src={img}
+                                    alt={`Ảnh phụ ${i + 1}`}
+                                    className="h-full w-full object-cover"
+                                  />
+                                  {i === 2 && previewImages.length > 4 && (
+                                    <span className="absolute bottom-1 right-1 rounded-md bg-black/65 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
+                                      +{previewImages.length - 4}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()}
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="rounded bg-accent px-2 py-0.5 text-[10px] font-bold text-white uppercase">
