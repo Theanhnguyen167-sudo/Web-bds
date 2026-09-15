@@ -4,10 +4,14 @@ import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Layers, ZoomIn, ZoomOut, Locate, 
-  X, MapPin, Eye, ExternalLink 
+  X, MapPin, Eye, ExternalLink,
+  Loader2, Compass, Navigation, Crosshair
 } from 'lucide-react'
 import { HANOI_CENTER, HANOI_PLANNING_ZONES, PLANNING_ZONE_TYPES, HANOI_DISTRICT_CENTERS } from '@/lib/leaflet/hanoi-data'
 import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
+import { MapLocationSearch } from './MapLocationSearch'
+import { HanoiLocationItem } from '@/lib/data/hanoi-locations'
+import { haversineDistance } from '@/lib/search/filterListings'
 
 // ── Types ──
 export interface SearchMapListing {
@@ -33,6 +37,8 @@ interface SearchMapProps {
   onMarkerClick?: (listingId: string) => void
   onMarkerHover?: (listingId: string | null) => void
   showPlanningLayer?: boolean
+  onLocationSelect?: (location: HanoiLocationItem) => void
+  onFilterNearLocation?: (coords: [number, number], radiusKm: number, label: string) => void
 }
 
 // ── Price formatter ──
@@ -63,11 +69,19 @@ export default function SearchMap({
   onMarkerClick,
   onMarkerHover,
   showPlanningLayer = false,
+  onLocationSelect,
+  onFilterNearLocation,
 }: SearchMapProps) {
   const mapRef = useRef<any>(null)
   const mapInstanceRef = useRef<any>(null)
   const markersRef = useRef<Map<string, any>>(new Map())
   const polygonsRef = useRef<any[]>([])
+  
+  // Custom marker refs
+  const userLocationMarkerRef = useRef<any>(null)
+  const userLocationCircleRef = useRef<any>(null)
+  const searchedLocationMarkerRef = useRef<any>(null)
+
   const [isMapReady, setIsMapReady] = useState(false)
   const [activePopupId, setActivePopupId] = useState<string | null>(null)
   const [popupListing, setPopupListing] = useState<SearchMapListing | null>(null)
@@ -75,23 +89,31 @@ export default function SearchMap({
   const [mapLayer, setMapLayer] = useState<'dark' | 'light' | 'satellite'>('dark')
   const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
+  const [isLocating, setIsLocating] = useState(false)
+  const [searchedLocation, setSearchedLocation] = useState<HanoiLocationItem | null>(null)
+  const [locationNotification, setLocationNotification] = useState<{
+    message: string
+    count: number
+    coords: [number, number]
+    label: string
+  } | null>(null)
 
-  // ── TILE LAYERS ──
+  // ── TILE LAYERS (Fixed: No "API KEY REQUIRED" Watermark) ──
   const TILE_LAYERS = {
     dark: {
-      label: '🌙 Tối giản',
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      attribution: '©OpenStreetMap ©CartoDB',
+      label: '🌙 Bản đồ tối (ArcGIS)',
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      attribution: '©Esri ©OpenStreetMap',
     },
     light: {
-      label: '☀️ Sáng',
-      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-      attribution: '©OpenStreetMap ©CartoDB',
+      label: '☀️ Đường phố (Google)',
+      url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+      attribution: '©Google Maps',
     },
     satellite: {
-      label: '🛰️ Vệ tinh',
+      label: '🛰️ Vệ tinh (Esri)',
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      attribution: '©Esri ©DigitalGlobe',
+      attribution: '©Esri ©Maxar',
     },
   }
 
@@ -121,7 +143,6 @@ export default function SearchMap({
       L.tileLayer(TILE_LAYERS.dark.url, {
         attribution: TILE_LAYERS.dark.attribution,
         maxZoom: 19,
-        subdomains: 'abcd',
       }).addTo(map)
 
       mapInstanceRef.current = map
@@ -371,17 +392,159 @@ export default function SearchMap({
     }
   }, [targetDistrict, isMapReady])
 
-  // ── GET USER LOCATION ──
-  const handleLocateMe = useCallback(() => {
+  // ── GET USER LOCATION (HIGH ACCURACY & PULSING RADAR) ──
+  const handleLocateMe = useCallback(async () => {
     if (!mapInstanceRef.current) return
-    navigator.geolocation?.getCurrentPosition(
+    if (!navigator.geolocation) {
+      alert('Trình duyệt của bạn không hỗ trợ định vị GPS.')
+      return
+    }
+
+    setIsLocating(true)
+    const L = (await import('leaflet')).default
+    const map = mapInstanceRef.current
+
+    navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords
         setUserLocation([lat, lng])
-        mapInstanceRef.current.flyTo([lat, lng], 15, { duration: 1 })
+        setIsLocating(false)
+
+        // Clear existing user marker & circle if any
+        if (userLocationMarkerRef.current) {
+          map.removeLayer(userLocationMarkerRef.current)
+          userLocationMarkerRef.current = null
+        }
+        if (userLocationCircleRef.current) {
+          map.removeLayer(userLocationCircleRef.current)
+          userLocationCircleRef.current = null
+        }
+
+        // Create animated sonar GPS marker
+        const gpsHtml = `
+          <div class="user-gps-container">
+            <div class="user-gps-pulse"></div>
+            <div class="user-gps-pulse-delay"></div>
+            <div class="user-gps-dot"></div>
+            <div class="user-gps-label">📍 Vị trí của bạn</div>
+          </div>
+        `
+        const icon = L.divIcon({
+          html: gpsHtml,
+          className: 'user-location-marker',
+          iconSize: [48, 48],
+          iconAnchor: [24, 24],
+        })
+
+        const marker = L.marker([lat, lng], { icon, zIndexOffset: 2000 })
+        marker.addTo(map)
+        userLocationMarkerRef.current = marker
+
+        // Create 2km translucent radius circle
+        const circle = L.circle([lat, lng], {
+          radius: 2000,
+          color: '#2563eb',
+          weight: 1.5,
+          opacity: 0.8,
+          fillColor: '#3b82f6',
+          fillOpacity: 0.12,
+          dashArray: '5,5',
+        }).addTo(map)
+        userLocationCircleRef.current = circle
+
+        // Smooth fly to current position
+        map.flyTo([lat, lng], 15, { duration: 1.2 })
+
+        // Count listings within 2km
+        let count = 0
+        listings.forEach((l) => {
+          if (l.lat && l.lng) {
+            const dist = haversineDistance(lat, lng, l.lat, l.lng)
+            if (dist <= 2000) count++
+          }
+        })
+
+        setLocationNotification({
+          message: 'Đã định vị thành công vị trí của bạn',
+          count,
+          coords: [lat, lng],
+          label: 'Vị trí hiện tại của bạn',
+        })
       },
-      () => {}
+      (err) => {
+        setIsLocating(false)
+        console.warn('Geolocation failed:', err)
+        alert('Không thể xác định vị trí: Vui lòng cho phép quyền truy cập vị trí trên trình duyệt của bạn.')
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     )
+  }, [listings])
+
+  // ── SELECT LOCATION FROM SEARCH BAR ──
+  const handleSelectLocation = useCallback(
+    async (loc: HanoiLocationItem) => {
+      if (!mapInstanceRef.current) return
+      const L = (await import('leaflet')).default
+      const map = mapInstanceRef.current
+
+      setSearchedLocation(loc)
+
+      // Clear previous searched marker
+      if (searchedLocationMarkerRef.current) {
+        map.removeLayer(searchedLocationMarkerRef.current)
+        searchedLocationMarkerRef.current = null
+      }
+
+      // Add high-contrast drop pin
+      const pinHtml = `
+        <div class="searched-pin-container">
+          <div class="searched-pin-badge">📍 ${loc.name}</div>
+          <div class="searched-pin-dot"></div>
+        </div>
+      `
+      const icon = L.divIcon({
+        html: pinHtml,
+        className: 'searched-location-pin',
+        iconSize: [160, 48],
+        iconAnchor: [80, 40],
+      })
+
+      const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: 1500 })
+      marker.addTo(map)
+      searchedLocationMarkerRef.current = marker
+
+      // Fly to location
+      map.flyTo([loc.lat, loc.lng], loc.zoom || 15.5, { duration: 1.2 })
+
+      // Count listings within 2km
+      let count = 0
+      listings.forEach((l) => {
+        if (l.lat && l.lng) {
+          const dist = haversineDistance(loc.lat, loc.lng, l.lat, l.lng)
+          if (dist <= 2000) count++
+        }
+      })
+
+      setLocationNotification({
+        message: `Đã ghim vị trí: ${loc.name}`,
+        count,
+        coords: [loc.lat, loc.lng],
+        label: loc.name,
+      })
+
+      onLocationSelect?.(loc)
+    },
+    [listings, onLocationSelect]
+  )
+
+  // ── CLEAR SEARCHED LOCATION ──
+  const handleClearSearched = useCallback(() => {
+    if (searchedLocationMarkerRef.current && mapInstanceRef.current) {
+      mapInstanceRef.current.removeLayer(searchedLocationMarkerRef.current)
+      searchedLocationMarkerRef.current = null
+    }
+    setSearchedLocation(null)
+    setLocationNotification(null)
   }, [])
 
   // ── ZOOM CONTROLS ──
@@ -472,15 +635,23 @@ export default function SearchMap({
         {/* Locate Me */}
         <motion.button
           onClick={handleLocateMe}
-          whileHover={{ scale: 1.05, backgroundColor: '#f97316' }}
+          disabled={isLocating}
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="w-10 h-10 bg-white dark:bg-gray-800 rounded-2xl 
-                     shadow-lg border border-gray-200 dark:border-gray-700
-                     flex items-center justify-center text-navy dark:text-white
-                     hover:text-white transition-all"
-          title="Vị trí của tôi"
+          className={`w-10 h-10 rounded-2xl shadow-lg border flex items-center justify-center transition-all ${
+            userLocation
+              ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/20'
+              : 'bg-white dark:bg-gray-800 text-navy dark:text-white border-gray-200 dark:border-gray-700 hover:bg-orange-500 hover:text-white hover:border-orange-500'
+          }`}
+          title="Vị trí của tôi (Định vị GPS)"
         >
-          <Locate size={16} />
+          {isLocating ? (
+            <Loader2 size={16} className="animate-spin text-orange-500" />
+          ) : userLocation ? (
+            <Crosshair size={16} className="animate-pulse" />
+          ) : (
+            <Locate size={16} />
+          )}
         </motion.button>
 
         {/* Layer Switcher */}
@@ -535,22 +706,85 @@ export default function SearchMap({
         </div>
       </div>
 
-      {/* ── Listing Count Badge (top-left) ── */}
+      {/* ── Top-Left: Location Search Bar & Listing Count ── */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: isMapReady ? 1 : 0, y: isMapReady ? 0 : -10 }}
-        className="absolute top-4 left-4 z-[400] bg-white/95 dark:bg-gray-800/95 
-                   backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 
-                   dark:border-gray-700 px-4 py-2.5 flex items-center gap-2"
+        className="absolute top-4 left-4 z-[400] flex flex-col gap-2 items-start max-w-[calc(100%-88px)] sm:max-w-none"
       >
-        <MapPin size={14} className="text-orange-500" />
-        <span className="text-sm font-bold text-navy dark:text-white">
-          {listings.length}
-        </span>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          bất động sản
-        </span>
+        <MapLocationSearch
+          onSelectLocation={handleSelectLocation}
+          onLocateMe={handleLocateMe}
+          isLocating={isLocating}
+          activeLocationName={searchedLocation?.name}
+          onClearLocation={handleClearSearched}
+        />
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl shadow-md border border-slate-200/80 dark:border-slate-800/80 px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+            <MapPin size={13} className="text-orange-500" />
+            <span className="font-bold text-slate-900 dark:text-white">{listings.length}</span>
+            <span>bất động sản</span>
+          </div>
+
+          {userLocation && (
+            <button
+              onClick={handleLocateMe}
+              className="bg-blue-600/90 hover:bg-blue-600 text-white backdrop-blur-md rounded-xl shadow-md px-2.5 py-1.5 flex items-center gap-1 text-[11px] font-bold transition-all"
+            >
+              <Crosshair size={12} className="animate-spin" />
+              <span>Đang bật vị trí</span>
+            </button>
+          )}
+        </div>
       </motion.div>
+
+      {/* ── Floating Location Feedback Banner (Bottom-Center) ── */}
+      <AnimatePresence>
+        {locationNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[420] w-[92%] sm:w-auto min-w-[320px] max-w-lg bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 flex items-center justify-between gap-3 text-xs"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                <Compass size={18} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-slate-900 dark:text-white truncate">
+                  {locationNotification.label}
+                </p>
+                <p className="text-slate-500 dark:text-slate-400 text-[11px] truncate">
+                  Tìm thấy <strong className="text-orange-600 dark:text-orange-400 font-bold">{locationNotification.count}</strong> BĐS trong bán kính 2km
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              {onFilterNearLocation && locationNotification.count > 0 && (
+                <button
+                  onClick={() => onFilterNearLocation(locationNotification.coords, 2, locationNotification.label)}
+                  className="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-[11px] transition-all shadow-sm"
+                >
+                  Xem BĐS lân cận
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setLocationNotification(null)
+                  if (searchedLocation) handleClearSearched()
+                }}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                title="Đóng thông báo"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Planning Legend (bottom-left, shows when layer active) ── */}
       <AnimatePresence>

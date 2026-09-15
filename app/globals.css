@@ -264,3 +264,131 @@
 .dark .leaflet-container {
   background: #0a0f1e;
 }
+
+/* ── User GPS Geolocation Pulsing Marker ── */
+.user-location-marker {
+  background: transparent;
+  border: none;
+}
+
+.user-gps-container {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-gps-dot {
+  width: 16px;
+  height: 16px;
+  background-color: #2563eb;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgba(37, 99, 235, 0.9), 0 2px 8px rgba(0,0,0,0.3);
+  position: relative;
+  z-index: 10;
+}
+
+.user-gps-pulse {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.35);
+  animation: gpsPulse 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  pointer-events: none;
+}
+
+.user-gps-pulse-delay {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.2);
+  animation: gpsPulse 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite 0.75s;
+  pointer-events: none;
+}
+
+.user-gps-label {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1d4ed8;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.4);
+  font-family: 'Inter', sans-serif;
+  pointer-events: none;
+  z-index: 12;
+}
+
+@keyframes gpsPulse {
+  0% {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* ── Searched Location Pin Marker ── */
+.searched-location-pin {
+  background: transparent;
+  border: none;
+}
+
+.searched-pin-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: dropPin 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.searched-pin-badge {
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.45);
+  border: 2px solid white;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.searched-pin-dot {
+  width: 12px;
+  height: 12px;
+  background: #ea580c;
+  border: 2px solid white;
+  border-radius: 50%;
+  margin-top: 2px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+@keyframes dropPin {
+  0% {
+    transform: translateY(-24px) scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
