@@ -1,6 +1,4 @@
-/**
- * Tiện ích xử lý dữ liệu quy hoạch GIS & GeoJSON cho Hà Nội
- */
+import { HANOI_DISTRICT_CENTERS } from '@/lib/leaflet/hanoi-data';
 
 export interface PlanningZoneItem {
   id: string;
@@ -18,6 +16,9 @@ export interface PlanningZoneItem {
   sourceFile?: string;
   floorAreaRatio?: number;
   maxHeight?: string;
+  pdfUrl?: string;
+  fileType?: 'geojson' | 'kml' | 'pdf';
+  fileSize?: string;
 }
 
 export const DEFAULT_PLANNING_ZONES: PlanningZoneItem[] = [
@@ -183,6 +184,154 @@ export interface ParsedZoneFeature {
   type: 'residential' | 'commercial' | 'mixed' | 'green' | 'transport' | 'industrial' | 'public';
   planYear: number;
   coordinates: [number, number][];
+  pdfUrl?: string;
+  fileType?: 'geojson' | 'kml' | 'pdf';
+  fileSize?: string;
+}
+
+/**
+ * Tự động tạo đa giác ranh giới quanh tâm của quận / huyện cho đồ án PDF
+ */
+export function generateDistrictPolygon(district: string): [number, number][] {
+  const center = HANOI_DISTRICT_CENTERS[district] || { lat: 21.0315, lng: 105.7825 };
+  const dLat = 0.007;
+  const dLng = 0.009;
+  return [
+    [center.lat - dLat, center.lng - dLng],
+    [center.lat + dLat, center.lng - dLng * 0.7],
+    [center.lat + dLat * 1.15, center.lng + dLng * 0.85],
+    [center.lat - dLat * 0.5, center.lng + dLng * 1.05],
+    [center.lat - dLat * 1.1, center.lng + dLng * 0.15],
+  ];
+}
+
+/**
+ * Đọc file thành chuỗi Base64 Data URL để lưu trữ và hiển thị trực tiếp
+ */
+export function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`Không thể đọc file ${file.name}`));
+    reader.onload = (e) => resolve(e.target?.result as string);
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Phân tích và tạo đối tượng phân khu quy hoạch từ file PDF đồ án
+ */
+export function parsePDFPlanningFile(file: File, pdfDataUrl: string): ParsedZoneFeature {
+  const filename = file.name.replace(/\.[^/.]+$/, '');
+  const sizeMB = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+
+  const districts = [
+    'Cầu Giấy',
+    'Đống Đa',
+    'Tây Hồ',
+    'Ba Đình',
+    'Hoàn Kiếm',
+    'Nam Từ Liêm',
+    'Bắc Từ Liêm',
+    'Thanh Xuân',
+    'Hai Bà Trưng',
+    'Long Biên',
+    'Hà Đông',
+    'Hoàng Mai',
+    'Gia Lâm',
+    'Đông Anh',
+    'Hoài Đức',
+    'Thanh Trì',
+  ];
+
+  let detectedDistrict = 'Cầu Giấy';
+  const lowerName = filename.toLowerCase();
+
+  for (const d of districts) {
+    const slug = d
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd');
+    const dLower = d.toLowerCase();
+    if (
+      lowerName.includes(dLower) ||
+      lowerName.includes(slug) ||
+      lowerName.includes(slug.replace(/\s+/g, '_')) ||
+      lowerName.includes(slug.replace(/\s+/g, '-'))
+    ) {
+      detectedDistrict = d;
+      break;
+    }
+  }
+
+  let type: ParsedZoneFeature['type'] = 'residential';
+  if (lowerName.includes('thuong_mai') || lowerName.includes('dich_vu') || lowerName.includes('commercial')) {
+    type = 'commercial';
+  } else if (
+    lowerName.includes('sinh_thai') ||
+    lowerName.includes('cay_xanh') ||
+    lowerName.includes('mat_nuoc') ||
+    lowerName.includes('green')
+  ) {
+    type = 'green';
+  } else if (
+    lowerName.includes('giao_thong') ||
+    lowerName.includes('metro') ||
+    lowerName.includes('transport')
+  ) {
+    type = 'transport';
+  } else if (lowerName.includes('hon_hop') || lowerName.includes('mixed')) {
+    type = 'mixed';
+  } else if (lowerName.includes('cong_nghiep') || lowerName.includes('industrial')) {
+    type = 'industrial';
+  }
+
+  const defaultColors: Record<string, string> = {
+    residential: '#ffdd29',
+    commercial: '#ef4444',
+    mixed: '#8b5cf6',
+    green: '#22c55e',
+    transport: '#3b82f6',
+    industrial: '#f59e0b',
+    public: '#6366f1',
+  };
+
+  const cleanTitle = filename
+    .replace(/[_-]/g, ' ')
+    .replace(/quy hoach/gi, 'Quy hoạch')
+    .replace(/phan khu/gi, 'phân khu');
+
+  const name = cleanTitle.length > 5 ? cleanTitle : `Đồ án Quy hoạch ${detectedDistrict} (PDF)`;
+  const typePrefix = {
+    residential: 'ODT',
+    commercial: 'TMD',
+    mixed: 'HH',
+    green: 'CCC',
+    transport: 'GT',
+    industrial: 'CN',
+    public: 'CC',
+  }[type] || 'PDF';
+
+  const code = `${typePrefix}-PDF-${Math.floor(10 + Math.random() * 90)}`;
+  const coordinates = generateDistrictPolygon(detectedDistrict);
+  const areaHa = calculatePolygonAreaHa(coordinates);
+
+  return {
+    name,
+    code,
+    district: detectedDistrict,
+    color: defaultColors[type] || '#ffdd29',
+    areaHa,
+    maxFloors: type === 'commercial' ? 25 : type === 'residential' ? 5 : type === 'mixed' ? 15 : 2,
+    density: type === 'residential' ? '70%' : type === 'commercial' ? '60%' : '40%',
+    status: 'published',
+    type,
+    planYear: 2030,
+    coordinates,
+    pdfUrl: pdfDataUrl,
+    fileType: 'pdf',
+    fileSize: sizeMB,
+  };
 }
 
 /**
@@ -411,3 +560,10 @@ export const SAMPLE_HANOI_GEOJSON = JSON.stringify(
   null,
   2
 );
+
+/**
+ * File mẫu PDF đồ án quy hoạch Hà Nội (chuẩn Base64 PDF) để thử nghiệm 1 click
+ */
+export const SAMPLE_PLANNING_PDF_DATA_URI =
+  'data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA1OTUgODQyXQovQ29udGVudHMgNCAwIFIKL1Jlc291cmNlcyA8PAovRm9udCA8PAovRjEgNSAwIFIKPj4KPj4KPj4KZW5kb2JqCjQgMCBvYmoKPDwKL0xlbmd0aCAxMjgKPj4Kc3RyZWFtCkJUCi9GMSAyNCBUZgoxMDAgNzUwIFRkCihETyBBTiBRVVkgSE9BQ0ggUEhBTiBLSFUgSEEgTk9JIDIwMzApIFRqCi9GMSAxMiBUZgowIC00MCBUZgooQmFuIGRvIHJhbmggZ2lvaSB2YSBtYXQgZG8geGF5IGR1bmcgY2hpIHRpZXQpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PAovVHlwZSAvRm9udAovU3VidHlwZSAvVHlwZTEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMDY4IDAwMDAwIG4gCjAwMDAwMDAxMjUgMDAwMDAgbiAKMDAwMDAwMDI0NiAwMDAwMCBuIAowMDAwMDAwNDI2IDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNTQ1CiUlRU9GCg==';
+

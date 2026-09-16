@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Layers, X, Info, ZoomIn, ZoomOut, 
-  RotateCcw, Sliders, ChevronDown, ChevronUp 
+  RotateCcw, Sliders, ChevronDown, ChevronUp, FileText 
 } from 'lucide-react'
 import { 
   HANOI_CENTER, HANOI_PLANNING_ZONES, PLANNING_ZONE_TYPES,
@@ -22,6 +22,9 @@ export interface SelectedZoneInfo {
   floorAreaRatio: number
   maxHeight: string
   color: string
+  pdfUrl?: string
+  fileType?: string
+  fileName?: string
 }
 
 interface PlanningMapProps {
@@ -192,6 +195,9 @@ export default function PlanningMap({
             floorAreaRatio: zone.floorAreaRatio || 3.5,
             maxHeight: zone.maxHeight || (zone.maxFloors ? `${zone.maxFloors} tầng` : 'Không áp dụng'),
             color: zone.color,
+            pdfUrl: zone.pdfUrl,
+            fileType: zone.fileType,
+            fileName: zone.fileName,
           }
           setSelectedZone(info)
           setShowInfoPanel(true)
@@ -226,9 +232,11 @@ export default function PlanningMap({
               white-space:nowrap;
             ">
               <span style="color:${zone.color}">●</span> ${zone.name}
+              ${zone.pdfUrl ? '<span style="background:#ef4444;color:white;font-size:9px;padding:1px 5px;border-radius:4px;margin-left:5px;font-weight:700">PDF</span>' : ''}
               <br>
               <span style="color:rgba(255,255,255,0.6);font-size:10px">
                 ${PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || 'Quy hoạch phân khu'}
+                ${zone.pdfUrl ? '· Có đồ án PDF' : ''}
                 · Click để xem chi tiết
               </span>
             </div>
@@ -492,6 +500,24 @@ export default function PlanningMap({
                 }}>
                 ✅ {selectedZone.status}
               </div>
+
+              {selectedZone.pdfUrl && (
+                <a
+                  href={selectedZone.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full 
+                             bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 
+                             border border-red-200 dark:border-red-800
+                             text-red-600 dark:text-red-400 text-xs font-bold py-2.5 px-3 
+                             rounded-xl transition-colors shadow-xs"
+                >
+                  <FileText size={15} className="text-red-500 shrink-0" />
+                  <span className="truncate">
+                    📄 Mở tài liệu đồ án PDF {selectedZone.fileName ? `(${selectedZone.fileName})` : ''}
+                  </span>
+                </a>
+              )}
 
               <a href={`/search?district=${encodeURIComponent(selectedZone.district)}`}
                 className="flex items-center justify-center gap-2 w-full 
