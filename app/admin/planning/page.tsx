@@ -20,6 +20,7 @@ import {
   Maximize2,
   RotateCcw,
   Sparkles,
+  FileText,
 } from 'lucide-react';
 
 const PlanningMap = dynamic(
@@ -266,11 +267,25 @@ export default function AdminPlanningPage() {
                         <div className="truncate" title={zone.name}>
                           {zone.name}
                         </div>
-                        {zone.sourceFile && (
-                          <span className="text-[10px] text-slate-400 font-normal block truncate">
-                            File: {zone.sourceFile}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {zone.pdfUrl && (
+                            <a
+                              href={zone.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[10px] font-extrabold transition-colors"
+                              title="Nhấp để mở xem file PDF đồ án"
+                            >
+                              <FileText className="h-3 w-3" />
+                              <span>PDF Đồ án</span>
+                            </a>
+                          )}
+                          {zone.sourceFile && (
+                            <span className="text-[10px] text-slate-400 font-normal truncate">
+                              File: {zone.sourceFile}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">{zone.district}</td>
                       <td className="px-4 py-3">
@@ -299,6 +314,17 @@ export default function AdminPlanningPage() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
+                          {zone.pdfUrl && (
+                            <a
+                              href={zone.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
+                              title="Mở xem tài liệu PDF đồ án"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </a>
+                          )}
                           <button
                             onClick={() => handleViewOnMap(zone)}
                             className="p-1.5 rounded-lg hover:bg-orange-50 text-orange-600 hover:text-orange-700 transition-colors"
