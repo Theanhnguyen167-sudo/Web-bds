@@ -92,7 +92,7 @@ export default function SearchMap({
   const [activePopupId, setActivePopupId] = useState<string | null>(null)
   const [popupListing, setPopupListing] = useState<SearchMapListing | null>(null)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
-  const [mapLayer, setMapLayer] = useState<'dark' | 'light' | 'satellite'>('dark')
+  const [mapLayer, setMapLayer] = useState<'light' | 'satellite'>('light')
   const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [isLocating, setIsLocating] = useState(false)
@@ -106,11 +106,6 @@ export default function SearchMap({
 
   // ── TILE LAYERS (Fixed: No "API KEY REQUIRED" Watermark) ──
   const TILE_LAYERS = {
-    dark: {
-      label: '🌙 Bản đồ tối (ArcGIS)',
-      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      attribution: '©Esri ©OpenStreetMap',
-    },
     light: {
       label: '☀️ Đường phố (Google)',
       url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
@@ -146,8 +141,8 @@ export default function SearchMap({
       })
 
       // Add tile layer
-      L.tileLayer(TILE_LAYERS.dark.url, {
-        attribution: TILE_LAYERS.dark.attribution,
+      L.tileLayer(TILE_LAYERS.light.url, {
+        attribution: TILE_LAYERS.light.attribution,
         maxZoom: 19,
       }).addTo(map)
 
