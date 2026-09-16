@@ -6,6 +6,7 @@ import {
   X,
   UploadCloud,
   FileCode,
+  FileText,
   MapPin,
   CheckCircle2,
   AlertCircle,
@@ -16,12 +17,19 @@ import {
   RefreshCw,
   Building,
   Check,
+  ExternalLink,
+  Eye,
 } from 'lucide-react';
 import {
   PlanningZoneItem,
   ParsedZoneFeature,
   parsePlanningMapFile,
   SAMPLE_HANOI_GEOJSON,
+  readFileAsDataURL,
+  parsePDFPlanningFile,
+  SAMPLE_PLANNING_PDF_DATA_URI,
+  generateDistrictPolygon,
+  calculatePolygonAreaHa,
 } from '@/lib/planning/planning-utils';
 
 interface UploadPlanningModalProps {
@@ -44,6 +52,7 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
   const [selectedZoneIndex, setSelectedZoneIndex] = useState<number>(0);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPdfViewer, setShowPdfViewer] = useState<boolean>(false);
 
   // Form state for current zone being edited
   const [formData, setFormData] = useState<Partial<PlanningZoneItem>>({
@@ -63,13 +72,32 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
     setIsProcessing(true);
     setErrorMessage(null);
     setUploadedFileName(file.name);
+    setShowPdfViewer(false);
+
+    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+    if (isPDF) {
+      try {
+        const dataUrl = await readFileAsDataURL(file);
+        const pdfZone = parsePDFPlanningFile(file, dataUrl);
+        setParsedZones([pdfZone]);
+        setSelectedZoneIndex(0);
+        loadFeatureToForm(pdfZone);
+      } catch (err: any) {
+        setErrorMessage(err.message || 'Lỗi khi đọc file tài liệu PDF quy hoạch.');
+        setParsedZones([]);
+      } finally {
+        setIsProcessing(false);
+      }
+      return;
+    }
 
     try {
       const text = await file.text();
       const features = parsePlanningMapFile(text, file.name);
 
       if (!features || features.length === 0) {
-        setErrorMessage('Không tìm thấy dữ liệu toạ độ Polygon hợp lệ trong file. Vui lòng kiểm tra file GeoJSON hoặc KML.');
+        setErrorMessage('Không tìm thấy dữ liệu toạ độ Polygon hợp lệ trong file. Vui lòng kiểm tra file GeoJSON, KML hoặc PDF.');
         setParsedZones([]);
         return;
       }
@@ -97,6 +125,7 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
   const handleLoadSample = () => {
     setIsProcessing(true);
     setErrorMessage(null);
+    setShowPdfViewer(false);
     setUploadedFileName('mau_quy_hoach_ha_noi_2030.geojson');
     const features = parsePlanningMapFile(SAMPLE_HANOI_GEOJSON, 'mau_quy_hoach_ha_noi_2030.geojson');
     setParsedZones(features);
@@ -104,6 +133,22 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
     if (features.length > 0) {
       loadFeatureToForm(features[0]);
     }
+    setIsProcessing(false);
+  };
+
+  const handleLoadSamplePDF = () => {
+    setIsProcessing(true);
+    setErrorMessage(null);
+    setShowPdfViewer(false);
+    setUploadedFileName('Do_an_quy_hoach_Cau_Giay_2030.pdf');
+    const mockFile = {
+      name: 'Do_an_quy_hoach_Cau_Giay_2030.pdf',
+      size: 1.8 * 1024 * 1024,
+    } as File;
+    const pdfZone = parsePDFPlanningFile(mockFile, SAMPLE_PLANNING_PDF_DATA_URI);
+    setParsedZones([pdfZone]);
+    setSelectedZoneIndex(0);
+    loadFeatureToForm(pdfZone);
     setIsProcessing(false);
   };
 
@@ -120,6 +165,9 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
       planYear: feat.planYear,
       status: feat.status,
       coordinates: feat.coordinates,
+      pdfUrl: feat.pdfUrl,
+      fileType: feat.fileType,
+      fileSize: feat.fileSize,
     });
   };
 
@@ -127,6 +175,20 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
     setSelectedZoneIndex(index);
     if (parsedZones[index]) {
       loadFeatureToForm(parsedZones[index]);
+    }
+  };
+
+  const handleDistrictChange = (newDistrict: string) => {
+    if (formData.fileType === 'pdf' || formData.pdfUrl) {
+      const newCoords = generateDistrictPolygon(newDistrict);
+      setFormData((prev) => ({
+        ...prev,
+        district: newDistrict,
+        coordinates: newCoords,
+        areaHa: calculatePolygonAreaHa(newCoords),
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, district: newDistrict }));
     }
   };
 
@@ -138,7 +200,7 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
 
     onSaveZone({
       ...formData,
-      sourceFile: uploadedFileName || 'Thủ công',
+      sourceFile: uploadedFileName || (formData.fileType === 'pdf' ? 'Tài liệu PDF' : 'Thủ công'),
     });
     handleClose();
   };
@@ -162,6 +224,9 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
       sourceFile: uploadedFileName,
       floorAreaRatio: z.type === 'commercial' ? 5.0 : 3.5,
       maxHeight: z.maxFloors ? `${z.maxFloors} tầng` : 'Không áp dụng',
+      pdfUrl: z.pdfUrl,
+      fileType: z.fileType,
+      fileSize: z.fileSize,
     }));
 
     onBatchImport(items);
@@ -172,6 +237,7 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
     setParsedZones([]);
     setUploadedFileName('');
     setErrorMessage(null);
+    setShowPdfViewer(false);
     onClose();
   };
 
@@ -197,7 +263,7 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
                   Thêm Phân Khu / Tải File Bản Đồ Quy Hoạch
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Hỗ trợ tải file GeoJSON, JSON, KML và tự động số hóa lên bản đồ Hà Nội 2030
+                  Hỗ trợ định dạng <b>GeoJSON</b>, <b>KML</b> và tài liệu đồ án <b>PDF</b> lên bản đồ Hà Nội 2030
                 </p>
               </div>
             </div>
@@ -215,7 +281,7 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".geojson,application/geo+json,.json,.kml"
+              accept=".geojson,application/geo+json,.json,.kml,.pdf,application/pdf"
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   handleFile(e.target.files[0]);
@@ -248,15 +314,20 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
                   : 'border-orange-500/40 bg-orange-50/15 hover:bg-orange-50/30 hover:border-orange-500'
               }`}
             >
-              <UploadCloud className="h-10 w-10 text-orange-500 mx-auto mb-2" />
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <UploadCloud className="h-10 w-10 text-orange-500" />
+                <FileText className="h-8 w-8 text-red-500/80" />
+              </div>
               <p className="text-xs font-extrabold text-navy">
-                {isDragging ? 'Thả file bản đồ quy hoạch vào đây...' : 'Kéo thả file bản đồ quy hoạch vào đây hoặc bấm để chọn'}
+                {isDragging
+                  ? 'Thả file bản đồ / đồ án PDF vào đây...'
+                  : 'Kéo thả file bản đồ quy hoạch (GeoJSON, KML, PDF) vào đây hoặc bấm để chọn'}
               </p>
               <p className="text-[11px] text-slate-400 mt-1">
-                Hỗ trợ định dạng <b>.geojson</b>, <b>.json</b>, <b>.kml</b> (Chuẩn toạ độ WGS84 EPSG:4326)
+                Hỗ trợ định dạng <b>.geojson</b>, <b>.json</b>, <b>.kml</b> hoặc <b>.pdf</b> (Văn bản phê duyệt & bản vẽ đồ án)
               </p>
 
-              <div className="mt-4 flex items-center justify-center gap-3">
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -277,7 +348,18 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors"
                 >
                   <Sparkles className="h-3.5 w-3.5 text-orange-500" />
-                  Dùng file mẫu Hà Nội
+                  Mẫu GeoJSON
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLoadSamplePDF();
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 bg-red-50/70 hover:bg-red-100 text-xs font-bold text-red-700 transition-colors"
+                >
+                  <FileText className="h-3.5 w-3.5 text-red-500" />
+                  Mẫu Đồ án PDF
                 </button>
               </div>
             </div>
@@ -290,12 +372,15 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
               </div>
             )}
 
-            {/* Uploaded File Confirmation */}
+            {/* Uploaded File Confirmation Banner */}
             {uploadedFileName && parsedZones.length > 0 && (
               <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/60 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-emerald-800 font-bold">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span>Đã đọc thành công <b>{parsedZones.length}</b> phân khu từ file: <i>{uploadedFileName}</i></span>
+                  <span>
+                    Đã đọc thành công <b>{parsedZones.length}</b> phân khu từ file:{' '}
+                    <i>{uploadedFileName}</i>
+                  </span>
                 </div>
                 {parsedZones.length > 1 && (
                   <button
@@ -305,6 +390,68 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
                   >
                     + Nhập tất cả {parsedZones.length} phân khu
                   </button>
+                )}
+              </div>
+            )}
+
+            {/* Dedicated PDF Document Card & Interactive Viewer */}
+            {formData.pdfUrl && (
+              <div className="rounded-2xl border border-red-200 bg-red-50/40 p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-2xl bg-red-500 text-white shadow-md shadow-red-500/20 shrink-0">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-[10px] font-extrabold uppercase tracking-wide">
+                          Tài liệu Đồ án PDF
+                        </span>
+                        {formData.fileSize && (
+                          <span className="text-[11px] text-slate-400 font-mono">
+                            {formData.fileSize}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-xs font-extrabold text-navy mt-0.5 truncate max-w-sm">
+                        {uploadedFileName || 'Tài liệu đồ án quy hoạch.pdf'}
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        Đã đính kèm file văn bản pháp lý & bản đồ đồ án vào dữ liệu phân khu
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowPdfViewer(!showPdfViewer)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-200 bg-white hover:bg-red-50 text-xs font-bold text-red-700 transition-colors"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>{showPdfViewer ? 'Ẩn xem trước' : 'Xem trước PDF'}</span>
+                    </button>
+                    <a
+                      href={formData.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs transition-colors"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span>Mở tab mới</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Inline PDF Viewer Window */}
+                {showPdfViewer && (
+                  <div className="rounded-xl overflow-hidden border border-red-200 bg-white shadow-inner mt-2">
+                    <iframe
+                      src={formData.pdfUrl}
+                      title="PDF Planning Document Viewer"
+                      className="w-full h-80 border-0"
+                    />
+                  </div>
                 )}
               </div>
             )}
@@ -373,7 +520,7 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
                   <label className="text-xs font-bold text-slate-700">Quận / Huyện</label>
                   <select
                     value={formData.district || 'Cầu Giấy'}
-                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                    onChange={(e) => handleDistrictChange(e.target.value)}
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-semibold focus:border-orange-500 focus:outline-hidden"
                   >
                     {[
@@ -506,9 +653,9 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
               {formData.coordinates && formData.coordinates.length > 0 && (
                 <div className="pt-2 border-t border-slate-200">
                   <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-                    <span>Mẫu toạ độ ranh giới WGS84:</span>
+                    <span>Toạ độ ranh giới WGS84 liên kết với đồ án:</span>
                     <span className="font-mono">
-                      {formData.coordinates.length} điểm toạ độ khép góc
+                      {formData.coordinates.length} điểm toạ độ
                     </span>
                   </div>
                   <div className="bg-slate-900 text-slate-200 p-3 rounded-xl font-mono text-[11px] overflow-x-auto max-h-24 leading-relaxed">
