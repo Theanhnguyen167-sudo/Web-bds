@@ -12,6 +12,7 @@ import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
 import { MapLocationSearch } from './MapLocationSearch'
 import { HanoiLocationItem } from '@/lib/data/hanoi-locations'
 import { haversineDistance } from '@/lib/search/filterListings'
+import { useApp } from '@/lib/context/AppContext'
 
 // ── Types ──
 export interface SearchMapListing {
@@ -72,6 +73,11 @@ export default function SearchMap({
   onLocationSelect,
   onFilterNearLocation,
 }: SearchMapProps) {
+  let appContext: any = null
+  try {
+    appContext = useApp()
+  } catch {}
+
   const mapRef = useRef<any>(null)
   const mapInstanceRef = useRef<any>(null)
   const markersRef = useRef<Map<string, any>>(new Map())
@@ -283,11 +289,13 @@ export default function SearchMap({
 
       if (!showPlanningLayer) return
 
-      HANOI_PLANNING_ZONES.forEach(zone => {
+      const sourceZones = (appContext?.planningZones && appContext.planningZones.length > 0) ? appContext.planningZones : HANOI_PLANNING_ZONES
+
+      sourceZones.forEach((zone: any) => {
         const polygon = L.polygon(zone.coordinates, {
           color: zone.color,
           fillColor: zone.color,
-          fillOpacity: zone.fillOpacity,
+          fillOpacity: zone.fillOpacity || 0.25,
           weight: 2,
           opacity: 0.8,
           dashArray: zone.type === 'transport' ? '8,6' : undefined,
@@ -303,7 +311,7 @@ export default function SearchMap({
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
                 <div style="width:12px;height:12px;border-radius:3px;background:${zone.color}"></div>
                 <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">
-                  ${typeInfo?.label || zone.type}
+                  ${typeInfo?.label || zone.type || 'Quy hoạch phân khu'}
                 </span>
               </div>
               <p style="font-size:15px;font-weight:700;color:#1a2744;margin:0 0 12px 0;line-height:1.3">
@@ -312,15 +320,15 @@ export default function SearchMap({
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
                 <div style="background:#f8fafc;border-radius:8px;padding:8px">
                   <div style="font-size:9px;color:#94a3b8;margin-bottom:2px">Quy hoạch</div>
-                  <div style="font-size:13px;font-weight:700;color:#1a2744">${zone.planYear}</div>
+                  <div style="font-size:13px;font-weight:700;color:#1a2744">${zone.planYear || 2030}</div>
                 </div>
                 <div style="background:#f8fafc;border-radius:8px;padding:8px">
                   <div style="font-size:9px;color:#94a3b8;margin-bottom:2px">Hệ số SDĐ</div>
-                  <div style="font-size:13px;font-weight:700;color:#1a2744">${zone.floorAreaRatio || 'N/A'}</div>
+                  <div style="font-size:13px;font-weight:700;color:#1a2744">${zone.floorAreaRatio || '3.5'}</div>
                 </div>
                 <div style="background:#f8fafc;border-radius:8px;padding:8px">
                   <div style="font-size:9px;color:#94a3b8;margin-bottom:2px">Chiều cao tối đa</div>
-                  <div style="font-size:12px;font-weight:600;color:#1a2744">${zone.maxHeight}</div>
+                  <div style="font-size:12px;font-weight:600;color:#1a2744">${zone.maxHeight || (zone.maxFloors ? `${zone.maxFloors} tầng` : 'Không áp dụng')}</div>
                 </div>
                 <div style="background:#f8fafc;border-radius:8px;padding:8px">
                   <div style="font-size:9px;color:#94a3b8;margin-bottom:2px">Quận</div>
@@ -330,7 +338,7 @@ export default function SearchMap({
               <div style="background:${zone.type === 'residential' ? '#dcfce7' : zone.type === 'transport' ? '#fef9c3' : '#dbeafe'};
                           border-radius:8px;padding:8px;font-size:11px;font-weight:600;
                           color:${zone.type === 'residential' ? '#166534' : zone.type === 'transport' ? '#713f12' : '#1e40af'}">
-                ✅ ${zone.status}
+                ✅ ${zone.status || 'Đã công bố'}
               </div>
             </div>
           `
@@ -347,10 +355,10 @@ export default function SearchMap({
 
         // Hover effects
         polygon.on('mouseover', function(this: any) {
-          this.setStyle({ fillOpacity: zone.fillOpacity + 0.2, weight: 3 })
+          this.setStyle({ fillOpacity: (zone.fillOpacity || 0.25) + 0.2, weight: 3 })
         })
         polygon.on('mouseout', function(this: any) {
-          this.setStyle({ fillOpacity: zone.fillOpacity, weight: 2 })
+          this.setStyle({ fillOpacity: zone.fillOpacity || 0.25, weight: 2 })
         })
 
         polygon.addTo(map)
@@ -359,7 +367,7 @@ export default function SearchMap({
     }
 
     renderZones()
-  }, [showPlanningLayer, isMapReady])
+  }, [showPlanningLayer, isMapReady, appContext?.planningZones])
 
   // ── FLY TO selected listing ──
   useEffect(() => {

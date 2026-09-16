@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import { createClient } from '@/lib/supabase/client';
 import { toggleSavedListing, getSavedListings } from '@/lib/supabase/queries/saved';
+import { PlanningZoneItem, DEFAULT_PLANNING_ZONES } from '@/lib/planning/planning-utils';
 
 export interface ToastItem {
   id: string;
@@ -28,6 +29,14 @@ interface AppContextType {
   addToast: (message: string, type?: ToastItem['type']) => void;
   removeToast: (id: string) => void;
   addNewListing: (listing: Partial<ListingItem>) => string;
+  planningZones: PlanningZoneItem[];
+  setPlanningZones: React.Dispatch<React.SetStateAction<PlanningZoneItem[]>>;
+  selectedPlanningZoneId: string | null;
+  setSelectedPlanningZoneId: (id: string | null) => void;
+  addPlanningZone: (zone: Partial<PlanningZoneItem>) => string;
+  importPlanningZones: (newZones: PlanningZoneItem[]) => number;
+  deletePlanningZone: (id: string) => void;
+  resetPlanningZonesToDefault: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -40,6 +49,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [showPlanningOverlay, setShowPlanningOverlay] = useState<boolean>(true);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [planningZones, setPlanningZones] = useState<PlanningZoneItem[]>(DEFAULT_PLANNING_ZONES);
+  const [selectedPlanningZoneId, setSelectedPlanningZoneId] = useState<string | null>(null);
 
   // Supabase Auth State Listener
   useEffect(() => {
@@ -160,6 +171,91 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newId;
   };
 
+  // Load planning zones from localStorage
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('hanoi_planning_zones');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setPlanningZones(parsed);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse planning zones from localStorage', e);
+    }
+  }, []);
+
+  const savePlanningZonesToStorage = (zones: PlanningZoneItem[]) => {
+    setPlanningZones(zones);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('hanoi_planning_zones', JSON.stringify(zones));
+      }
+    } catch (e) {
+      console.warn('Failed to save planning zones to localStorage', e);
+    }
+  };
+
+  const addPlanningZone = (zone: Partial<PlanningZoneItem>): string => {
+    const id = 'zone_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+    const newZone: PlanningZoneItem = {
+      id,
+      code: zone.code || 'ODT-NEW',
+      name: zone.name || 'Phân khu quy hoạch mới',
+      district: zone.district || 'Cầu Giấy',
+      color: zone.color || '#3b82f6',
+      areaHa: zone.areaHa || 100,
+      maxFloors: zone.maxFloors ?? 5,
+      density: zone.density || '60%',
+      status: zone.status || 'published',
+      type: zone.type || 'residential',
+      planYear: zone.planYear || 2030,
+      coordinates: zone.coordinates && zone.coordinates.length >= 3 ? zone.coordinates : [
+        [21.0300, 105.7800],
+        [21.0400, 105.7900],
+        [21.0350, 105.8000],
+        [21.0250, 105.7900],
+      ],
+      sourceFile: zone.sourceFile,
+      floorAreaRatio: zone.floorAreaRatio || 3.5,
+      maxHeight: zone.maxHeight || (zone.maxFloors ? `${zone.maxFloors} tầng` : 'Không áp dụng'),
+    };
+    const updated = [newZone, ...planningZones];
+    savePlanningZonesToStorage(updated);
+    setSelectedPlanningZoneId(id);
+    addToast(`🎉 Đã thêm phân khu "${newZone.name}" vào bản đồ quy hoạch!`, 'success');
+    return id;
+  };
+
+  const importPlanningZones = (newZones: PlanningZoneItem[]): number => {
+    if (!newZones.length) return 0;
+    const updated = [...newZones, ...planningZones];
+    savePlanningZonesToStorage(updated);
+    if (newZones[0]?.id) {
+      setSelectedPlanningZoneId(newZones[0].id);
+    }
+    addToast(`🎉 Đã nhập thành công ${newZones.length} phân khu quy hoạch vào bản đồ!`, 'success');
+    return newZones.length;
+  };
+
+  const deletePlanningZone = (id: string) => {
+    const updated = planningZones.filter((z) => z.id !== id);
+    savePlanningZonesToStorage(updated);
+    if (selectedPlanningZoneId === id) {
+      setSelectedPlanningZoneId(null);
+    }
+    addToast('Đã xóa phân khu khỏi bản đồ', 'info');
+  };
+
+  const resetPlanningZonesToDefault = () => {
+    savePlanningZonesToStorage(DEFAULT_PLANNING_ZONES);
+    setSelectedPlanningZoneId(null);
+    addToast('Đã khôi phục dữ liệu quy hoạch mặc định', 'info');
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -179,6 +275,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addToast,
         removeToast,
         addNewListing,
+        planningZones,
+        setPlanningZones,
+        selectedPlanningZoneId,
+        setSelectedPlanningZoneId,
+        addPlanningZone,
+        importPlanningZones,
+        deletePlanningZone,
+        resetPlanningZonesToDefault,
       }}
     >
       {children}

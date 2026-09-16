@@ -10,6 +10,7 @@ import {
   HANOI_METRO_STATIONS 
 } from '@/lib/leaflet/hanoi-data'
 import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
+import { useApp } from '@/lib/context/AppContext'
 
 export interface SelectedZoneInfo {
   id: string
@@ -35,6 +36,8 @@ interface PlanningMapProps {
   planYear: 2025 | 2030 | 2045
   opacity: number
   onZoneClick?: (zone: SelectedZoneInfo) => void
+  zones?: any[]
+  focusZoneId?: string | null
 }
 
 export default function PlanningMap({
@@ -43,7 +46,16 @@ export default function PlanningMap({
   planYear,
   opacity,
   onZoneClick,
+  zones,
+  focusZoneId,
 }: PlanningMapProps) {
+  let appContext: any = null
+  try {
+    appContext = useApp()
+  } catch {
+    // Outside AppProvider fallback
+  }
+
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const polygonsRef = useRef<any[]>([])
@@ -148,12 +160,14 @@ export default function PlanningMap({
 
       if (!activeLayers.planning) return
 
-      const filteredZones = activeDistrict && activeDistrict !== 'all'
-        ? HANOI_PLANNING_ZONES.filter(z => z.district.toLowerCase().includes(activeDistrict.toLowerCase()))
-        : HANOI_PLANNING_ZONES
+      const sourceZones = zones || (appContext?.planningZones && appContext.planningZones.length > 0 ? appContext.planningZones : HANOI_PLANNING_ZONES)
 
-      filteredZones.forEach(zone => {
-        const isSelected = selectedZone?.id === zone.id
+      const filteredZones = activeDistrict && activeDistrict !== 'all'
+        ? sourceZones.filter((z: any) => z.district?.toLowerCase().includes(activeDistrict.toLowerCase()))
+        : sourceZones
+
+      filteredZones.forEach((zone: any) => {
+        const isSelected = selectedZone?.id === zone.id || focusZoneId === zone.id || appContext?.selectedPlanningZoneId === zone.id
         const isHovered = hoveredZone === zone.id
 
         const polygon = L.polygon(zone.coordinates, {
@@ -164,18 +178,19 @@ export default function PlanningMap({
           opacity: 0.9,
           dashArray: zone.type === 'transport' ? '10,6' : undefined,
         })
+        ;(polygon as any)._zoneId = zone.id
 
         polygon.on('click', (e: any) => {
           L.DomEvent.stopPropagation(e)
           const info: SelectedZoneInfo = {
             id: zone.id,
             name: zone.name,
-            type: zone.type,
+            type: zone.type || 'residential',
             district: zone.district,
-            planYear: zone.planYear,
-            status: zone.status,
-            floorAreaRatio: zone.floorAreaRatio,
-            maxHeight: zone.maxHeight,
+            planYear: zone.planYear || 2030,
+            status: zone.status || 'Đã công bố',
+            floorAreaRatio: zone.floorAreaRatio || 3.5,
+            maxHeight: zone.maxHeight || (zone.maxFloors ? `${zone.maxFloors} tầng` : 'Không áp dụng'),
             color: zone.color,
           }
           setSelectedZone(info)
@@ -213,7 +228,7 @@ export default function PlanningMap({
               <span style="color:${zone.color}">●</span> ${zone.name}
               <br>
               <span style="color:rgba(255,255,255,0.6);font-size:10px">
-                ${PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label}
+                ${PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || 'Quy hoạch phân khu'}
                 · Click để xem chi tiết
               </span>
             </div>
@@ -249,7 +264,18 @@ export default function PlanningMap({
     }
 
     renderZones()
-  }, [activeLayers.planning, activeDistrict, isMapReady, opacity, planYear, selectedZone, hoveredZone, onZoneClick])
+  }, [activeLayers.planning, activeDistrict, opacity, isMapReady, selectedZone, hoveredZone, zones, focusZoneId, appContext?.planningZones, appContext?.selectedPlanningZoneId])
+
+  // Fly to focusZoneId when changed
+  useEffect(() => {
+    const targetId = focusZoneId || appContext?.selectedPlanningZoneId
+    if (!isMapReady || !mapInstanceRef.current || !targetId) return
+    const target = polygonsRef.current.find((p: any) => p._zoneId === targetId)
+    if (target) {
+      const bounds = target.getBounds()
+      mapInstanceRef.current.flyToBounds(bounds, { padding: [80, 80], maxZoom: 15, duration: 0.8 })
+    }
+  }, [focusZoneId, appContext?.selectedPlanningZoneId, isMapReady, zones, appContext?.planningZones])
 
   // ── RENDER METRO STATIONS ──
   useEffect(() => {
