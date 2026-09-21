@@ -42,3 +42,48 @@ YÊU CẦU ĐẦU RA (JSON Object duy nhất):
 }
 `;
 }
+
+export function buildPlanningPDFAnalysisPrompt(fileName: string, districtHint?: string): string {
+  return `
+Bạn là một Chuyên gia Quy hoạch Đô thị & Kỹ sư Hệ thống GIS Hà Nội cấp cao.
+Nhiệm vụ của bạn là phân tích tài liệu đồ án / bản vẽ quy hoạch sau (Tên file: "${fileName}", Gợi ý quận: "${districtHint || 'Hà Nội'}").
+
+Hãy đọc toàn bộ tài liệu và bóc tách các phân khu quy hoạch, ranh giới và các ký hiệu sử dụng đất theo quy chuẩn quy hoạch xây dựng Việt Nam (QCVN 01:2021/BXD).
+
+YÊU CẦU PHÂN TÍCH:
+1. Xác định quận / huyện chính của đồ án tại Hà Nội.
+2. Bóc tách danh sách từ 3 đến 6 phân khu quy hoạch chức năng chi tiết trong đồ án.
+3. Với mỗi phân khu, phân loại chính xác theo ký hiệu quy chuẩn Việt Nam:
+   - "ODT": Đất ở đô thị (màu #ffdd29)
+   - "TMD": Đất thương mại dịch vụ (màu #ef4444)
+   - "HH": Đất hỗn hợp cao tầng (màu #8b5cf6)
+   - "CX": Đất công viên cây xanh / mặt nước (màu #22c55e)
+   - "GT": Đất công trình hạ tầng giao thông / ga metro (màu #3b82f6)
+   - "DGD": Đất giáo dục - trường học (màu #6366f1)
+   - "YT": Đất y tế / bệnh viện (màu #ec4899)
+   - "CN": Đất công nghiệp / kho tàng (màu #64748b)
+4. Trích xuất các chỉ tiêu: Mật độ xây dựng (%), Chiều cao tối đa (tầng), Hệ số sử dụng đất (FAR), Diện tích quy hoạch (ha).
+
+TRẢ VỀ DUY NHẤT ĐỊNH DẠNG JSON HỢP LỆ (không bọc codeblock markdown):
+{
+  "projectTitle": "Tên đầy đủ của đồ án quy hoạch",
+  "district": "Tên quận huyện (VD: Cầu Giấy)",
+  "planYear": 2030,
+  "zones": [
+    {
+      "code": "ODT-01",
+      "name": "Khu đất ở đô thị cải tạo chỉnh trang",
+      "type": "residential",
+      "color": "#ffdd29",
+      "density": "65%",
+      "maxFloors": 5,
+      "maxHeight": "21m (5 tầng)",
+      "floorAreaRatio": 3.5,
+      "areaHa": 145,
+      "description": "Khu dân cư hiện hữu kết hợp chỉnh trang đồng bộ hạ tầng"
+    }
+  ]
+}
+`;
+}
+
