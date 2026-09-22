@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ShieldCheck
 } from 'lucide-react';
+import { NotificationBell } from '@/components/notification/NotificationBell';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -133,6 +134,9 @@ export const Navbar: React.FC = () => {
             </Link>
           )}
 
+          {/* Biểu tượng chuông thông báo (bên trái nút Đăng tin) */}
+          <NotificationBell />
+
           {/* Post Listing Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -241,6 +245,8 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile Hamburger Toggle */}
         <div className="flex md:hidden items-center gap-2">
+          {/* Chuông thông báo trên mobile */}
+          <NotificationBell />
           <button
             onClick={handlePostListingClick}
             className="rounded-lg bg-accent px-2.5 py-1.5 text-xs font-bold text-white"
