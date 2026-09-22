@@ -346,19 +346,19 @@ export default function HomePage() {
           </motion.div>
 
           {/* Headline */}
-          <motion.div
+          <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="space-y-1"
+            className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight flex flex-col items-center gap-2 sm:gap-3 md:gap-3.5 leading-[1.2] sm:leading-[1.25] md:leading-[1.3]"
           >
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight">
+            <span className="text-white block">
               Tìm ngôi nhà mơ ước
-            </h1>
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-300 bg-clip-text text-transparent leading-tight">
+            </span>
+            <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-300 bg-clip-text text-transparent block pb-1">
               tại Hà Nội
-            </h1>
-          </motion.div>
+            </span>
+          </motion.h1>
 
           {/* Subtext */}
           <motion.p
