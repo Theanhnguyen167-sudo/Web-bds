@@ -510,13 +510,13 @@ export const CreateListingWizard: React.FC = () => {
     });
   };
 
-  const handleSubmitListing = () => {
+  const handleSubmitListing = async () => {
     const fullAddress = `${formData.addressNumber} ${formData.street}, ${formData.ward}, ${formData.district}, Hà Nội`;
     const finalTitle =
       formData.title ||
       `Bán ${propertyTypes.find((t) => t.id === formData.type)?.title} ${formData.area}m² tại ${formData.district}`;
 
-    addNewListing({
+    await addNewListing({
       ...formData,
       title: finalTitle,
       address: fullAddress,

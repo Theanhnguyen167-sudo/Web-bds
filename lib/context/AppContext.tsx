@@ -30,7 +30,8 @@ interface AppContextType {
   toasts: ToastItem[];
   addToast: (message: string, type?: ToastItem['type']) => void;
   removeToast: (id: string) => void;
-  addNewListing: (listing: Partial<ListingItem>) => string;
+  addNewListing: (listing: Partial<ListingItem>) => Promise<string>;
+  refreshListings: () => Promise<void>;
   planningZones: PlanningZoneItem[];
   setPlanningZones: React.Dispatch<React.SetStateAction<PlanningZoneItem[]>>;
   selectedPlanningZoneId: string | null;
@@ -240,39 +241,106 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const addNewListing = (newListingData: Partial<ListingItem>): string => {
-    const newId = (listings.length + 1).toString();
-    const created: ListingItem = {
-      id: newId,
-      title: newListingData.title || 'BĐS mới đăng tại Hà Nội',
-      price: newListingData.price || 5000000000,
-      pricePerM2: newListingData.pricePerM2 || (newListingData.price ? newListingData.price / (newListingData.area || 50) : 100000000),
-      area: newListingData.area || 50,
-      floors: newListingData.floors || 3,
-      bedrooms: newListingData.bedrooms || 3,
-      bathrooms: newListingData.bathrooms || 2,
-      address: newListingData.address || 'Hà Nội',
-      district: newListingData.district || 'Cầu Giấy',
-      ward: newListingData.ward || 'Dịch Vọng',
-      lat: newListingData.lat || 21.0315,
-      lng: newListingData.lng || 105.7825,
-      type: newListingData.type || 'house',
-      images: newListingData.images && newListingData.images.length > 0
-        ? newListingData.images
-        : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
-      status: 'active',
-      isFeatured: false,
-      views: 1,
-      createdAt: new Date().toISOString().split('T')[0],
-      planningZone: 'Đất ở đô thị',
-      planningYear: 2030,
-      legalStatus: newListingData.legalStatus || 'Sổ đỏ chính chủ',
-      direction: newListingData.direction || 'Đông Nam',
-      description: newListingData.description || 'Bất động sản vị trí đẹp.',
-    };
+  // Hàm tải các tin đăng đã được duyệt (status === 'active') từ Supabase
+  const refreshListings = async () => {
+    try {
+      const res = await fetch('/api/listings?status=active');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data && json.data.length > 0) {
+          const supabaseListings: ListingItem[] = json.data.map((row: any) => {
+            let lat = 21.0315;
+            let lng = 105.7825;
+            // Parse PostGIS location or Point
+            if (row.location && typeof row.location === 'object' && row.location.coordinates) {
+              lng = row.location.coordinates[0];
+              lat = row.location.coordinates[1];
+            } else if (typeof row.location === 'string' && row.location.includes('POINT')) {
+              const match = row.location.match(/POINT\(([\d.]+)\s+([\d.]+)\)/);
+              if (match) {
+                lng = parseFloat(match[1]);
+                lat = parseFloat(match[2]);
+              }
+            }
+            return {
+              id: row.id,
+              title: row.title,
+              price: row.price,
+              pricePerM2: row.price_per_m2 || Math.round(row.price / (row.area || 1)),
+              area: row.area,
+              floors: 3,
+              bedrooms: 3,
+              bathrooms: 2,
+              address: row.address,
+              district: row.district,
+              ward: row.ward || '',
+              lat,
+              lng,
+              type: row.property_type || 'house',
+              images: row.images && row.images.length > 0 ? row.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+              status: 'active',
+              isFeatured: row.is_featured || false,
+              views: row.views || 1,
+              createdAt: row.created_at ? row.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+              planningZone: 'Đất ở đô thị',
+              planningYear: 2030,
+              legalStatus: 'Sổ đỏ chính chủ',
+              direction: 'Đông Nam',
+              description: row.description || '',
+            };
+          });
 
-    setListings((prev) => [created, ...prev]);
-    addToast('🎉 Đăng tin thành công! Tin của bạn đã hiển thị trên bản đồ.', 'success');
+          // Gộp tin đăng từ Supabase lên đầu danh sách, loại trùng
+          const sbIds = new Set(supabaseListings.map(l => l.id));
+          const restMocks = mockListings.filter(m => !sbIds.has(m.id));
+          setListings([...supabaseListings, ...restMocks]);
+        }
+      }
+    } catch (e) {
+      console.warn('Cannot fetch remote listings:', e);
+    }
+  };
+
+  // Tải danh sách tin đã được duyệt khi mở web
+  useEffect(() => {
+    refreshListings();
+  }, []);
+
+  const addNewListing = async (newListingData: Partial<ListingItem>): Promise<string> => {
+    let newId = 'lst_' + Date.now();
+
+    // 1. Gửi lên Supabase API với status: 'pending' (Chờ Admin phê duyệt)
+    try {
+      const res = await fetch('/api/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user?.id,
+          title: newListingData.title,
+          description: newListingData.description,
+          property_type: newListingData.type || 'house',
+          price: newListingData.price,
+          area: newListingData.area,
+          address: newListingData.address,
+          district: newListingData.district,
+          ward: newListingData.ward,
+          lat: newListingData.lat,
+          lng: newListingData.lng,
+          images: newListingData.images,
+        }),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data?.id) {
+          newId = json.data.id;
+        }
+      }
+    } catch (apiErr) {
+      console.warn('Sync to Supabase listings notice:', apiErr);
+    }
+
+    addToast('⏳ Tin đăng đã gửi thành công và đang chờ Admin kiểm duyệt!', 'info');
     return newId;
   };
 
@@ -380,6 +448,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addToast,
         removeToast,
         addNewListing,
+        refreshListings,
         planningZones,
         setPlanningZones,
         selectedPlanningZoneId,
