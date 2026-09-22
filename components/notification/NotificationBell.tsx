@@ -154,7 +154,7 @@ export const NotificationBell: React.FC = () => {
 
   // Close on outside click or ESC
   useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
@@ -168,10 +168,12 @@ export const NotificationBell: React.FC = () => {
 
     if (isOpen) {
       document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('touchstart', handleOutsideClick);
       document.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
@@ -379,13 +381,14 @@ export const NotificationBell: React.FC = () => {
   return (
     <div className="relative inline-block" ref={containerRef}>
       {/* ── TRIGGER BELL BUTTON ── */}
-      <motion.button
+      <button
         type="button"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen((prev) => !prev);
+        }}
         aria-label="Quản lý và nhận thông báo"
-        className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 border ${
+        className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 border cursor-pointer select-none ${
           isOpen
             ? 'bg-accent text-white border-accent shadow-md shadow-accent/25'
             : 'bg-primary-light/60 border-slate-700 text-slate-200 hover:text-white hover:bg-primary-light hover:border-slate-500'
@@ -405,20 +408,21 @@ export const NotificationBell: React.FC = () => {
         {unreadCount > 0 && !isOpen && (
           <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent/40 animate-ping pointer-events-none" />
         )}
-      </motion.button>
+      </button>
 
       {/* ── DROPDOWN POPOVER PANEL ── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.96 }}
-            transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-12 z-50 w-auto sm:w-[410px] rounded-2xl border border-slate-700/80 bg-[#141e34]/98 backdrop-blur-2xl text-slate-100 shadow-2xl overflow-hidden ring-1 ring-white/10"
+            exit={{ opacity: 0, y: 6, scale: 0.96 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-0 top-full mt-2.5 w-[360px] sm:w-[410px] max-w-[calc(100vw-24px)] rounded-2xl border border-slate-700 bg-slate-900 text-slate-100 shadow-2xl z-[9999] overflow-hidden ring-1 ring-white/10"
           >
             {/* Popover Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/70 bg-primary/40">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/70 bg-slate-950/60">
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/20 text-accent">
                   <Bell className="h-3.5 w-3.5" />
@@ -437,9 +441,17 @@ export const NotificationBell: React.FC = () => {
               </div>
 
               {/* Header Actions */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 {viewMode === 'list' ? (
                   <>
+                    <button
+                      type="button"
+                      onClick={handleSimulateDemoNotification}
+                      className="flex items-center gap-1 rounded-lg bg-accent/20 border border-accent/40 px-2 py-1 text-[10px] font-bold text-accent hover:bg-accent hover:text-white transition-all shadow-xs"
+                      title="Bấm để nhận ngay 1 thông báo demo thời gian thực"
+                    >
+                      <span>⚡ Test nhận tin</span>
+                    </button>
                     {unreadCount > 0 && (
                       <button
                         type="button"

@@ -121,7 +121,7 @@ export const Navbar: React.FC = () => {
         </nav>
 
         {/* Right Section Actions */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           {/* Admin Portal Quick Switch Button for Admins */}
           {user?.role === 'admin' && (
             <Link
