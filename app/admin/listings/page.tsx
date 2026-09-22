@@ -31,7 +31,7 @@ import {
 
 export default function AdminListingsPage() {
   const router = useRouter();
-  const { addToast, refreshListings } = useApp();
+  const { addToast, refreshListings, updateListingStatus, listings: appListings } = useApp();
   const [listings, setListings] = useState<AdminListing[]>(mockAdminListings);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,41 +44,102 @@ export default function AdminListingsPage() {
   const [rejectionReason, setRejectionReason] = useState('Ảnh không phù hợp');
   const [isRejecting, setIsRejecting] = useState(false);
 
-  // Tải danh sách tin đăng thực tế từ Supabase
+  // Tải danh sách tin đăng từ Supabase + LocalStorage người dùng vừa tạo
   const fetchAdminListings = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/listings?status=all');
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data) {
-          const remoteListings: AdminListing[] = json.data.map((r: any) => ({
-            id: r.id,
-            title: r.title,
-            price: r.price,
-            area: r.area,
-            type: r.property_type || 'house',
-            district: r.district,
-            address: r.address,
-            authorName: r.users?.full_name || 'Khách hàng',
-            authorPhone: r.users?.phone || '0988 123 456',
-            authorAvatar: r.users?.avatar_url,
-            status: r.status || 'pending',
-            createdAt: r.created_at ? r.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-            expiresAt: '2026-12-31',
-            images: r.images && r.images.length > 0 ? r.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
-            views: r.views || 1,
-            planningZone: 'Đất ở đô thị',
-            isFeatured: r.is_featured || false,
-          }));
+      // 1. Lấy tin từ API Supabase
+      let remoteListings: AdminListing[] = [];
+      try {
+        const res = await fetch('/api/listings?status=all');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            remoteListings = json.data.map((r: any) => ({
+              id: r.id,
+              title: r.title,
+              price: r.price,
+              area: r.area,
+              type: r.property_type || 'house',
+              district: r.district,
+              address: r.address,
+              authorName: r.users?.full_name || 'Khách hàng',
+              authorPhone: r.users?.phone || '0988 123 456',
+              authorAvatar: r.users?.avatar_url,
+              status: r.status || 'pending',
+              createdAt: r.created_at ? r.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+              expiresAt: '2026-12-31',
+              images: r.images && r.images.length > 0 ? r.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
+              views: r.views || 1,
+              planningZone: 'Đất ở đô thị',
+              isFeatured: r.is_featured || false,
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('Cannot fetch remote listings in admin:', err);
+      }
 
-          const remoteIds = new Set(remoteListings.map((l) => l.id));
-          const restMocks = mockAdminListings.filter((m) => !remoteIds.has(m.id));
-          setListings([...remoteListings, ...restMocks]);
+      // 2. Lấy tin người dùng vừa tạo từ LocalStorage (đảm bảo tin mới luôn hiện dù Supabase chưa mở RLS)
+      let localListings: AdminListing[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('hanoi_platform_user_listings');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              localListings = parsed.map((item: any) => ({
+                id: item.id,
+                title: item.title,
+                price: item.price,
+                area: item.area,
+                type: item.type || 'house',
+                district: item.district,
+                address: item.address,
+                authorName: item.authorName || 'Cozy Hollys',
+                authorPhone: item.authorPhone || '0988 123 456',
+                authorAvatar: item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+                status: item.status || 'pending',
+                createdAt: item.createdAt || new Date().toISOString().split('T')[0],
+                expiresAt: '2026-12-31',
+                images: item.images && item.images.length > 0 ? item.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
+                views: item.views || 1,
+                planningZone: item.planningZone || 'Đất ở đô thị',
+                isFeatured: false,
+              }));
+            }
+          }
+        } catch (e) {
+          console.warn('Lỗi đọc local listings trong admin:', e);
         }
       }
+
+      // 3. Hợp nhất: Remote ưu tiên -> Local người dùng -> Mocks mẫu
+      const existingIds = new Set<string>();
+      const combined: AdminListing[] = [];
+
+      for (const item of remoteListings) {
+        existingIds.add(item.id);
+        combined.push(item);
+      }
+
+      for (const item of localListings) {
+        if (!existingIds.has(item.id)) {
+          existingIds.add(item.id);
+          combined.push(item);
+        }
+      }
+
+      for (const item of mockAdminListings) {
+        if (!existingIds.has(item.id)) {
+          existingIds.add(item.id);
+          combined.push(item);
+        }
+      }
+
+      setListings(combined);
     } catch (e) {
-      console.warn('Lỗi khi tải tin quản trị từ Supabase:', e);
+      console.warn('Lỗi khi tải tin quản trị:', e);
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +147,7 @@ export default function AdminListingsPage() {
 
   React.useEffect(() => {
     fetchAdminListings();
-  }, []);
+  }, [appListings]);
 
   // Filter listings
   const filteredListings = listings.filter((l) => {
@@ -106,7 +167,7 @@ export default function AdminListingsPage() {
   const pendingCount = listings.filter((l) => l.status === 'pending').length;
 
   const handleApprove = async (id: string) => {
-    // 1. Cập nhật giao diện ngay lập tức
+    // 1. Cập nhật giao diện quản trị ngay lập tức
     setListings((prev) =>
       prev.map((l) => (l.id === id ? { ...l, status: 'active' as const } : l))
     );
@@ -114,18 +175,9 @@ export default function AdminListingsPage() {
     setReviewListing(null);
     setIsRejecting(false);
 
-    // 2. Gửi lệnh cập nhật lên Supabase Database
-    try {
-      await fetch('/api/listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'active' }),
-      });
-      // Làm mới danh sách tin hiển thị ngoài bản đồ
-      await refreshListings();
-    } catch (err) {
-      console.warn('Lỗi đồng bộ duyệt tin lên Supabase:', err);
-    }
+    // 2. Cập nhật qua AppContext (đồng bộ state toàn app + localStorage + Supabase PATCH)
+    await updateListingStatus(id, 'active');
+    await refreshListings();
   };
 
   const handleReject = async (id: string) => {
@@ -136,16 +188,8 @@ export default function AdminListingsPage() {
     setReviewListing(null);
     setIsRejecting(false);
 
-    try {
-      await fetch('/api/listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'rejected' }),
-      });
-      await refreshListings();
-    } catch (err) {
-      console.warn('Lỗi đồng bộ từ chối tin lên Supabase:', err);
-    }
+    await updateListingStatus(id, 'rejected');
+    await refreshListings();
   };
 
   const columns: Column<AdminListing>[] = [

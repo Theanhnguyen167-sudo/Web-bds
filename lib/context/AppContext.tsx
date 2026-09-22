@@ -31,6 +31,7 @@ interface AppContextType {
   addToast: (message: string, type?: ToastItem['type']) => void;
   removeToast: (id: string) => void;
   addNewListing: (listing: Partial<ListingItem>) => Promise<string>;
+  updateListingStatus: (id: string, status: 'active' | 'pending' | 'rejected') => Promise<void>;
   refreshListings: () => Promise<void>;
   planningZones: PlanningZoneItem[];
   setPlanningZones: React.Dispatch<React.SetStateAction<PlanningZoneItem[]>>;
@@ -44,9 +45,44 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const USER_LISTINGS_STORAGE_KEY = 'hanoi_platform_user_listings';
+
+export const getStoredUserListings = (): ListingItem[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(USER_LISTINGS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const saveStoredUserListings = (items: ListingItem[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(USER_LISTINGS_STORAGE_KEY, JSON.stringify(items));
+  } catch (e) {
+    console.warn('Failed to save user listings to localStorage:', e);
+  }
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<typeof mockUser | null>(null);
-  const [listings, setListings] = useState<ListingItem[]>(mockListings);
+  const [listings, setListings] = useState<ListingItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(USER_LISTINGS_STORAGE_KEY);
+        if (stored) {
+          const parsed: ListingItem[] = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const parsedIds = new Set(parsed.map(p => p.id));
+            return [...parsed, ...mockListings.filter(m => !parsedIds.has(m.id))];
+          }
+        }
+      } catch {}
+    }
+    return mockListings;
+  });
   const [savedListingIds, setSavedListingIds] = useState<string[]>(['1', '3']);
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
@@ -245,10 +281,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const refreshListings = async () => {
     try {
       const res = await fetch('/api/listings?status=active');
+      let supabaseListings: ListingItem[] = [];
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data && json.data.length > 0) {
-          const supabaseListings: ListingItem[] = json.data.map((row: any) => {
+          supabaseListings = json.data.map((row: any) => {
             let lat = 21.0315;
             let lng = 105.7825;
             // Parse PostGIS location or Point
@@ -289,13 +326,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               description: row.description || '',
             };
           });
-
-          // Gộp tin đăng từ Supabase lên đầu danh sách, loại trùng
-          const sbIds = new Set(supabaseListings.map(l => l.id));
-          const restMocks = mockListings.filter(m => !sbIds.has(m.id));
-          setListings([...supabaseListings, ...restMocks]);
         }
       }
+
+      // Giữ nguyên các tin do người dùng đã đăng lưu ở localStorage
+      const localStored = getStoredUserListings();
+      const sbMap = new Map(supabaseListings.map(s => [s.id, s]));
+      const mergedLocals = localStored.map(item => {
+        if (sbMap.has(item.id)) {
+          return { ...item, ...sbMap.get(item.id) };
+        }
+        return item;
+      });
+      saveStoredUserListings(mergedLocals);
+
+      const allKnownIds = new Set<string>();
+      const combinedList: ListingItem[] = [];
+
+      for (const item of mergedLocals) {
+        allKnownIds.add(item.id);
+        combinedList.push(item);
+      }
+
+      for (const item of supabaseListings) {
+        if (!allKnownIds.has(item.id)) {
+          allKnownIds.add(item.id);
+          combinedList.push(item);
+        }
+      }
+
+      for (const item of mockListings) {
+        if (!allKnownIds.has(item.id)) {
+          allKnownIds.add(item.id);
+          combinedList.push(item);
+        }
+      }
+
+      setListings(combinedList);
     } catch (e) {
       console.warn('Cannot fetch remote listings:', e);
     }
@@ -309,13 +376,57 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addNewListing = async (newListingData: Partial<ListingItem>): Promise<string> => {
     let newId = 'lst_' + Date.now();
 
-    // 1. Gửi lên Supabase API với status: 'pending' (Chờ Admin phê duyệt)
+    const pricePerM2 = newListingData.pricePerM2 || (newListingData.price ? Math.round(newListingData.price / (newListingData.area || 50)) : 100000000);
+
+    const pendingItem: ListingItem = {
+      id: newId,
+      title: newListingData.title || 'BĐS mới đăng tại Hà Nội',
+      price: newListingData.price || 5000000000,
+      pricePerM2,
+      area: newListingData.area || 50,
+      floors: newListingData.floors || 3,
+      bedrooms: newListingData.bedrooms || 3,
+      bathrooms: newListingData.bathrooms || 2,
+      address: newListingData.address || 'Hà Nội',
+      district: newListingData.district || 'Cầu Giấy',
+      ward: newListingData.ward || 'Dịch Vọng',
+      lat: newListingData.lat || 21.0315,
+      lng: newListingData.lng || 105.7825,
+      type: newListingData.type || 'house',
+      images: newListingData.images && newListingData.images.length > 0
+        ? newListingData.images
+        : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+      status: 'pending', // Đánh dấu đang chờ duyệt
+      isFeatured: false,
+      views: 1,
+      createdAt: new Date().toISOString().split('T')[0],
+      planningZone: 'Đất ở đô thị',
+      planningYear: 2030,
+      legalStatus: newListingData.legalStatus || 'Sổ đỏ chính chủ',
+      direction: newListingData.direction || 'Đông Nam',
+      description: newListingData.description || 'Bất động sản vị trí đẹp.',
+      userId: user?.id,
+      authorName: user?.name || 'Cozy Hollys',
+      authorEmail: user?.email || 'cozyhollys@gmail.com',
+      authorPhone: user?.phone || '0988 123 456',
+    };
+
+    // 1. Lưu ngay vào localStorage để không bao giờ bị mất khi refresh hay chuyển trang
+    const currentStored = getStoredUserListings();
+    const updatedStored = [pendingItem, ...currentStored.filter(l => l.id !== newId)];
+    saveStoredUserListings(updatedStored);
+
+    // 2. Thêm ngay vào state của app để người dùng thấy ngay trên Dashboard cá nhân
+    setListings((prev) => [pendingItem, ...prev.filter(l => l.id !== newId)]);
+
+    // 3. Gửi lên Supabase API với status: 'pending' (Chờ Admin phê duyệt)
     try {
       const res = await fetch('/api/listings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: user?.id,
+          author_email: user?.email || 'cozyhollys@gmail.com',
           title: newListingData.title,
           description: newListingData.description,
           property_type: newListingData.type || 'house',
@@ -333,7 +444,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data?.id) {
-          newId = json.data.id;
+          const remoteId = json.data.id;
+          // Cập nhật lại ID chuẩn từ Supabase
+          const syncedStored = getStoredUserListings().map(l => l.id === newId ? { ...l, id: remoteId } : l);
+          saveStoredUserListings(syncedStored);
+          setListings((prev) => prev.map(l => l.id === newId ? { ...l, id: remoteId } : l));
+          newId = remoteId;
         }
       }
     } catch (apiErr) {
@@ -342,6 +458,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     addToast('⏳ Tin đăng đã gửi thành công và đang chờ Admin kiểm duyệt!', 'info');
     return newId;
+  };
+
+  // Hàm cập nhật trạng thái tin đăng (Duyệt tin: 'active', Từ chối: 'rejected')
+  const updateListingStatus = async (id: string, status: 'active' | 'pending' | 'rejected') => {
+    // 1. Cập nhật state listings trong app
+    setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+
+    // 2. Cập nhật localStorage
+    const currentStored = getStoredUserListings();
+    let updatedStored = currentStored.map((l) => (l.id === id ? { ...l, status } : l));
+    if (!currentStored.some((l) => l.id === id)) {
+      const targetItem = listings.find((l) => l.id === id);
+      if (targetItem) {
+        updatedStored = [{ ...targetItem, status }, ...updatedStored];
+      }
+    }
+    saveStoredUserListings(updatedStored);
+
+    // 3. Gửi lệnh cập nhật lên Supabase Database
+    try {
+      await fetch('/api/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      });
+    } catch (err) {
+      console.warn('Lỗi đồng bộ trạng thái tin lên Supabase:', err);
+    }
   };
 
   // Load planning zones from localStorage
@@ -448,6 +592,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addToast,
         removeToast,
         addNewListing,
+        updateListingStatus,
         refreshListings,
         planningZones,
         setPlanningZones,

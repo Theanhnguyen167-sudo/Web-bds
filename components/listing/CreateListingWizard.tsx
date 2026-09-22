@@ -207,6 +207,7 @@ export const CreateListingWizard: React.FC = () => {
   const { addNewListing, addToast } = useApp();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [pickedLocation, setPickedLocation] = useState<LocationData | null>({
     lat: 21.0315,
@@ -511,21 +512,30 @@ export const CreateListingWizard: React.FC = () => {
   };
 
   const handleSubmitListing = async () => {
-    const fullAddress = `${formData.addressNumber} ${formData.street}, ${formData.ward}, ${formData.district}, Hà Nội`;
-    const finalTitle =
-      formData.title ||
-      `Bán ${propertyTypes.find((t) => t.id === formData.type)?.title} ${formData.area}m² tại ${formData.district}`;
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const fullAddress = `${formData.addressNumber} ${formData.street}, ${formData.ward}, ${formData.district}, Hà Nội`;
+      const finalTitle =
+        formData.title ||
+        `Bán ${propertyTypes.find((t) => t.id === formData.type)?.title} ${formData.area}m² tại ${formData.district}`;
 
-    await addNewListing({
-      ...formData,
-      title: finalTitle,
-      address: fullAddress,
-      pricePerM2: formData.price / formData.area,
-    });
+      await addNewListing({
+        ...formData,
+        title: finalTitle,
+        address: fullAddress,
+        pricePerM2: formData.price / formData.area,
+      });
 
-    clearDraftStorage(); // Dọn dẹp bản nháp đã lưu sau khi xuất bản thành công
+      clearDraftStorage(); // Dọn dẹp bản nháp đã lưu sau khi xuất bản thành công
 
-    router.push('/dashboard');
+      router.push('/dashboard');
+    } catch (e) {
+      console.error('Error publishing listing:', e);
+      addToast('Có lỗi xảy ra khi xuất bản tin đăng', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -1200,14 +1210,26 @@ export const CreateListingWizard: React.FC = () => {
             </motion.button>
           ) : (
             <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: isSubmitting ? 1 : 1.03 }}
+              whileTap={{ scale: isSubmitting ? 1 : 0.97 }}
               type="button"
+              disabled={isSubmitting}
               onClick={handleSubmitListing}
-              className="flex items-center gap-2 rounded-xl bg-success px-8 py-3 text-xs font-black text-white shadow-lg shadow-success/25 hover:bg-emerald-600 transition-all"
+              className={`flex items-center gap-2 rounded-xl bg-success px-8 py-3 text-xs font-black text-white shadow-lg shadow-success/25 hover:bg-emerald-600 transition-all ${
+                isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
             >
-              <CheckCircle2 className="h-4 w-4" />
-              <span>Xuất bản tin đăng ngay</span>
+              {isSubmitting ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Đang xuất bản...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Xuất bản tin đăng ngay</span>
+                </>
+              )}
             </motion.button>
           )}
         </div>

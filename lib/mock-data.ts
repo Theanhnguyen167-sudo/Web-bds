@@ -14,7 +14,7 @@ export interface ListingItem {
   lng: number;
   type: "house" | "apartment" | "land" | "villa";
   images: string[];
-  status: "active" | "pending" | "sold";
+  status: "active" | "pending" | "sold" | "rejected";
   isFeatured: boolean;
   views: number;
   createdAt: string;
@@ -23,6 +23,10 @@ export interface ListingItem {
   legalStatus: string;
   direction?: string;
   description?: string;
+  userId?: string;
+  authorName?: string;
+  authorPhone?: string;
+  authorEmail?: string;
 }
 
 export const mockListings: ListingItem[] = [
