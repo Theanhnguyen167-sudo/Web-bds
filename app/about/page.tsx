@@ -660,12 +660,12 @@ export default function AboutPage() {
           </div>
 
           {/* Timeline list */}
-          <div className="relative border-l-2 border-slate-700 ml-4 sm:ml-32 space-y-10">
+          <div className="relative border-l-2 border-slate-700 ml-4 sm:ml-52 md:ml-56 space-y-10">
             
             {/* 2024 */}
             <div className="relative pl-6 sm:pl-8">
               <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-navy" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-emerald-400 uppercase">
+              <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 sm:mb-0 sm:absolute sm:right-full sm:top-1.5 sm:w-52 sm:pr-7 text-left sm:text-right whitespace-nowrap">
                 2024 · COMPLETED
               </div>
               <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 space-y-1.5">
@@ -680,7 +680,7 @@ export default function AboutPage() {
             {/* 2025 Q1 */}
             <div className="relative pl-6 sm:pl-8">
               <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-navy" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-emerald-400 uppercase">
+              <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 sm:mb-0 sm:absolute sm:right-full sm:top-1.5 sm:w-52 sm:pr-7 text-left sm:text-right whitespace-nowrap">
                 2025 Q1 · COMPLETED
               </div>
               <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 space-y-1.5">
@@ -695,7 +695,7 @@ export default function AboutPage() {
             {/* 2025 Q4 */}
             <div className="relative pl-6 sm:pl-8">
               <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-orange-500 ring-4 ring-navy animate-pulse" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-orange-400 uppercase">
+              <div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-2 sm:mb-0 sm:absolute sm:right-full sm:top-1.5 sm:w-52 sm:pr-7 text-left sm:text-right whitespace-nowrap">
                 2025 Q4 · IN PROGRESS
               </div>
               <div className="bg-slate-800/80 rounded-2xl p-5 border border-orange-500/40 space-y-1.5 shadow-lg shadow-orange-500/10">
@@ -710,7 +710,7 @@ export default function AboutPage() {
             {/* 2026 */}
             <div className="relative pl-6 sm:pl-8">
               <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-navy" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-blue-400 uppercase">
+              <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2 sm:mb-0 sm:absolute sm:right-full sm:top-1.5 sm:w-52 sm:pr-7 text-left sm:text-right whitespace-nowrap">
                 2026 · PLANNED
               </div>
               <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 space-y-1.5">
@@ -725,7 +725,7 @@ export default function AboutPage() {
             {/* 2027 */}
             <div className="relative pl-6 sm:pl-8">
               <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-purple-500 ring-4 ring-navy" />
-              <div className="sm:absolute sm:-left-32 sm:top-1 text-xs font-bold text-purple-400 uppercase">
+              <div className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2 sm:mb-0 sm:absolute sm:right-full sm:top-1.5 sm:w-52 sm:pr-7 text-left sm:text-right whitespace-nowrap">
                 2027 · VISION
               </div>
               <div className="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 space-y-1.5">
