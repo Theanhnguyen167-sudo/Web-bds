@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
 import { mockUser } from '@/lib/mock-data';
 import {
@@ -17,14 +16,12 @@ import {
 import {
   Mail,
   Lock,
-  User as UserIcon,
   Phone,
   ArrowRight,
   Loader2,
-  Sparkles,
   ShieldCheck,
-  Check,
-  Zap,
+  User as UserIcon,
+  Sparkles,
 } from 'lucide-react';
 
 type RoleType = 'user' | 'agent' | 'admin';
@@ -33,38 +30,38 @@ const ROLES_CONFIG = [
   {
     id: 'user' as RoleType,
     title: 'Người mua / Thuê',
-    badge: 'Người thuê',
+    badge: 'Khách hàng',
     demoEmail: 'khachhang@gmail.com',
     demoPass: '12345678',
     demoName: 'Nguyễn Minh Tuấn',
     demoPackage: 'Free',
     targetRoute: '/search',
-    colorClasses: 'text-emerald-700 bg-emerald-50 border-emerald-300 hover:bg-emerald-100/70',
-    activeClasses: 'ring-2 ring-emerald-500 bg-emerald-100 text-emerald-800 font-bold border-emerald-400',
+    btnClasses: 'border-slate-700 bg-[#1e293b]/80 text-slate-200 hover:border-slate-500 hover:bg-[#1e293b]',
+    activeClasses: 'border-orange-500 bg-orange-500/15 text-orange-400 font-bold ring-1 ring-orange-500/40',
   },
   {
     id: 'agent' as RoleType,
     title: 'Chủ nhà / Môi giới',
-    badge: 'Chủ trọ',
+    badge: 'Môi giới VIP',
     demoEmail: 'moigioi@hanoirealty.vn',
     demoPass: '12345678',
     demoName: 'Trần Thị Thu Hà',
     demoPackage: 'Pro',
     targetRoute: '/dashboard',
-    colorClasses: 'text-blue-700 bg-blue-50 border-blue-300 hover:bg-blue-100/70',
-    activeClasses: 'ring-2 ring-blue-500 bg-blue-100 text-blue-800 font-bold border-blue-400',
+    btnClasses: 'border-slate-700 bg-[#1e293b]/80 text-slate-200 hover:border-slate-500 hover:bg-[#1e293b]',
+    activeClasses: 'border-orange-500 bg-orange-500/15 text-orange-400 font-bold ring-1 ring-orange-500/40',
   },
   {
     id: 'admin' as RoleType,
     title: 'Quản trị viên',
-    badge: 'Admin',
+    badge: 'Super Admin',
     demoEmail: 'admin@hanoirealty.vn',
     demoPass: 'admin123',
     demoName: 'Hệ thống Quản Trị Super Admin',
     demoPackage: 'Agency',
     targetRoute: '/admin',
-    colorClasses: 'text-purple-700 bg-purple-50 border-purple-300 hover:bg-purple-100/70',
-    activeClasses: 'ring-2 ring-purple-500 bg-purple-100 text-purple-800 font-bold border-purple-400',
+    btnClasses: 'border-slate-700 bg-[#1e293b]/80 text-slate-200 hover:border-slate-500 hover:bg-[#1e293b]',
+    activeClasses: 'border-orange-500 bg-orange-500/15 text-orange-400 font-bold ring-1 ring-orange-500/40',
   },
 ];
 
@@ -102,10 +99,10 @@ export default function AuthPage() {
             ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'
             : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
       });
-      addToast(`✨ Đăng nhập trải nghiệm vai trò: ${config.title}`, 'success');
+      addToast(`👋 Đăng nhập thành công vai trò: ${config.title}`, 'success');
       setLoading(false);
       router.push(config.targetRoute);
-    }, 450);
+    }, 400);
   };
 
   // Phone submit
@@ -127,16 +124,16 @@ export default function AuthPage() {
         role: selectedRole,
         package: (selectedRole === 'agent' ? 'Pro' : 'Free') as any,
       });
-      addToast(`🎉 Chào mừng bạn đăng nhập với số ${phoneNumber}!`, 'success');
+      addToast(`🎉 Đăng nhập thành công với số ${phoneNumber}!`, 'success');
       setLoading(false);
       router.push(config.targetRoute);
-    }, 600);
+    }, 500);
   };
 
   // OAuth actions
   const handleGoogleLogin = async () => {
     try {
-      addToast('Đang chuyển hướng tới Google OAuth...', 'info');
+      addToast('Đang kết nối Google OAuth...', 'info');
       await signInWithGoogle();
     } catch {
       handleQuickRole(selectedRole);
@@ -199,52 +196,45 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#070b14] px-4 py-8 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Background Decorative Ambient Glows */}
+      {/* Background Ambient Glow matching Photo 1 */}
       <div className="absolute top-1/4 left-1/3 w-[500px] h-[350px] bg-orange-500/10 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/3 w-[450px] h-[350px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none" />
-      <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(#f97316_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(#f97316_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="w-full max-w-[440px] rounded-[32px] bg-white p-6 sm:p-8 shadow-2xl relative z-10 border border-slate-100"
+        className="w-full max-w-[440px] rounded-[32px] bg-[#0f172a] p-6 sm:p-8 shadow-2xl relative z-10 border border-slate-800"
       >
-        {/* ── HEADER WITH TITLE & MASCOT ── */}
+        {/* ── HEADER WITH TITLE & LOGO (PHOTO 1 STYLE) ── */}
         <div className="flex items-start justify-between gap-3 mb-6">
           <div className="flex-1 pr-2">
-            <Link href="/" className="inline-flex items-center gap-1.5 mb-2 text-xs font-bold text-orange-600 hover:text-orange-700">
+            <Link href="/" className="inline-flex items-center gap-1.5 mb-2 text-xs font-bold text-orange-400 hover:text-orange-300">
               <span>← Trang chủ</span>
             </Link>
-            <h1 className="text-2xl sm:text-[26px] font-black tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-2xl sm:text-[26px] font-black tracking-tight text-white leading-tight">
               Đăng nhập/Đăng ký
             </h1>
-            <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Tiếp cận hàng chục ngàn bất động sản & quy hoạch Hà Nội 2030
+            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              Tiếp cận hàng chục ngàn bất động sản & quy hoạch Hà Nội
             </p>
           </div>
 
-          {/* Mascot Avatar */}
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl overflow-hidden bg-orange-50/50 p-1 border border-orange-100 shadow-sm flex items-center justify-center">
-            <Image
-              src="/mascot.png"
-              alt="Mascot Hà Nội Realty"
-              width={80}
-              height={80}
-              className="object-contain hover:scale-105 transition-transform duration-200"
-              priority
-            />
-          </div>
+          {/* Brand Logo Icon */}
+          <Link href="/" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-orange-500 text-white font-black text-2xl shadow-lg shadow-orange-500/30 border border-orange-400/40">
+            🏠
+          </Link>
         </div>
 
-        {/* ── SOCIAL AUTH BUTTONS ── */}
+        {/* ── SOCIAL AUTH BUTTONS (PHOTO 2 LAYOUT + PHOTO 1 PALETTE) ── */}
         <div className="space-y-3 mb-5">
           {/* Google Button */}
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3 px-4 rounded-full border border-slate-200/90 bg-slate-50/60 hover:bg-slate-100 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
+            className="w-full py-3 px-4 rounded-full border border-slate-700/80 bg-[#1e293b]/70 hover:bg-[#1e293b] text-slate-100 text-xs sm:text-sm font-bold shadow-sm transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
           >
             <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -272,7 +262,7 @@ export default function AuthPage() {
             type="button"
             onClick={handleFacebookLogin}
             disabled={loading}
-            className="w-full py-3 px-4 rounded-full border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
+            className="w-full py-3 px-4 rounded-full border border-slate-700/80 bg-[#1e293b]/70 hover:bg-[#1e293b] text-slate-100 text-xs sm:text-sm font-bold shadow-sm transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
           >
             <svg className="h-4 w-4 shrink-0 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -285,9 +275,9 @@ export default function AuthPage() {
             type="button"
             onClick={handleAppleLogin}
             disabled={loading}
-            className="w-full py-3 px-4 rounded-full border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
+            className="w-full py-3 px-4 rounded-full border border-slate-700/80 bg-[#1e293b]/70 hover:bg-[#1e293b] text-slate-100 text-xs sm:text-sm font-bold shadow-sm transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
           >
-            <svg className="h-4 w-4 shrink-0 text-black" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4 shrink-0 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.38c.62-.76 1.04-1.82.93-2.88-.9.04-1.98.6-2.61 1.36-.56.65-.95 1.72-.82 2.76 1 .08 1.9-.48 2.5-1.24z" />
             </svg>
             <span>Tiếp tục với Apple</span>
@@ -296,8 +286,8 @@ export default function AuthPage() {
 
         {/* ── DIVIDER ── */}
         <div className="relative flex items-center justify-center my-5">
-          <div className="w-full border-t border-slate-200"></div>
-          <span className="bg-white px-3 text-[11px] font-semibold text-slate-400 absolute">
+          <div className="w-full border-t border-slate-800"></div>
+          <span className="bg-[#0f172a] px-3 text-[11px] font-semibold text-slate-500 absolute">
             Hoặc
           </span>
         </div>
@@ -311,7 +301,7 @@ export default function AuthPage() {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="Số điện thoại"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15 transition-all shadow-2xs"
+                className="w-full px-4 py-3 bg-[#1e293b]/60 border border-slate-700/80 rounded-2xl text-xs sm:text-sm font-medium text-white placeholder:text-slate-500 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-inner"
               />
             </div>
 
@@ -320,12 +310,12 @@ export default function AuthPage() {
               disabled={loading}
               className={`w-full py-3 px-4 rounded-2xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-md ${
                 phoneNumber.trim().length >= 9
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/25 cursor-pointer active:scale-[0.99]'
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30 cursor-pointer active:scale-[0.99]'
+                  : 'bg-slate-800/80 text-slate-500 cursor-not-allowed border border-slate-700/50'
               }`}
             >
               {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-orange-400" />
               ) : (
                 <>
                   <span>Tiếp tục</span>
@@ -338,7 +328,7 @@ export default function AuthPage() {
               <button
                 type="button"
                 onClick={() => setAuthMethod('email')}
-                className="text-[11px] font-semibold text-orange-600 hover:underline cursor-pointer"
+                className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 cursor-pointer"
               >
                 Đăng nhập bằng Email & Mật khẩu
               </button>
@@ -354,7 +344,7 @@ export default function AuthPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Họ và tên"
-                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-orange-500"
+                  className="w-full px-4 py-2.5 bg-[#1e293b]/60 border border-slate-700/80 rounded-xl text-xs font-medium text-white placeholder:text-slate-500 outline-none focus:border-orange-500"
                 />
               </div>
             )}
@@ -366,7 +356,7 @@ export default function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Địa chỉ Email"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-orange-500"
+                className="w-full px-4 py-2.5 bg-[#1e293b]/60 border border-slate-700/80 rounded-xl text-xs font-medium text-white placeholder:text-slate-500 outline-none focus:border-orange-500"
               />
             </div>
 
@@ -377,14 +367,14 @@ export default function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mật khẩu"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-orange-500"
+                className="w-full px-4 py-2.5 bg-[#1e293b]/60 border border-slate-700/80 rounded-xl text-xs font-medium text-white placeholder:text-slate-500 outline-none focus:border-orange-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-md shadow-orange-500/30 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -397,14 +387,14 @@ export default function AuthPage() {
               <button
                 type="button"
                 onClick={() => setIsRegister(!isRegister)}
-                className="text-orange-600 font-bold hover:underline"
+                className="text-orange-400 font-bold hover:underline"
               >
                 {isRegister ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}
               </button>
               <button
                 type="button"
                 onClick={() => setAuthMethod('phone')}
-                className="text-slate-500 hover:text-slate-800"
+                className="text-slate-400 hover:text-white"
               >
                 Dùng số điện thoại
               </button>
@@ -412,10 +402,10 @@ export default function AuthPage() {
           </form>
         )}
 
-        {/* ── 1-TAP QUICK ROLES TRIAL (MATCHING PHOTO 2) ── */}
-        <div className="pt-3 border-t border-dashed border-slate-200/90 text-center">
-          <p className="text-[11px] text-slate-500 mb-2.5 font-medium flex items-center justify-center gap-1">
-            <Sparkles className="h-3.5 w-3.5 text-orange-500" />
+        {/* ── 1-TAP QUICK ROLES TRIAL (PHOTO 2 LAYOUT + PHOTO 1 STYLING) ── */}
+        <div className="pt-3 border-t border-slate-800 text-center">
+          <p className="text-[11px] text-slate-400 mb-2.5 font-medium flex items-center justify-center gap-1">
+            <Sparkles className="h-3.5 w-3.5 text-orange-400" />
             <span>Tài khoản thử nghiệm nhanh (1-Chạm):</span>
           </p>
 
@@ -428,8 +418,8 @@ export default function AuthPage() {
                   type="button"
                   onClick={() => handleQuickRole(r.id)}
                   disabled={loading}
-                  className={`py-2 px-1 rounded-xl border text-[11px] font-bold transition-all duration-150 active:scale-95 shadow-2xs ${
-                    isActive ? r.activeClasses : r.colorClasses
+                  className={`py-2 px-1 rounded-xl border text-[11px] font-bold transition-all duration-150 active:scale-95 shadow-sm ${
+                    isActive ? r.activeClasses : r.btnClasses
                   }`}
                 >
                   {r.badge}
@@ -440,8 +430,8 @@ export default function AuthPage() {
         </div>
 
         {/* Bottom Safety Guarantee */}
-        <div className="mt-5 text-center text-[10px] text-slate-400 flex items-center justify-center gap-1">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+        <div className="mt-5 text-center text-[10px] text-slate-500 flex items-center justify-center gap-1">
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
           <span>Bảo mật dữ liệu chuẩn mã hóa SSL 256-bit</span>
         </div>
       </motion.div>
