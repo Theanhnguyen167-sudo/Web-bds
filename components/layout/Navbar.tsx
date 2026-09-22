@@ -47,7 +47,13 @@ export const Navbar: React.FC = () => {
     { name: 'Về chúng tôi', href: '/about' },
   ];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const { signOut } = await import('@/lib/supabase/queries/auth');
+      await signOut();
+    } catch {
+      // Dev fallback
+    }
     setUser(null);
     setUserDropdownOpen(false);
     addToast('Đã đăng xuất thành công', 'info');

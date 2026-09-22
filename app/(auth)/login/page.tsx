@@ -133,28 +133,37 @@ export default function AuthPage() {
   // OAuth actions
   const handleGoogleLogin = async () => {
     try {
-      addToast('Đang kết nối Google OAuth...', 'info');
-      await signInWithGoogle();
-    } catch {
-      handleQuickRole(selectedRole);
+      addToast('Đang kết nối cổng Google OAuth...', 'info');
+      const res = await signInWithGoogle();
+      if (res?.error) {
+        addToast(`Lỗi Google OAuth: ${res.error.message}`, 'error');
+      }
+    } catch (err: any) {
+      addToast(`Không thể kết nối Google: ${err?.message || 'Vui lòng thử lại'}`, 'error');
     }
   };
 
   const handleFacebookLogin = async () => {
     try {
       addToast('Đang kết nối Facebook Login...', 'info');
-      await signInWithFacebook();
-    } catch {
-      handleQuickRole(selectedRole);
+      const res = await signInWithFacebook();
+      if (res?.error) {
+        addToast(`Lỗi Facebook Login: ${res.error.message}`, 'error');
+      }
+    } catch (err: any) {
+      addToast(`Không thể kết nối Facebook: ${err?.message || 'Vui lòng thử lại'}`, 'error');
     }
   };
 
   const handleAppleLogin = async () => {
     try {
       addToast('Đang kết nối Apple ID...', 'info');
-      await signInWithApple();
-    } catch {
-      handleQuickRole(selectedRole);
+      const res = await signInWithApple();
+      if (res?.error) {
+        addToast(`Lỗi Apple ID: ${res.error.message}`, 'error');
+      }
+    } catch (err: any) {
+      addToast(`Không thể kết nối Apple: ${err?.message || 'Vui lòng thử lại'}`, 'error');
     }
   };
 
@@ -166,29 +175,27 @@ export default function AuthPage() {
 
     try {
       if (!isRegister) {
-        await signInWithEmail(email, password);
-        setUser({
-          ...mockUser,
-          id: selectedRole === 'admin' ? 'admin_01' : 'user_01',
-          name: fullName || config.demoName,
-          email: email || config.demoEmail,
-          role: selectedRole,
-        });
-        addToast('Đăng nhập thành công!', 'success');
+        const { data, error } = await signInWithEmail(email, password);
+        if (error) {
+          addToast(`Lỗi đăng nhập: ${error.message}`, 'error');
+          setLoading(false);
+          return;
+        }
+
+        addToast(`👋 Đăng nhập thành công! Chào mừng bạn.`, 'success');
       } else {
-        await signUpWithEmail(email, password, fullName);
-        setUser({
-          ...mockUser,
-          id: 'user_' + Date.now(),
-          name: fullName || 'Thành viên mới',
-          email,
-          role: selectedRole,
-        });
-        addToast('Đăng ký tài khoản thành công!', 'success');
+        const { data, error } = await signUpWithEmail(email, password, fullName);
+        if (error) {
+          addToast(`Lỗi đăng ký: ${error.message}`, 'error');
+          setLoading(false);
+          return;
+        }
+
+        addToast(`🎉 Đăng ký thành công! Đã lưu vào Supabase.`, 'success');
       }
       router.push(config.targetRoute);
-    } catch {
-      handleQuickRole(selectedRole);
+    } catch (err: any) {
+      addToast(err?.message || 'Đã có lỗi xảy ra', 'error');
     } finally {
       setLoading(false);
     }
