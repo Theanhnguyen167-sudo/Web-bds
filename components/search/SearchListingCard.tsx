@@ -30,16 +30,18 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
     <motion.div
       id={`listing-card-${listing.id}`}
       layout
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -5, scale: 1.015 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 22 }}
       onMouseEnter={() => onHover && onHover(listing.id)}
       onMouseLeave={() => onHover && onHover(null)}
       onClick={() => onClick && onClick(listing.id)}
-      className={`group relative flex gap-3 p-2.5 rounded-2xl border transition-all duration-200 cursor-pointer text-left bg-white dark:bg-slate-900 ${
+      className={`group relative flex gap-3 p-2.5 rounded-2xl border transition-all duration-300 cursor-pointer text-left bg-white dark:bg-slate-900 hover:shadow-xl hover:shadow-slate-900/15 hover:border-orange-400 hover:z-10 ${
         isSelected
           ? 'border-orange-500 bg-orange-50/40 dark:bg-orange-950/20 ring-2 ring-orange-500/20 shadow-md'
           : isHovered
-          ? 'border-orange-300 dark:border-orange-700 bg-slate-50/80 dark:bg-slate-800/80 shadow-md'
-          : 'border-slate-100 dark:border-slate-800 hover:border-orange-200 shadow-2xs'
+          ? 'border-orange-400 dark:border-orange-600 bg-slate-50/80 dark:bg-slate-800/80 shadow-md'
+          : 'border-slate-100 dark:border-slate-800 shadow-sm'
       }`}
     >
       {/* Thumbnail Left (80x80px) */}

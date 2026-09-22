@@ -5,6 +5,8 @@ import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import { createClient } from '@/lib/supabase/client';
 import { toggleSavedListing, getSavedListings } from '@/lib/supabase/queries/saved';
 import { PlanningZoneItem, DEFAULT_PLANNING_ZONES } from '@/lib/planning/planning-utils';
+import { auth as firebaseAuth } from '@/lib/firebase/config';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
 export interface ToastItem {
   id: string;
@@ -42,7 +44,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<typeof mockUser | null>(mockUser);
+  const [user, setUser] = useState<typeof mockUser | null>(null);
   const [listings, setListings] = useState<ListingItem[]>(mockListings);
   const [savedListingIds, setSavedListingIds] = useState<string[]>(['1', '3']);
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
@@ -52,47 +54,150 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [planningZones, setPlanningZones] = useState<PlanningZoneItem[]>(DEFAULT_PLANNING_ZONES);
   const [selectedPlanningZoneId, setSelectedPlanningZoneId] = useState<string | null>(null);
 
-  // Supabase Auth State Listener
-  useEffect(() => {
+  // Helper function to sync user profile from Supabase
+  const syncSupabaseUser = async (sessionUser: any) => {
+    if (!sessionUser) return;
     try {
       const supabase = createClient();
+      // Try to fetch custom profile from public.users table
+      const { data } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', sessionUser.id)
+        .maybeSingle();
+      const profile = data as any;
+
+      const fullName =
+        profile?.full_name ||
+        sessionUser.user_metadata?.full_name ||
+        sessionUser.user_metadata?.name ||
+        sessionUser.email?.split('@')[0] ||
+        'Thành viên';
+
+      const avatar =
+        profile?.avatar_url ||
+        sessionUser.user_metadata?.avatar_url ||
+        sessionUser.user_metadata?.picture ||
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80';
+
+      const userRole = (profile?.role as any) || (sessionUser.email?.includes('admin') ? 'admin' : 'user');
+
+      setUser({
+        id: sessionUser.id,
+        name: fullName,
+        email: sessionUser.email || 'user@example.com',
+        phone: profile?.phone || sessionUser.user_metadata?.phone || '',
+        role: userRole,
+        avatar: avatar,
+        package: userRole === 'admin' ? 'Agency' : 'Pro',
+        packageExpiry: '2026-12-31',
+        listingsCount: 0,
+        activeListings: 0,
+        aiReportsUsed: 0,
+        aiReportsLimit: 30,
+      });
+
+      // Fetch saved listings from Supabase
+      try {
+        const { data: savedData } = await getSavedListings(sessionUser.id);
+        if (savedData && savedData.length > 0) {
+          setSavedListingIds(savedData.map((s: any) => s.listing_id));
+        }
+      } catch {
+        // Keep local saved state
+      }
+    } catch (e) {
+      console.error('Error syncing Supabase user:', e);
+    }
+  };
+
+  const syncFirebaseUser = async (fbUser: FirebaseUser) => {
+    try {
+      const email = fbUser.email || 'user@example.com';
+      const fullName = fbUser.displayName || email.split('@')[0];
+      const avatar = fbUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullName)}`;
+      const userRole = email.includes('admin') ? 'admin' : 'user';
+
+      setUser({
+        id: fbUser.uid,
+        name: fullName,
+        email: email,
+        phone: fbUser.phoneNumber || '',
+        role: userRole,
+        avatar: avatar,
+        package: userRole === 'admin' ? 'Agency' : 'Pro',
+        packageExpiry: '2026-12-31',
+        listingsCount: 0,
+        activeListings: 0,
+        aiReportsUsed: 0,
+        aiReportsLimit: 30,
+      });
+
+      // Đồng bộ thông tin người dùng lên bảng public.users của Supabase qua API an toàn
+      try {
+        await fetch('/api/sync-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: fbUser.uid,
+            email: email,
+            full_name: fullName,
+            avatar_url: avatar,
+            phone: fbUser.phoneNumber || '',
+            role: userRole,
+          }),
+        });
+      } catch (dbErr) {
+        console.warn('Sync to Supabase users table notice:', dbErr);
+      }
+    } catch (e) {
+      console.error('Error syncing Firebase user:', e);
+    }
+  };
+
+  // Auth State Listeners (Supabase & Firebase)
+  useEffect(() => {
+    // 1. Firebase Auth listener
+    let unsubscribeFb: (() => void) | undefined;
+    try {
+      unsubscribeFb = onAuthStateChanged(firebaseAuth, (fbUser) => {
+        if (fbUser) {
+          syncFirebaseUser(fbUser);
+        }
+      });
+    } catch (fbErr) {
+      console.warn('Firebase auth listener error:', fbErr);
+    }
+
+    // 2. Supabase Auth listener
+    let unsubscribeSb: (() => void) | undefined;
+    try {
+      const supabase = createClient();
+
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user && !firebaseAuth.currentUser) {
+          syncSupabaseUser(session.user);
+        }
+      });
+
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user) {
-          setUser({
-            id: session.user.id,
-            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Thành viên',
-            email: session.user.email || 'user@example.com',
-            phone: session.user.user_metadata?.phone || '0988 123 456',
-            role: 'agent',
-            avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
-            package: 'Pro',
-            packageExpiry: '2026-09-15',
-            listingsCount: 5,
-            activeListings: 5,
-            aiReportsUsed: 8,
-            aiReportsLimit: 30,
-          });
-
-          // Fetch saved listings from Supabase
-          try {
-            const { data: savedData } = await getSavedListings(session.user.id);
-            if (savedData && savedData.length > 0) {
-              setSavedListingIds(savedData.map((s: any) => s.listing_id));
-            }
-          } catch {
-            // Keep local saved state
-          }
+          await syncSupabaseUser(session.user);
+        } else if (event === 'SIGNED_OUT' && !firebaseAuth.currentUser) {
+          setUser(null);
         }
       });
-
-      return () => {
-        subscription.unsubscribe();
-      };
+      unsubscribeSb = () => subscription.unsubscribe();
     } catch {
-      // Offline / dev fallback
+      // Offline fallback
     }
+
+    return () => {
+      if (unsubscribeFb) unsubscribeFb();
+      if (unsubscribeSb) unsubscribeSb();
+    };
   }, []);
 
   const addToast = (message: string, type: ToastItem['type'] = 'success') => {
@@ -110,6 +215,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleToggleSaveListing = async (id: string) => {
+    if (!user) {
+      addToast('Đăng nhập để lưu bất động sản này', 'warning');
+      return;
+    }
     const isSaved = savedListingIds.includes(id);
     if (isSaved) {
       setSavedListingIds((prev) => prev.filter((item) => item !== id));

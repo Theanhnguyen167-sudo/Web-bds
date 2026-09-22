@@ -35,7 +35,7 @@ export const SaveSearchModal: React.FC<SaveSearchModalProps> = ({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      addToast('Vui lòng đăng nhập để lưu tìm kiếm', 'warning');
+      addToast('Đăng nhập để lưu bất động sản này', 'warning');
       return;
     }
     setIsSaved(true);
@@ -69,7 +69,7 @@ export const SaveSearchModal: React.FC<SaveSearchModalProps> = ({
           </div>
           <div>
             <h3 className="font-extrabold text-sm text-navy dark:text-white">
-              Lưu bộ lọc tìm kiếm
+              Lưu tìm kiếm
             </h3>
             <p className="text-xs text-slate-400">
               Nhận thông báo khi có bất động sản mới phù hợp
@@ -81,7 +81,7 @@ export const SaveSearchModal: React.FC<SaveSearchModalProps> = ({
         <form onSubmit={handleSave} className="space-y-3.5 text-xs">
           <div>
             <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-              Tên bộ tìm kiếm:
+              Tên tìm kiếm:
             </label>
             <input
               type="text"

@@ -39,16 +39,17 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
   return (
     <motion.div
       layout
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.2 }}
+      whileHover={{ y: -8, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 22 }}
       onMouseEnter={() => setHoveredListingId(listing.id)}
       onMouseLeave={() => setHoveredListingId(null)}
-      className={`group relative flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition-all duration-200 hover:shadow-lg ${
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-2xl hover:shadow-slate-900/20 hover:border-orange-400 hover:z-20 ${
         isSelected
-          ? 'border-l-4 border-l-accent border-accent ring-2 ring-accent/20 bg-orange-50/20'
+          ? 'border-l-4 border-l-accent border-accent ring-2 ring-accent/20 bg-orange-50/20 shadow-lg'
           : isHovered
-          ? 'border-l-4 border-l-accent border-slate-300 shadow-md'
-          : 'border-border'
+          ? 'border-l-4 border-l-accent border-orange-400 shadow-xl'
+          : 'border-slate-200/80'
       }`}
     >
       {/* Thumbnail Image Container */}
@@ -57,7 +58,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
           <img
             src={listing.images[0]}
             alt={listing.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
           />
         </Link>
 

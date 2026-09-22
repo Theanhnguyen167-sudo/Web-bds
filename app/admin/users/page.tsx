@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AdminHeader } from '@/components/admin/AdminHeader';
@@ -8,6 +8,7 @@ import { DataTable, Column } from '@/components/admin/DataTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { mockAdminUsers, AdminUser } from '@/lib/admin-data';
 import { useApp } from '@/lib/context/AppContext';
+import { getAllUsers } from '@/lib/supabase/queries/users';
 import {
   Search,
   Download,
@@ -20,17 +21,35 @@ import {
   MoreHorizontal,
   Filter,
   CheckCircle,
-  X
+  X,
+  RefreshCw,
 } from 'lucide-react';
 
 export default function AdminUsersPage() {
   const router = useRouter();
   const { addToast } = useApp();
   const [users, setUsers] = useState<AdminUser[]>(mockAdminUsers);
+  const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [activePackageTab, setActivePackageTab] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const data = await getAllUsers();
+      setUsers(data);
+    } catch {
+      // Keep existing users
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter((u) => {
     if (activePackageTab !== 'all' && u.package !== activePackageTab) return false;
@@ -163,6 +182,16 @@ export default function AdminUsersPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={fetchUsers}
+              disabled={loadingUsers}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-colors disabled:opacity-60"
+              title="Làm mới danh sách từ Supabase"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loadingUsers ? 'animate-spin text-orange-500' : ''}`} />
+              <span>{loadingUsers ? 'Đang tải...' : 'Làm mới'}</span>
+            </button>
+
             <button
               onClick={() => addToast('Đang xuất file Excel dữ liệu người dùng...', 'info')}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-colors"

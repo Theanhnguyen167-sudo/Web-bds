@@ -80,11 +80,11 @@ function FadeInSection({ children, delay = 0, className = '' }: { children: Reac
 function HeroCounter({ value, suffix, label }: { value: number; suffix: string; label: string }) {
   const { count, ref } = useCountUp(value, 1500);
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 py-2">
-      <span className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+    <div ref={ref} className="flex flex-col items-center justify-center text-center px-3 py-1">
+      <span className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight">
         {count.toLocaleString()}{suffix}
       </span>
-      <span className="text-white/70 text-[11px] sm:text-xs font-medium mt-0.5">
+      <span className="text-white/70 text-[10px] sm:text-xs font-medium mt-0.5">
         {label}
       </span>
     </div>
@@ -205,6 +205,15 @@ export default function HomePage() {
     router.push(`/search?${params.toString()}`);
   };
 
+  // ── Section 2: Property Categories Carousel Scroll ──
+  const categoriesScrollRef = useRef<HTMLDivElement>(null);
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categoriesScrollRef.current) {
+      const offset = direction === 'left' ? -260 : 260;
+      categoriesScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
   // ── Section 3: Featured Listings Carousel Scroll ──
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const scrollFeatured = (direction: 'left' | 'right') => {
@@ -237,89 +246,6 @@ export default function HomePage() {
     return mockListings;
   }, [personalFilter]);
 
-  // ── Section 7: Projects Carousel ──
-  const projectsScrollRef = useRef<HTMLDivElement>(null);
-  const scrollProjects = (direction: 'left' | 'right') => {
-    if (projectsScrollRef.current) {
-      const offset = direction === 'left' ? -380 : 380;
-      projectsScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
-    }
-  };
-
-  const mockProjects = [
-    {
-      id: 'p1',
-      name: 'Vinhomes Smart City Tây Mỗ',
-      location: 'Nam Từ Liêm, Hà Nội',
-      type: 'Chung cư cao cấp & Shophouse',
-      area: '45 - 120m²',
-      price: 'Từ 3.2 tỷ',
-      status: '🔥 Đang mở bán',
-      developer: 'Vingroup',
-      soldPercent: 78,
-      image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'p2',
-      name: 'The Zei Mỹ Đình',
-      location: 'Lê Đức Thọ, Nam Từ Liêm',
-      type: 'Căn hộ Hạng A & Penthouse',
-      area: '84 - 265m²',
-      price: 'Từ 5.8 tỷ',
-      status: '⏰ Sắp ra mắt',
-      developer: 'HD Mon Holdings',
-      soldPercent: 45,
-      image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'p3',
-      name: 'Ecopark Grand The Island',
-      location: 'Văn Giang, Giáp Gia Lâm',
-      type: 'Biệt thự đảo sinh thái',
-      area: '270 - 1000m²',
-      price: 'Từ 28 tỷ',
-      status: '🔥 Đang mở bán',
-      developer: 'Ecopark Group',
-      soldPercent: 92,
-      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'p4',
-      name: 'Sunshine City Ciputra',
-      location: 'KĐT Ciputra, Tây Hồ',
-      type: 'Căn hộ dát vàng & Sky Villa',
-      area: '77 - 142m²',
-      price: 'Từ 4.6 tỷ',
-      status: '🔥 Đang mở bán',
-      developer: 'Sunshine Group',
-      soldPercent: 85,
-      image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'p5',
-      name: 'The Manor Central Park',
-      location: 'Nguyễn Xiển, Hoàng Mai',
-      type: 'Nhà phố thương mại & Liền kề',
-      area: '99 - 220m²',
-      price: 'Từ 18.5 tỷ',
-      status: '⏰ Sắp ra mắt',
-      developer: 'Bitexco Group',
-      soldPercent: 60,
-      image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'p6',
-      name: 'Vinhomes Times City',
-      location: 'Minh Khai, Hai Bà Trưng',
-      type: 'Tổ hợp Căn hộ & TTTM',
-      area: '53 - 160m²',
-      price: 'Từ 3.9 tỷ',
-      status: '🏠 Đang bàn giao',
-      developer: 'Vingroup',
-      soldPercent: 98,
-      image: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800&auto=format&fit=crop&q=80',
-    },
-  ];
 
   // ── Section 8: Reviews & Testimonials Carousel ──
   const reviews = [
@@ -382,7 +308,7 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1 — HERO SEARCH (Phong cách batdongsan.com.vn)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative min-h-[82vh] flex flex-col justify-between items-center overflow-hidden bg-[#0a0f1e] text-white pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+      <section className="relative flex flex-col items-center overflow-hidden bg-[#0a0f1e] text-white pt-20 pb-1 sm:pb-1.5 px-4 sm:px-6 lg:px-8">
         {/* Hanoi Skyline Background Image Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none mix-blend-luminosity scale-105 transition-transform duration-1000"
@@ -407,14 +333,14 @@ export default function HomePage() {
         />
 
         {/* Center Search Container */}
-        <div className="max-w-5xl w-full mx-auto text-center relative z-10 my-auto py-6">
+        <div className="max-w-5xl w-full mx-auto text-center relative z-10 py-1 sm:py-2">
           
           {/* Top Badge */}
           <motion.div
             initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 border border-orange-500/40 bg-orange-500/20 text-orange-300 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold backdrop-blur-md shadow-lg shadow-orange-500/10 mb-4"
+            className="inline-flex items-center gap-2 border border-orange-500/40 bg-orange-500/20 text-orange-300 rounded-full px-3.5 py-1 text-xs font-semibold backdrop-blur-md shadow-lg shadow-orange-500/10 mb-2.5"
           >
             <span>🏆</span>
             <span>Nền tảng BĐS thông minh #1 Hà Nội</span>
@@ -440,13 +366,13 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-white/70 text-sm sm:text-base md:text-lg mt-3 mb-6 max-w-2xl mx-auto font-normal"
+            className="text-white/70 text-xs sm:text-sm md:text-base mt-2 mb-3.5 max-w-2xl mx-auto font-normal"
           >
             Hơn 10,000+ tin đăng · Dữ liệu quy hoạch thực · Phân tích AI chuyên sâu
           </motion.p>
 
           {/* ━━ TAB ROW (Mua / Thuê / Dự án / Định giá) ━━ */}
-          <div className="flex items-center justify-center gap-4 sm:gap-8 mb-3 text-sm font-bold">
+          <div className="flex items-center justify-center gap-4 sm:gap-7 mb-2.5 text-xs sm:text-sm font-bold">
             {[
               { key: 'buy', label: '🏠 Mua bán' },
               { key: 'rent', label: '🔑 Cho thuê' },
@@ -772,7 +698,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-2 pt-4 text-xs font-medium text-white/80"
+            className="flex flex-wrap items-center justify-center gap-1.5 pt-2 text-xs font-medium text-white/80"
           >
             <span className="text-white/60">Tìm kiếm phổ biến:</span>
             {[
@@ -796,7 +722,7 @@ export default function HomePage() {
         </div>
 
         {/* BOTTOM STATS BAR */}
-        <div className="w-full max-w-6xl mx-auto rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-3 px-4 relative z-10">
+        <div className="w-full max-w-6xl mx-auto rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-1.5 sm:py-2 px-3 sm:px-4 mt-1.5 mb-0 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">
             <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
             <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
@@ -809,59 +735,115 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 2 — DANH MỤC NHANH (Quick Property Types)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-white py-12 border-b border-slate-100">
+      <section className="bg-white pt-1 pb-5 sm:pt-1.5 sm:pb-6 border-b border-slate-100">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-2">
             <div>
-              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+              <span className="text-orange-500 font-extrabold text-[11px] tracking-wider uppercase">
                 KHÁM PHÁ THEO NHU CẦU
               </span>
-              <h2 className="text-xl sm:text-2xl font-black text-navy">
+              <h2 className="text-lg sm:text-xl font-black text-navy">
                 Danh mục bất động sản Hà Nội
               </h2>
             </div>
-            <Link
-              href="/search"
-              className="text-xs sm:text-sm font-bold text-orange-500 hover:text-orange-600 inline-flex items-center gap-1"
-            >
-              <span>Xem tất cả loại BĐS</span>
-              <ChevronRight className="h-4 w-4" />
-            </Link>
+            <div className="flex items-center gap-2">
+              {/* Carousel navigation buttons */}
+              <button
+                type="button"
+                onClick={() => scrollCategories('left')}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-50 hover:bg-orange-50 border border-slate-200 hover:border-orange-400 text-slate-700 hover:text-orange-600 flex items-center justify-center shadow-xs transition-all cursor-pointer"
+                title="Trượt sang trái"
+                aria-label="Trượt sang trái"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollCategories('right')}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-50 hover:bg-orange-50 border border-slate-200 hover:border-orange-400 text-slate-700 hover:text-orange-600 flex items-center justify-center shadow-xs transition-all cursor-pointer"
+                title="Trượt sang phải"
+                aria-label="Trượt sang phải"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <Link
+                href="/search"
+                className="text-xs sm:text-sm font-bold text-orange-500 hover:text-orange-600 inline-flex items-center gap-1 ml-1"
+              >
+                <span className="hidden sm:inline">Xem tất cả loại BĐS</span>
+                <span className="sm:hidden">Xem tất cả</span>
+                <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </Link>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
-            {[
-              { name: 'Nhà phố', count: '4,231 tin', icon: '🏠', href: '/search?type=house' },
-              { name: 'Chung cư', count: '2,891 tin', icon: '🏢', href: '/search?type=apartment' },
-              { name: 'Đất nền', count: '1,432 tin', icon: '🌿', href: '/search?type=land' },
-              { name: 'Biệt thự', count: '456 tin', icon: '🏰', href: '/search?type=villa' },
-              { name: 'Thương mại', count: '234 tin', icon: '🏪', href: '/search?type=commercial' },
-              { name: 'Dự án mới', count: '89 dự án', icon: '🏗️', href: '/search?type=project' },
-              { name: 'Cho thuê', count: '1,876 tin', icon: '🔑', href: '/search?purpose=rent' },
-              { name: 'Quy hoạch', count: 'Sở QHKT', icon: '🗺️', href: '/planning' },
-            ].map((cat, idx) => (
-              <motion.div
-                key={cat.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: idx * 0.04 }}
-                whileHover={{ y: -4, scale: 1.02 }}
-              >
-                <Link
-                  href={cat.href}
-                  className="flex flex-col items-center justify-center text-center p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-orange-300 hover:bg-orange-50/20 hover:shadow-md transition-all group h-full"
+          {/* 1 HÀNG NGANG CAROUSEL (Single Row Compact Carousel) */}
+          <div className="relative group/cat-carousel">
+            {/* Left Floating Arrow Button */}
+            <button
+              type="button"
+              onClick={() => scrollCategories('left')}
+              className="hidden lg:flex absolute -left-3.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 hover:text-orange-600 hover:border-orange-400 items-center justify-center transition-all hover:scale-110 cursor-pointer"
+              title="Trượt sang trái"
+              aria-label="Trượt sang trái"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            {/* Horizontal Scroll Track */}
+            <div
+              ref={categoriesScrollRef}
+              className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scroll-smooth snap-x scrollbar-none py-1 px-0.5"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {[
+                { name: 'Nhà phố', count: '4,231 tin', icon: '🏠', href: '/search?type=house' },
+                { name: 'Chung cư', count: '2,891 tin', icon: '🏢', href: '/search?type=apartment' },
+                { name: 'Đất nền', count: '1,432 tin', icon: '🌿', href: '/search?type=land' },
+                { name: 'Biệt thự', count: '456 tin', icon: '🏰', href: '/search?type=villa' },
+                { name: 'Thương mại', count: '234 tin', icon: '🏪', href: '/search?type=commercial' },
+                { name: 'Dự án mới', count: '89 dự án', icon: '🏗️', href: '/search?type=project' },
+                { name: 'Cho thuê', count: '1,876 tin', icon: '🔑', href: '/search?purpose=rent' },
+                { name: 'Quy hoạch', count: 'Sở QHKT', icon: '🗺️', href: '/planning' },
+              ].map((cat, idx) => (
+                <motion.div
+                  key={cat.name}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.25, delay: idx * 0.02 }}
+                  whileHover={{ y: -4, scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex-1 min-w-[105px] sm:min-w-[125px] shrink-0 snap-start"
                 >
-                  <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">
-                    {cat.icon}
-                  </span>
-                  <span className="font-extrabold text-xs sm:text-sm text-navy group-hover:text-orange-600 transition-colors">
-                    {cat.name}
-                  </span>
-                  <span className="text-[11px] text-slate-400 mt-0.5">{cat.count}</span>
-                </Link>
-              </motion.div>
-            ))}
+                  <Link
+                    href={cat.href}
+                    className="flex flex-col items-center justify-center text-center px-2 py-1.5 sm:py-2 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-200 group h-full cursor-pointer"
+                  >
+                    <span className="text-xl sm:text-2xl mb-0.5 group-hover:scale-120 group-hover:-translate-y-0.5 transition-transform duration-200 inline-block">
+                      {cat.icon}
+                    </span>
+                    <span className="font-bold text-xs text-navy group-hover:text-orange-600 transition-colors duration-200 whitespace-nowrap">
+                      {cat.name}
+                    </span>
+                    <span className="text-[10px] text-slate-400 mt-0.5 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap">
+                      {cat.count}
+                    </span>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Right Floating Arrow Button */}
+            <button
+              type="button"
+              onClick={() => scrollCategories('right')}
+              className="hidden lg:flex absolute -right-3.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 hover:text-orange-600 hover:border-orange-400 items-center justify-center transition-all hover:scale-110 cursor-pointer"
+              title="Trượt sang phải"
+              aria-label="Trượt sang phải"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </section>
@@ -1240,133 +1222,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 7 — DỰ ÁN NỔI BẬT (Hợp tác)
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-white py-16">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Header Row */}
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
-                DỰ ÁN HỢP TÁC
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-navy mt-1">
-                Dự án bất động sản nổi bật
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Các dự án chính chủ, pháp lý minh bạch và đang mở bán với chính sách ưu đãi
-              </p>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => scrollProjects('left')}
-                className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center transition-all"
-                title="Trước"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => scrollProjects('right')}
-                className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center transition-all"
-                title="Sau"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Projects Carousel */}
-          <div
-            ref={projectsScrollRef}
-            className="flex gap-6 overflow-x-auto pb-4 pt-1 snap-x scrollbar-thin scroll-smooth"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {mockProjects.map((project) => (
-              <div
-                key={project.id}
-                className="min-w-[300px] sm:min-w-[360px] max-w-[360px] snap-start shrink-0 rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between bg-white"
-              >
-                {/* Hero image area */}
-                <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                  <img
-                    src={project.image}
-                    alt={project.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <span className="absolute top-3 left-3 bg-orange-500 text-white font-extrabold text-[11px] px-3 py-1 rounded-full shadow-md">
-                    {project.status}
-                  </span>
-                  <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-navy font-bold text-[10px] px-2.5 py-1 rounded-lg shadow">
-                    {project.developer}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <div className="p-5 space-y-3">
-                  <div>
-                    <h3 className="font-extrabold text-base text-navy line-clamp-1">{project.name}</h3>
-                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                      <MapPin className="h-3.5 w-3.5 text-orange-500 shrink-0" />
-                      <span>{project.location}</span>
-                    </p>
-                  </div>
-
-                  {/* Specs */}
-                  <div className="grid grid-cols-3 gap-1 py-2 border-y border-slate-100 text-[11px] text-slate-600">
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Loại hình</span>
-                      <strong className="text-navy truncate block">Căn hộ</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Diện tích</span>
-                      <strong className="text-navy truncate block">{project.area}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Mức giá</span>
-                      <strong className="text-orange-600 truncate block">{project.price}</strong>
-                    </div>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div>
-                    <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
-                      <span>Tiến độ bán hàng</span>
-                      <span className="text-orange-500 font-bold">{project.soldPercent}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-1000"
-                        style={{ width: `${project.soldPercent}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2">
-                    <a
-                      href="tel:18006868"
-                      className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:border-orange-500 hover:text-orange-500 font-bold text-xs text-center transition-colors flex items-center justify-center gap-1"
-                    >
-                      <Phone className="h-3.5 w-3.5" />
-                      <span>Liên hệ CĐT</span>
-                    </a>
-                    <Link
-                      href="/search?type=project"
-                      className="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs text-center transition-colors shadow-md shadow-orange-500/20"
-                    >
-                      Xem chi tiết →
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 8 — ĐÁNH GIÁ KHÁCH HÀNG

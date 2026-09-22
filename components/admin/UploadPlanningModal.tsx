@@ -27,6 +27,8 @@ import {
   SAMPLE_HANOI_GEOJSON,
   readFileAsDataURL,
   parsePDFPlanningFile,
+  parsePDFPlanningWithAI,
+  generateDistrictMultiZones,
   SAMPLE_PLANNING_PDF_DATA_URI,
   generateDistrictPolygon,
   calculatePolygonAreaHa,
@@ -48,6 +50,8 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+  const [aiStepMessage, setAiStepMessage] = useState<string>('');
   const [parsedZones, setParsedZones] = useState<ParsedZoneFeature[]>([]);
   const [selectedZoneIndex, setSelectedZoneIndex] = useState<number>(0);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
@@ -77,17 +81,23 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
     const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
     if (isPDF) {
+      setIsAiAnalyzing(true);
+      setAiStepMessage('Đang kết nối AI Gemini & quét cấu trúc đồ án PDF...');
       try {
         const dataUrl = await readFileAsDataURL(file);
-        const pdfZone = parsePDFPlanningFile(file, dataUrl);
-        setParsedZones([pdfZone]);
+        setAiStepMessage('AI đang phân tích ký hiệu (ODT, TMD, CX, GT, HH) và chia ranh giới quy hoạch...');
+        const multiZones = await parsePDFPlanningWithAI(file, dataUrl);
+        setParsedZones(multiZones);
         setSelectedZoneIndex(0);
-        loadFeatureToForm(pdfZone);
+        if (multiZones.length > 0) {
+          loadFeatureToForm(multiZones[0]);
+        }
       } catch (err: any) {
-        setErrorMessage(err.message || 'Lỗi khi đọc file tài liệu PDF quy hoạch.');
+        setErrorMessage(err.message || 'Lỗi khi đọc và phân tích file PDF quy hoạch.');
         setParsedZones([]);
       } finally {
         setIsProcessing(false);
+        setIsAiAnalyzing(false);
       }
       return;
     }
@@ -136,20 +146,32 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
     setIsProcessing(false);
   };
 
-  const handleLoadSamplePDF = () => {
+  const handleLoadSamplePDF = async () => {
     setIsProcessing(true);
+    setIsAiAnalyzing(true);
     setErrorMessage(null);
     setShowPdfViewer(false);
     setUploadedFileName('Do_an_quy_hoach_Cau_Giay_2030.pdf');
+    setAiStepMessage('AI Gemini đang phân tích đồ án mẫu và phân chia các ô quy hoạch chức năng...');
+    
     const mockFile = {
       name: 'Do_an_quy_hoach_Cau_Giay_2030.pdf',
       size: 1.8 * 1024 * 1024,
     } as File;
-    const pdfZone = parsePDFPlanningFile(mockFile, SAMPLE_PLANNING_PDF_DATA_URI);
-    setParsedZones([pdfZone]);
-    setSelectedZoneIndex(0);
-    loadFeatureToForm(pdfZone);
-    setIsProcessing(false);
+    
+    try {
+      const multiZones = await parsePDFPlanningWithAI(mockFile, SAMPLE_PLANNING_PDF_DATA_URI);
+      setParsedZones(multiZones);
+      setSelectedZoneIndex(0);
+      if (multiZones.length > 0) {
+        loadFeatureToForm(multiZones[0]);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Lỗi khi phân tích file đồ án PDF');
+    } finally {
+      setIsProcessing(false);
+      setIsAiAnalyzing(false);
+    }
   };
 
   const loadFeatureToForm = (feat: ParsedZoneFeature) => {
@@ -180,13 +202,15 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
 
   const handleDistrictChange = (newDistrict: string) => {
     if (formData.fileType === 'pdf' || formData.pdfUrl) {
-      const newCoords = generateDistrictPolygon(newDistrict);
-      setFormData((prev) => ({
-        ...prev,
-        district: newDistrict,
-        coordinates: newCoords,
-        areaHa: calculatePolygonAreaHa(newCoords),
-      }));
+      const updatedZones = generateDistrictMultiZones(
+        newDistrict,
+        uploadedFileName || 'Đồ án quy hoạch',
+        formData.pdfUrl,
+        formData.fileSize
+      );
+      setParsedZones(updatedZones);
+      const activeZone = updatedZones[selectedZoneIndex] || updatedZones[0];
+      loadFeatureToForm(activeZone);
     } else {
       setFormData((prev) => ({ ...prev, district: newDistrict }));
     }
@@ -356,10 +380,10 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
                     e.stopPropagation();
                     handleLoadSamplePDF();
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 bg-red-50/70 hover:bg-red-100 text-xs font-bold text-red-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 bg-red-50/70 hover:bg-red-100 text-xs font-bold text-red-700 transition-colors shadow-xs"
                 >
-                  <FileText className="h-3.5 w-3.5 text-red-500" />
-                  Mẫu Đồ án PDF
+                  <Sparkles className="h-3.5 w-3.5 text-red-500 animate-pulse" />
+                  Mẫu Đồ án PDF (AI phân tích)
                 </button>
               </div>
             </div>
@@ -372,25 +396,75 @@ export const UploadPlanningModal: React.FC<UploadPlanningModalProps> = ({
               </div>
             )}
 
-            {/* Uploaded File Confirmation Banner */}
-            {uploadedFileName && parsedZones.length > 0 && (
-              <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/60 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-emerald-800 font-bold">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span>
-                    Đã đọc thành công <b>{parsedZones.length}</b> phân khu từ file:{' '}
-                    <i>{uploadedFileName}</i>
-                  </span>
+            {/* AI Analyzing Processing Card */}
+            {isAiAnalyzing && (
+              <div className="rounded-2xl border border-orange-200 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 p-4 text-center space-y-2.5 animate-pulse">
+                <div className="flex items-center justify-center gap-2 text-orange-600 font-extrabold text-xs">
+                  <Sparkles className="h-4 w-4 animate-spin text-orange-500" />
+                  <span>AI Gemini đang phân tích đồ án quy hoạch PDF...</span>
                 </div>
-                {parsedZones.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={handleImportAllZones}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-xs transition-colors"
-                  >
-                    + Nhập tất cả {parsedZones.length} phân khu
-                  </button>
-                )}
+                <p className="text-[11px] text-slate-600 font-medium">
+                  {aiStepMessage}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-1.5 text-[10px] text-slate-500 font-medium pt-1">
+                  <span className="px-2 py-0.5 rounded bg-white/80 border border-orange-200">🔍 Bóc tách cấu trúc PDF</span>
+                  <span>➔</span>
+                  <span className="px-2 py-0.5 rounded bg-white/80 border border-orange-200 font-bold text-orange-700">🏷️ Nhận diện ký hiệu ODT, TMD, CX, GT, HH</span>
+                  <span>➔</span>
+                  <span className="px-2 py-0.5 rounded bg-white/80 border border-orange-200">🗺️ Chia ranh giới đa giác GIS</span>
+                </div>
+              </div>
+            )}
+
+            {/* AI Multi-Zone Selector Panel */}
+            {parsedZones.length > 0 && !isAiAnalyzing && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-md bg-orange-500 text-white text-[10px] font-extrabold flex items-center gap-1">
+                      <Sparkles className="h-3 w-3" /> AI BÓC TÁCH
+                    </span>
+                    <span className="text-xs font-extrabold text-navy">
+                      Đã phân tích được <b>{parsedZones.length}</b> phân khu chức năng:
+                    </span>
+                  </div>
+                  {parsedZones.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleImportAllZones}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-sm transition-all"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      <span>Nhập tất cả {parsedZones.length} phân khu lên bản đồ</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Horizontal Zone Chips */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  {parsedZones.map((z, idx) => {
+                    const isActive = selectedZoneIndex === idx;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSelectZone(idx)}
+                        className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                          isActive
+                            ? 'bg-white border-orange-500 text-navy shadow-sm ring-2 ring-orange-500/20'
+                            : 'bg-white/80 border-slate-200 text-slate-600 hover:border-slate-300'
+                        }`}
+                      >
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: z.color }}
+                        />
+                        <span className="font-mono text-[11px] text-orange-600">[{z.code}]</span>
+                        <span className="truncate max-w-[130px]">{z.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
