@@ -332,7 +332,7 @@ export default function HomePage() {
         />
 
         {/* Center Search Container */}
-        <div className="max-w-5xl w-full mx-auto text-center relative z-10 py-1 sm:py-2">
+        <div className="max-w-5xl w-full mx-auto text-center relative z-30 py-1 sm:py-2">
           
           {/* Top Badge */}
           <motion.div
@@ -401,11 +401,11 @@ export default function HomePage() {
           </div>
 
           {/* ━━ MAIN SEARCH BOX COMPONENT ━━ */}
-          <div ref={searchBoxRef} className="relative z-30">
+          <div ref={searchBoxRef} className="relative z-40">
             <div className="bg-white rounded-2xl p-2 sm:p-2.5 shadow-2xl flex flex-col md:flex-row items-stretch md:items-center gap-2 text-slate-800 border border-white/20">
               
               {/* SEGMENT 1: Loại BĐS */}
-              <div className="relative md:w-44 shrink-0">
+              <div className={`relative md:w-44 shrink-0 ${typeDropdownOpen ? 'z-50' : ''}`}>
                 <button
                   type="button"
                   onClick={() => {
@@ -433,7 +433,7 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 mt-2 w-64 rounded-xl bg-white p-2 shadow-2xl border border-slate-100 z-50 text-left"
+                      className="absolute top-full left-0 mt-2 w-64 rounded-xl bg-white p-2 shadow-2xl border border-slate-100 z-[100] text-left"
                     >
                       {propertyTypes.map((type) => (
                         <button
@@ -461,7 +461,7 @@ export default function HomePage() {
               <div className="hidden md:block w-px h-8 bg-slate-200" />
 
               {/* SEGMENT 2: Vị trí & Autocomplete */}
-              <div className="relative flex-1">
+              <div className={`relative flex-1 ${locationDropdownOpen ? 'z-50' : ''}`}>
                 <div className="flex items-center gap-2 px-3 py-1">
                   <MapPin className="h-4 w-4 text-orange-500 shrink-0" />
                   <input
@@ -485,7 +485,7 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 right-0 mt-2 rounded-xl bg-white p-3 shadow-2xl border border-slate-100 z-50 text-left max-h-72 overflow-y-auto"
+                      className="absolute top-full left-0 right-0 mt-2 rounded-xl bg-white p-3 shadow-2xl border border-slate-100 z-[100] text-left max-h-72 overflow-y-auto"
                     >
                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">
                         Khu vực phổ biến
@@ -526,7 +526,7 @@ export default function HomePage() {
               <div className="hidden md:block w-px h-8 bg-slate-200" />
 
               {/* SEGMENT 3: Khoảng giá */}
-              <div className="relative md:w-40 shrink-0">
+              <div className={`relative md:w-40 shrink-0 ${priceDropdownOpen ? 'z-50' : ''}`}>
                 <button
                   type="button"
                   onClick={() => {
@@ -554,7 +554,7 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 md:right-0 md:left-auto mt-2 w-72 rounded-xl bg-white p-3 shadow-2xl border border-slate-100 z-50 text-left"
+                      className="absolute top-full left-0 md:right-0 md:left-auto mt-2 w-72 rounded-xl bg-white p-3 shadow-2xl border border-slate-100 z-[100] text-left"
                     >
                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                         Chọn khoảng giá
@@ -622,7 +622,7 @@ export default function HomePage() {
               <div className="hidden md:block w-px h-8 bg-slate-200" />
 
               {/* SEGMENT 4: Diện tích */}
-              <div className="relative md:w-36 shrink-0">
+              <div className={`relative md:w-36 shrink-0 ${areaDropdownOpen ? 'z-50' : ''}`}>
                 <button
                   type="button"
                   onClick={() => {
@@ -650,7 +650,7 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full right-0 mt-2 w-56 rounded-xl bg-white p-2 shadow-2xl border border-slate-100 z-50 text-left"
+                      className="absolute top-full right-0 mt-2 w-56 rounded-xl bg-white p-2 shadow-2xl border border-slate-100 z-[100] text-left"
                     >
                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 px-2">
                         Diện tích
