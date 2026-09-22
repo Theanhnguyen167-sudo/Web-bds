@@ -35,7 +35,7 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- USERS Table
 CREATE TABLE IF NOT EXISTS public.users (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL UNIQUE,
   full_name TEXT,
   phone TEXT,
