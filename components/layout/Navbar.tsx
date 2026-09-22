@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ShieldCheck
 } from 'lucide-react';
+import { NotificationBell } from '@/components/notification/NotificationBell';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -126,7 +127,7 @@ export const Navbar: React.FC = () => {
         </nav>
 
         {/* Right Section Actions */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           {/* Admin Portal Quick Switch Button for Admins */}
           {user?.role === 'admin' && (
             <Link
@@ -138,6 +139,9 @@ export const Navbar: React.FC = () => {
               <span>Admin Portal</span>
             </Link>
           )}
+
+          {/* Biểu tượng chuông thông báo (bên trái nút Đăng tin) */}
+          <NotificationBell />
 
           {/* Post Listing Button */}
           <motion.button
@@ -247,6 +251,8 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile Hamburger Toggle */}
         <div className="flex md:hidden items-center gap-2">
+          {/* Chuông thông báo trên mobile */}
+          <NotificationBell />
           <button
             onClick={handlePostListingClick}
             className="rounded-lg bg-accent px-2.5 py-1.5 text-xs font-bold text-white"

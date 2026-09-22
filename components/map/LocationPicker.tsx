@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   MapPin, Search, Locate, RotateCcw, 
-  CheckCircle, Loader2, AlertCircle, X 
+  CheckCircle, Loader2, AlertCircle, X, Layers, Compass
 } from 'lucide-react'
 import { HANOI_CENTER } from '@/lib/leaflet/hanoi-data'
 import { reverseGeocode, searchAddress } from '@/lib/leaflet/geocoding'
@@ -25,6 +25,31 @@ interface LocationPickerProps {
   height?: string
 }
 
+// Các lớp bản đồ: Google Maps Đường Phố chuẩn & Google Vệ tinh
+const MAP_TILES = {
+  googleStreet: {
+    name: 'Google Maps',
+    url: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    subdomains: ['0', '1', '2', '3'],
+    maxZoom: 20,
+    attribution: '© Google Maps',
+  },
+  googleHybrid: {
+    name: 'Vệ tinh',
+    url: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    subdomains: ['0', '1', '2', '3'],
+    maxZoom: 20,
+    attribution: '© Google Maps Satellite',
+  },
+  osmStreet: {
+    name: 'OpenStreetMap',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    subdomains: ['a', 'b', 'c'],
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors',
+  }
+}
+
 export default function LocationPicker({
   value,
   onChange,
@@ -32,14 +57,17 @@ export default function LocationPicker({
 }: LocationPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
+  const tileLayerRef = useRef<any>(null)
   const markerRef = useRef<any>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout>()
 
+  const [mapStyle, setMapStyle] = useState<'googleStreet' | 'googleHybrid' | 'osmStreet'>('googleStreet')
   const [isMapReady, setIsMapReady] = useState(false)
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Array<{
-    lat: number; lng: number; displayName: string; shortName: string
+    lat: number; lng: number; displayName: string; shortName: string;
+    district?: string; ward?: string; road?: string; houseNumber?: string;
   }>>([])
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [geocodeError, setGeocodeError] = useState<string | null>(null)
@@ -63,20 +91,18 @@ export default function LocationPicker({
 
       const map = L.map(mapRef.current, {
         center: initialCenter,
-        zoom: value ? 16 : 13,
+        zoom: value ? 17 : 14,
         zoomControl: false,
         scrollWheelZoom: true,
       })
 
-      // Bright street map for easier navigation when placing pins
-      L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-        { 
-          attribution: '©OpenStreetMap ©CartoDB', 
-          subdomains: 'abcd',
-          maxZoom: 19,
-        }
-      ).addTo(map)
+      // Lớp bản đồ Google Maps Đường Phố chuẩn (không bị mờ, không dính API Key Required)
+      const streetLayer = L.tileLayer(MAP_TILES.googleStreet.url, {
+        subdomains: MAP_TILES.googleStreet.subdomains,
+        maxZoom: MAP_TILES.googleStreet.maxZoom,
+        attribution: MAP_TILES.googleStreet.attribution,
+      }).addTo(map)
+      tileLayerRef.current = streetLayer
 
       // Click to place/move pin
       map.on('click', async (e: any) => {
@@ -100,6 +126,25 @@ export default function LocationPicker({
         mapInstanceRef.current = null
       }
     }
+  }, [])
+
+  // ── ĐỔI KIỂU BẢN ĐỒ (Google Maps thường vs Vệ tinh) ──
+  const switchMapStyle = useCallback(async (styleKey: 'googleStreet' | 'googleHybrid' | 'osmStreet') => {
+    if (!mapInstanceRef.current) return
+    const L = (await import('leaflet')).default
+    const map = mapInstanceRef.current
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current)
+    }
+
+    const cfg = MAP_TILES[styleKey]
+    const newLayer = L.tileLayer(cfg.url, {
+      subdomains: cfg.subdomains,
+      maxZoom: cfg.maxZoom,
+      attribution: cfg.attribution,
+    }).addTo(map)
+    tileLayerRef.current = newLayer
+    setMapStyle(styleKey)
   }, [])
 
   // ── PLACE / MOVE PIN ──
@@ -186,24 +231,26 @@ export default function LocationPicker({
     setSearchQuery(query)
     clearTimeout(searchTimeoutRef.current)
 
-    if (query.length < 3) {
+    if (query.trim().length < 2) {
       setSearchResults([])
       setShowSearchResults(false)
       return
     }
 
+    // Debounce nhẹ 200ms để tìm kiếm tức thì
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearching(true)
       const results = await searchAddress(query)
       setSearchResults(results)
       setShowSearchResults(results.length > 0)
       setIsSearching(false)
-    }, 600) // debounce 600ms
+    }, 200)
   }, [])
 
   // ── SELECT SEARCH RESULT ──
   const handleSelectResult = useCallback(async (result: {
-    lat: number; lng: number; displayName: string
+    lat: number; lng: number; displayName: string;
+    district?: string; ward?: string; road?: string; houseNumber?: string;
   }) => {
     if (!mapInstanceRef.current) return
     const L = (await import('leaflet')).default
@@ -213,10 +260,25 @@ export default function LocationPicker({
     setShowSearchResults(false)
     setSearchResults([])
 
-    // Fly to location
-    map.flyTo([result.lat, result.lng], 17, { duration: 0.8 })
-    await placePin(L, map, result.lat, result.lng)
-  }, [placePin])
+    // Di chuyển map tới địa chỉ đã chọn
+    map.flyTo([result.lat, result.lng], 18, { duration: 0.8 })
+
+    // Nếu kết quả đã có sẵn thông tin quận huyện, truyền thẳng vào onChange
+    if (result.district || result.ward || result.road) {
+      onChange({
+        lat: result.lat,
+        lng: result.lng,
+        displayName: result.displayName,
+        district: result.district || '',
+        ward: result.ward || '',
+        road: result.road || '',
+        houseNumber: result.houseNumber || '',
+      })
+      await placePin(L, map, result.lat, result.lng, false)
+    } else {
+      await placePin(L, map, result.lat, result.lng, true)
+    }
+  }, [placePin, onChange])
 
   // ── GET USER LOCATION ──
   const handleLocateMe = useCallback(async () => {
@@ -411,37 +473,75 @@ export default function LocationPicker({
           )}
         </AnimatePresence>
 
-        {/* Zoom controls */}
-        <div className="absolute top-3 right-3 z-[400] flex flex-col gap-1.5">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md 
-                          border border-gray-200 overflow-hidden">
+        {/* Layer Switcher & Zoom Controls */}
+        <div className="absolute top-3 right-3 z-[400] flex flex-col items-end gap-2">
+          {/* Layer switcher pills */}
+          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl p-1 shadow-lg border border-gray-200/80 dark:border-gray-700 flex items-center gap-1">
             <button
-              onClick={() => mapInstanceRef.current?.zoomIn()}
-              className="w-8 h-8 flex items-center justify-center text-navy 
-                         dark:text-white font-bold hover:bg-orange-500 
-                         hover:text-white transition-colors border-b border-gray-100 text-lg">+</button>
+              type="button"
+              onClick={() => switchMapStyle('googleStreet')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                mapStyle === 'googleStreet'
+                  ? 'bg-orange-500 text-white shadow-sm font-bold'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Đường phố
+            </button>
             <button
-              onClick={() => mapInstanceRef.current?.zoomOut()}
-              className="w-8 h-8 flex items-center justify-center text-navy 
-                         dark:text-white font-bold hover:bg-orange-500 
-                         hover:text-white transition-colors text-lg">−</button>
+              type="button"
+              onClick={() => switchMapStyle('googleHybrid')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                mapStyle === 'googleHybrid'
+                  ? 'bg-orange-500 text-white shadow-sm font-bold'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Vệ tinh
+            </button>
           </div>
 
-          {markerPosition && (
-            <motion.button
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              onClick={handleClear}
-              whileTap={{ scale: 0.9 }}
-              title="Xóa pin"
-              className="w-8 h-8 bg-white dark:bg-gray-800 rounded-xl 
-                         shadow-md border border-gray-200 flex items-center 
-                         justify-center text-red-400 hover:bg-red-50 
-                         hover:text-red-500 transition-colors"
-            >
-              <RotateCcw size={13} />
-            </motion.button>
-          )}
+          {/* Zoom & Action buttons */}
+          <div className="flex flex-col gap-1.5">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md 
+                            border border-gray-200 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => mapInstanceRef.current?.zoomIn()}
+                className="w-8 h-8 flex items-center justify-center text-navy 
+                           dark:text-white font-bold hover:bg-orange-500 
+                           hover:text-white transition-colors border-b border-gray-100 text-lg">+</button>
+              <button
+                type="button"
+                onClick={() => mapInstanceRef.current?.zoomOut()}
+                className="w-8 h-8 flex items-center justify-center text-navy 
+                           dark:text-white font-bold hover:bg-orange-500 
+                           hover:text-white transition-colors text-lg">−</button>
+            </div>
+
+            {markerPosition && (
+              <motion.button
+                type="button"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                onClick={handleClear}
+                whileTap={{ scale: 0.9 }}
+                title="Xóa pin"
+                className="w-8 h-8 bg-white dark:bg-gray-800 rounded-xl 
+                           shadow-md border border-gray-200 flex items-center 
+                           justify-center text-red-400 hover:bg-red-50 
+                           hover:text-red-500 transition-colors"
+              >
+                <RotateCcw size={13} />
+              </motion.button>
+            )}
+          </div>
+        </div>
+
+        {/* Map provider badge */}
+        <div className="absolute bottom-2 left-2 z-[400] bg-white/80 dark:bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded text-[10px] text-gray-500 font-medium pointer-events-none select-none flex items-center gap-1 border border-gray-200/50">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          Google Maps Đường Phố
         </div>
 
         {/* Crosshair center indicator (subtle) */}
