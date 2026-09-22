@@ -60,11 +60,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const supabase = createClient();
       // Try to fetch custom profile from public.users table
-      const { data: profile } = await supabase
+      const { data } = await supabase
         .from('users')
         .select('*')
         .eq('id', sessionUser.id)
         .maybeSingle();
+      const profile = data as any;
 
       const fullName =
         profile?.full_name ||
@@ -135,7 +136,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Đồng bộ thông tin người dùng lên bảng public.users của Supabase
       try {
         const supabase = createClient();
-        await supabase.from('users').upsert({
+        await (supabase.from('users') as any).upsert({
           id: fbUser.uid,
           email: email,
           full_name: fullName,
