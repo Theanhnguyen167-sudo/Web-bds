@@ -31,17 +31,62 @@ import {
 
 export default function AdminListingsPage() {
   const router = useRouter();
-  const { addToast } = useApp();
+  const { addToast, refreshListings } = useApp();
   const [listings, setListings] = useState<AdminListing[]>(mockAdminListings);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Review Drawer State
   const [reviewListing, setReviewListing] = useState<AdminListing | null>(null);
   const [rejectionReason, setRejectionReason] = useState('Ảnh không phù hợp');
   const [isRejecting, setIsRejecting] = useState(false);
+
+  // Tải danh sách tin đăng thực tế từ Supabase
+  const fetchAdminListings = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/listings?status=all');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          const remoteListings: AdminListing[] = json.data.map((r: any) => ({
+            id: r.id,
+            title: r.title,
+            price: r.price,
+            area: r.area,
+            type: r.property_type || 'house',
+            district: r.district,
+            address: r.address,
+            authorName: r.users?.full_name || 'Khách hàng',
+            authorPhone: r.users?.phone || '0988 123 456',
+            authorAvatar: r.users?.avatar_url,
+            status: r.status || 'pending',
+            createdAt: r.created_at ? r.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+            expiresAt: '2026-12-31',
+            images: r.images && r.images.length > 0 ? r.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
+            views: r.views || 1,
+            planningZone: 'Đất ở đô thị',
+            isFeatured: r.is_featured || false,
+          }));
+
+          const remoteIds = new Set(remoteListings.map((l) => l.id));
+          const restMocks = mockAdminListings.filter((m) => !remoteIds.has(m.id));
+          setListings([...remoteListings, ...restMocks]);
+        }
+      }
+    } catch (e) {
+      console.warn('Lỗi khi tải tin quản trị từ Supabase:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchAdminListings();
+  }, []);
 
   // Filter listings
   const filteredListings = listings.filter((l) => {
@@ -60,22 +105,47 @@ export default function AdminListingsPage() {
 
   const pendingCount = listings.filter((l) => l.status === 'pending').length;
 
-  const handleApprove = (id: string) => {
+  const handleApprove = async (id: string) => {
+    // 1. Cập nhật giao diện ngay lập tức
     setListings((prev) =>
       prev.map((l) => (l.id === id ? { ...l, status: 'active' as const } : l))
     );
-    addToast('Đã phê duyệt và đăng tải tin thành công', 'success');
+    addToast('🎉 Đã phê duyệt! Tin đăng đã được xuất bản lên Bản Đồ và Trang Chủ.', 'success');
     setReviewListing(null);
     setIsRejecting(false);
+
+    // 2. Gửi lệnh cập nhật lên Supabase Database
+    try {
+      await fetch('/api/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'active' }),
+      });
+      // Làm mới danh sách tin hiển thị ngoài bản đồ
+      await refreshListings();
+    } catch (err) {
+      console.warn('Lỗi đồng bộ duyệt tin lên Supabase:', err);
+    }
   };
 
-  const handleReject = (id: string) => {
+  const handleReject = async (id: string) => {
     setListings((prev) =>
       prev.map((l) => (l.id === id ? { ...l, status: 'rejected' as const } : l))
     );
     addToast(`Đã từ chối tin đăng. Lý do: ${rejectionReason}`, 'warning');
     setReviewListing(null);
     setIsRejecting(false);
+
+    try {
+      await fetch('/api/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'rejected' }),
+      });
+      await refreshListings();
+    } catch (err) {
+      console.warn('Lỗi đồng bộ từ chối tin lên Supabase:', err);
+    }
   };
 
   const columns: Column<AdminListing>[] = [
