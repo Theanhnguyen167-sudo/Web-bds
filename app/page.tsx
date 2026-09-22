@@ -90,6 +90,89 @@ function HeroCounter({ value, suffix, label }: { value: number; suffix: string; 
   );
 }
 
+const partnerLogos = [
+  {
+    name: 'Vietcombank',
+    node: (
+      <div className="flex items-center gap-1.5 shrink-0">
+        <svg className="h-3.5 w-3.5 fill-emerald-500 shrink-0" viewBox="0 0 24 24">
+          <path d="M12 2L3 19h18L12 2zm0 6l4.5 9h-9L12 8z" />
+        </svg>
+        <span className="font-black tracking-tight text-xs text-white">Vietcombank</span>
+      </div>
+    ),
+  },
+  {
+    name: 'Techcombank',
+    node: (
+      <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center -space-x-1 shrink-0">
+          <div className="w-2.5 h-2.5 bg-red-600 rotate-45" />
+          <div className="w-2.5 h-2.5 bg-red-600 rotate-45" />
+        </div>
+        <span className="font-extrabold tracking-tight text-xs text-white">TECHCOMBANK</span>
+      </div>
+    ),
+  },
+  {
+    name: 'VPBank',
+    node: (
+      <div className="flex items-center gap-1.5 shrink-0">
+        <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C7.5 7 4 11 4 15.5a8 8 0 0016 0C20 11 16.5 7 12 2z" fill="#10b981" />
+          <circle cx="12" cy="15" r="3.5" fill="#ef4444" />
+        </svg>
+        <span className="font-bold tracking-tight text-xs text-white">VPBank</span>
+      </div>
+    ),
+  },
+  {
+    name: 'MB Bank',
+    node: (
+      <div className="flex items-center gap-1.5 shrink-0">
+        <span className="w-4 h-4 rounded bg-blue-600 text-white font-black text-[9px] flex items-center justify-center shrink-0 leading-none">MB</span>
+        <span className="font-black tracking-tight text-xs text-white">MB Bank</span>
+      </div>
+    ),
+  },
+  {
+    name: 'BIDV',
+    node: (
+      <div className="flex items-center gap-1.5 shrink-0">
+        <span className="w-4 h-4 rounded bg-emerald-600 text-white font-black text-[8px] flex items-center justify-center shrink-0 leading-none">BIDV</span>
+        <span className="font-bold tracking-tight text-xs text-white">BIDV</span>
+      </div>
+    ),
+  },
+  {
+    name: 'VnExpress',
+    node: (
+      <div className="flex items-center gap-1.5 shrink-0">
+        <span className="w-4 h-4 rounded bg-[#990000] text-white font-serif font-black text-[10px] flex items-center justify-center shrink-0 leading-none">V</span>
+        <span className="font-serif font-black italic tracking-tight text-xs text-white">VnExpress</span>
+      </div>
+    ),
+  },
+  {
+    name: 'CafeF',
+    node: (
+      <div className="flex items-center gap-1 shrink-0">
+        <span className="w-3.5 h-3.5 rounded-full bg-blue-600 text-white font-sans font-black text-[9px] flex items-center justify-center shrink-0 leading-none">C</span>
+        <span className="font-black tracking-tight text-xs text-white">Cafe<span className="text-orange-500">F</span></span>
+      </div>
+    ),
+  },
+  {
+    name: 'VTV',
+    node: (
+      <div className="flex items-center gap-1 shrink-0">
+        <span className="px-1 py-0.5 rounded bg-red-600 text-white font-black italic text-[9px] tracking-tighter leading-none shrink-0">VTV</span>
+        <span className="font-black text-xs text-white tracking-tight">Đài THVN</span>
+      </div>
+    ),
+  },
+];
+
 export default function HomePage() {
   const router = useRouter();
 
@@ -307,7 +390,7 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1 — HERO SEARCH (Phong cách batdongsan.com.vn)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative flex flex-col items-center overflow-hidden bg-[#0a0f1e] text-white pt-20 pb-1 sm:pb-1.5 px-4 sm:px-6 lg:px-8">
+      <section className="relative flex flex-col items-center overflow-hidden bg-[#0a0f1e] text-white pt-20 pb-0">
         {/* Hanoi Skyline Background Image Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none mix-blend-luminosity scale-105 transition-transform duration-1000"
@@ -332,7 +415,7 @@ export default function HomePage() {
         />
 
         {/* Center Search Container */}
-        <div className="max-w-5xl w-full mx-auto text-center relative z-30 py-1 sm:py-2">
+        <div className="max-w-5xl w-full mx-auto text-center relative z-30 py-1 sm:py-2 px-4 sm:px-6">
           
           {/* Top Badge */}
           <motion.div
@@ -721,12 +804,43 @@ export default function HomePage() {
         </div>
 
         {/* BOTTOM STATS BAR */}
-        <div className="w-full max-w-6xl mx-auto rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-1.5 sm:py-2 px-3 sm:px-4 mt-1.5 mb-0 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">
-            <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
-            <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
-            <HeroCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
-            <HeroCounter value={29} suffix="" label="Quận/huyện có dữ liệu" />
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="w-full rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-1.5 sm:py-2 px-3 sm:px-4 mt-1.5 mb-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">
+              <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
+              <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
+              <HeroCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
+              <HeroCounter value={29} suffix="" label="Quận/huyện có dữ liệu" />
+            </div>
+          </div>
+        </div>
+
+        {/* PARTNER & PRESS MARQUEE STRIP (Trải dài full-width & chạy liên tục) */}
+        <div className="w-full border-t border-white/[0.08] bg-black/35 backdrop-blur-md py-2 sm:py-2.5 mt-2.5 sm:mt-3 relative z-10 overflow-hidden">
+          <div className="w-full flex items-center">
+            {/* Fixed Left Badge */}
+            <div className="flex items-center gap-1.5 px-3 sm:px-5 shrink-0 border-r border-white/10 z-20 bg-gradient-to-r from-[#0a0f1e] via-[#0a0f1e]/90 to-transparent py-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-bold text-white/40 uppercase tracking-widest whitespace-nowrap">
+                <span className="sm:hidden">Đối tác & Báo chí</span>
+                <span className="hidden sm:inline">Đối tác chiến lược & Báo chí</span>
+              </span>
+            </div>
+
+            {/* Infinite Marquee Track with gradient fade masks on edges */}
+            <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)]">
+              <div className="flex gap-8 sm:gap-12 w-max animate-[marquee_30s_linear_infinite] hover:[animation-play-state:paused] items-center py-0.5">
+                {[...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, idx) => (
+                  <div
+                    key={`${partner.name}-${idx}`}
+                    title={partner.name}
+                    className="grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer shrink-0 hover:scale-105"
+                  >
+                    {partner.node}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
