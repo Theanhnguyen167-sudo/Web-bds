@@ -19,14 +19,15 @@ import {
   LayoutDashboard,
   Navigation,
   ChevronDown,
-  ShieldCheck
+  ShieldCheck,
+  Heart
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, setUser, addToast } = useApp();
+  const { user, setUser, savedListingIds, addToast } = useApp();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -223,6 +224,22 @@ export const Navbar: React.FC = () => {
                     </Link>
 
                     <Link
+                      href="/dashboard?tab=saved"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                        <span>Tin đã lưu</span>
+                      </div>
+                      {savedListingIds.length > 0 && (
+                        <span className="rounded-full bg-red-100 text-red-600 px-2 py-0.5 text-[10px] font-extrabold">
+                          {savedListingIds.length}
+                        </span>
+                      )}
+                    </Link>
+
+                    <Link
                       href="/pricing"
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
@@ -316,6 +333,21 @@ export const Navbar: React.FC = () => {
                     >
                       <LayoutDashboard className="h-4 w-4 text-accent" />
                       <span>Dashboard ({user.name})</span>
+                    </Link>
+                    <Link
+                      href="/dashboard?tab=saved"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-between rounded-lg bg-primary-light/60 px-3 py-2 text-xs font-semibold"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Heart className="h-4 w-4 text-red-400 fill-red-400" />
+                        <span>Tin đã lưu</span>
+                      </div>
+                      {savedListingIds.length > 0 && (
+                        <span className="rounded-full bg-red-500/20 text-red-300 px-2 py-0.5 text-[10px] font-extrabold">
+                          {savedListingIds.length}
+                        </span>
+                      )}
                     </Link>
                     <button
                       onClick={() => {
