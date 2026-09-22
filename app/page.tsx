@@ -299,7 +299,7 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1 — HERO SEARCH (Phong cách batdongsan.com.vn)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative flex flex-col items-center overflow-hidden bg-[#0a0f1e] text-white pt-20 pb-2.5 px-4 sm:px-6 lg:px-8">
+      <section className="relative flex flex-col items-center overflow-hidden bg-[#0a0f1e] text-white pt-20 pb-1 sm:pb-1.5 px-4 sm:px-6 lg:px-8">
         {/* Hanoi Skyline Background Image Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none mix-blend-luminosity scale-105 transition-transform duration-1000"
@@ -713,7 +713,7 @@ export default function HomePage() {
         </div>
 
         {/* BOTTOM STATS BAR */}
-        <div className="w-full max-w-6xl mx-auto rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-1.5 sm:py-2 px-3 sm:px-4 mt-2 mb-0 relative z-10">
+        <div className="w-full max-w-6xl mx-auto rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-1.5 sm:py-2 px-3 sm:px-4 mt-1.5 mb-0 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">
             <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
             <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
@@ -726,9 +726,9 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 2 — DANH MỤC NHANH (Quick Property Types)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-white pt-2.5 pb-6 sm:pt-3.5 sm:pb-8 border-b border-slate-100">
+      <section className="bg-white pt-1 pb-5 sm:pt-1.5 sm:pb-6 border-b border-slate-100">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center justify-between mb-2">
             <div>
               <span className="text-orange-500 font-extrabold text-[11px] tracking-wider uppercase">
                 KHÁM PHÁ THEO NHU CẦU
