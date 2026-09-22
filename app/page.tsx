@@ -763,19 +763,20 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: idx * 0.03 }}
-                whileHover={{ y: -3, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <Link
                   href={cat.href}
-                  className="flex flex-col items-center justify-center text-center p-2 sm:p-2.5 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-orange-300 hover:bg-orange-50/20 hover:shadow-md transition-all group h-full"
+                  className="flex flex-col items-center justify-center text-center p-2.5 sm:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:border-orange-400 hover:bg-white hover:shadow-xl hover:shadow-orange-500/20 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group h-full cursor-pointer"
                 >
-                  <span className="text-xl sm:text-2xl mb-1 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl sm:text-3xl mb-1 group-hover:scale-125 group-hover:-translate-y-1 transition-transform duration-300 inline-block">
                     {cat.icon}
                   </span>
-                  <span className="font-extrabold text-xs text-navy group-hover:text-orange-600 transition-colors">
+                  <span className="font-extrabold text-xs text-navy group-hover:text-orange-600 transition-colors duration-200">
                     {cat.name}
                   </span>
-                  <span className="text-[10px] text-slate-400 mt-0.5">{cat.count}</span>
+                  <span className="text-[10px] text-slate-400 mt-0.5 group-hover:text-orange-500 font-medium transition-colors">{cat.count}</span>
                 </Link>
               </motion.div>
             ))}
