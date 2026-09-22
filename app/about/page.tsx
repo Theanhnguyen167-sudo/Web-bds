@@ -387,8 +387,8 @@ export default function AboutPage() {
             <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase">
               KIM CHỈ NAM PHÁT TRIỂN
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-navy">
-              Tầm nhìn · Sứ mệnh · Giá trị
+            <h2 className="text-3xl sm:text-4xl font-black text-navy text-shadow-heading [text-shadow:_0_3px_8px_rgba(26,39,68,0.22),_0_6px_20px_rgba(26,39,68,0.12)]">
+              Tầm nhìn • Sứ mệnh • Giá trị
             </h2>
             <p className="text-sm text-gray-500">
               Những nguyên tắc định hướng mọi hoạt động của HaNoi Realty
@@ -404,16 +404,17 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
+              whileHover={{ y: -8, transition: { duration: 0.25, ease: 'easeInOut' } }}
+              className="bg-white rounded-3xl p-8 shadow-md hover:shadow-2xl border border-gray-100 hover:border-orange-300 transition-all duration-300 ease-in-out hover:-translate-y-2 flex flex-col justify-between cursor-pointer group"
             >
               <div className="space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-2xl">
+                <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
                   🔭
                 </div>
                 <span className="text-xs font-bold text-orange-500 uppercase tracking-wide block">
                   Tầm nhìn 2030
                 </span>
-                <h3 className="text-xl font-bold text-navy">
+                <h3 className="text-xl font-bold text-navy group-hover:text-orange-600 transition-colors duration-300">
                   Nền tảng PropTech #1 Đông Nam Á
                 </h3>
                 <p className="text-sm text-gray-600 leading-relaxed">
@@ -433,16 +434,17 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.15 }}
-              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
+              whileHover={{ y: -8, transition: { duration: 0.25, ease: 'easeInOut' } }}
+              className="bg-white rounded-3xl p-8 shadow-md hover:shadow-2xl border border-gray-100 hover:border-blue-300 transition-all duration-300 ease-in-out hover:-translate-y-2 flex flex-col justify-between cursor-pointer group"
             >
               <div className="space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-2xl">
+                <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
                   🎯
                 </div>
                 <span className="text-xs font-bold text-blue-500 uppercase tracking-wide block">
                   Sứ mệnh
                 </span>
-                <h3 className="text-xl font-bold text-navy">
+                <h3 className="text-xl font-bold text-navy group-hover:text-blue-600 transition-colors duration-300">
                   Minh bạch hóa thị trường BĐS Hà Nội
                 </h3>
                 <p className="text-sm text-gray-600 leading-relaxed">
@@ -462,16 +464,17 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
+              whileHover={{ y: -8, transition: { duration: 0.25, ease: 'easeInOut' } }}
+              className="bg-white rounded-3xl p-8 shadow-md hover:shadow-2xl border border-gray-100 hover:border-emerald-300 transition-all duration-300 ease-in-out hover:-translate-y-2 flex flex-col justify-between cursor-pointer group"
             >
               <div className="space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
                   💎
                 </div>
                 <span className="text-xs font-bold text-emerald-500 uppercase tracking-wide block">
                   Giá trị cốt lõi
                 </span>
-                <h3 className="text-xl font-bold text-navy">
+                <h3 className="text-xl font-bold text-navy group-hover:text-emerald-600 transition-colors duration-300">
                   4 nguyên tắc bất biến
                 </h3>
                 <div className="space-y-2 pt-1 text-sm text-gray-700">
