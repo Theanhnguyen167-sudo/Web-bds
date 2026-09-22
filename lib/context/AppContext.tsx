@@ -133,18 +133,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         aiReportsLimit: 30,
       });
 
-      // Đồng bộ thông tin người dùng lên bảng public.users của Supabase
+      // Đồng bộ thông tin người dùng lên bảng public.users của Supabase qua API an toàn
       try {
-        const supabase = createClient();
-        await (supabase.from('users') as any).upsert({
-          id: fbUser.uid,
-          email: email,
-          full_name: fullName,
-          avatar_url: avatar,
-          role: userRole,
-          package_type: userRole === 'admin' ? 'Agency' : 'Pro',
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'id' });
+        await fetch('/api/sync-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: fbUser.uid,
+            email: email,
+            full_name: fullName,
+            avatar_url: avatar,
+            phone: fbUser.phoneNumber || '',
+            role: userRole,
+          }),
+        });
       } catch (dbErr) {
         console.warn('Sync to Supabase users table notice:', dbErr);
       }
