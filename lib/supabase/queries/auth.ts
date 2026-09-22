@@ -27,28 +27,28 @@ export async function signInWithEmail(email: string, password: string) {
 
 export async function signInWithGoogle() {
   const supabase = createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
   return supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${siteUrl}/auth/callback` }
+    options: { redirectTo: `${origin}/auth/callback` }
   });
 }
 
 export async function signInWithFacebook() {
   const supabase = createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
   return supabase.auth.signInWithOAuth({
     provider: 'facebook',
-    options: { redirectTo: `${siteUrl}/auth/callback` }
+    options: { redirectTo: `${origin}/auth/callback` }
   });
 }
 
 export async function signInWithApple() {
   const supabase = createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
   return supabase.auth.signInWithOAuth({
     provider: 'apple',
-    options: { redirectTo: `${siteUrl}/auth/callback` }
+    options: { redirectTo: `${origin}/auth/callback` }
   });
 }
 
