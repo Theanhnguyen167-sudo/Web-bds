@@ -34,6 +34,24 @@ export async function signInWithGoogle() {
   });
 }
 
+export async function signInWithFacebook() {
+  const supabase = createClient();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  return supabase.auth.signInWithOAuth({
+    provider: 'facebook',
+    options: { redirectTo: `${siteUrl}/auth/callback` }
+  });
+}
+
+export async function signInWithApple() {
+  const supabase = createClient();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  return supabase.auth.signInWithOAuth({
+    provider: 'apple',
+    options: { redirectTo: `${siteUrl}/auth/callback` }
+  });
+}
+
 export async function signOut() {
   const supabase = createClient();
   return supabase.auth.signOut();

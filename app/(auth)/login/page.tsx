@@ -2,27 +2,29 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
 import { mockUser } from '@/lib/mock-data';
-import { signInWithEmail, signUpWithEmail, signInWithGoogle } from '@/lib/supabase/queries/auth';
 import {
-  Home,
+  signInWithEmail,
+  signUpWithEmail,
+  signInWithGoogle,
+  signInWithFacebook,
+  signInWithApple,
+} from '@/lib/supabase/queries/auth';
+import {
   Mail,
   Lock,
   User as UserIcon,
   Phone,
   ArrowRight,
-  CheckCircle2,
   Loader2,
   Sparkles,
   ShieldCheck,
-  Building2,
-  Crown,
-  KeyRound,
+  Check,
   Zap,
-  Check
 } from 'lucide-react';
 
 type RoleType = 'user' | 'agent' | 'admin';
@@ -31,44 +33,38 @@ const ROLES_CONFIG = [
   {
     id: 'user' as RoleType,
     title: 'Người mua / Thuê',
-    subtitle: 'Khách hàng cá nhân',
-    icon: UserIcon,
-    badge: 'Khách hàng',
-    color: 'border-blue-500 bg-blue-500/10 text-blue-600',
+    badge: 'Người thuê',
     demoEmail: 'khachhang@gmail.com',
     demoPass: '12345678',
     demoName: 'Nguyễn Minh Tuấn',
     demoPackage: 'Free',
     targetRoute: '/search',
-    desc: 'Tra cứu quy hoạch 2030, tìm kiếm BĐS, tải báo cáo thẩm định AI',
+    colorClasses: 'text-emerald-700 bg-emerald-50 border-emerald-300 hover:bg-emerald-100/70',
+    activeClasses: 'ring-2 ring-emerald-500 bg-emerald-100 text-emerald-800 font-bold border-emerald-400',
   },
   {
     id: 'agent' as RoleType,
     title: 'Chủ nhà / Môi giới',
-    subtitle: 'Đối tác & Môi giới',
-    icon: Building2,
-    badge: 'Môi giới VIP',
-    color: 'border-orange-500 bg-orange-500/10 text-orange-600',
+    badge: 'Chủ trọ',
     demoEmail: 'moigioi@hanoirealty.vn',
     demoPass: '12345678',
     demoName: 'Trần Thị Thu Hà',
     demoPackage: 'Pro',
     targetRoute: '/dashboard',
-    desc: 'Đăng tin BĐS, quản lý khách hàng, nhận lịch hẹn xem nhà qua Zalo',
+    colorClasses: 'text-blue-700 bg-blue-50 border-blue-300 hover:bg-blue-100/70',
+    activeClasses: 'ring-2 ring-blue-500 bg-blue-100 text-blue-800 font-bold border-blue-400',
   },
   {
     id: 'admin' as RoleType,
     title: 'Quản trị viên',
-    subtitle: 'Super Admin Portal',
-    icon: ShieldCheck,
-    badge: 'Super Admin',
-    color: 'border-rose-500 bg-rose-500/10 text-rose-600',
+    badge: 'Admin',
     demoEmail: 'admin@hanoirealty.vn',
     demoPass: 'admin123',
     demoName: 'Hệ thống Quản Trị Super Admin',
     demoPackage: 'Agency',
     targetRoute: '/admin',
-    desc: 'Toàn quyền kiểm duyệt tin đăng, quản lý người dùng, doanh thu & cấu hình',
+    colorClasses: 'text-purple-700 bg-purple-50 border-purple-300 hover:bg-purple-100/70',
+    activeClasses: 'ring-2 ring-purple-500 bg-purple-100 text-purple-800 font-bold border-purple-400',
   },
 ];
 
@@ -76,454 +72,377 @@ export default function AuthPage() {
   const router = useRouter();
   const { setUser, addToast } = useApp();
 
-  const [selectedRole, setSelectedRole] = useState<RoleType>('admin');
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [selectedRole, setSelectedRole] = useState<RoleType>('user');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [authMethod, setAuthMethod] = useState<'phone' | 'email'>('phone');
   const [loading, setLoading] = useState(false);
 
-  // Form states initialized with active role demo credentials
-  const [email, setEmail] = useState('admin@hanoirealty.vn');
-  const [password, setPassword] = useState('admin123');
-  const [name, setName] = useState('Hệ thống Quản Trị Super Admin');
-  const [phone, setPhone] = useState('0988 123 456');
+  // Email form fallback states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isRegister, setIsRegister] = useState(false);
+  const [fullName, setFullName] = useState('');
 
-  // Switch role and update form presets
-  const handleSelectRole = (role: RoleType) => {
+  // 1-Tap Quick Trial Role Selection
+  const handleQuickRole = (role: RoleType) => {
     setSelectedRole(role);
     const config = ROLES_CONFIG.find((r) => r.id === role)!;
-    setEmail(config.demoEmail);
-    setPassword(config.demoPass);
-    setName(config.demoName);
-  };
-
-  const handleFillDemoCredentials = () => {
-    const config = ROLES_CONFIG.find((r) => r.id === selectedRole)!;
-    setEmail(config.demoEmail);
-    setPassword(config.demoPass);
-    setName(config.demoName);
-    addToast(`Đã điền tài khoản mẫu: ${config.demoEmail}`, 'info');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     setLoading(true);
 
+    setTimeout(() => {
+      setUser({
+        ...mockUser,
+        id: role === 'admin' ? 'admin_01' : role === 'agent' ? 'agent_01' : 'user_01',
+        name: config.demoName,
+        email: config.demoEmail,
+        role: role,
+        package: config.demoPackage as any,
+        avatar:
+          role === 'admin'
+            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'
+            : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+      });
+      addToast(`✨ Đăng nhập trải nghiệm vai trò: ${config.title}`, 'success');
+      setLoading(false);
+      router.push(config.targetRoute);
+    }, 450);
+  };
+
+  // Phone submit
+  const handlePhoneSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phoneNumber || phoneNumber.trim().length < 9) {
+      addToast('Vui lòng nhập số điện thoại hợp lệ (10 số)!', 'error');
+      return;
+    }
+
+    setLoading(true);
+    setTimeout(() => {
+      const config = ROLES_CONFIG.find((r) => r.id === selectedRole)!;
+      setUser({
+        ...mockUser,
+        id: 'phone_' + Date.now(),
+        name: `Thành viên (${phoneNumber.slice(-4)})`,
+        phone: phoneNumber,
+        role: selectedRole,
+        package: (selectedRole === 'agent' ? 'Pro' : 'Free') as any,
+      });
+      addToast(`🎉 Chào mừng bạn đăng nhập với số ${phoneNumber}!`, 'success');
+      setLoading(false);
+      router.push(config.targetRoute);
+    }, 600);
+  };
+
+  // OAuth actions
+  const handleGoogleLogin = async () => {
+    try {
+      addToast('Đang chuyển hướng tới Google OAuth...', 'info');
+      await signInWithGoogle();
+    } catch {
+      handleQuickRole(selectedRole);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    try {
+      addToast('Đang kết nối Facebook Login...', 'info');
+      await signInWithFacebook();
+    } catch {
+      handleQuickRole(selectedRole);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    try {
+      addToast('Đang kết nối Apple ID...', 'info');
+      await signInWithApple();
+    } catch {
+      handleQuickRole(selectedRole);
+    }
+  };
+
+  // Email login / signup
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
     const config = ROLES_CONFIG.find((r) => r.id === selectedRole)!;
 
     try {
-      if (activeTab === 'login') {
-        const res = await signInWithEmail(email, password);
-        if (res.error && !res.error.message.includes('mock')) {
-          // In case of actual Supabase connection error
-        }
-
+      if (!isRegister) {
+        await signInWithEmail(email, password);
         setUser({
           ...mockUser,
           id: selectedRole === 'admin' ? 'admin_01' : 'user_01',
-          name: name || config.demoName,
+          name: fullName || config.demoName,
           email: email || config.demoEmail,
           role: selectedRole,
-          package: config.demoPackage as any,
-          avatar:
-            selectedRole === 'admin'
-              ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'
-              : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
         });
-
-        addToast(
-          `👋 Đăng nhập thành công với vai trò: ${config.title}`,
-          'success'
-        );
+        addToast('Đăng nhập thành công!', 'success');
       } else {
-        const res = await signUpWithEmail(email, password, name);
+        await signUpWithEmail(email, password, fullName);
         setUser({
           ...mockUser,
           id: 'user_' + Date.now(),
-          name: name || 'Người dùng mới',
+          name: fullName || 'Thành viên mới',
           email,
-          phone,
           role: selectedRole,
-          package: selectedRole === 'agent' ? 'Basic' : 'Free',
         });
-
-        addToast(
-          `🎉 Đăng ký thành công! Chào mừng ${name || 'bạn'}.`,
-          'success'
-        );
+        addToast('Đăng ký tài khoản thành công!', 'success');
       }
+      router.push(config.targetRoute);
     } catch {
-      // Local fallback
-      setUser({
-        ...mockUser,
-        name: name || config.demoName,
-        email: email || config.demoEmail,
-        role: selectedRole,
-        package: config.demoPackage as any,
-      });
-      addToast('Đăng nhập thành công!', 'success');
+      handleQuickRole(selectedRole);
     } finally {
       setLoading(false);
-      setTimeout(() => {
-        router.push(config.targetRoute);
-      }, 400);
     }
   };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await signInWithGoogle();
-    } catch (err: any) {
-      addToast('Đang kết nối cổng Google OAuth...', 'info');
-    }
-  };
-
-  const currentRoleConfig = ROLES_CONFIG.find((r) => r.id === selectedRole)!;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e] p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[300px] bg-orange-500/10 blur-[140px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[300px] bg-blue-500/10 blur-[140px] rounded-full pointer-events-none" />
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+    <div className="flex min-h-screen items-center justify-center bg-[#070b14] px-4 py-8 sm:p-6 lg:p-8 relative overflow-hidden">
+      {/* Background Decorative Ambient Glows */}
+      <div className="absolute top-1/4 left-1/3 w-[500px] h-[350px] bg-orange-500/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/3 w-[450px] h-[350px] bg-blue-500/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(#f97316_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 15 }}
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="flex w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-800 bg-white shadow-2xl z-10"
+        className="w-full max-w-[440px] rounded-[32px] bg-white p-6 sm:p-8 shadow-2xl relative z-10 border border-slate-100"
       >
-        {/* ── LEFT SIDE: Brand & Role Selector Visuals ── */}
-        <div className="hidden lg:flex w-5/12 flex-col justify-between bg-[#0f172a] p-8 text-white relative overflow-hidden border-r border-slate-800">
-          <div className="relative z-10 space-y-6">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white font-black shadow-lg shadow-orange-500/30">
-                🏠
-              </div>
-              <span className="text-xl font-extrabold tracking-tight text-white">
-                HaNoi <span className="text-orange-500 font-black">Realty</span>
-              </span>
+        {/* ── HEADER WITH TITLE & MASCOT ── */}
+        <div className="flex items-start justify-between gap-3 mb-6">
+          <div className="flex-1 pr-2">
+            <Link href="/" className="inline-flex items-center gap-1.5 mb-2 text-xs font-bold text-orange-600 hover:text-orange-700">
+              <span>← Trang chủ</span>
             </Link>
-
-            <div>
-              <span className="text-orange-400 font-extrabold text-[11px] uppercase tracking-widest block">
-                CỔNG ĐĂNG NHẬP PHÂN QUYỀN
-              </span>
-              <h2 className="text-2xl font-black text-white leading-tight mt-1">
-                Trải nghiệm dành riêng cho từng vai trò
-              </h2>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Lựa chọn đúng vai trò để hệ thống tự động chuyển hướng đến bảng điều khiển phù hợp nhất.
-              </p>
-            </div>
-
-            {/* 3 Role Selection Cards */}
-            <div className="space-y-2.5 pt-2">
-              {ROLES_CONFIG.map((r) => {
-                const Icon = r.icon;
-                const isSelected = selectedRole === r.id;
-                return (
-                  <div
-                    key={r.id}
-                    onClick={() => handleSelectRole(r.id)}
-                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 ${
-                      isSelected
-                        ? 'bg-white/10 border-orange-500 shadow-md ring-1 ring-orange-500/30'
-                        : 'bg-white/5 border-slate-800 hover:bg-white/8 text-slate-400'
-                    }`}
-                  >
-                    <div
-                      className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
-                        isSelected
-                          ? 'bg-orange-500 text-white shadow-md'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-bold text-xs text-white truncate">{r.title}</p>
-                        {isSelected && (
-                          <span className="h-2 w-2 rounded-full bg-orange-400 animate-ping" />
-                        )}
-                      </div>
-                      <p className="text-[11px] text-slate-400 truncate">{r.subtitle}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <h1 className="text-2xl sm:text-[26px] font-black tracking-tight text-slate-900 leading-tight">
+              Đăng nhập/Đăng ký
+            </h1>
+            <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              Tiếp cận hàng chục ngàn bất động sản & quy hoạch Hà Nội 2030
+            </p>
           </div>
 
-          {/* Bottom info */}
-          <div className="relative z-10 text-[11px] text-slate-400 pt-6 border-t border-slate-800/80 flex items-center justify-between">
-            <span>© 2026 HaNoi Realty</span>
-            <span className="text-emerald-400 font-semibold flex items-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5" /> Bảo mật SSL 256-bit
-            </span>
+          {/* Mascot Avatar */}
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl overflow-hidden bg-orange-50/50 p-1 border border-orange-100 shadow-sm flex items-center justify-center">
+            <Image
+              src="/mascot.png"
+              alt="Mascot Hà Nội Realty"
+              width={80}
+              height={80}
+              className="object-contain hover:scale-105 transition-transform duration-200"
+              priority
+            />
           </div>
         </div>
 
-        {/* ── RIGHT SIDE: Login / Register Form ── */}
-        <div className="flex w-full lg:w-7/12 flex-col justify-center p-6 sm:p-10 bg-white">
-          
-          {/* Mobile Logo & Role Switcher */}
-          <div className="lg:hidden mb-6 text-center space-y-4">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white font-black">
-                🏠
-              </div>
-              <span className="text-lg font-extrabold text-navy">HaNoi Realty</span>
-            </Link>
+        {/* ── SOCIAL AUTH BUTTONS ── */}
+        <div className="space-y-3 mb-5">
+          {/* Google Button */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-full border border-slate-200/90 bg-slate-50/60 hover:bg-slate-100 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
+          >
+            <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+              />
+            </svg>
+            <span>Tiếp tục với Google</span>
+          </button>
 
-            {/* Mobile 3-Role Pills */}
-            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl text-[11px] font-bold">
-              {ROLES_CONFIG.map((r) => (
-                <button
-                  key={r.id}
-                  onClick={() => handleSelectRole(r.id)}
-                  className={`py-2 px-1 rounded-lg transition-all ${
-                    selectedRole === r.id
-                      ? 'bg-orange-500 text-white shadow-xs'
-                      : 'text-slate-600'
-                  }`}
-                >
-                  {r.badge}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Facebook Button */}
+          <button
+            type="button"
+            onClick={handleFacebookLogin}
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-full border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
+          >
+            <svg className="h-4 w-4 shrink-0 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+            </svg>
+            <span>Tiếp tục với Facebook</span>
+          </button>
 
-          {/* Desktop 3 Role Tabs */}
-          <div className="hidden lg:grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6">
-            {ROLES_CONFIG.map((r) => {
-              const Icon = r.icon;
-              const isSelected = selectedRole === r.id;
-              return (
-                <button
-                  key={r.id}
-                  onClick={() => handleSelectRole(r.id)}
-                  className={`relative flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all ${
-                    isSelected
-                      ? 'bg-white text-navy shadow-xs ring-1 ring-slate-200/80'
-                      : 'text-slate-500 hover:text-navy hover:bg-slate-200/50'
-                  }`}
-                >
-                  <Icon
-                    className={`h-3.5 w-3.5 ${
-                      isSelected ? 'text-orange-500' : 'text-slate-400'
-                    }`}
-                  />
-                  <span>{r.badge}</span>
-                </button>
-              );
-            })}
-          </div>
+          {/* Apple Button */}
+          <button
+            type="button"
+            onClick={handleAppleLogin}
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-full border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs transition-all duration-150 flex items-center justify-center gap-2.5 active:scale-[0.99]"
+          >
+            <svg className="h-4 w-4 shrink-0 text-black" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.38c.62-.76 1.04-1.82.93-2.88-.9.04-1.98.6-2.61 1.36-.56.65-.95 1.72-.82 2.76 1 .08 1.9-.48 2.5-1.24z" />
+            </svg>
+            <span>Tiếp tục với Apple</span>
+          </button>
+        </div>
 
-          {/* Role Header Banner */}
-          <div className="p-4 rounded-2xl bg-orange-50/60 border border-orange-200/80 mb-5 flex items-center justify-between gap-3">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-black text-navy">
-                  Đăng nhập: {currentRoleConfig.title}
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-orange-500 text-white">
-                  {currentRoleConfig.badge}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 leading-tight">
-                {currentRoleConfig.desc}
-              </p>
-            </div>
+        {/* ── DIVIDER ── */}
+        <div className="relative flex items-center justify-center my-5">
+          <div className="w-full border-t border-slate-200"></div>
+          <span className="bg-white px-3 text-[11px] font-semibold text-slate-400 absolute">
+            Hoặc
+          </span>
+        </div>
 
-            {/* Quick Fill Demo Credentials Button */}
-            <button
-              type="button"
-              onClick={handleFillDemoCredentials}
-              className="px-2.5 py-1.5 rounded-xl bg-white border border-orange-200 text-orange-600 hover:bg-orange-100 font-bold text-[11px] shrink-0 shadow-2xs flex items-center gap-1 transition-colors"
-              title="Tự động điền tài khoản mẫu"
-            >
-              <Zap className="h-3 w-3 fill-orange-500 text-orange-500" />
-              <span>⚡ Mẫu</span>
-            </button>
-          </div>
-
-          {/* Login / Register Toggle (Only for User/Agent) */}
-          {selectedRole !== 'admin' && (
-            <div className="flex rounded-xl bg-slate-100 p-1 mb-5">
-              <button
-                type="button"
-                onClick={() => setActiveTab('login')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  activeTab === 'login'
-                    ? 'bg-white text-navy shadow-xs'
-                    : 'text-slate-500 hover:text-navy'
-                }`}
-              >
-                Đăng nhập
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('register')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  activeTab === 'register'
-                    ? 'bg-white text-navy shadow-xs'
-                    : 'text-slate-500 hover:text-navy'
-                }`}
-              >
-                Đăng ký tài khoản
-              </button>
-            </div>
-          )}
-
-          {/* Auth Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-            {activeTab === 'register' && selectedRole !== 'admin' && (
-              <>
-                <div>
-                  <label className="font-bold text-navy block mb-1">Họ và tên</label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Nguyễn Văn An"
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:bg-white focus:border-orange-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-bold text-navy block mb-1">Số điện thoại</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="0988 123 456"
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:bg-white focus:border-orange-500"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-
+        {/* ── PHONE / EMAIL AUTH TOGGLE ── */}
+        {authMethod === 'phone' ? (
+          <form onSubmit={handlePhoneSubmit} className="space-y-3 mb-5">
             <div>
-              <label className="font-bold text-navy block mb-1">
-                {selectedRole === 'admin' ? 'Tài khoản Quản trị / Email' : 'Email'}
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={currentRoleConfig.demoEmail}
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:bg-white focus:border-orange-500"
-                />
-              </div>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Số điện thoại"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15 transition-all shadow-2xs"
+              />
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="font-bold text-navy">Mật khẩu</label>
-                {activeTab === 'login' && (
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      addToast('Mã OTP khôi phục mật khẩu đã được gửi đến email!', 'info');
-                    }}
-                    className="text-[11px] font-bold text-orange-500 hover:underline"
-                  >
-                    Quên mật khẩu?
-                  </a>
-                )}
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:bg-white focus:border-orange-500"
-                />
-              </div>
-            </div>
-
-            {/* Quick Demo Credentials Box */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-500 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-slate-700 block">Tài khoản demo sẵn sàng:</span>
-                <span className="font-mono text-orange-600">{currentRoleConfig.demoEmail}</span> ·{' '}
-                <span className="font-mono">{currentRoleConfig.demoPass}</span>
-              </div>
-              <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                Auto-fill
-              </span>
-            </div>
-
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+              className={`w-full py-3 px-4 rounded-2xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-md ${
+                phoneNumber.trim().length >= 9
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/25 cursor-pointer active:scale-[0.99]'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              }`}
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+              ) : (
+                <>
+                  <span>Tiếp tục</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => setAuthMethod('email')}
+                className="text-[11px] font-semibold text-orange-600 hover:underline cursor-pointer"
+              >
+                Đăng nhập bằng Email & Mật khẩu
+              </button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleEmailSubmit} className="space-y-3 mb-5 text-xs">
+            {isRegister && (
+              <div>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Họ và tên"
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-orange-500"
+                />
+              </div>
+            )}
+
+            <div>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Địa chỉ Email"
+                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-orange-500"
+              />
+            </div>
+
+            <div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mật khẩu"
+                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-orange-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <span>
-                    {activeTab === 'login'
-                      ? selectedRole === 'admin'
-                        ? 'Truy cập Admin Portal →'
-                        : 'Đăng nhập ngay →'
-                      : 'Hoàn tất đăng ký'}
-                  </span>
-                </>
+                <span>{isRegister ? 'Hoàn tất đăng ký' : 'Đăng nhập ngay'}</span>
               )}
             </button>
-          </form>
 
-          {/* Social Google Login */}
-          {selectedRole !== 'admin' && (
-            <div className="mt-5 pt-4 border-t border-slate-100 text-center">
-              <p className="text-[11px] text-slate-400 mb-3">Hoặc tiếp tục với</p>
+            <div className="flex items-center justify-between text-[11px] pt-1">
               <button
                 type="button"
-                onClick={handleGoogleLogin}
-                className="w-full py-2.5 px-4 border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 transition-colors flex items-center justify-center gap-2"
+                onClick={() => setIsRegister(!isRegister)}
+                className="text-orange-600 font-bold hover:underline"
               >
-                <svg className="h-4 w-4" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                <span>Đăng nhập với Google</span>
+                {isRegister ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMethod('phone')}
+                className="text-slate-500 hover:text-slate-800"
+              >
+                Dùng số điện thoại
               </button>
             </div>
-          )}
+          </form>
+        )}
+
+        {/* ── 1-TAP QUICK ROLES TRIAL (MATCHING PHOTO 2) ── */}
+        <div className="pt-3 border-t border-dashed border-slate-200/90 text-center">
+          <p className="text-[11px] text-slate-500 mb-2.5 font-medium flex items-center justify-center gap-1">
+            <Sparkles className="h-3.5 w-3.5 text-orange-500" />
+            <span>Tài khoản thử nghiệm nhanh (1-Chạm):</span>
+          </p>
+
+          <div className="grid grid-cols-3 gap-2">
+            {ROLES_CONFIG.map((r) => {
+              const isActive = selectedRole === r.id;
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => handleQuickRole(r.id)}
+                  disabled={loading}
+                  className={`py-2 px-1 rounded-xl border text-[11px] font-bold transition-all duration-150 active:scale-95 shadow-2xs ${
+                    isActive ? r.activeClasses : r.colorClasses
+                  }`}
+                >
+                  {r.badge}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom Safety Guarantee */}
+        <div className="mt-5 text-center text-[10px] text-slate-400 flex items-center justify-center gap-1">
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+          <span>Bảo mật dữ liệu chuẩn mã hóa SSL 256-bit</span>
         </div>
       </motion.div>
     </div>
