@@ -28,10 +28,18 @@ export async function signInWithEmail(email: string, password: string) {
 export async function signInWithGoogle() {
   const supabase = createClient();
   const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
-  return supabase.auth.signInWithOAuth({
+  const res = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${origin}/auth/callback` }
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+    }
   });
+
+  if (res.data?.url && typeof window !== 'undefined') {
+    window.location.href = res.data.url;
+  }
+
+  return res;
 }
 
 export async function signInWithFacebook() {
