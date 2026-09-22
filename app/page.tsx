@@ -42,7 +42,6 @@ import {
   Sliders,
   Check,
   Download,
-  Smartphone,
   Compass,
   DollarSign,
   Briefcase
@@ -735,14 +734,14 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 2 — DANH MỤC NHANH (Quick Property Types)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-white pt-1 pb-5 sm:pt-1.5 sm:pb-6 border-b border-slate-100">
+      <section className="bg-white pt-3 pb-6 sm:pt-4 sm:pb-7 border-b border-slate-100">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3.5 sm:mb-4">
             <div>
-              <span className="text-orange-500 font-extrabold text-[11px] tracking-wider uppercase">
+              <span className="text-orange-500 font-extrabold text-[11px] tracking-wider uppercase block mb-1">
                 KHÁM PHÁ THEO NHU CẦU
               </span>
-              <h2 className="text-lg sm:text-xl font-black text-navy">
+              <h2 className="text-lg sm:text-xl font-black text-navy leading-snug">
                 Danh mục bất động sản Hà Nội
               </h2>
             </div>
@@ -793,7 +792,7 @@ export default function HomePage() {
             {/* Horizontal Scroll Track */}
             <div
               ref={categoriesScrollRef}
-              className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scroll-smooth snap-x scrollbar-none py-1 px-0.5"
+              className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto scroll-smooth snap-x scrollbar-none py-1.5 px-0.5"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {[
@@ -814,19 +813,19 @@ export default function HomePage() {
                   transition={{ duration: 0.25, delay: idx * 0.02 }}
                   whileHover={{ y: -4, scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex-1 min-w-[105px] sm:min-w-[125px] shrink-0 snap-start"
+                  className="flex-1 min-w-[110px] sm:min-w-[130px] shrink-0 snap-start"
                 >
                   <Link
                     href={cat.href}
-                    className="flex flex-col items-center justify-center text-center px-2 py-1.5 sm:py-2 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-200 group h-full cursor-pointer"
+                    className="flex flex-col items-center justify-center text-center px-3 py-2 sm:py-2.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-200 group h-full cursor-pointer"
                   >
-                    <span className="text-xl sm:text-2xl mb-0.5 group-hover:scale-120 group-hover:-translate-y-0.5 transition-transform duration-200 inline-block">
+                    <span className="text-xl sm:text-2xl mb-1.5 group-hover:scale-120 group-hover:-translate-y-0.5 transition-transform duration-200 inline-block">
                       {cat.icon}
                     </span>
                     <span className="font-bold text-xs text-navy group-hover:text-orange-600 transition-colors duration-200 whitespace-nowrap">
                       {cat.name}
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap">
+                    <span className="text-[10px] text-slate-400 mt-1 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap">
                       {cat.count}
                     </span>
                   </Link>
@@ -1399,135 +1398,7 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 10 — TẢI ỨNG DỤNG MOBILE APP CTA
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-[#0a0f1e] text-white py-20 relative overflow-hidden">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left Column */}
-            <div className="lg:col-span-6 space-y-6">
-              <span className="inline-flex items-center gap-1.5 bg-orange-500/20 text-orange-400 font-extrabold text-xs px-3 py-1 rounded-full border border-orange-500/30">
-                <Smartphone className="h-3.5 w-3.5" />
-                <span>ỨNG DỤNG DI ĐỘNG</span>
-              </span>
-
-              <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
-                HaNoi Realty trên điện thoại của bạn
-              </h2>
-
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Tìm kiếm BĐS, kiểm tra quy hoạch phân khu và nhận thông báo biến động giá tức thì ngay trong tầm tay.
-              </p>
-
-              {/* App Features List */}
-              <div className="space-y-2.5 text-xs text-slate-300">
-                <p className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-orange-400 shrink-0" />
-                  <span>Nhận thông báo khi có tin đăng mới đúng bộ lọc của bạn</span>
-                </p>
-                <p className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-orange-400 shrink-0" />
-                  <span>Tra cứu bản đồ quy hoạch phân khu offline mượt mà</span>
-                </p>
-                <p className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-orange-400 shrink-0" />
-                  <span>Chat và đặt lịch hẹn xem nhà trực tiếp với môi giới</span>
-                </p>
-              </div>
-
-              {/* Download Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <div className="px-5 py-3 rounded-2xl bg-white text-slate-900 font-bold text-xs flex items-center gap-2 shadow-xl hover:bg-slate-100 transition-colors cursor-pointer">
-                  <span className="text-lg">🍎</span>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block leading-tight">Tải về trên</span>
-                    <span>App Store</span>
-                  </div>
-                </div>
-
-                <div className="px-5 py-3 rounded-2xl bg-white text-slate-900 font-bold text-xs flex items-center gap-2 shadow-xl hover:bg-slate-100 transition-colors cursor-pointer">
-                  <span className="text-lg">▶️</span>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block leading-tight">Tải về trên</span>
-                    <span>Google Play</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column (Phone Mockup) */}
-            <div className="lg:col-span-6 flex justify-center relative">
-              
-              {/* Phone Frame */}
-              <div className="relative w-72 sm:w-80 rounded-[3rem] bg-slate-900 p-4 shadow-2xl border-4 border-slate-700/80">
-                <div className="rounded-[2.4rem] overflow-hidden bg-navy aspect-[9/18] p-4 text-white flex flex-col justify-between border border-white/10 relative">
-                  
-                  {/* Phone UI Top bar */}
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 pb-2 border-b border-white/10">
-                    <span className="font-bold text-white">9:41</span>
-                    <span>HaNoi Realty</span>
-                    <span>5G 🔋</span>
-                  </div>
-
-                  {/* Phone App Content Preview */}
-                  <div className="my-auto space-y-3">
-                    <div className="bg-orange-500/20 border border-orange-500/30 rounded-2xl p-3">
-                      <span className="text-[10px] text-orange-400 font-bold block mb-1">🗺️ Layer Quy hoạch 2030</span>
-                      <p className="text-xs font-bold text-white">Quận Đống Đa - Đất ở đô thị</p>
-                      <p className="text-[10px] text-slate-300">Tầng cao: 5-9 tầng · Mật độ: 65%</p>
-                    </div>
-
-                    <div className="bg-slate-800 rounded-2xl p-3 border border-slate-700">
-                      <span className="text-[10px] text-emerald-400 font-bold block mb-1">🤖 AI Phân tích</span>
-                      <p className="text-xs font-bold text-white">Tiềm năng tăng giá: 8.5/10</p>
-                    </div>
-                  </div>
-
-                  <div className="py-2 text-center text-[10px] text-slate-400">
-                    Trượt lên để mở khóa
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Notification 1 */}
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -top-4 -left-2 sm:left-4 bg-white text-slate-900 rounded-2xl p-3 shadow-2xl border border-slate-100 text-xs font-bold flex items-center gap-2 max-w-[220px]"
-              >
-                <div className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs shrink-0">
-                  🔔
-                </div>
-                <div className="truncate">
-                  <p className="text-[10px] text-slate-400">Vừa đăng 2 phút trước</p>
-                  <p className="truncate text-navy font-bold">Nhà phố Đống Đa 8.5 tỷ</p>
-                </div>
-              </motion.div>
-
-              {/* Floating Notification 2 */}
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -bottom-4 -right-2 sm:right-4 bg-white text-slate-900 rounded-2xl p-3 shadow-2xl border border-slate-100 text-xs font-bold flex items-center gap-2 max-w-[220px]"
-              >
-                <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs shrink-0">
-                  📊
-                </div>
-                <div className="truncate">
-                  <p className="text-[10px] text-slate-400">Báo cáo AI sẵn sàng</p>
-                  <p className="truncate text-navy font-bold">Đã phân tích 100% dữ liệu</p>
-                </div>
-              </motion.div>
-
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 11 — ĐĂNG TIN CTA
+          📌 SECTION 10 — ĐĂNG TIN CTA
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section className="bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white py-16 relative overflow-hidden">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
