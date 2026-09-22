@@ -34,11 +34,27 @@ export default function DashboardPage() {
   const [isSyncingStitch, setIsSyncingStitch] = useState(false);
   const [stitchApiKey, setStitchApiKey] = useState('AQ.Ab8RN6IZHLmSH1J7xdlYndtnZm6fJi2_YExaS4HA6Fqfr7YlTw');
 
-  const userListings = listings.slice(0, 5); // Simulated user listings
+  // Lọc tin đăng của người dùng hiện tại (nếu có userId/authorEmail), hoặc hiển thị danh sách tin cá nhân bao gồm tin Chờ duyệt (pending)
+  const userListings = listings.filter((l) => {
+    if (l.userId && user?.id && l.userId === user.id) return true;
+    if (l.authorEmail && user?.email && l.authorEmail === user.email) return true;
+    if (l.id && l.id.startsWith('lst_')) return true; // Tin tạo từ máy này
+    if (l.status === 'pending') return true; // Hiển thị các tin vừa đăng đang chờ duyệt
+    return false;
+  }).concat(listings.filter(l => !l.id?.startsWith('lst_') && !l.userId && l.status === 'active').slice(0, 3)); // Kèm các tin mẫu ban đầu
 
   const handleDeleteListing = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setListings((prev) => prev.filter((l) => l.id !== id));
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('hanoi_platform_user_listings');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          localStorage.setItem('hanoi_platform_user_listings', JSON.stringify(parsed.filter((item: any) => item.id !== id)));
+        }
+      } catch {}
+    }
     addToast('🗑️ Đã xoá tin đăng thành công', 'info');
   };
 
@@ -172,8 +188,15 @@ export default function DashboardPage() {
             {/* Quick Metrics Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                <span className="text-[11px] text-text-muted font-semibold">Tin đang hoạt động</span>
-                <p className="text-2xl font-black text-text-primary mt-1">{userListings.length}</p>
+                <span className="text-[11px] text-text-muted font-semibold">Tin bất động sản</span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <p className="text-2xl font-black text-text-primary">{userListings.length}</p>
+                  {userListings.some(l => l.status === 'pending') && (
+                    <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full animate-pulse">
+                      {userListings.filter(l => l.status === 'pending').length} chờ duyệt
+                    </span>
+                  )}
+                </div>
                 <span className="text-[10px] text-success font-bold flex items-center gap-1 mt-1">
                   <CheckCircle2 className="h-3 w-3" /> Chuẩn quy hoạch
                 </span>
@@ -249,6 +272,15 @@ export default function DashboardPage() {
                               <span className="rounded bg-emerald-50 text-emerald-700 px-1.5 py-0.5 text-[9px] font-bold">
                                 {listing.planningZone}
                               </span>
+                              {listing.status === 'pending' ? (
+                                <span className="rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1 animate-pulse">
+                                  ⏳ Chờ Admin duyệt
+                                </span>
+                              ) : (
+                                <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
+                                  ✓ Đã duyệt (Đang hiển thị)
+                                </span>
+                              )}
                             </div>
                             <h4 className="text-xs font-bold text-text-primary group-hover:text-accent transition-colors line-clamp-1 mt-1">
                               {listing.title}
