@@ -5,6 +5,8 @@ import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import { createClient } from '@/lib/supabase/client';
 import { toggleSavedListing, getSavedListings } from '@/lib/supabase/queries/saved';
 import { PlanningZoneItem, DEFAULT_PLANNING_ZONES } from '@/lib/planning/planning-utils';
+import { auth as firebaseAuth } from '@/lib/firebase/config';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
 export interface ToastItem {
   id: string;
@@ -108,35 +110,91 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Supabase Auth State Listener & Initial Session Check
+  const syncFirebaseUser = async (fbUser: FirebaseUser) => {
+    try {
+      const email = fbUser.email || 'user@example.com';
+      const fullName = fbUser.displayName || email.split('@')[0];
+      const avatar = fbUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullName)}`;
+      const userRole = email.includes('admin') ? 'admin' : 'user';
+
+      setUser({
+        id: fbUser.uid,
+        name: fullName,
+        email: email,
+        phone: fbUser.phoneNumber || '',
+        role: userRole,
+        avatar: avatar,
+        package: userRole === 'admin' ? 'Agency' : 'Pro',
+        packageExpiry: '2026-12-31',
+        listingsCount: 0,
+        activeListings: 0,
+        aiReportsUsed: 0,
+        aiReportsLimit: 30,
+      });
+
+      // Đồng bộ thông tin người dùng lên bảng public.users của Supabase
+      try {
+        const supabase = createClient();
+        await supabase.from('users').upsert({
+          id: fbUser.uid,
+          email: email,
+          full_name: fullName,
+          avatar_url: avatar,
+          role: userRole,
+          package_type: userRole === 'admin' ? 'Agency' : 'Pro',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' });
+      } catch (dbErr) {
+        console.warn('Sync to Supabase users table notice:', dbErr);
+      }
+    } catch (e) {
+      console.error('Error syncing Firebase user:', e);
+    }
+  };
+
+  // Auth State Listeners (Supabase & Firebase)
   useEffect(() => {
+    // 1. Firebase Auth listener
+    let unsubscribeFb: (() => void) | undefined;
+    try {
+      unsubscribeFb = onAuthStateChanged(firebaseAuth, (fbUser) => {
+        if (fbUser) {
+          syncFirebaseUser(fbUser);
+        }
+      });
+    } catch (fbErr) {
+      console.warn('Firebase auth listener error:', fbErr);
+    }
+
+    // 2. Supabase Auth listener
+    let unsubscribeSb: (() => void) | undefined;
     try {
       const supabase = createClient();
 
-      // Check current session on initial load
       supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
+        if (session?.user && !firebaseAuth.currentUser) {
           syncSupabaseUser(session.user);
         }
       });
 
-      // Listen for auth changes (login, logout, OAuth callback)
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user) {
           await syncSupabaseUser(session.user);
-        } else if (event === 'SIGNED_OUT') {
+        } else if (event === 'SIGNED_OUT' && !firebaseAuth.currentUser) {
           setUser(null);
         }
       });
-
-      return () => {
-        subscription.unsubscribe();
-      };
+      unsubscribeSb = () => subscription.unsubscribe();
     } catch {
-      // Offline / dev fallback
+      // Offline fallback
     }
+
+    return () => {
+      if (unsubscribeFb) unsubscribeFb();
+      if (unsubscribeSb) unsubscribeSb();
+    };
   }, []);
 
   const addToast = (message: string, type: ToastItem['type'] = 'success') => {

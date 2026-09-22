@@ -13,6 +13,7 @@ import {
   signInWithFacebook,
   signInWithApple,
 } from '@/lib/supabase/queries/auth';
+import { signInWithGoogleFirebase } from '@/lib/firebase/auth';
 import {
   Mail,
   Lock,
@@ -133,10 +134,27 @@ export default function AuthPage() {
   // OAuth actions
   const handleGoogleLogin = async () => {
     try {
-      addToast('Đang kết nối cổng Google OAuth...', 'info');
-      const res = await signInWithGoogle();
-      if (res?.error) {
-        addToast(`Lỗi Google OAuth: ${res.error.message}`, 'error');
+      addToast('Đang mở cửa sổ đăng nhập Google...', 'info');
+      const { user: fbUser, error } = await signInWithGoogleFirebase();
+
+      if (error) {
+        // Nếu user hủy popup
+        if ((error as any).code === 'auth/popup-closed-by-user') {
+          addToast('Bạn đã đóng cửa sổ đăng nhập Google', 'info');
+          return;
+        }
+        // Thử fallback qua Supabase nếu cần
+        const sbRes = await signInWithGoogle();
+        if (sbRes?.error) {
+          addToast(`Lỗi đăng nhập Google: ${error.message}`, 'error');
+        }
+        return;
+      }
+
+      if (fbUser) {
+        const config = ROLES_CONFIG.find((r) => r.id === selectedRole)!;
+        addToast(`🎉 Đăng nhập thành công! Xin chào ${fbUser.displayName || fbUser.email}`, 'success');
+        router.push(config.targetRoute);
       }
     } catch (err: any) {
       addToast(`Không thể kết nối Google: ${err?.message || 'Vui lòng thử lại'}`, 'error');
