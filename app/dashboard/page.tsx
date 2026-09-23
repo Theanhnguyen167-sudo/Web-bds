@@ -7,32 +7,21 @@ import { Navbar } from '@/components/layout/Navbar';
 import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND } from '@/lib/utils';
 import {
-  LayoutDashboard,
   Home,
   Sparkles,
   Heart,
   Tag,
-  Settings,
   PlusCircle,
-  Eye,
   Trash2,
   ExternalLink,
   ShieldCheck,
   TrendingUp,
-  Clock,
   CheckCircle2,
-  Layers,
-  RefreshCw,
-  Cpu,
-  Key,
-  Check
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { user, listings, setListings, savedListingIds, addToast } = useApp();
-  const [activeTab, setActiveTab] = useState<'listings' | 'reports' | 'saved' | 'stitch' | 'packages'>('listings');
-  const [isSyncingStitch, setIsSyncingStitch] = useState(false);
-  const [stitchApiKey, setStitchApiKey] = useState('AQ.Ab8RN6IZHLmSH1J7xdlYndtnZm6fJi2_YExaS4HA6Fqfr7YlTw');
+  const { user, listings, setListings, savedListingIds, toggleSaveListing, addToast } = useApp();
+  const [activeTab, setActiveTab] = useState<'listings' | 'reports' | 'saved' | 'packages'>('listings');
 
   // Lọc tin đăng của người dùng hiện tại (nếu có userId/authorEmail), hoặc hiển thị danh sách tin cá nhân bao gồm tin Chờ duyệt (pending)
   const userListings = listings.filter((l) => {
@@ -42,6 +31,9 @@ export default function DashboardPage() {
     if (l.status === 'pending') return true; // Hiển thị các tin vừa đăng đang chờ duyệt
     return false;
   }).concat(listings.filter(l => !l.id?.startsWith('lst_') && !l.userId && l.status === 'active').slice(0, 3)); // Kèm các tin mẫu ban đầu
+
+  // Danh sách bất động sản đã bấm lưu tim
+  const savedListings = listings.filter((l) => savedListingIds.includes(l.id));
 
   const handleDeleteListing = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -58,33 +50,11 @@ export default function DashboardPage() {
     addToast('🗑️ Đã xoá tin đăng thành công', 'info');
   };
 
-  const handleSyncStitch = async () => {
-    setIsSyncingStitch(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setIsSyncingStitch(false);
-      addToast('✨ Đã đồng bộ thành công toàn bộ UI Screens & Tokens từ Google Stitch!', 'success');
-    } catch {
-      setIsSyncingStitch(false);
-      addToast('Có lỗi xảy ra khi đồng bộ Stitch', 'error');
-    }
-  };
-
   const menuItems = [
     { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
     { id: 'reports', label: 'Báo cáo AI đã tạo', icon: Sparkles, count: user?.aiReportsUsed || 8 },
     { id: 'saved', label: 'Tin đã lưu', icon: Heart, count: savedListingIds.length },
-    { id: 'stitch', label: 'Đồng bộ Google Stitch', icon: Cpu, badge: 'CONNECTED' },
     { id: 'packages', label: 'Gói dịch vụ VIP', icon: Tag, badge: user?.package?.toUpperCase() || 'PRO' },
-  ];
-
-  const stitchScreens = [
-    { id: 's1', name: 'HaNoi Realty - Homepage Split Map', category: 'Main Layout', status: 'Đã đồng bộ', components: 14 },
-    { id: 's2', name: 'Property Detail & AI Scorecard', category: 'Listing', status: 'Đã đồng bộ', components: 9 },
-    { id: 's3', name: '5-Step Create Listing Wizard', category: 'Forms', status: 'Đã đồng bộ', components: 12 },
-    { id: 's4', name: 'AI Valuation & Planning Report', category: 'AI Intelligence', status: 'Đã đồng bộ', components: 8 },
-    { id: 's5', name: 'Membership Pricing & VIP Table', category: 'Monetization', status: 'Đã đồng bộ', components: 6 },
-    { id: 's6', name: 'User Management Dashboard', category: 'Management', status: 'Đã đồng bộ', components: 11 },
   ];
 
   return (
@@ -107,24 +77,24 @@ export default function DashboardPage() {
                 <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-extrabold text-accent uppercase">
                   Gói {user?.package || 'Pro'} VIP
                 </span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Stitch Connected
+                <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1">
+                  <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                  Đã xác thực
                 </span>
               </div>
               <p className="text-xs text-text-secondary mt-0.5">{user?.email || 'an@example.com'}</p>
-              <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-09-15'}</p>
+              <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-12-31'}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setActiveTab('stitch')}
+            <Link
+              href="/pricing"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-page-bg px-4 py-3 text-xs font-bold text-text-primary hover:bg-slate-100 transition-all"
             >
-              <Cpu className="h-4 w-4 text-accent" />
-              <span>Stitch API: AQ.Ab8...</span>
-            </button>
+              <Tag className="h-4 w-4 text-accent" />
+              <span>Gói hội viên VIP</span>
+            </Link>
 
             <Link
               href="/listings/create"
@@ -217,9 +187,11 @@ export default function DashboardPage() {
               </div>
 
               <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                <span className="text-[11px] text-text-muted font-semibold">Stitch UI Sync</span>
-                <p className="text-2xl font-black text-emerald-600 mt-1">6 / 6</p>
-                <span className="text-[10px] text-emerald-600 font-bold mt-1">Màn hình đồng bộ</span>
+                <span className="text-[11px] text-text-muted font-semibold">Tin đã lưu</span>
+                <p className="text-2xl font-black text-rose-500 mt-1">{savedListingIds.length}</p>
+                <span className="text-[10px] text-rose-600 font-bold mt-1 flex items-center gap-1">
+                  <Heart className="h-3 w-3 fill-rose-500" /> BĐS theo dõi
+                </span>
               </div>
             </div>
 
@@ -314,106 +286,7 @@ export default function DashboardPage() {
                 </motion.div>
               )}
 
-              {/* TAB 2: GOOGLE STITCH DESIGN SYNC (ACTIVE KEY MANAGEMENT) */}
-              {activeTab === 'stitch' && (
-                <motion.div
-                  key="tab-stitch"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-6"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Cpu className="h-5 w-5 text-accent" />
-                        <h3 className="text-base font-extrabold text-text-primary">
-                          Google Stitch AI Design System Sync
-                        </h3>
-                      </div>
-                      <p className="text-xs text-text-secondary mt-1">
-                        Kết nối và đồng bộ tự động thiết kế UI, components và Design Tokens từ Google Stitch
-                      </p>
-                    </div>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={isSyncingStitch}
-                      onClick={handleSyncStitch}
-                      className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-all disabled:opacity-75 shrink-0"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isSyncingStitch ? 'animate-spin' : ''}`} />
-                      <span>{isSyncingStitch ? 'Đang đồng bộ...' : 'Đồng bộ từ Stitch ngay'}</span>
-                    </motion.button>
-                  </div>
-
-                  {/* Active Key Box */}
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-emerald-700" />
-                        <span className="text-xs font-extrabold text-emerald-900">
-                          Khóa Xác Thực Google Stitch Đang Hoạt Động
-                        </span>
-                      </div>
-                      <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                        ACTIVE · CONNECTED
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        readOnly
-                        value={stitchApiKey}
-                        className="w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-mono font-bold text-slate-800 focus:outline-none select-all"
-                      />
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(stitchApiKey);
-                          addToast('Đã sao chép khóa Stitch API Key!', 'success');
-                        }}
-                        className="rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-800 transition-colors shrink-0"
-                      >
-                        Sao chép
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-emerald-700">
-                      Khóa này đã được liên kết với Antigravity MCP Server proxy và hệ thống runtime của website.
-                    </p>
-                  </div>
-
-                  {/* Synchronized Screens List */}
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-                      Màn hình & Components Đã Đồng Bộ
-                    </h4>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {stitchScreens.map((sc) => (
-                        <div
-                          key={sc.id}
-                          className="flex items-center justify-between rounded-2xl bg-page-bg p-3.5 border border-border"
-                        >
-                          <div className="space-y-0.5">
-                            <h5 className="text-xs font-bold text-text-primary">{sc.name}</h5>
-                            <span className="text-[10px] text-text-muted">{sc.category} · {sc.components} UI widgets</span>
-                          </div>
-
-                          <span className="rounded-md bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold flex items-center gap-1">
-                            <Check className="h-3 w-3" />
-                            {sc.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* TAB 3: REPORTS */}
+              {/* TAB 2: REPORTS */}
               {activeTab === 'reports' && (
                 <motion.div
                   key="tab-reports"
@@ -423,30 +296,56 @@ export default function DashboardPage() {
                   transition={{ duration: 0.2 }}
                   className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-4"
                 >
-                  <h3 className="text-sm font-extrabold text-text-primary">Báo cáo Thẩm định AI gần đây</h3>
-                  <div className="rounded-2xl bg-page-bg p-4 border border-border flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-accent" />
-                        <span className="text-xs font-bold text-text-primary">Phố Hào Nam, Đống Đa</span>
-                        <span className="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
-                          Điểm 82/100
-                        </span>
+                  <div className="flex items-center justify-between border-b border-border pb-4">
+                    <h3 className="text-sm font-extrabold text-text-primary">Báo cáo Thẩm định AI gần đây</h3>
+                    <span className="text-xs text-text-muted">Đã sử dụng {user?.aiReportsUsed || 8}/30 lượt</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-2xl bg-page-bg p-4 border border-border flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-accent" />
+                          <span className="text-xs font-bold text-text-primary">Phố Hào Nam, Đống Đa</span>
+                          <span className="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                            Điểm 82/100
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-text-muted">Tạo ngày 2025-08-20 · Được hưởng lợi từ Metro 2A Cát Linh - Hà Đông</p>
                       </div>
-                      <p className="text-[11px] text-text-muted">Tạo ngày 2025-08-20 · Được hưởng lợi từ Metro 2A</p>
+
+                      <Link
+                        href="/reports/1"
+                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-accent-hover transition-colors"
+                      >
+                        Xem chi tiết
+                      </Link>
                     </div>
 
-                    <Link
-                      href="/reports/1"
-                      className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white shadow-sm"
-                    >
-                      Xem chi tiết
-                    </Link>
+                    <div className="rounded-2xl bg-page-bg p-4 border border-border flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-accent" />
+                          <span className="text-xs font-bold text-text-primary">Võ Chí Công, Tây Hồ</span>
+                          <span className="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                            Điểm 91/100
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-text-muted">Tạo ngày 2025-08-18 · Đất ở hỗn hợp, tiềm năng tăng giá cao</p>
+                      </div>
+
+                      <Link
+                        href="/reports/2"
+                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-accent-hover transition-colors"
+                      >
+                        Xem chi tiết
+                      </Link>
+                    </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* TAB 4: SAVED */}
+              {/* TAB 3: SAVED */}
               {activeTab === 'saved' && (
                 <motion.div
                   key="tab-saved"
@@ -456,14 +355,102 @@ export default function DashboardPage() {
                   transition={{ duration: 0.2 }}
                   className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-4"
                 >
-                  <h3 className="text-sm font-extrabold text-text-primary">Bất động sản yêu thích ({savedListingIds.length})</h3>
-                  <p className="text-xs text-text-secondary">
-                    Các bất động sản bạn đã bấm lưu tim để theo dõi biến động giá và tiến độ quy hoạch.
-                  </p>
+                  <div className="flex items-center justify-between border-b border-border pb-4">
+                    <div>
+                      <h3 className="text-sm font-extrabold text-text-primary">
+                        Bất động sản đã lưu ({savedListings.length})
+                      </h3>
+                      <p className="text-xs text-text-secondary mt-0.5">
+                        Các bất động sản bạn đã đánh dấu để theo dõi biến động giá và thông tin quy hoạch.
+                      </p>
+                    </div>
+                    <Link
+                      href="/search"
+                      className="text-xs font-bold text-accent hover:underline flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span>Xem thêm BĐS</span>
+                    </Link>
+                  </div>
+
+                  {savedListings.length === 0 ? (
+                    <div className="py-12 text-center space-y-3">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                        <Heart className="h-7 w-7" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-text-primary">Bạn chưa lưu bất động sản nào</p>
+                        <p className="text-xs text-text-muted">Bấm vào biểu tượng trái tim khi xem tin để lưu lại theo dõi tại đây.</p>
+                      </div>
+                      <Link
+                        href="/search"
+                        className="inline-block rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-colors"
+                      >
+                        Khám phá danh sách nhà đất
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {savedListings.map((listing) => (
+                        <div
+                          key={listing.id}
+                          onClick={() => window.location.href = `/listings/${listing.id}`}
+                          className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border p-4 hover:border-accent hover:bg-orange-50/15 transition-all cursor-pointer shadow-sm"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <img
+                              src={listing.images[0]}
+                              alt={listing.title}
+                              className="h-16 w-24 rounded-xl object-cover shrink-0"
+                            />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-black text-accent">
+                                  {formatCurrencyVND(listing.price)}
+                                </span>
+                                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-text-secondary">
+                                  {listing.area}m²
+                                </span>
+                                <span className="rounded bg-emerald-50 text-emerald-700 px-1.5 py-0.5 text-[9px] font-bold">
+                                  {listing.planningZone}
+                                </span>
+                              </div>
+                              <h4 className="text-xs font-bold text-text-primary group-hover:text-accent transition-colors line-clamp-1 mt-1">
+                                {listing.title}
+                              </h4>
+                              <p className="text-[11px] text-text-muted mt-0.5">{listing.district}, Hà Nội</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                            <Link
+                              href={`/reports/${listing.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-1 rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent hover:bg-accent hover:text-white transition-colors"
+                            >
+                              <Sparkles className="h-3.5 w-3.5" />
+                              <span>Báo cáo AI</span>
+                            </Link>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSaveListing(listing.id);
+                                addToast('Đã bỏ lưu bất động sản', 'info');
+                              }}
+                              className="flex h-8 w-8 items-center justify-center rounded-lg text-rose-500 hover:bg-rose-50 transition-colors"
+                              title="Bỏ lưu"
+                            >
+                              <Heart className="h-4 w-4 fill-rose-500" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
 
-              {/* TAB 5: PACKAGES */}
+              {/* TAB 4: PACKAGES */}
               {activeTab === 'packages' && (
                 <motion.div
                   key="tab-packages"
@@ -482,7 +469,7 @@ export default function DashboardPage() {
                     <p className="text-xs text-text-secondary">Đã kích hoạt quyền lợi đăng 50 tin và 30 Báo cáo AI chuyên sâu mỗi tháng.</p>
                     <Link
                       href="/pricing"
-                      className="inline-block rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm"
+                      className="inline-block rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-accent-hover transition-colors"
                     >
                       Gia hạn hoặc Nâng cấp Agency
                     </Link>
