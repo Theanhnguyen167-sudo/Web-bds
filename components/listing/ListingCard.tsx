@@ -37,12 +37,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
   return (
     <motion.div
       layout
-      whileHover={{ y: -6, scale: 1.015 }}
+      whileHover={{ y: -8, scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 350, damping: 22 }}
       onMouseEnter={() => setHoveredListingId(listing.id)}
       onMouseLeave={() => setHoveredListingId(null)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-2xl hover:shadow-slate-900/15 hover:border-orange-400 hover:z-20 ${
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 hover:z-20 ${
         isSelected
           ? 'border-l-4 border-l-accent border-accent ring-2 ring-accent/20 bg-orange-50/20 shadow-lg'
           : isHovered
@@ -56,159 +56,147 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
           <img
             src={listing.images[0]}
             alt={listing.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
           />
         </Link>
 
         {/* Badges (Top-left): Featured & Planning Zone */}
-        <div className="absolute top-2.5 left-2.5 z-10 flex flex-wrap gap-1.5 items-center">
+        <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-2 items-center">
           {listing.isFeatured && (
-            <motion.span
-              whileHover={{ scale: 1.15, y: -2 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-              className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow-md shadow-orange-500/30 cursor-pointer select-none border border-white/20 transition-shadow hover:shadow-lg hover:shadow-orange-500/50"
+            <div
+              className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 px-2.5 py-1 text-[11px] font-black text-white shadow-md shadow-orange-500/30 cursor-pointer select-none border border-white/30 transform-gpu transition-all duration-200 hover:scale-125 hover:-translate-y-1 hover:shadow-xl hover:shadow-orange-500/60 hover:ring-2 hover:ring-white"
+              title="Bất động sản nổi bật"
             >
-              <span>★</span> Nổi bật
-            </motion.span>
+              <span className="text-yellow-200 text-xs">★</span> Nổi bật
+            </div>
           )}
 
           {listing.planningZone && (
-            <motion.span
-              whileHover={{ scale: 1.12, y: -2 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-              className="inline-flex items-center rounded-md bg-slate-900/85 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white shadow-md border border-white/10 cursor-pointer select-none transition-all hover:bg-slate-950 hover:border-white/30 hover:shadow-lg hover:shadow-slate-900/40"
+            <div
+              className="inline-flex items-center rounded-lg bg-slate-900/85 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-white shadow-md border border-white/20 cursor-pointer select-none transform-gpu transition-all duration-200 hover:scale-120 hover:-translate-y-1 hover:bg-slate-950 hover:border-blue-400 hover:ring-2 hover:ring-blue-400/60 hover:shadow-xl hover:shadow-slate-950/60"
+              title={`Quy hoạch: ${listing.planningZone}`}
             >
               {listing.planningZone}
-            </motion.span>
+            </div>
           )}
         </div>
 
         {/* Wishlist / Heart Button (Top-right) */}
-        <motion.button
-          whileTap={{ scale: 0.85 }}
-          whileHover={{ scale: 1.25, rotate: -6 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+        <button
+          type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             toggleSaveListing(listing.id);
           }}
-          className="group/heart absolute top-2.5 right-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-md transition-all duration-200 hover:bg-white hover:shadow-xl hover:shadow-red-500/25 ring-1 ring-black/5 hover:ring-2 hover:ring-red-400/40 cursor-pointer"
-          title={isSaved ? 'Bỏ lưu' : 'Lưu tin'}
+          className="group/heart absolute top-2.5 right-2.5 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-md backdrop-blur-md cursor-pointer select-none transform-gpu transition-all duration-200 hover:scale-130 hover:-translate-y-1 hover:bg-white hover:shadow-2xl hover:shadow-red-500/40 hover:ring-4 hover:ring-red-400/40 active:scale-95"
+          title={isSaved ? 'Bỏ lưu tin này' : 'Lưu tin yêu thích'}
         >
           <Heart
-            className={`h-4 w-4 transition-all duration-200 group-hover/heart:scale-110 ${
+            className={`h-5 w-5 transition-all duration-200 group-hover/heart:scale-125 ${
               isSaved
-                ? 'fill-red-500 text-red-500 scale-105'
-                : 'text-slate-500 group-hover/heart:text-red-500 group-hover/heart:fill-red-500/20'
+                ? 'fill-red-500 text-red-500 scale-110 drop-shadow'
+                : 'text-slate-600 group-hover/heart:text-red-500 group-hover/heart:fill-red-500'
             }`}
           />
-        </motion.button>
+        </button>
 
         {/* Price Tag Overlay (Bottom-left) */}
-        <motion.div
-          whileHover={{ scale: 1.1, y: -3 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-          className="group/price absolute bottom-2.5 left-2.5 z-10 rounded-lg bg-slate-900/90 backdrop-blur-md px-2.5 py-1 text-xs font-black text-white shadow-lg border border-white/10 transition-all hover:bg-slate-950 hover:border-orange-400/60 hover:shadow-xl hover:shadow-orange-500/20 cursor-pointer select-none origin-bottom-left"
+        <div
+          className="group/price absolute bottom-2.5 left-2.5 z-20 rounded-xl bg-slate-900/90 backdrop-blur-md px-3 py-1.5 text-xs font-black text-white shadow-lg border border-white/15 cursor-pointer select-none transform-gpu transition-all duration-200 hover:scale-115 hover:-translate-y-1.5 hover:bg-slate-950 hover:border-amber-400 hover:ring-2 hover:ring-amber-400/70 hover:shadow-2xl hover:shadow-amber-500/30 origin-bottom-left"
+          title="Giá niêm yết"
         >
-          <span className="text-white group-hover/price:text-amber-300 transition-colors font-black">
+          <span className="text-white group-hover/price:text-amber-300 transition-colors font-black text-sm tracking-tight drop-shadow-sm">
             {formatCurrencyVND(listing.price)}
           </span>
-          <span className="ml-1 text-[10px] font-normal text-slate-300 group-hover/price:text-slate-100 transition-colors">
+          <span className="ml-1.5 text-[11px] font-medium text-slate-300 group-hover/price:text-slate-100 transition-colors">
             ({formatPricePerM2(listing.price, listing.area)})
           </span>
-        </motion.div>
+        </div>
 
         {/* Hover Slide-up AI Report Button (Bottom-right) */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileHover={{ opacity: 1, y: 0, scale: 1.08 }}
-          className="absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 origin-bottom-right"
+        <div
+          className="absolute bottom-2.5 right-2.5 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform-gpu translate-y-2 group-hover:translate-y-0"
         >
           <Link
             href={`/reports/${listing.id}`}
-            className="flex items-center gap-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 px-2.5 py-1 text-xs font-bold text-white shadow-lg hover:shadow-orange-500/40 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-orange-500/40 hover:shadow-xl hover:shadow-orange-500/60 hover:scale-110 transition-all cursor-pointer border border-white/20"
           >
-            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+            <Sparkles className="h-3.5 w-3.5" />
             <span>Xem báo cáo AI</span>
           </Link>
-        </motion.div>
+        </div>
       </div>
 
       {/* Content Details */}
-      <div className="flex flex-1 flex-col p-3.5">
+      <div className="flex flex-1 flex-col p-4">
         {/* Title */}
         <Link href={`/listings/${listing.id}`} className="group/title block">
-          <motion.h3
-            whileHover={{ scale: 1.025, x: 2 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            className="line-clamp-2 text-xs font-bold leading-snug text-slate-800 transition-all duration-200 group-hover/title:text-orange-600 group-hover/title:font-extrabold origin-left"
+          <h3
+            className="line-clamp-2 text-[13px] font-extrabold leading-snug text-slate-800 transition-all duration-200 transform-gpu group-hover/title:text-orange-600 group-hover/title:scale-[1.03] group-hover/title:translate-x-1.5 group-hover/title:drop-shadow-sm origin-left cursor-pointer"
           >
             {listing.title}
-          </motion.h3>
+          </h3>
         </Link>
 
         {/* Address */}
-        <motion.div
-          whileHover={{ scale: 1.03, x: 2 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-          className="group/addr mt-2 flex items-center gap-1 text-[11px] text-slate-500 transition-colors hover:text-slate-900 origin-left cursor-default select-none"
+        <div
+          className="group/addr mt-2.5 flex items-center gap-1.5 text-xs text-slate-500 transition-all duration-200 transform-gpu hover:scale-105 hover:translate-x-1 hover:text-slate-900 origin-left cursor-pointer select-none"
         >
-          <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500 transition-transform duration-200 group-hover/addr:scale-125" />
-          <span className="truncate">{listing.ward ? `${listing.ward}, ` : ''}{listing.district}, Hà Nội</span>
-        </motion.div>
+          <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500 transition-transform duration-200 group-hover/addr:scale-130 group-hover/addr:text-orange-600" />
+          <span className="truncate font-semibold">{listing.ward ? `${listing.ward}, ` : ''}{listing.district}, Hà Nội</span>
+        </div>
 
         {/* Specs Row */}
-        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11px] text-slate-500">
+        <div className="mt-3.5 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-600">
           {/* Area */}
-          <motion.div
-            whileHover={{ scale: 1.18, y: -2 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            className="group/spec flex items-center gap-1 px-1.5 py-0.5 rounded-md hover:bg-orange-50 hover:text-orange-600 transition-all cursor-default select-none border border-transparent hover:border-orange-200 hover:shadow-sm"
+          <div
+            className="group/area flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-100 bg-slate-50/70 transition-all duration-200 transform-gpu cursor-pointer select-none hover:scale-125 hover:-translate-y-1 hover:bg-gradient-to-r hover:from-orange-500 hover:to-amber-500 hover:text-white hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/30 hover:z-10"
+            title="Diện tích đất / sàn"
           >
-            <Maximize2 className="h-3.5 w-3.5 text-slate-400 group-hover/spec:text-orange-500 transition-colors" />
-            <span className="font-extrabold text-slate-800 group-hover/spec:text-orange-600 transition-colors">
+            <Maximize2 className="h-3.5 w-3.5 text-slate-400 group-hover/area:text-white transition-colors" />
+            <span className="font-black text-slate-900 group-hover/area:text-white transition-colors">
               {listing.area} m²
             </span>
-          </motion.div>
+          </div>
 
+          {/* Floors */}
           {listing.floors > 0 && (
-            <motion.div
-              whileHover={{ scale: 1.18, y: -2 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-              className="group/spec flex items-center gap-1 px-1.5 py-0.5 rounded-md hover:bg-orange-50 hover:text-orange-600 transition-all cursor-default select-none border border-transparent hover:border-orange-200 hover:shadow-sm"
+            <div
+              className="group/floor flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-100 bg-slate-50/70 transition-all duration-200 transform-gpu cursor-pointer select-none hover:scale-125 hover:-translate-y-1 hover:bg-slate-900 hover:text-white hover:border-slate-800 hover:shadow-lg hover:shadow-slate-900/30 hover:z-10"
+              title="Số tầng xây dựng"
             >
-              <Building className="h-3.5 w-3.5 text-slate-400 group-hover/spec:text-orange-500 transition-colors" />
-              <span className="font-bold text-slate-600 group-hover/spec:text-orange-600 transition-colors">
+              <Building className="h-3.5 w-3.5 text-slate-400 group-hover/floor:text-white transition-colors" />
+              <span className="font-bold text-slate-700 group-hover/floor:text-white transition-colors">
                 {listing.floors} tầng
               </span>
-            </motion.div>
+            </div>
           )}
 
+          {/* Bedrooms */}
           {listing.bedrooms > 0 && (
-            <motion.div
-              whileHover={{ scale: 1.18, y: -2 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-              className="group/spec flex items-center gap-1 px-1.5 py-0.5 rounded-md hover:bg-orange-50 hover:text-orange-600 transition-all cursor-default select-none border border-transparent hover:border-orange-200 hover:shadow-sm"
+            <div
+              className="group/bed flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-100 bg-slate-50/70 transition-all duration-200 transform-gpu cursor-pointer select-none hover:scale-125 hover:-translate-y-1 hover:bg-blue-600 hover:text-white hover:border-blue-500 hover:shadow-lg hover:shadow-blue-600/30 hover:z-10"
+              title="Số phòng ngủ"
             >
-              <Bed className="h-3.5 w-3.5 text-slate-400 group-hover/spec:text-orange-500 transition-colors" />
-              <span className="font-bold text-slate-600 group-hover/spec:text-orange-600 transition-colors">
+              <Bed className="h-3.5 w-3.5 text-slate-400 group-hover/bed:text-white transition-colors" />
+              <span className="font-bold text-slate-700 group-hover/bed:text-white transition-colors">
                 {listing.bedrooms} PN
               </span>
-            </motion.div>
+            </div>
           )}
 
+          {/* Bathrooms */}
           {listing.bathrooms > 0 && (
-            <motion.div
-              whileHover={{ scale: 1.18, y: -2 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-              className="group/spec flex items-center gap-1 px-1.5 py-0.5 rounded-md hover:bg-orange-50 hover:text-orange-600 transition-all cursor-default select-none border border-transparent hover:border-orange-200 hover:shadow-sm"
+            <div
+              className="group/bath flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-100 bg-slate-50/70 transition-all duration-200 transform-gpu cursor-pointer select-none hover:scale-125 hover:-translate-y-1 hover:bg-teal-600 hover:text-white hover:border-teal-500 hover:shadow-lg hover:shadow-teal-600/30 hover:z-10"
+              title="Số phòng vệ sinh"
             >
-              <Bath className="h-3.5 w-3.5 text-slate-400 group-hover/spec:text-orange-500 transition-colors" />
-              <span className="font-bold text-slate-600 group-hover/spec:text-orange-600 transition-colors">
+              <Bath className="h-3.5 w-3.5 text-slate-400 group-hover/bath:text-white transition-colors" />
+              <span className="font-bold text-slate-700 group-hover/bath:text-white transition-colors">
                 {listing.bathrooms} PT
               </span>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>
