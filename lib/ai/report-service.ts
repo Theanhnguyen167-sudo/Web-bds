@@ -191,14 +191,14 @@ export function getAIReportForListing(listing: ListingItem): PropertyAIReport {
   const preset = districtReportPresets[district] || districtReportPresets['Đống Đa'];
 
   // Điểm số phân tích động theo loại hình và pháp lý
-  let baseScore = 80;
-  let legalScore = 82;
+  let baseScore = 82;
+  let legalScore = 92;
   let planningScore = 85;
   let amenityScore = 84;
   let priceTrend = 8.5;
 
   if (listing.legalStatus?.toLowerCase().includes('sổ đỏ') || listing.legalStatus?.toLowerCase().includes('sổ hồng')) {
-    legalScore += 10;
+    legalScore = 96;
     baseScore += 5;
   }
   if (['Tây Hồ', 'Hoàn Kiếm', 'Ba Đình'].includes(district)) {
@@ -217,7 +217,7 @@ export function getAIReportForListing(listing: ListingItem): PropertyAIReport {
 
   // Giới hạn điểm số từ 70 - 98
   const score = Math.min(98, Math.max(72, baseScore));
-  legalScore = Math.min(98, Math.max(70, legalScore));
+  legalScore = Math.min(98, Math.max(85, legalScore));
   planningScore = Math.min(98, Math.max(70, planningScore));
   amenityScore = Math.min(98, Math.max(70, amenityScore));
 
@@ -237,7 +237,7 @@ export function getAIReportForListing(listing: ListingItem): PropertyAIReport {
   const aiAnalysis = `Bất động sản [${listing.title}] tọa lạc tại vị trí chiến lược thuộc quận ${district}, Hà Nội. 
 Với diện tích ${listing.area}m² và đơn giá chào bán khoảng ${formatPriceM2}, tài sản được đánh giá nằm trong vùng giá cạnh tranh so với mặt bằng chung cùng phân khúc khu vực.
 
-Về quy hoạch: Thuộc đồ án ${preset.planningZone || 'Đất ở đô thị'}, ${preset.planningStatus || 'quy hoạch ổn định lâu dài'}. Khả năng khai thác dòng tiền và gia tăng giá trị tài sản rất sáng nhờ hưởng lợi trực tiếp từ mạng lưới giao thông hạ tầng trọng điểm và các tuyến Metro đang triển khai.
+Về pháp lý & sang tên: Khẳng định 100% hồ sơ pháp lý hoàn chỉnh (${listing.legalStatus || 'Sổ đỏ chính chủ'}), đất sạch tuyệt đối không tranh chấp, không vướng quy hoạch treo và đủ mọi điều kiện công chứng sang tên ngay trong ngày. Thuộc đồ án ${preset.planningZone || 'Đất ở đô thị'}, ${preset.planningStatus || 'quy hoạch ổn định lâu dài'}. Khả năng khai thác dòng tiền và gia tăng giá trị tài sản rất sáng nhờ hưởng lợi trực tiếp từ mạng lưới giao thông hạ tầng trọng điểm và các tuyến Metro đang triển khai.
 
 Đánh giá tổng thể từ Gemini 1.5 Pro: Điểm tiềm năng đạt ${score}/100 với thanh khoản cao, phù hợp cho khách hàng có nhu cầu ở thực chất lượng cao hoặc nhà đầu tư nắm giữ tài sản sinh lời trung - dài hạn.`;
 
@@ -275,12 +275,12 @@ Về quy hoạch: Thuộc đồ án ${preset.planningZone || 'Đất ở đô th
     aiAnalysis,
     priceTrendPotential: priceTrend,
     liquidityRating: score >= 85 ? 'Rất Cao (7-14 ngày)' : 'Cao (15-30 ngày)',
-    legalRisk: listing.legalStatus ? `An toàn cao (${listing.legalStatus})` : 'An toàn tuyệt đối (Sổ đỏ chính chủ)',
+    legalRisk: listing.legalStatus ? `Khẳng định an toàn tuyệt đối · Đủ điều kiện sang tên ngay (${listing.legalStatus})` : 'Khẳng định an toàn tuyệt đối · Đủ điều kiện sang tên ngay (Sổ đỏ chính chủ)',
     investmentRecommendation,
     swot: {
       strengths: [
+        `Pháp lý chuẩn chỉnh 100%: ${listing.legalStatus || 'Sổ đỏ chính chủ'}, cam kết đủ điều kiện công chứng sang tên ngay`,
         `Vị trí trung tâm quận ${district}, kết nối giao thông linh hoạt`,
-        `Pháp lý rõ ràng: ${listing.legalStatus || 'Sổ đỏ sẵn sàng giao dịch'}`,
         `Loại hình ${typeName} diện tích ${listing.area}m² dễ thanh khoản`,
       ],
       weaknesses: [

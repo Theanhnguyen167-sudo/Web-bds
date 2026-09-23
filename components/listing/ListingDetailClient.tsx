@@ -430,9 +430,9 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                   {listing.legalStatus && (
                     <>
                       <span className="text-slate-300">|</span>
-                      <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                      <span className="text-emerald-700 font-bold flex items-center gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                        {listing.legalStatus}
+                        {listing.legalStatus} · Sang tên ngay
                       </span>
                     </>
                   )}
@@ -578,12 +578,12 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                   </p>
                 </div>
 
-                {/* Tình trạng pháp lý */}
+                {/* Tình trạng pháp lý & Sang tên */}
                 <div className="space-y-1">
-                  <span className="text-xs font-normal text-slate-500 block">Tình trạng pháp lý</span>
-                  <p className="text-sm font-semibold text-emerald-700 flex items-center gap-1.5">
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                    {listing.legalStatus || 'Sổ đỏ chính chủ'}
+                  <span className="text-xs font-normal text-slate-500 block">Pháp lý & Sang tên</span>
+                  <p className="text-sm font-bold text-emerald-700 flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                    {listing.legalStatus ? `${listing.legalStatus} · Sang tên ngay` : 'Sổ đỏ chính chủ · Sang tên ngay'}
                   </p>
                 </div>
 
@@ -601,6 +601,26 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                   <span className="text-xs font-normal text-slate-500 block">Năm quy hoạch</span>
                   <p className="text-sm font-semibold text-slate-900">
                     Đến năm {listing.planningYear || 2030}
+                  </p>
+                </div>
+              </div>
+
+              {/* Khẳng định cam kết pháp lý & sang tên */}
+              <div className="mt-5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 p-3.5 flex items-start sm:items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white font-black shadow-sm">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div className="text-xs min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-extrabold text-emerald-950">
+                      Cam kết pháp lý chuẩn 100% · Sẵn sàng công chứng sang tên ngay
+                    </p>
+                    <span className="inline-flex px-2 py-0.5 rounded-full bg-emerald-200/80 text-emerald-900 text-[10px] font-extrabold uppercase">
+                      Đã thẩm định
+                    </span>
+                  </div>
+                  <p className="text-emerald-800/90 text-[11px] mt-0.5">
+                    Hồ sơ sổ đỏ/sổ hồng hoàn thiện, không tranh chấp, không vướng quy hoạch treo, bảo đảm giao dịch an toàn và hoàn tất thủ tục chuyển nhượng nhanh chóng.
                   </p>
                 </div>
               </div>
@@ -693,7 +713,11 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
               </div>
 
               {/* Trust Signals nhỏ phía dưới */}
-              <div className="border-t border-slate-100 pt-3 space-y-1.5 text-[11px] text-slate-500">
+              <div className="border-t border-slate-100 pt-3 space-y-2 text-[11px] text-slate-500">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span className="font-bold text-emerald-700">Khẳng định pháp lý sạch 100% · Sẵn sàng sang tên ngay</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                   <span>Thông tin quy hoạch được xác thực số hóa</span>

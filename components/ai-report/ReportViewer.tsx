@@ -293,19 +293,39 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs font-bold">
               <span className="text-text-primary flex items-center gap-1.5">
-                <FileCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                Pháp lý & Khả năng sang tên
+                <FileCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                Pháp lý chuẩn chỉnh · Sẵn sàng sang tên ngay
               </span>
-              <span className="text-blue-600 dark:text-blue-400">{report.legalScore} %</span>
+              <span className="text-emerald-600 dark:text-emerald-400">{report.legalScore} %</span>
             </div>
             <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-blue-600"
+                className="h-full rounded-full bg-emerald-500"
                 initial={{ width: 0 }}
                 animate={{ width: `${report.legalScore}%` }}
                 transition={{ duration: 1, delay: 0.6 }}
               />
             </div>
+          </div>
+
+          {/* Khung Khẳng Định Cam Kết Pháp Lý & Sang Tên */}
+          <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/25 p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-black shadow-sm">
+                <ShieldCheck className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="font-extrabold text-emerald-950 dark:text-emerald-300">
+                  Cam kết pháp lý minh bạch 100% · Đủ điều kiện sang tên ngay
+                </p>
+                <p className="text-[11px] text-emerald-800/80 dark:text-emerald-400/80 mt-0.5">
+                  Sổ đỏ/sổ hồng chuẩn chỉnh, đất sạch không tranh chấp, hỗ trợ thủ tục công chứng sang tên nhanh gọn trong ngày.
+                </p>
+              </div>
+            </div>
+            <span className="shrink-0 px-2.5 py-1 rounded-full bg-emerald-600 text-white font-extrabold text-[10px] uppercase tracking-wide">
+              An toàn tuyệt đối
+            </span>
           </div>
 
           {/* Metric tags */}

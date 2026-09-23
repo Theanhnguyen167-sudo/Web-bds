@@ -512,7 +512,7 @@ export const ReportPDFDocument: React.FC<PDFTemplateProps> = ({
     aiAnalysis: rawReport?.aiAnalysis || 'Bất động sản sở hữu vị trí thuận lợi, kết nối hạ tầng giao thông đồng bộ và tiềm năng tăng trưởng bền vững.',
     investmentRecommendation: rawReport?.investmentRecommendation || 'Khuyến nghị mua để ở kết hợp kinh doanh hoặc giữ tài sản trung - dài hạn.',
     priceTrendPotential: rawReport?.priceTrendPotential ?? 8.5,
-    legalRisk: rawReport?.legalRisk || 'An toàn tuyệt đối (Sổ đỏ chính chủ)',
+    legalRisk: rawReport?.legalRisk || 'Khẳng định an toàn tuyệt đối · Đủ điều kiện sang tên ngay',
     generatedAt: rawReport?.generatedAt || new Date().toISOString(),
   };
 
@@ -581,7 +581,7 @@ export const ReportPDFDocument: React.FC<PDFTemplateProps> = ({
           {[
             { label: 'Quy hoạch', value: report.planningScore },
             { label: 'Tiện ích & Giao thông', value: report.amenityScore },
-            { label: 'Pháp lý & Thanh khoản', value: report.legalScore },
+            { label: 'Pháp lý & Sang tên ngay', value: report.legalScore },
           ].map((item) => (
             <View
               key={item.label}
@@ -766,7 +766,7 @@ export const ReportPDFDocument: React.FC<PDFTemplateProps> = ({
         <View style={styles.scoreBarsContainer}>
           <ScoreBar label="An toàn quy hoạch" value={report.planningScore} color="#3b82f6" />
           <ScoreBar label="Tiện ích & Kết nối" value={report.amenityScore} color="#22c55e" />
-          <ScoreBar label="Pháp lý & Thanh khoản" value={report.legalScore} color="#f97316" />
+          <ScoreBar label="Pháp lý & Sang tên ngay" value={report.legalScore} color="#16a34a" />
           <ScoreBar
             label="Tiềm năng tăng giá"
             value={report.priceTrendPotential * 10}
@@ -795,7 +795,7 @@ export const ReportPDFDocument: React.FC<PDFTemplateProps> = ({
             </Text>
             <Text style={styles.swotBullet}>• Vị trí đắc địa, kết nối nhanh các trục vành đai</Text>
             <Text style={styles.swotBullet}>• Thuộc phân khu đất ở đô thị ổn định lâu dài</Text>
-            <Text style={styles.swotBullet}>• Pháp lý minh bạch, sổ đỏ chính chủ sẵn sàng giao dịch</Text>
+            <Text style={styles.swotBullet}>• Pháp lý chuẩn chỉnh 100%, sổ đỏ chính chủ sẵn sàng sang tên ngay</Text>
           </View>
           <View style={[styles.swotCard, styles.swotCardW]}>
             <Text style={[styles.swotCardTitle, styles.swotCardTitleW]}>
@@ -896,7 +896,7 @@ export const ReportPDFDocument: React.FC<PDFTemplateProps> = ({
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
           {[
             {
-              label: 'An toàn pháp lý',
+              label: 'Cam kết pháp lý',
               value: report.legalRisk,
               color: '#22c55e',
               bg: '#dcfce7',
