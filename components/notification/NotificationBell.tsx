@@ -15,6 +15,7 @@ import {
   TrendingUp,
   ShieldCheck,
   Check,
+  CheckCircle2,
   ExternalLink,
   ChevronRight,
   BellOff,
@@ -127,6 +128,49 @@ export const NotificationBell: React.FC = () => {
     } catch {
       // Ignore localStorage errors
     }
+  }, []);
+
+  // Lắng nghe thông báo thời gian thực khi Admin phê duyệt hoặc từ chối bài đăng
+  useEffect(() => {
+    const handleNewNotification = (e: Event) => {
+      const customEvent = e as CustomEvent<NotificationItem>;
+      if (customEvent.detail) {
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === customEvent.detail.id)) return prev;
+          return [customEvent.detail, ...prev];
+        });
+        playChime();
+
+        // Hiển thị thông báo Web Push nếu đã cấp quyền
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          try {
+            new Notification(customEvent.detail.title, {
+              body: customEvent.detail.content,
+              icon: '/favicon.ico'
+            });
+          } catch {}
+        }
+      }
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY_NOTIFICATIONS && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            setNotifications(parsed);
+          }
+        } catch {}
+      }
+    };
+
+    window.addEventListener('hanoi_new_notification', handleNewNotification);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('hanoi_new_notification', handleNewNotification);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // Save to LocalStorage
@@ -286,6 +330,13 @@ export const NotificationBell: React.FC = () => {
 
     const sampleNotifications: Omit<NotificationItem, 'id' | 'createdAt' | 'timestamp' | 'isRead'>[] = [
       {
+        title: 'Tin đăng BĐS đã duyệt thành công',
+        content: 'Tin đăng "Bán Biệt thự / Shophouse 75m² tại Cầu Giấy" của bạn đã được Admin kiểm duyệt thành công và chính thức hiển thị trên bản đồ!',
+        category: 'listing',
+        link: '/dashboard',
+        tag: 'Đã duyệt'
+      },
+      {
         title: 'Bản đồ quy hoạch Nam Từ Liêm vừa cập nhật',
         content: 'Tuyến đường kết nối Lê Quang Đạo kéo dài đến Vành Đai 3.5 đã có dữ liệu toạ độ quy hoạch chi tiết.',
         category: 'planning',
@@ -363,10 +414,10 @@ export const NotificationBell: React.FC = () => {
         };
       case 'listing':
         return {
-          icon: TrendingUp,
-          label: 'Thị trường',
-          badgeClass: 'bg-orange-500/15 text-orange-400 border border-orange-500/30',
-          iconBg: 'bg-orange-500/20 text-orange-400'
+          icon: CheckCircle2,
+          label: 'BĐS & Tin',
+          badgeClass: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
+          iconBg: 'bg-emerald-500/20 text-emerald-400'
         };
       default:
         return {

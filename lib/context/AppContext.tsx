@@ -233,7 +233,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // 1. Firebase Auth listener
     let unsubscribeFb: (() => void) | undefined;
     try {
-      unsubscribeFb = onAuthStateChanged(firebaseAuth, (fbUser) => {
+      unsubscribeFb = onAuthStateChanged(firebaseAuth, (fbUser: FirebaseUser | null) => {
         if (fbUser) {
           syncFirebaseUser(fbUser);
         }
@@ -517,16 +517,73 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // 2. Cập nhật localStorage
     const currentStored = getStoredUserListings();
+    let targetItem: any = listings.find((l) => l.id === id) || currentStored.find((l) => l.id === id);
+    if (!targetItem) {
+      try {
+        const { mockAdminListings } = await import('@/lib/admin-data');
+        targetItem = mockAdminListings.find((l) => l.id === id);
+      } catch {}
+    }
     let updatedStored = currentStored.map((l) => (l.id === id ? { ...l, status } : l));
     if (!currentStored.some((l) => l.id === id)) {
-      const targetItem = listings.find((l) => l.id === id);
       if (targetItem) {
         updatedStored = [{ ...targetItem, status }, ...updatedStored];
       }
     }
     saveStoredUserListings(updatedStored);
 
-    // 3. Gửi lệnh cập nhật lên Supabase Database
+    // 3. TỰ ĐỘNG TẠO THÔNG BÁO CHO TÀI KHOẢN NGƯỜI DÙNG KHI ADMIN DUYỆT BÀI ĐĂNG
+    if (typeof window !== 'undefined') {
+      try {
+        const STORAGE_KEY_NOTIFICATIONS = 'hanoi_realty_notifications';
+        const title = targetItem?.title || 'Bất động sản của bạn';
+
+        if (status === 'active') {
+          const newNotif = {
+            id: `notif-approved-${id}-${Date.now()}`,
+            title: 'Tin đăng BĐS đã duyệt thành công',
+            content: `Tin đăng "${title}" của bạn đã được Admin kiểm duyệt thành công và chính thức hiển thị trên bản đồ!`,
+            category: 'listing' as const,
+            createdAt: 'Vừa xong',
+            timestamp: Date.now(),
+            isRead: false,
+            link: `/listings/${id}`,
+            tag: 'Đã duyệt'
+          };
+
+          const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
+          const existingNotifs = existingRaw ? JSON.parse(existingRaw) : [];
+          const updatedNotifs = [newNotif, ...existingNotifs.filter((n: any) => n.id !== newNotif.id)];
+          localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
+
+          // Phát sự kiện toàn cục để chuông thông báo (NotificationBell) cập nhật tức thì
+          window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
+        } else if (status === 'rejected') {
+          const newNotif = {
+            id: `notif-rejected-${id}-${Date.now()}`,
+            title: 'Tin đăng cần chỉnh sửa lại',
+            content: `Tin đăng "${title}" của bạn chưa được duyệt. Vui lòng kiểm tra lại thông tin mô tả và hình ảnh.`,
+            category: 'listing' as const,
+            createdAt: 'Vừa xong',
+            timestamp: Date.now(),
+            isRead: false,
+            link: '/dashboard',
+            tag: 'Cần sửa'
+          };
+
+          const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
+          const existingNotifs = existingRaw ? JSON.parse(existingRaw) : [];
+          const updatedNotifs = [newNotif, ...existingNotifs.filter((n: any) => n.id !== newNotif.id)];
+          localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
+
+          window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
+        }
+      } catch (notifErr) {
+        console.warn('Lỗi ghi nhận thông báo duyệt tin:', notifErr);
+      }
+    }
+
+    // 4. Gửi lệnh cập nhật lên Supabase Database
     try {
       await fetch('/api/listings', {
         method: 'PATCH',

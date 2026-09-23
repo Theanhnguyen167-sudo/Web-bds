@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -30,19 +30,39 @@ import {
 
 export default function AdminOverviewPage() {
   const router = useRouter();
-  const { addToast } = useApp();
+  const { addToast, listings, updateListingStatus } = useApp();
   const [dateRange, setDateRange] = useState<'today' | '7d' | '30d' | 'this_month'>('this_month');
-  const [pendingListings, setPendingListings] = useState(
-    mockAdminListings.filter((l) => l.status === 'pending')
-  );
+  const [pendingListings, setPendingListings] = useState<any[]>(() => {
+    return mockAdminListings.filter((l) => l.status === 'pending');
+  });
 
-  const handleApprove = (id: string, title: string) => {
+  // Tự động kết hợp tin chờ duyệt từ người dùng với mockAdminListings
+  useEffect(() => {
+    const userPending = listings.filter((l) => l.status === 'pending');
+    setPendingListings((prev) => {
+      const combined = [...prev];
+      userPending.forEach((item) => {
+        if (!combined.some((p) => p.id === item.id)) {
+          combined.unshift({
+            ...item,
+            authorName: (item as any).authorName || 'Người dùng hệ thống',
+            district: item.district || 'Hà Nội',
+          });
+        }
+      });
+      return combined;
+    });
+  }, [listings]);
+
+  const handleApprove = async (id: string, title: string) => {
     setPendingListings((prev) => prev.filter((item) => item.id !== id));
-    addToast(`Đã duyệt thành công: "${title}"`, 'success');
+    await updateListingStatus(id, 'active');
+    addToast(`🎉 Đã duyệt và gửi thông báo tới người dùng: "${title}"`, 'success');
   };
 
-  const handleReject = (id: string, title: string) => {
+  const handleReject = async (id: string, title: string) => {
     setPendingListings((prev) => prev.filter((item) => item.id !== id));
+    await updateListingStatus(id, 'rejected');
     addToast(`Đã từ chối tin đăng: "${title}"`, 'info');
   };
 

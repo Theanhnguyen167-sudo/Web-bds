@@ -189,7 +189,7 @@ export default function AdminListingsPage() {
     setListings((prev) =>
       prev.map((l) => (l.id === id ? { ...l, status: 'active' as const } : l))
     );
-    addToast('🎉 Đã phê duyệt! Tin đăng đã được xuất bản lên Bản Đồ và Trang Chủ.', 'success');
+    addToast('🎉 Đã phê duyệt! Tin đăng đã xuất bản và thông báo đã được gửi đến tài khoản người dùng.', 'success');
     setReviewListing(null);
     setIsRejecting(false);
 

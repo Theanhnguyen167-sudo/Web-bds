@@ -21,7 +21,7 @@ import {
 export default function AdminListingDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { addToast } = useApp();
+  const { addToast, updateListingStatus } = useApp();
   const listingId = params.id as string;
 
   const initialListing =
@@ -37,9 +37,18 @@ export default function AdminListingDetailPage() {
   const [planningZone, setPlanningZone] = useState(initialListing.planningZone);
   const [isFeatured, setIsFeatured] = useState(initialListing.isFeatured);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    addToast('Đã lưu thay đổi thông tin bất động sản', 'success');
+    if (status === 'active' || status === 'rejected' || status === 'pending') {
+      await updateListingStatus(listingId, status);
+    }
+    addToast('Đã lưu thay đổi thông tin bất động sản thành công', 'success');
+  };
+
+  const handleQuickApprove = async () => {
+    setStatus('active');
+    await updateListingStatus(listingId, 'active');
+    addToast(`🎉 Đã phê duyệt bài đăng và gửi thông báo tới người dùng: "${title}"`, 'success');
   };
 
   const handleDelete = () => {
@@ -55,13 +64,26 @@ export default function AdminListingDetailPage() {
       />
 
       <main className="p-6 space-y-6 max-w-5xl">
-        <Link
-          href="/admin/listings"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-orange-500 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Quay lại danh sách tin đăng</span>
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/admin/listings"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-orange-500 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Quay lại danh sách tin đăng</span>
+          </Link>
+
+          {status === 'pending' && (
+            <button
+              type="button"
+              onClick={handleQuickApprove}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              <span>Duyệt tin ngay & Thông báo người dùng</span>
+            </button>
+          )}
+        </div>
 
         <form onSubmit={handleSave} className="space-y-6">
           <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs space-y-5">
