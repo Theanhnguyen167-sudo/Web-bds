@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
-import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
+import { formatCurrencyVND, formatPricePerM2, HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
 import type { LocationData } from '@/components/map/LocationPicker';
 import {
   Home,
@@ -674,16 +674,18 @@ export const CreateListingWizard: React.FC = () => {
                   onChange={(loc) => {
                     setPickedLocation(loc);
                     if (loc) {
+                      const cleanDistrict = loc.district ? loc.district.replace(/^(Quận|Huyện|Thị xã)\s+/i, '').trim() : '';
+                      const matchedDistrict = HANOI_DISTRICTS.find(d => d.toLowerCase() === cleanDistrict.toLowerCase()) || loc.district;
                       setFormData(prev => ({
                         ...prev,
-                        district: loc.district || prev.district,
+                        district: matchedDistrict || prev.district,
                         ward: loc.ward || prev.ward,
                         street: loc.road || prev.street,
                         addressNumber: loc.houseNumber ? `Số ${loc.houseNumber}` : prev.addressNumber,
                         lat: loc.lat,
                         lng: loc.lng,
                       }));
-                      addToast('📍 Đã cập nhật toạ độ & địa chỉ BĐS', 'success');
+                      addToast('📍 Đã cập nhật toạ độ & địa chỉ BĐS chính xác', 'success');
                     }
                   }}
                   height="380px"
@@ -703,7 +705,27 @@ export const CreateListingWizard: React.FC = () => {
                   <label className="text-xs font-bold text-text-primary">Quận / Huyện *</label>
                   <select
                     value={formData.district}
-                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                    onChange={(e) => {
+                      const newDistrict = e.target.value;
+                      const districtCenter = HANOI_DISTRICT_COORDINATES[newDistrict];
+                      setFormData(prev => ({
+                        ...prev,
+                        district: newDistrict,
+                        lat: districtCenter ? districtCenter.lat : prev.lat,
+                        lng: districtCenter ? districtCenter.lng : prev.lng,
+                      }));
+                      if (districtCenter) {
+                        setPickedLocation({
+                          lat: districtCenter.lat,
+                          lng: districtCenter.lng,
+                          displayName: `Quận ${newDistrict}, Hà Nội`,
+                          district: newDistrict,
+                          ward: '',
+                          road: '',
+                          houseNumber: '',
+                        });
+                      }
+                    }}
                     className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold text-text-primary focus:border-accent focus:bg-white focus:outline-none"
                   >
                     {HANOI_DISTRICTS.map((d) => (

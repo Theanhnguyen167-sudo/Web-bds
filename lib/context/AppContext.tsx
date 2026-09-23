@@ -7,6 +7,7 @@ import { toggleSavedListing, getSavedListings } from '@/lib/supabase/queries/sav
 import { PlanningZoneItem, DEFAULT_PLANNING_ZONES } from '@/lib/planning/planning-utils';
 import { auth as firebaseAuth } from '@/lib/firebase/config';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { parseLocationCoordinates } from '@/lib/utils';
 
 export interface ToastItem {
   id: string;
@@ -286,19 +287,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const json = await res.json();
         if (json.success && json.data && json.data.length > 0) {
           supabaseListings = json.data.map((row: any) => {
-            let lat = 21.0315;
-            let lng = 105.7825;
-            // Parse PostGIS location or Point
-            if (row.location && typeof row.location === 'object' && row.location.coordinates) {
-              lng = row.location.coordinates[0];
-              lat = row.location.coordinates[1];
-            } else if (typeof row.location === 'string' && row.location.includes('POINT')) {
-              const match = row.location.match(/POINT\(([\d.]+)\s+([\d.]+)\)/);
-              if (match) {
-                lng = parseFloat(match[1]);
-                lat = parseFloat(match[2]);
-              }
-            }
+            const coords = parseLocationCoordinates(row.location, row.district);
+            const lat = typeof row.lat === 'number' && !isNaN(row.lat) && row.lat !== 0 ? row.lat : coords.lat;
+            const lng = typeof row.lng === 'number' && !isNaN(row.lng) && row.lng !== 0 ? row.lng : coords.lng;
+
             return {
               id: row.id,
               title: row.title,
@@ -334,7 +326,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const sbMap = new Map(supabaseListings.map(s => [s.id, s]));
       const mergedLocals = localStored.map(item => {
         if (sbMap.has(item.id)) {
-          return { ...item, ...sbMap.get(item.id) };
+          const remote = sbMap.get(item.id)!;
+          return {
+            ...item,
+            ...remote,
+            lat: remote.lat || item.lat,
+            lng: remote.lng || item.lng,
+          };
+        }
+        // Tự động sửa các tin local cũ nếu bị dính default Cầu Giấy (21.0315, 105.7825) dù quận khác
+        if (
+          item.district &&
+          item.district !== 'Cầu Giấy' &&
+          Math.abs(item.lat - 21.0315) < 0.002 &&
+          Math.abs(item.lng - 105.7825) < 0.002
+        ) {
+          const corrected = parseLocationCoordinates(null, item.district);
+          return { ...item, lat: corrected.lat, lng: corrected.lng };
         }
         return item;
       });
@@ -378,6 +386,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const pricePerM2 = newListingData.pricePerM2 || (newListingData.price ? Math.round(newListingData.price / (newListingData.area || 50)) : 100000000);
 
+    const numLat = Number(newListingData.lat);
+    const numLng = Number(newListingData.lng);
+    const hasValidCoords = !isNaN(numLat) && !isNaN(numLng) && numLat >= -90 && numLat <= 90 && numLng >= -180 && numLng <= 180 && numLat !== 0 && numLng !== 0;
+    const fallbackCoords = parseLocationCoordinates(null, newListingData.district);
+    const finalLat = hasValidCoords ? numLat : fallbackCoords.lat;
+    const finalLng = hasValidCoords ? numLng : fallbackCoords.lng;
+
     const pendingItem: ListingItem = {
       id: newId,
       title: newListingData.title || 'BĐS mới đăng tại Hà Nội',
@@ -390,8 +405,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       address: newListingData.address || 'Hà Nội',
       district: newListingData.district || 'Cầu Giấy',
       ward: newListingData.ward || 'Dịch Vọng',
-      lat: newListingData.lat || 21.0315,
-      lng: newListingData.lng || 105.7825,
+      lat: finalLat,
+      lng: finalLng,
       type: newListingData.type || 'house',
       images: newListingData.images && newListingData.images.length > 0
         ? newListingData.images
@@ -435,8 +450,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           address: newListingData.address,
           district: newListingData.district,
           ward: newListingData.ward,
-          lat: newListingData.lat,
-          lng: newListingData.lng,
+          lat: finalLat,
+          lng: finalLng,
           images: newListingData.images,
         }),
       });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { parseLocationCoordinates, HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xdqfxsszpglbgvpcqfss.supabase.co';
 const supabaseKey =
@@ -38,10 +39,28 @@ export async function GET(req: Request) {
         .order('created_at', { ascending: false });
       if (status !== 'all') fallbackQuery.eq('status', status);
       const { data: fallbackData } = await fallbackQuery;
-      return NextResponse.json({ success: true, data: fallbackData || [] });
+
+      const parsedFallback = (fallbackData || []).map((row: any) => {
+        const coords = parseLocationCoordinates(row.location, row.district);
+        return {
+          ...row,
+          lat: coords.lat,
+          lng: coords.lng,
+        };
+      });
+      return NextResponse.json({ success: true, data: parsedFallback });
     }
 
-    return NextResponse.json({ success: true, data: data || [] });
+    const parsedData = (data || []).map((row: any) => {
+      const coords = parseLocationCoordinates(row.location, row.district);
+      return {
+        ...row,
+        lat: coords.lat,
+        lng: coords.lng,
+      };
+    });
+
+    return NextResponse.json({ success: true, data: parsedData });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -99,7 +118,16 @@ export async function POST(req: Request) {
     }
 
     const pricePerM2 = Math.round(Number(price) / (Number(area) || 1));
-    const locationWKT = lat && lng ? `POINT(${lng} ${lat})` : `POINT(105.7825 21.0315)`;
+    const numLat = Number(lat);
+    const numLng = Number(lng);
+    const hasValidCoords = !isNaN(numLat) && !isNaN(numLng) && numLat >= -90 && numLat <= 90 && numLng >= -180 && numLng <= 180 && numLat !== 0 && numLng !== 0;
+
+    const cleanDistrict = district ? district.replace(/^(Quận|Huyện|Thị xã)\s+/i, '').trim() : '';
+    const fallbackDistrictCenter = HANOI_DISTRICT_COORDINATES[cleanDistrict] || { lat: 21.0315, lng: 105.7825 };
+
+    const finalLat = hasValidCoords ? numLat : fallbackDistrictCenter.lat;
+    const finalLng = hasValidCoords ? numLng : fallbackDistrictCenter.lng;
+    const locationWKT = `POINT(${finalLng} ${finalLat})`;
 
     const payload = {
       user_id: finalUserId,
@@ -137,11 +165,17 @@ export async function POST(req: Request) {
           fallback_data: {
             id: 'lst_' + Date.now(),
             ...payload,
+            lat: finalLat,
+            lng: finalLng,
             created_at: new Date().toISOString(),
           }
         }, { status: error.code === '42501' ? 403 : 500 });
       }
-      resultData = data;
+      resultData = {
+        ...data,
+        lat: finalLat,
+        lng: finalLng,
+      };
     } catch (insertErr: any) {
       console.error('Insert error:', insertErr);
       return NextResponse.json({ success: false, error: insertErr.message }, { status: 500 });

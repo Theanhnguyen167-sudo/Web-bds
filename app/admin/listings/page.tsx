@@ -8,7 +8,7 @@ import { AdminHeader } from '@/components/admin/AdminHeader';
 import { DataTable, Column } from '@/components/admin/DataTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { mockAdminListings, AdminListing } from '@/lib/admin-data';
-import { formatCurrencyVND } from '@/lib/utils';
+import { formatCurrencyVND, parseLocationCoordinates } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
 import {
   Search,
@@ -55,25 +55,32 @@ export default function AdminListingsPage() {
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {
-            remoteListings = json.data.map((r: any) => ({
-              id: r.id,
-              title: r.title,
-              price: r.price,
-              area: r.area,
-              type: r.property_type || 'house',
-              district: r.district,
-              address: r.address,
-              authorName: r.users?.full_name || 'Khách hàng',
-              authorPhone: r.users?.phone || '0988 123 456',
-              authorAvatar: r.users?.avatar_url,
-              status: r.status || 'pending',
-              createdAt: r.created_at ? r.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-              expiresAt: '2026-12-31',
-              images: r.images && r.images.length > 0 ? r.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
-              views: r.views || 1,
-              planningZone: 'Đất ở đô thị',
-              isFeatured: r.is_featured || false,
-            }));
+            remoteListings = json.data.map((r: any) => {
+              const coords = parseLocationCoordinates(r.location, r.district);
+              const lat = typeof r.lat === 'number' && !isNaN(r.lat) && r.lat !== 0 ? r.lat : coords.lat;
+              const lng = typeof r.lng === 'number' && !isNaN(r.lng) && r.lng !== 0 ? r.lng : coords.lng;
+              return {
+                id: r.id,
+                title: r.title,
+                price: r.price,
+                area: r.area,
+                type: r.property_type || 'house',
+                district: r.district,
+                address: r.address,
+                authorName: r.users?.full_name || 'Khách hàng',
+                authorPhone: r.users?.phone || '0988 123 456',
+                authorAvatar: r.users?.avatar_url,
+                status: r.status || 'pending',
+                createdAt: r.created_at ? r.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+                expiresAt: '2026-12-31',
+                images: r.images && r.images.length > 0 ? r.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
+                views: r.views || 1,
+                planningZone: 'Đất ở đô thị',
+                isFeatured: r.is_featured || false,
+                lat,
+                lng,
+              };
+            });
           }
         }
       } catch (err) {
@@ -88,25 +95,36 @@ export default function AdminListingsPage() {
           if (raw) {
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed)) {
-              localListings = parsed.map((item: any) => ({
-                id: item.id,
-                title: item.title,
-                price: item.price,
-                area: item.area,
-                type: item.type || 'house',
-                district: item.district,
-                address: item.address,
-                authorName: item.authorName || 'Cozy Hollys',
-                authorPhone: item.authorPhone || '0988 123 456',
-                authorAvatar: item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-                status: item.status || 'pending',
-                createdAt: item.createdAt || new Date().toISOString().split('T')[0],
-                expiresAt: '2026-12-31',
-                images: item.images && item.images.length > 0 ? item.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
-                views: item.views || 1,
-                planningZone: item.planningZone || 'Đất ở đô thị',
-                isFeatured: false,
-              }));
+              localListings = parsed.map((item: any) => {
+                let lat = item.lat;
+                let lng = item.lng;
+                if (!lat || !lng || (item.district && item.district !== 'Cầu Giấy' && Math.abs(lat - 21.0315) < 0.002 && Math.abs(lng - 105.7825) < 0.002)) {
+                  const c = parseLocationCoordinates(null, item.district);
+                  lat = c.lat;
+                  lng = c.lng;
+                }
+                return {
+                  id: item.id,
+                  title: item.title,
+                  price: item.price,
+                  area: item.area,
+                  type: item.type || 'house',
+                  district: item.district,
+                  address: item.address,
+                  authorName: item.authorName || 'Cozy Hollys',
+                  authorPhone: item.authorPhone || '0988 123 456',
+                  authorAvatar: item.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+                  status: item.status || 'pending',
+                  createdAt: item.createdAt || new Date().toISOString().split('T')[0],
+                  expiresAt: '2026-12-31',
+                  images: item.images && item.images.length > 0 ? item.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
+                  views: item.views || 1,
+                  planningZone: item.planningZone || 'Đất ở đô thị',
+                  isFeatured: false,
+                  lat,
+                  lng,
+                };
+              });
             }
           }
         } catch (e) {

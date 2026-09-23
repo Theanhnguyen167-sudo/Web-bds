@@ -32,6 +32,8 @@ export interface AdminListing {
   views: number;
   planningZone: string;
   isFeatured: boolean;
+  lat?: number;
+  lng?: number;
 }
 
 export interface AdminTransaction {
