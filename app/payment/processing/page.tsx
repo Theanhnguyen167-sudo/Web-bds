@@ -33,6 +33,11 @@ function ProcessingContent() {
   const bankCode = searchParams.get('bankCode') || 'ALL';
   const paymentUrl = searchParams.get('paymentUrl') || '';
 
+  const packageId = searchParams.get('packageId') || 'agency';
+  const rawPackageName = searchParams.get('packageName');
+  const billing = searchParams.get('billing') || 'monthly';
+  const packageName = rawPackageName || (packageId === 'agency' ? 'Gói Agency' : packageId === 'basic' ? 'Gói Basic' : 'Gói Pro');
+
   const [isExpired, setIsExpired] = useState(false);
   const [pollingCount, setPollingCount] = useState(0);
   const [isManualConfirming, setIsManualConfirming] = useState(false);
@@ -42,12 +47,14 @@ function ProcessingContent() {
 
   const handleApplySuccessfulUpgrade = () => {
     if (user) {
+      const isAgency = packageId.toLowerCase() === 'agency';
+      const isBasic = packageId.toLowerCase() === 'basic';
       setUser({
         ...user,
-        package: 'Pro',
-        packageExpiry: '2026-09-24',
-        listingsCount: user.listingsCount + 50,
-        aiReportsLimit: (user.aiReportsLimit || 0) + 30,
+        package: isAgency ? 'Agency' : isBasic ? 'Basic' : 'Pro',
+        packageExpiry: billing === 'yearly' ? '2027-09-23' : '2026-10-23',
+        listingsCount: isAgency ? 999999 : user.listingsCount + (isBasic ? 20 : 50),
+        aiReportsLimit: isAgency ? 999999 : (user.aiReportsLimit || 0) + (isBasic ? 5 : 30),
       });
     }
   };
@@ -65,7 +72,7 @@ function ProcessingContent() {
           handleApplySuccessfulUpgrade();
           addToast?.('🎉 Giao dịch MoMo đã được xác nhận thành công!', 'success');
           router.push(
-            `/payment/success?orderId=${orderId}&method=momo&amount=${amount}`
+            `/payment/success?orderId=${orderId}&method=momo&amount=${amount}&packageName=${encodeURIComponent(packageName)}`
           );
         }
         return next;
@@ -73,7 +80,7 @@ function ProcessingContent() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isExpired, orderId, method, amount, router]);
+  }, [isExpired, orderId, method, amount, router, packageName]);
 
   // Handler for Bank Transfer completion
   const handleBankTransferConfirmed = () => {
@@ -82,7 +89,7 @@ function ProcessingContent() {
     addToast?.('🎉 Đã ghi nhận thông tin chuyển khoản VietQR!', 'success');
     setTimeout(() => {
       router.push(
-        `/payment/success?orderId=${orderId}&method=bank_transfer&amount=${amount}`
+        `/payment/success?orderId=${orderId}&method=${method}&amount=${amount}&packageName=${encodeURIComponent(packageName)}`
       );
     }, 800);
   };
@@ -92,7 +99,7 @@ function ProcessingContent() {
     handleApplySuccessfulUpgrade();
     addToast?.('✅ Giao dịch đã được đối soát thành công!', 'success');
     router.push(
-      `/payment/success?orderId=${orderId}&method=${selectedPaymentMethod}&amount=${amount}${
+      `/payment/success?orderId=${orderId}&method=${selectedPaymentMethod}&amount=${amount}&packageName=${encodeURIComponent(packageName)}${
         bankCode ? `&bankCode=${bankCode}` : ''
       }`
     );
@@ -189,102 +196,54 @@ function ProcessingContent() {
         )}
 
         {/* ═══════════════════════════════════════════════════════
-            NHÁNH 3: CỔNG THANH TOÁN VNPAY
+            NHÁNH 3: CỔNG THANH TOÁN VNPAY & VIETQR
             ═══════════════════════════════════════════════════════ */}
         {method === 'vnpay' && (
           <div className="space-y-6">
             <PaymentTimer onExpire={() => setIsExpired(true)} durationMinutes={15} />
 
             <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xl space-y-5 text-center">
-              {/* VNPay Header */}
-              <div className="flex items-center justify-center gap-2">
-                <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-red-500 to-blue-600 text-white font-black text-sm flex items-center justify-center shadow-md">
-                  VNP
+              {/* VNPay & VietQR Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#005baa] to-[#ed1c24] text-white font-black text-xs flex items-center justify-center shadow-md">
+                    VNP
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-black text-sm text-navy">VNPay QR / VietQR Chuyển Khoản</h3>
+                    <p className="text-[11px] text-slate-500">
+                      Quét mã tức thì qua 40+ ứng dụng ngân hàng hoặc ví VNPay
+                    </p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <h3 className="font-black text-sm text-navy">Cổng Thanh Toán Quốc Gia VNPay</h3>
-                  <p className="text-[11px] text-slate-500">
-                    Kết nối an toàn chuẩn PCI-DSS & 3D-Secure
-                  </p>
-                </div>
+
+                <span className="px-2.5 py-1 rounded-full bg-blue-50 text-[#0066cc] text-[11px] font-extrabold border border-blue-200">
+                  Napas 247
+                </span>
               </div>
 
-              {/* Amount Display */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-2 text-left">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Mã đơn hàng:</span>
-                  <span className="font-mono font-bold text-navy">{orderId}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Ngân hàng đã chọn:</span>
-                  <span className="font-bold text-[#0066cc]">
-                    {selectedBankObj ? `${selectedBankObj.name} (${selectedBankObj.code})` : 'Tất cả ngân hàng / VNPAY-QR'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center pt-1 border-t border-slate-200">
-                  <span className="text-slate-500">Số tiền:</span>
-                  <span className="font-black text-orange-600 text-base">
-                    {formatCurrencyVND(amount)}
-                  </span>
-                </div>
-              </div>
+              {/* VietQR Component with Auto-filled Amount and Details */}
+              <VietQRCode
+                amount={amount}
+                orderId={orderId}
+                onConfirmPayment={handleBankTransferConfirmed}
+                isProcessing={isManualConfirming}
+              />
 
-              {/* Action Buttons: Gateway or Sandbox Direct Confirmation */}
-              <div className="space-y-2.5 pt-1">
-                {paymentUrl ? (
+              {/* Optional Gateway link if needed */}
+              {paymentUrl && (
+                <div className="pt-1 text-center">
                   <a
                     href={paymentUrl}
-                    className="w-full py-3.5 bg-[#0066cc] hover:bg-[#0052a3] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2"
+                    className="text-xs text-blue-600 hover:text-blue-800 underline flex items-center justify-center gap-1"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <ExternalLink className="h-4 w-4" />
-                    <span>Mở Cổng Thanh Toán VNPay Gateway →</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span>Mở cổng thẻ ATM / Quốc tế VNPay Sandbox</span>
                   </a>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Redirect to VNPay sandbox url or local return handler
-                      router.push(`/payment/vnpay/return?vnp_ResponseCode=00&vnp_TxnRef=${orderId}&vnp_Amount=${amount * 100}&vnp_BankCode=${bankCode}`);
-                    }}
-                    className="w-full py-3.5 bg-[#0066cc] hover:bg-[#0052a3] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <CreditCard className="h-4 w-4" />
-                    <span>Xác nhận qua Cổng VNPay Gateway →</span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => handleSimulateInstantSuccess('vnpay')}
-                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  <span>Mô phỏng thanh toán thành công (Sandbox Dev)</span>
-                </button>
-              </div>
-
-              {/* 3 Steps */}
-              <div className="bg-blue-50/60 p-3.5 rounded-2xl border border-blue-100 text-xs text-slate-700 space-y-1 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="h-4 w-4 rounded-full bg-[#0066cc] text-white font-bold text-[10px] flex items-center justify-center shrink-0">
-                    1
-                  </span>
-                  <span>Chuyển tiếp sang giao diện bảo mật VNPay</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-4 w-4 rounded-full bg-[#0066cc] text-white font-bold text-[10px] flex items-center justify-center shrink-0">
-                    2
-                  </span>
-                  <span>Chọn Quét VNPAY-QR hoặc nhập thông tin thẻ ATM / Visa</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-4 w-4 rounded-full bg-[#0066cc] text-white font-bold text-[10px] flex items-center justify-center shrink-0">
-                    3
-                  </span>
-                  <span>Nhập mã OTP SMS ngân hàng để hoàn tất</span>
-                </div>
-              </div>
-
+              )}
             </div>
           </div>
         )}

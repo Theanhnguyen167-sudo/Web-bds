@@ -110,20 +110,26 @@ function CheckoutContent() {
         const data = await res.json();
         if (data.success && data.paymentUrl) {
           router.push(
-            `/payment/processing?orderId=${data.orderId}&method=vnpay&amount=${finalTotal}&bankCode=${selectedBank}&paymentUrl=${encodeURIComponent(
+            `/payment/processing?orderId=${data.orderId}&method=vnpay&amount=${finalTotal}&packageId=${currentPkg.id}&packageName=${encodeURIComponent(
+              `Gói ${currentPkg.name}`
+            )}&billing=${billing}&bankCode=${selectedBank}&paymentUrl=${encodeURIComponent(
               data.paymentUrl
             )}`
           );
         } else {
           router.push(
-            `/payment/processing?orderId=VNP_${Date.now()}&method=vnpay&amount=${finalTotal}&bankCode=${selectedBank}`
+            `/payment/processing?orderId=VNP_${Date.now()}&method=vnpay&amount=${finalTotal}&packageId=${currentPkg.id}&packageName=${encodeURIComponent(
+              `Gói ${currentPkg.name}`
+            )}&billing=${billing}&bankCode=${selectedBank}`
           );
         }
       } else {
         // Bank transfer VietQR flow
         const transferOrderId = `CK_${(user.id || 'u1').slice(0, 6)}_${Date.now()}`;
         router.push(
-          `/payment/processing?orderId=${transferOrderId}&method=bank_transfer&amount=${finalTotal}`
+          `/payment/processing?orderId=${transferOrderId}&method=bank_transfer&amount=${finalTotal}&packageId=${currentPkg.id}&packageName=${encodeURIComponent(
+            `Gói ${currentPkg.name}`
+          )}&billing=${billing}`
         );
       }
     } catch (err: any) {

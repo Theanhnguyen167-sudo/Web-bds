@@ -12,17 +12,21 @@ export function createVNPayPaymentUrl(
   bankCode?: string
 ): string {
   const now = new Date();
-  // Vietnam timezone date formatting (yyyyMMddHHmmss)
-  const vnpCreateDate = now
-    .toISOString()
-    .replace(/[-:T.]/g, '')
-    .slice(0, 14);
+  // Format Date in GMT+7 (Vietnam Standard Time yyyyMMddHHmmss)
+  const formatVNDate = (d: Date) => {
+    const vnDate = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+    const y = vnDate.getUTCFullYear();
+    const m = String(vnDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(vnDate.getUTCDate()).padStart(2, '0');
+    const h = String(vnDate.getUTCHours()).padStart(2, '0');
+    const min = String(vnDate.getUTCMinutes()).padStart(2, '0');
+    const s = String(vnDate.getUTCSeconds()).padStart(2, '0');
+    return `${y}${m}${day}${h}${min}${s}`;
+  };
 
+  const vnpCreateDate = formatVNDate(now);
   const expireDate = new Date(now.getTime() + 15 * 60 * 1000);
-  const vnpExpireDate = expireDate
-    .toISOString()
-    .replace(/[-:T.]/g, '')
-    .slice(0, 14);
+  const vnpExpireDate = formatVNDate(expireDate);
 
   // VNPay requires amount * 100 (integers, no decimals)
   const vnpAmount = Math.round(order.amount * 100);
