@@ -699,7 +699,7 @@ export const ReportPDFDocument: React.FC<PDFTemplateProps> = ({
         {/* Dự án hạ tầng lân cận */}
         <View style={[styles.sectionHeader, { marginTop: 14 }]}>
           <Text style={styles.sectionTitle}>
-            2. Dự Án Hạ Tầng & Tuyến Metro Trọng Điểm (Bán kính 2km)
+            2. Dự Án Hạ Tầng & Tuyến Metro Trọng Điểm (Chuẩn Định Vị Không Gian WGS84)
           </Text>
         </View>
 

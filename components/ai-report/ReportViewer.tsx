@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockListings, ListingItem } from '@/lib/mock-data';
 import { getAIReportForListing, PropertyAIReport } from '@/lib/ai/report-service';
@@ -9,6 +10,7 @@ import { formatCurrencyVND } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
 import { DownloadPDFButton } from '@/components/ai-report/DownloadPDFButton';
 import { PropertyReportSelector } from '@/components/ai-report/PropertyReportSelector';
+import type { FocusTarget } from '@/components/map/InfrastructureMap';
 import {
   Sparkles,
   ArrowLeft,
@@ -30,8 +32,25 @@ import {
   Zap,
   Target,
   ShieldAlert,
-  Loader2
+  Loader2,
+  ExternalLink,
+  Navigation,
+  Compass,
+  Layers,
 } from 'lucide-react';
+
+const InfrastructureMap = dynamic(
+  () => import('@/components/map/InfrastructureMap'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[460px] w-full rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse flex flex-col items-center justify-center gap-2">
+        <Loader2 className="h-6 w-6 animate-spin text-accent" />
+        <span className="text-xs text-text-muted">Đang tải bản đồ hạ tầng & quy hoạch Google Maps...</span>
+      </div>
+    ),
+  }
+);
 
 interface ReportViewerProps {
   listingId: string;
@@ -46,6 +65,8 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
   const [report, setReport] = useState<PropertyAIReport>(() => getAIReportForListing(initialListing));
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [scoreCount, setScoreCount] = useState(0);
+  const [mapFocusTarget, setMapFocusTarget] = useState<FocusTarget | null>(null);
+  const mapSectionRef = useRef<HTMLDivElement>(null);
 
   // Sync state if listingId prop changes externally
   useEffect(() => {
@@ -451,20 +472,64 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
         </div>
       )}
 
-      {/* Nearby Infrastructure Projects Timeline */}
+      {/* ── BẢN ĐỒ QUAN SÁT HẠ TẦNG TRỌNG ĐIỂM, TIỆN ÍCH & QUY HOẠCH GOOGLE MAPS ── */}
+      <div ref={mapSectionRef} className="rounded-3xl border border-border bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
+                <Compass className="h-4 w-4" />
+              </span>
+              <h3 className="text-base font-extrabold text-text-primary">
+                Bản Đồ Quan Sát Hạ Tầng Trọng Điểm, Tiện Ích & Quy Hoạch Google Maps
+              </h3>
+            </div>
+            <p className="text-xs text-text-secondary mt-1">
+              Dữ liệu không gian thực tế từ Google Maps trong bán kính 500m (đi bộ) · 1.5km (xe máy) · 3km (vùng ảnh hưởng) quanh {listing.address}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+              <CheckCircle2 className="h-3 w-3" />
+              <span>Chuẩn tọa độ WGS84</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Component Bản Đồ Chuyên Sâu */}
+        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+          <InfrastructureMap
+            propertyLat={listing.lat || 21.0285}
+            propertyLng={listing.lng || 105.8412}
+            propertyTitle={listing.title}
+            propertyAddress={listing.address}
+            propertyDistrict={listing.district}
+            focusTarget={mapFocusTarget}
+            height="460px"
+          />
+        </div>
+      </div>
+
+      {/* ── TIMELINE DỰ ÁN HẠ TẦNG TRỌNG ĐIỂM & METRO LÂN CẬN ── */}
       <div className="rounded-3xl border border-border bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm space-y-6">
-        <div>
-          <h3 className="text-base font-extrabold text-text-primary flex items-center gap-2">
-            <Train className="h-5 w-5 text-accent" />
-            Dự Án Hạ Tầng Trọng Điểm & Metro Tác Động Trong Bán Kính 3km
-          </h3>
-          <p className="text-xs text-text-secondary mt-1">
-            Các dự án kết nối đường sắt đô thị và giao thông huyết mạch thúc đẩy giá trị BĐS tại {listing.district}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-base font-extrabold text-text-primary flex items-center gap-2">
+              <Train className="h-5 w-5 text-accent" />
+              Dự Án Hạ Tầng Trọng Điểm & Tuyến Metro Tác Động BĐS
+            </h3>
+            <p className="text-xs text-text-secondary mt-1">
+              Khoảng cách chính xác được tính toán tự động từ vị trí bất động sản này đến các dự án giao thông huyết mạch
+            </p>
+          </div>
+          <span className="text-xs font-bold text-text-muted">
+            {report.nearbyProjects.length} Dự án lân cận
+          </span>
         </div>
 
         {/* Timeline container */}
-        <div className="relative pl-6 space-y-6">
+        <div className="relative pl-6 space-y-5">
           <motion.div
             className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-accent/40"
             initial={{ scaleY: 0 }}
@@ -478,63 +543,185 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
               key={idx}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + idx * 0.1 }}
-              className="relative flex items-start justify-between gap-4 rounded-2xl bg-page-bg p-4 border border-border"
+              transition={{ delay: 0.15 + idx * 0.08 }}
+              className="relative rounded-2xl bg-page-bg p-4 sm:p-5 border border-border hover:border-accent/50 transition-all space-y-3"
             >
-              <div className="absolute -left-[27px] top-4 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent ring-4 ring-white dark:ring-slate-900" />
+              <div className="absolute -left-[27px] top-5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent ring-4 ring-white dark:ring-slate-900" />
 
-              <div>
-                <h4 className="text-xs font-bold text-text-primary">{project.name}</h4>
-                <p className="text-[11px] text-text-secondary mt-0.5">Khoảng cách: {project.distance}</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-text-primary">{project.name}</h4>
+                    {project.type && (
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        {project.type}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-text-secondary mt-1 flex items-center gap-3">
+                    <span className="font-extrabold text-orange-600 dark:text-orange-400">
+                      Khoảng cách: {project.distance}
+                    </span>
+                    {project.lat && project.lng && (
+                      <span className="text-slate-400 text-[11px]">
+                        Toạ độ: {project.lat.toFixed(4)}, {project.lng.toFixed(4)}
+                      </span>
+                    )}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className={`rounded-md px-2.5 py-1 text-[10px] font-extrabold uppercase ${
+                      project.status === 'completed'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : project.status === 'construction'
+                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                        : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                    }`}
+                  >
+                    {project.status === 'completed'
+                      ? 'Đã hoàn thành'
+                      : project.status === 'construction'
+                      ? 'Đang thi công'
+                      : 'Quy hoạch'}
+                  </span>
+                  <span className="text-xs font-bold text-text-muted">Năm {project.year}</span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <span
-                  className={`rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase ${
-                    project.status === 'completed'
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                      : project.status === 'construction'
-                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                  }`}
+              {project.priceImpactSummary && (
+                <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+                  ⚡ Động lực giá trị: {project.priceImpactSummary}
+                </div>
+              )}
+
+              {/* Action Buttons: Xem trên bản đồ & Mở Google Maps */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+                {project.lat && project.lng && (
+                  <button
+                    onClick={() => {
+                      setMapFocusTarget({
+                        lat: project.lat!,
+                        lng: project.lng!,
+                        name: project.name,
+                      });
+                      mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-colors shadow-sm"
+                  >
+                    <MapPin className="h-3.5 w-3.5 text-accent" />
+                    <span>Định vị trên bản đồ</span>
+                  </button>
+                )}
+
+                <a
+                  href={
+                    project.googleMapsUrl ||
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(project.name + ' Hà Nội')}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition-colors"
                 >
-                  {project.status === 'completed'
-                    ? 'Đã hoàn thành'
-                    : project.status === 'construction'
-                    ? 'Đang thi công'
-                    : 'Quy hoạch'}
-                </span>
-                <span className="text-[11px] font-bold text-text-muted">Năm {project.year}</span>
+                  <span>Mở Google Maps</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
 
-      {/* Amenities Grid */}
+      {/* ── TIỆN ÍCH & DỊCH VỤ XUNG QUANH CHUẨN GOOGLE MAPS ── */}
       <div className="rounded-3xl border border-border bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm space-y-4">
-        <h3 className="text-base font-extrabold text-text-primary flex items-center gap-2">
-          <Hospital className="h-5 w-5 text-accent" />
-          Tiện Ích & Dịch Vụ Lân Cận ({listing.district})
-        </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-base font-extrabold text-text-primary flex items-center gap-2">
+              <Hospital className="h-5 w-5 text-accent" />
+              Tiện Ích & Dịch Vụ Xung Quanh Bất Động Sản ({listing.district})
+            </h3>
+            <p className="text-xs text-text-secondary mt-1">
+              Định vị chính xác cự ly thực tế và đường đi đến các trường học, bệnh viện, TTTM và công viên
+            </p>
+          </div>
+          <span className="text-xs font-bold text-text-muted">
+            {report.amenities.length} Địa điểm tiêu biểu
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           {report.amenities.map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between rounded-xl bg-page-bg p-3.5 border border-border">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white dark:bg-slate-800 text-accent shadow-sm">
-                  {item.type === 'school' && <School className="h-4 w-4" />}
-                  {item.type === 'hospital' && <Hospital className="h-4 w-4" />}
-                  {item.type === 'mall' && <ShoppingBag className="h-4 w-4" />}
-                  {item.type === 'park' && <Trees className="h-4 w-4" />}
-                  {item.type === 'metro' && <Train className="h-4 w-4" />}
+            <div
+              key={idx}
+              className="flex flex-col justify-between rounded-2xl bg-page-bg p-4 border border-border hover:border-accent/40 transition-all space-y-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-slate-800 text-accent shadow-sm border border-slate-100 dark:border-slate-800">
+                    {item.type === 'school' && <School className="h-5 w-5 text-blue-500" />}
+                    {item.type === 'hospital' && <Hospital className="h-5 w-5 text-rose-500" />}
+                    {item.type === 'mall' && <ShoppingBag className="h-5 w-5 text-pink-500" />}
+                    {item.type === 'park' && <Trees className="h-5 w-5 text-emerald-500" />}
+                    {item.type === 'metro' && <Train className="h-5 w-5 text-purple-500" />}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-text-primary text-xs leading-snug">{item.name}</h4>
+                    {item.address && (
+                      <p className="text-[11px] text-text-muted mt-0.5 line-clamp-1">📍 {item.address}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="font-extrabold text-orange-600 dark:text-orange-400 text-[11px]">
+                        Khoảng cách: {item.distance}
+                      </span>
+                      {item.travelTimeText && (
+                        <span className="text-[10px] text-slate-500 bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                          {item.travelTimeText}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-text-primary">{item.name}</h4>
-                  <span className="text-[10px] text-text-muted">Khoảng cách: {item.distance}</span>
-                </div>
+
+                <span className="font-bold text-amber-500 text-xs shrink-0">
+                  ⭐ {item.rating}
+                </span>
               </div>
-              <span className="font-bold text-amber-500">⭐ {item.rating}</span>
+
+              {/* Action Buttons: Xem trên bản đồ & Chỉ đường Google Maps */}
+              <div className="flex items-center justify-between pt-2 border-t border-border/60 text-[11px]">
+                {item.lat && item.lng ? (
+                  <button
+                    onClick={() => {
+                      setMapFocusTarget({
+                        lat: item.lat!,
+                        lng: item.lng!,
+                        name: item.name,
+                      });
+                      mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }}
+                    className="text-slate-600 dark:text-slate-300 hover:text-accent font-bold flex items-center gap-1 transition-colors"
+                  >
+                    <Compass className="h-3 w-3" />
+                    <span>Xem vị trí</span>
+                  </button>
+                ) : (
+                  <span />
+                )}
+
+                <a
+                  href={
+                    item.directionsUrl ||
+                    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.name + ' Hà Nội')}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1"
+                >
+                  <span>Chỉ đường Google Maps</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
             </div>
           ))}
         </div>

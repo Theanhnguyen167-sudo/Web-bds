@@ -1,4 +1,5 @@
 import { ListingItem } from '@/lib/mock-data';
+import { getNearbyAmenitiesAndProjects } from '@/lib/data/hanoi-geo-poi';
 
 export interface PropertyAIReport {
   id: string;
@@ -14,14 +15,29 @@ export interface PropertyAIReport {
   nearbyProjects: Array<{
     name: string;
     distance: string;
+    distanceMeters?: number;
     status: 'completed' | 'construction' | 'planning';
     year: string;
+    lat?: number;
+    lng?: number;
+    type?: string;
+    description?: string;
+    priceImpactSummary?: string;
+    googleMapsUrl?: string;
+    directionsUrl?: string;
   }>;
   amenities: Array<{
     type: 'school' | 'hospital' | 'mall' | 'park' | 'metro';
     name: string;
     distance: string;
+    distanceMeters?: number;
     rating: number;
+    lat?: number;
+    lng?: number;
+    address?: string;
+    travelTimeText?: string;
+    googleMapsUrl?: string;
+    directionsUrl?: string;
   }>;
   aiAnalysis: string;
   priceTrendPotential: number;
@@ -250,6 +266,65 @@ Về pháp lý & sang tên: Khẳng định 100% hồ sơ pháp lý hoàn chỉn
       ? `Khuyến nghị đầu tư đón đầu hạ tầng hoặc xây dựng khai thác thương mại/dịch vụ lưu trú. Vị trí lõi đất thổ cư tại ${district} luôn có tính thanh khoản tức thì.`
       : `Khuyến nghị mua để ở kết hợp kinh doanh hoặc mở văn phòng công ty. Khả năng thanh khoản rất nhanh trong vòng 15 - 30 ngày.`;
 
+  // Trích xuất dữ liệu không gian thực tế từ tọa độ BĐS nếu có
+  const spatialData =
+    listing.lat && listing.lng
+      ? getNearbyAmenitiesAndProjects(listing.lat, listing.lng, 4500)
+      : null;
+
+  const nearbyProjects =
+    spatialData && spatialData.projects.length > 0
+      ? spatialData.projects.map((p) => ({
+          name: p.name,
+          distance: p.distance,
+          distanceMeters: p.distanceMeters,
+          status: p.status,
+          year: p.year,
+          lat: p.lat,
+          lng: p.lng,
+          type: p.typeLabel,
+          description: p.description,
+          priceImpactSummary: p.priceImpactSummary,
+          googleMapsUrl: p.googleMapsUrls.searchUrl,
+          directionsUrl: p.googleMapsUrls.directionsUrl,
+        }))
+      : preset.nearbyProjects || [
+          { name: 'Tuyến Metro đô thị kết nối trung tâm', distance: '600m', status: 'construction', year: '2027' },
+          { name: 'Công viên cây xanh & Hồ điều hòa', distance: '450m', status: 'completed', year: '2023' },
+          { name: 'Mở rộng trục đường liên khu vực', distance: '300m', status: 'construction', year: '2026' },
+        ];
+
+  const amenities =
+    spatialData && spatialData.amenities.length > 0
+      ? spatialData.amenities.map((a) => ({
+          type:
+            a.category === 'metro'
+              ? ('metro' as const)
+              : a.category === 'school'
+              ? ('school' as const)
+              : a.category === 'hospital'
+              ? ('hospital' as const)
+              : a.category === 'mall'
+              ? ('mall' as const)
+              : ('park' as const),
+          name: a.name,
+          distance: a.distance,
+          distanceMeters: a.distanceMeters,
+          rating: a.rating || 4.8,
+          lat: a.lat,
+          lng: a.lng,
+          address: a.address,
+          travelTimeText: a.travelTime.walkingText,
+          googleMapsUrl: a.googleMapsUrls.searchUrl,
+          directionsUrl: a.googleMapsUrls.directionsUrl,
+        }))
+      : preset.amenities || [
+          { type: 'school', name: 'Hệ thống trường học chuẩn quốc gia', distance: '500m', rating: 4.8 },
+          { type: 'hospital', name: 'Bệnh viện đa khoa khu vực', distance: '1.2km', rating: 4.7 },
+          { type: 'mall', name: 'Trung tâm thương mại lớn', distance: '900m', rating: 4.6 },
+          { type: 'park', name: 'Khu công viên vui chơi & TDTT', distance: '350m', rating: 4.5 },
+        ];
+
   return {
     id: `REP-${listing.id}`,
     listingId: listing.id,
@@ -261,17 +336,8 @@ Về pháp lý & sang tên: Khẳng định 100% hồ sơ pháp lý hoàn chỉn
     planningStatus: preset.planningStatus || 'Phù hợp xây dựng & Không vướng quy hoạch treo',
     floorAreaRatio: preset.floorAreaRatio || 3.5,
     maxHeight: preset.maxHeight || '5 tầng + 1 tum',
-    nearbyProjects: preset.nearbyProjects || [
-      { name: 'Tuyến Metro đô thị kết nối trung tâm', distance: '600m', status: 'construction', year: '2027' },
-      { name: 'Công viên cây xanh & Hồ điều hòa', distance: '450m', status: 'completed', year: '2023' },
-      { name: 'Mở rộng trục đường liên khu vực', distance: '300m', status: 'construction', year: '2026' },
-    ],
-    amenities: preset.amenities || [
-      { type: 'school', name: 'Hệ thống trường học chuẩn quốc gia', distance: '500m', rating: 4.8 },
-      { type: 'hospital', name: 'Bệnh viện đa khoa khu vực', distance: '1.2km', rating: 4.7 },
-      { type: 'mall', name: 'Trung tâm thương mại lớn', distance: '900m', rating: 4.6 },
-      { type: 'park', name: 'Khu công viên vui chơi & TDTT', distance: '350m', rating: 4.5 },
-    ],
+    nearbyProjects,
+    amenities,
     aiAnalysis,
     priceTrendPotential: priceTrend,
     liquidityRating: score >= 85 ? 'Rất Cao (7-14 ngày)' : 'Cao (15-30 ngày)',

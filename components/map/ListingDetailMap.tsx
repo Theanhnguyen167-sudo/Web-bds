@@ -50,14 +50,14 @@ export default function ListingDetailMap({
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const [isMapReady, setIsMapReady] = useState(false)
-  const [mapStyle, setMapStyle] = useState<'voyager' | 'dark' | 'satellite'>('voyager')
+  const [mapStyle, setMapStyle] = useState<'googleStreet' | 'googleHybrid' | 'dark'>('googleStreet')
   const tileLayerRef = useRef<any>(null)
 
-  // ── TILE STYLES ──
+  // ── TILE STYLES (Chuẩn Google Maps) ──
   const TILE_URLS = {
-    voyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    googleStreet: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    googleHybrid: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
     dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   }
 
   // ── INIT MAP ──
@@ -77,10 +77,10 @@ export default function ListingDetailMap({
       })
 
       // Tile layer
-      const tile = L.tileLayer(TILE_URLS.voyager, {
-        attribution: '©OpenStreetMap ©CartoDB',
-        subdomains: 'abcd',
-        maxZoom: 19,
+      const tile = L.tileLayer(TILE_URLS.googleStreet, {
+        attribution: '©Google Maps',
+        subdomains: ['0', '1', '2', '3'],
+        maxZoom: 20,
       }).addTo(map)
       tileLayerRef.current = tile
 
@@ -187,15 +187,15 @@ export default function ListingDetailMap({
   }, [lat, lng, price, title, address, district])
 
   // ── SWITCH STYLE ──
-  const switchMapStyle = useCallback(async (styleKey: 'voyager' | 'dark' | 'satellite') => {
+  const switchMapStyle = useCallback(async (styleKey: 'googleStreet' | 'googleHybrid' | 'dark') => {
     if (!mapInstanceRef.current || !tileLayerRef.current) return
     const L = (await import('leaflet')).default
     mapInstanceRef.current.removeLayer(tileLayerRef.current)
 
     const newTile = L.tileLayer(TILE_URLS[styleKey], {
-      attribution: '©OpenStreetMap ©CartoDB',
-      subdomains: 'abcd',
-      maxZoom: 19,
+      attribution: styleKey === 'dark' ? '©CartoDB' : '©Google Maps',
+      subdomains: styleKey === 'dark' ? ['a', 'b', 'c', 'd'] : ['0', '1', '2', '3'],
+      maxZoom: styleKey === 'dark' ? 19 : 20,
     }).addTo(mapInstanceRef.current)
 
     tileLayerRef.current = newTile
@@ -237,17 +237,17 @@ export default function ListingDetailMap({
         {/* Style selector */}
         <div className="flex bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl shadow-md border border-slate-200 dark:border-slate-700 p-0.5 gap-0.5 text-[10px] font-bold">
           <button
-            onClick={() => switchMapStyle('voyager')}
+            onClick={() => switchMapStyle('googleStreet')}
             className={`px-2 py-1 rounded-lg transition-all ${
-              mapStyle === 'voyager' ? 'bg-orange-500 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100'
+              mapStyle === 'googleStreet' ? 'bg-orange-500 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100'
             }`}
           >
-            Phố
+            Google
           </button>
           <button
-            onClick={() => switchMapStyle('satellite')}
+            onClick={() => switchMapStyle('googleHybrid')}
             className={`px-2 py-1 rounded-lg transition-all ${
-              mapStyle === 'satellite' ? 'bg-orange-500 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100'
+              mapStyle === 'googleHybrid' ? 'bg-orange-500 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100'
             }`}
           >
             Vệ tinh

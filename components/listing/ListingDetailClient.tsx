@@ -760,6 +760,18 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                 />
               </div>
 
+              {/* Nút xem nhanh bản đồ hạ tầng & tiện ích Google Maps */}
+              <Link
+                href={`/reports/${listing.id}`}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 transition-colors border border-orange-200/60 text-xs font-bold shadow-xs"
+              >
+                <div className="flex items-center gap-2">
+                  <Compass className="h-4 w-4 text-orange-600 shrink-0" />
+                  <span>Xem Hạ Tầng & Tiện Ích Google Maps</span>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 text-orange-600 shrink-0" />
+              </Link>
+
               {/* Bên dưới: Địa chỉ & Action links */}
               <div className="pt-1 space-y-2">
                 <p className="text-xs text-slate-600 flex items-center gap-1.5 truncate">
