@@ -1010,7 +1010,7 @@ export default function HomePage() {
           {/* Carousel container */}
           <div
             ref={featuredScrollRef}
-            className="flex gap-5 overflow-x-auto pb-4 pt-1 snap-x scrollbar-thin scrollbar-thumb-slate-200 scroll-smooth"
+            className="flex gap-5 overflow-x-auto py-5 px-1 snap-x scrollbar-thin scrollbar-thumb-slate-200 scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {featuredListings.map((listing) => (
