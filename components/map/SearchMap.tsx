@@ -897,17 +897,19 @@ export default function SearchMap({
                 <span>📍 {popupListing.district}</span>
               </div>
 
-              {/* Action */}
-              <a
-                href={`/listings/${popupListing.id}`}
+              {/* Action: Open Photo Gallery Modal, NO detail redirect */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMarkerClick?.(popupListing.id)
+                }}
                 className="flex items-center justify-center gap-2 w-full 
                            bg-orange-500 hover:bg-orange-600 text-white text-sm 
-                           font-semibold py-2.5 rounded-xl transition-colors"
-                onClick={e => e.stopPropagation()}
+                           font-semibold py-2.5 rounded-xl transition-colors cursor-pointer"
               >
-                <Eye size={14} /> Xem chi tiết
-                <ExternalLink size={12} />
-              </a>
+                <Eye size={14} /> Xem bộ ảnh BĐS
+              </button>
             </div>
           </motion.div>
         )}
