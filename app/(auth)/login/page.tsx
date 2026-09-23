@@ -43,11 +43,11 @@ const ROLES_CONFIG = [
   {
     id: 'agent' as RoleType,
     title: 'Chủ nhà / Môi giới',
-    badge: 'Môi giới VIP',
+    badge: 'Môi giới',
     demoEmail: 'moigioi@hanoirealty.vn',
     demoPass: '12345678',
     demoName: 'Trần Thị Thu Hà',
-    demoPackage: 'Pro',
+    demoPackage: 'Free',
     targetRoute: '/dashboard',
     btnClasses: 'border-slate-700 bg-[#1e293b]/80 text-slate-200 hover:border-slate-500 hover:bg-[#1e293b]',
     activeClasses: 'border-orange-500 bg-orange-500/15 text-orange-400 font-bold ring-1 ring-orange-500/40',
@@ -94,7 +94,7 @@ export default function AuthPage() {
         name: config.demoName,
         email: config.demoEmail,
         role: role,
-        package: config.demoPackage as any,
+        package: role === 'admin' ? 'Agency' : 'Free',
         avatar:
           role === 'admin'
             ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'
@@ -123,7 +123,7 @@ export default function AuthPage() {
         name: `Thành viên (${phoneNumber.slice(-4)})`,
         phone: phoneNumber,
         role: selectedRole,
-        package: (selectedRole === 'agent' ? 'Pro' : 'Free') as any,
+        package: (selectedRole === 'admin' ? 'Agency' : 'Free') as any,
       });
       addToast(`🎉 Đăng nhập thành công với số ${phoneNumber}!`, 'success');
       setLoading(false);

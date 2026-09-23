@@ -50,11 +50,16 @@ export default function DashboardPage() {
     addToast('🗑️ Đã xoá tin đăng thành công', 'info');
   };
 
+  const isFree = !user?.package || user.package.toLowerCase() === 'free';
+  const aiLimit = user?.aiReportsLimit ?? (isFree ? 1 : user?.package?.toLowerCase() === 'basic' ? 10 : user?.package?.toLowerCase() === 'agency' ? 100 : 30);
+  const aiUsed = user?.aiReportsUsed ?? 0;
+  const aiRemaining = Math.max(0, aiLimit - aiUsed);
+
   const menuItems = [
     { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
-    { id: 'reports', label: 'Báo cáo AI đã tạo', icon: Sparkles, count: user?.aiReportsUsed || 8 },
+    { id: 'reports', label: 'Báo cáo AI đã tạo', icon: Sparkles, count: aiUsed },
     { id: 'saved', label: 'Tin đã lưu', icon: Heart, count: savedListingIds.length },
-    { id: 'packages', label: 'Gói dịch vụ VIP', icon: Tag, badge: user?.package?.toUpperCase() || 'PRO' },
+    { id: 'packages', label: 'Gói dịch vụ', icon: Tag, badge: user?.package?.toUpperCase() || 'FREE' },
   ];
 
   return (
@@ -74,8 +79,12 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-extrabold text-text-primary">{user?.name || 'Môi giới BĐS'}</h1>
-                <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-extrabold text-accent uppercase">
-                  Gói {user?.package || 'Pro'} VIP
+                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase ${
+                  !isFree
+                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                    : 'bg-slate-100 text-slate-700 border border-slate-200'
+                }`}>
+                  Gói {user?.package || 'Free'}{!isFree ? ' VIP' : ''}
                 </span>
                 <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3 text-emerald-600" />
@@ -83,7 +92,7 @@ export default function DashboardPage() {
                 </span>
               </div>
               <p className="text-xs text-text-secondary mt-0.5">{user?.email || 'an@example.com'}</p>
-              <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-12-31'}</p>
+              <p className="text-[11px] text-text-muted mt-1">Hạn gói: {!isFree ? (user?.packageExpiry || '30 ngày') : 'Miễn phí vĩnh viễn'}</p>
             </div>
           </div>
 
@@ -182,8 +191,8 @@ export default function DashboardPage() {
 
               <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
                 <span className="text-[11px] text-text-muted font-semibold">Báo cáo AI đã dùng</span>
-                <p className="text-2xl font-black text-text-primary mt-1">8 / 30</p>
-                <span className="text-[10px] text-text-muted mt-1">Còn lại 22 lượt</span>
+                <p className="text-2xl font-black text-text-primary mt-1">{aiUsed} / {aiLimit}</p>
+                <span className="text-[10px] text-text-muted mt-1">Còn lại {aiRemaining} lượt</span>
               </div>
 
               <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -298,7 +307,7 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-center justify-between border-b border-border pb-4">
                     <h3 className="text-sm font-extrabold text-text-primary">Báo cáo Thẩm định AI gần đây</h3>
-                    <span className="text-xs text-text-muted">Đã sử dụng {user?.aiReportsUsed || 8}/30 lượt</span>
+                    <span className="text-xs text-text-muted">Đã sử dụng {aiUsed}/{aiLimit} lượt</span>
                   </div>
 
                   <div className="space-y-3">
@@ -460,20 +469,49 @@ export default function DashboardPage() {
                   transition={{ duration: 0.2 }}
                   className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-4"
                 >
-                  <h3 className="text-sm font-extrabold text-text-primary">Thông tin gói hội viên PRO</h3>
-                  <div className="rounded-2xl bg-orange-50/40 border border-orange-200 p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-accent">GÓI PRO (599.000 đ/tháng)</span>
-                      <span className="text-[11px] font-bold text-success">Đang hoạt động</span>
+                  <h3 className="text-sm font-extrabold text-text-primary">
+                    Thông tin gói hội viên: {user?.package || 'Free'}
+                  </h3>
+                  {!isFree ? (
+                    <div className="rounded-2xl bg-amber-50/50 border border-amber-200 p-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold text-amber-700 uppercase">
+                          GÓI {user?.package} VIP
+                        </span>
+                        <span className="text-[11px] font-bold text-success">Đang hoạt động</span>
+                      </div>
+                      <p className="text-xs text-text-secondary">
+                        Đã kích hoạt quyền lợi gói {user?.package} VIP: Đăng tin ưu tiên và {aiLimit} Báo cáo AI chuyên sâu. Hạn sử dụng: {user?.packageExpiry || '30 ngày'}.
+                      </p>
+                      <Link
+                        href="/pricing"
+                        className="inline-block rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-accent-hover transition-colors"
+                      >
+                        Gia hạn hoặc Nâng cấp gói cao hơn
+                      </Link>
                     </div>
-                    <p className="text-xs text-text-secondary">Đã kích hoạt quyền lợi đăng 50 tin và 30 Báo cáo AI chuyên sâu mỗi tháng.</p>
-                    <Link
-                      href="/pricing"
-                      className="inline-block rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-accent-hover transition-colors"
-                    >
-                      Gia hạn hoặc Nâng cấp Agency
-                    </Link>
-                  </div>
+                  ) : (
+                    <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold text-slate-700 uppercase">
+                          GÓI MIỄN PHÍ (FREE)
+                        </span>
+                        <span className="text-[11px] font-semibold text-slate-500">Mặc định</span>
+                      </div>
+                      <p className="text-xs text-text-secondary">
+                        Bạn đang sử dụng tài khoản Miễn phí. Giới hạn 3 tin đăng thường và 1 báo cáo phân tích AI cơ bản.
+                      </p>
+                      <div className="pt-2">
+                        <Link
+                          href="/pricing"
+                          className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-xs font-black text-white shadow-lg shadow-accent/25 hover:bg-accent-hover transition-all"
+                        >
+                          <Tag className="h-4 w-4" />
+                          <span>Nâng cấp lên gói VIP (Basic / Pro / Agency)</span>
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

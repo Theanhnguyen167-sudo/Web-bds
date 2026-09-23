@@ -193,13 +193,21 @@ export const PricingTable: React.FC = () => {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => handleSelectPackage(pkg)}
                 className={`mt-8 flex w-full items-center justify-center gap-2 rounded-xl py-3 px-4 text-xs font-extrabold transition-all shadow-sm cursor-pointer ${
-                  isPro
+                  user?.package?.toLowerCase() === pkg.id.toLowerCase()
+                    ? 'bg-slate-100 text-slate-500 border border-slate-200 shadow-none'
+                    : isPro
                     ? 'bg-accent text-white shadow-md shadow-accent/25 hover:bg-accent-hover'
                     : 'bg-primary text-white hover:bg-primary-hover'
                 }`}
               >
-                <span>{pkg.id === 'free' ? 'Đang sử dụng' : `Chọn gói ${pkg.name} →`}</span>
-                <ArrowRight className="h-4 w-4" />
+                <span>
+                  {user?.package?.toLowerCase() === pkg.id.toLowerCase()
+                    ? 'Đang sử dụng'
+                    : pkg.id === 'free'
+                    ? 'Gói cơ bản (Free)'
+                    : `Nâng cấp ${pkg.name} →`}
+                </span>
+                {user?.package?.toLowerCase() !== pkg.id.toLowerCase() && <ArrowRight className="h-4 w-4" />}
               </motion.button>
             </motion.div>
           );

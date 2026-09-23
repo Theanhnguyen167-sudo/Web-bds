@@ -120,6 +120,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const userRole = (profile?.role as any) || (sessionUser.email?.includes('admin') ? 'admin' : 'user');
 
+      // Gói dịch vụ: Mặc định luôn là 'Free'. Chỉ nhận gói cao hơn nếu user đã thanh toán trong DB hoặc là admin
+      let userPackage = 'Free';
+      let packageExpiry = 'Vĩnh viễn';
+      let aiReportsLimit = 1;
+
+      if (userRole === 'admin') {
+        userPackage = 'Agency';
+        packageExpiry = '2026-12-31';
+        aiReportsLimit = 100;
+      } else if (profile?.package && profile.package.toLowerCase() !== 'free') {
+        userPackage = profile.package;
+        packageExpiry = profile.package_expires_at || profile.packageExpiry || '2026-12-31';
+        const pkgLow = userPackage.toLowerCase();
+        aiReportsLimit = pkgLow === 'agency' ? 50 : pkgLow === 'pro' ? 20 : 5;
+      }
+
       setUser({
         id: sessionUser.id,
         name: fullName,
@@ -127,12 +143,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         phone: profile?.phone || sessionUser.user_metadata?.phone || '',
         role: userRole,
         avatar: avatar,
-        package: userRole === 'admin' ? 'Agency' : 'Pro',
-        packageExpiry: '2026-12-31',
+        package: userPackage,
+        packageExpiry: packageExpiry,
         listingsCount: 0,
         activeListings: 0,
         aiReportsUsed: 0,
-        aiReportsLimit: 30,
+        aiReportsLimit: aiReportsLimit,
       });
 
       // Fetch saved listings from Supabase
@@ -156,24 +172,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const avatar = fbUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullName)}`;
       const userRole = email.includes('admin') ? 'admin' : 'user';
 
-      setUser({
-        id: fbUser.uid,
-        name: fullName,
-        email: email,
-        phone: fbUser.phoneNumber || '',
-        role: userRole,
-        avatar: avatar,
-        package: userRole === 'admin' ? 'Agency' : 'Pro',
-        packageExpiry: '2026-12-31',
-        listingsCount: 0,
-        activeListings: 0,
-        aiReportsUsed: 0,
-        aiReportsLimit: 30,
-      });
+      let userPackage = 'Free';
+      let packageExpiry = 'Vĩnh viễn';
+      let aiReportsLimit = 1;
+
+      if (userRole === 'admin') {
+        userPackage = 'Agency';
+        packageExpiry = '2026-12-31';
+        aiReportsLimit = 100;
+      }
 
       // Đồng bộ thông tin người dùng lên bảng public.users của Supabase qua API an toàn
       try {
-        await fetch('/api/sync-user', {
+        const syncRes = await fetch('/api/sync-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -185,9 +196,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             role: userRole,
           }),
         });
+        const syncJson = await syncRes.json();
+        const dbUser = syncJson?.data;
+
+        if (userRole !== 'admin' && dbUser?.package && dbUser.package.toLowerCase() !== 'free') {
+          userPackage = dbUser.package;
+          packageExpiry = dbUser.package_expires_at || dbUser.packageExpiry || '2026-12-31';
+          const pkgLow = userPackage.toLowerCase();
+          aiReportsLimit = pkgLow === 'agency' ? 50 : pkgLow === 'pro' ? 20 : 5;
+        }
       } catch (dbErr) {
         console.warn('Sync to Supabase users table notice:', dbErr);
       }
+
+      setUser({
+        id: fbUser.uid,
+        name: fullName,
+        email: email,
+        phone: fbUser.phoneNumber || '',
+        role: userRole,
+        avatar: avatar,
+        package: userPackage,
+        packageExpiry: packageExpiry,
+        listingsCount: 0,
+        activeListings: 0,
+        aiReportsUsed: 0,
+        aiReportsLimit: aiReportsLimit,
+      });
     } catch (e) {
       console.error('Error syncing Firebase user:', e);
     }

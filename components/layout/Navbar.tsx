@@ -184,15 +184,21 @@ export const Navbar: React.FC = () => {
                       <p className="text-xs font-bold text-text-primary truncate">{user.name}</p>
                       <p className="text-[11px] text-text-secondary truncate">{user.email}</p>
                       <div className="mt-1.5 flex items-center gap-1.5">
-                        <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold text-accent uppercase">
-                          Gói {user.package}
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                          user.package && user.package.toLowerCase() !== 'free'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                            : 'bg-slate-100 text-slate-700 border border-slate-200'
+                        }`}>
+                          Gói {user.package || 'Free'}{user.package && user.package.toLowerCase() !== 'free' ? ' VIP' : ''}
                         </span>
                         {user.role === 'admin' && (
                           <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 uppercase">
                             Admin
                           </span>
                         )}
-                        <span className="text-[10px] text-text-muted">HSD: {user.packageExpiry}</span>
+                        <span className="text-[10px] text-text-muted">
+                          {user.package && user.package.toLowerCase() !== 'free' ? `HSD: ${user.packageExpiry}` : 'Miễn phí'}
+                        </span>
                       </div>
                     </div>
 

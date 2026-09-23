@@ -19,7 +19,7 @@ export async function getAllUsers(): Promise<AdminUser[]> {
       name: u.full_name || u.email.split('@')[0] || 'Người dùng',
       email: u.email,
       phone: u.phone || '0988 123 456',
-      package: 'Free',
+      package: (u.package as any) || 'Free',
       role: (u.role as any) || 'user',
       status: 'active',
       joinedDate: u.created_at ? u.created_at.split('T')[0] : new Date().toISOString().split('T')[0],

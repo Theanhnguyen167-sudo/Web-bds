@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     // Kiểm tra xem đã có bản ghi theo email này trong bảng users chưa
     const { data: existingUser } = await supabase
       .from('users')
-      .select('id')
+      .select('id, role, package, package_expires_at')
       .eq('email', email)
       .maybeSingle();
 
@@ -39,13 +39,14 @@ export async function POST(req: Request) {
       validUserId = crypto.randomUUID();
     }
 
-    const payload = {
+    const payload: any = {
       id: validUserId,
       email,
       full_name: full_name || email.split('@')[0],
       avatar_url: avatar_url || null,
       phone: phone || null,
-      role: role || (email.includes('admin') ? 'admin' : 'user'),
+      role: existingUser?.role || role || (email.includes('admin') ? 'admin' : 'user'),
+      package: existingUser?.package || (email.includes('admin') ? 'Agency' : 'Free'),
     };
 
     const { data, error } = await supabase
