@@ -39,6 +39,8 @@ export interface InfrastructureProjectItem {
   impactScore: number; // 1-10
   priceImpactSummary: string;
   googleMapsPlaceUrl?: string;
+  routeCoordinates?: [number, number][]; // Tọa độ tuyến đường / các ga
+  color?: string;
 }
 
 export interface PlanningPolygonZone {
@@ -590,69 +592,68 @@ export const HANOI_INFRASTRUCTURE_PROJECTS: InfrastructureProjectItem[] = [
     type: 'metro',
     typeLabel: 'Tuyến Metro Ngầm',
     lat: 21.0280,
-    lng: 105.8335,
-    district: 'Đống Đa - Ba Đình',
+    lng: 105.8285, // Ga ngầm S10 Cát Linh (nút Giảng Võ - Cát Linh - Hào Nam)
+    district: 'Đống Đa - Ba Đình - Hoàn Kiếm',
     status: 'construction',
     year: '2027',
-    description: 'Dự án trọng điểm quốc gia dài 4km đi ngầm qua 4 ga: Kim Mã, Cát Linh, Văn Miếu, Ga Hà Nội. Hiện robot khoan hầm TBM đang thi công liên tục.',
+    description: 'Dự án trọng điểm quốc gia dài 4km đi ngầm qua 4 ga: Kim Mã (S9), Cát Linh (S10), Văn Miếu (S11), Ga Hà Nội (S12). Robot TBM đang khoan hầm liên tục kết nối mạng lưới giao thông ngầm hiện đại.',
     impactScore: 9.8,
     priceImpactSummary: 'Tăng trưởng giá trị BĐS lân cận dự kiến 18 - 25% sau khi thông tuyến ngầm',
+    color: '#9333ea',
+    routeCoordinates: [
+      [21.0315, 105.8136], // Ga S9 Kim Mã
+      [21.0298, 105.8210], // Trục Giảng Võ
+      [21.0280, 105.8285], // Ga S10 Cát Linh (Hào Nam)
+      [21.0268, 105.8362], // Ga S11 Văn Miếu (Quốc Tử Giám)
+      [21.0245, 105.8415], // Ga S12 Ga Hà Nội (Trần Hưng Đạo)
+    ],
   },
   {
     id: 'infra-metro-2a',
     name: 'Đường sắt Đô thị Tuyến 2A (Cát Linh - Hà Đông)',
     type: 'metro',
     typeLabel: 'Metro Vận Hành',
-    lat: 21.0152,
-    lng: 105.8188,
-    district: 'Đống Đa - Thanh Xuân',
+    lat: 21.0280,
+    lng: 105.8285, // Ga đầu mối Cát Linh (192 Phố Hào Nam)
+    district: 'Đống Đa - Thanh Xuân - Hà Đông',
     status: 'completed',
     year: '2021',
-    description: 'Tuyến đường sắt đô thị đầu tiên của Việt Nam, chiều dài 13.05km với 12 ga trên cao, công suất vận chuyển hơn 35.000 lượt khách/ngày.',
-    impactScore: 9.0,
-    priceImpactSummary: 'Đã hoàn thành và tạo mặt bằng giá ổn định, thanh khoản cho thuê cực cao',
-  },
-  {
-    id: 'infra-metro-line-5',
-    name: 'Tuyến Metro số 5 (Văn Cao - Ngọc Khánh - Láng Hòa Lạc)',
-    type: 'metro',
-    typeLabel: 'Metro Quy Hoạch',
-    lat: 21.0315,
-    lng: 105.8050,
-    district: 'Ba Đình - Cầu Giấy',
-    status: 'planning',
-    year: '2028',
-    description: 'Tuyến metro trục Tây dài 39km kết nối lõi nội đô Ba Đình với Khu công nghệ cao Hòa Lạc.',
+    description: 'Tuyến đường sắt đô thị đầu tiên của Việt Nam, chiều dài 13.05km với 12 ga trên cao. Ga đầu mối Cát Linh đặt tại 192 Hào Nam, tạo đòn bẩy giao thương và thanh khoản vượt trội cho BĐS khu vực.',
     impactScore: 9.2,
-    priceImpactSummary: 'Tác động mạnh mẽ đến các BĐS dọc trục Liễu Giai - Trần Duy Hưng',
+    priceImpactSummary: 'Đã hoàn thành và tạo mặt bằng giá ổn định, thanh khoản cho thuê cực cao',
+    color: '#10b981',
+    routeCoordinates: [
+      [21.0280, 105.8285], // Ga Cát Linh (192 Hào Nam)
+      [21.0210, 105.8260], // Ga La Thành (Hoàng Cầu)
+      [21.0152, 105.8188], // Ga Thái Hà (Yên Lãng)
+      [21.0080, 105.8130], // Ga Láng
+      [20.9995, 105.8120], // Ga Thượng Đình (Royal City)
+      [20.9920, 105.8030], // Ga Vành Đai 3
+      [20.9850, 105.7950], // Ga Phùng Khoang
+      [20.9780, 105.7870], // Ga Văn Quán
+      [20.9710, 105.7790], // Ga Hà Đông
+      [20.9530, 105.7530], // Ga Yên Nghĩa
+    ],
   },
   {
-    id: 'infra-cau-tulien',
-    name: 'Cầu Tứ Liên vượt sông Hồng & Đường nối cao tốc Hà Nội - Thái Nguyên',
-    type: 'bridge',
-    typeLabel: 'Cầu Vượt Sông',
-    lat: 21.0720,
-    lng: 105.8450,
-    district: 'Tây Hồ - Đông Anh',
+    id: 'infra-moduong-haonam',
+    name: 'Mở rộng trục giao thông Đội Cấn - Hào Nam - Ga Cát Linh',
+    type: 'road_expansion',
+    typeLabel: 'Mở Rộng Trục Phố',
+    lat: 21.0280,
+    lng: 105.8285, // Nút giao Hào Nam - Cát Linh
+    district: 'Đống Đa - Ba Đình',
     status: 'construction',
-    year: '2027',
-    description: 'Cầu dây văng hiện đại kết nối trực tiếp quận Tây Hồ với trung tâm tài chính Đông Anh, chiều dài 4.8km.',
-    impactScore: 9.6,
-    priceImpactSummary: 'Tạo cú hích đột phá cho giá đất bán đảo Quảng An, Tứ Liên và Đông Anh',
-  },
-  {
-    id: 'infra-cau-tranhungdao',
-    name: 'Cầu Trần Hưng Đạo nối Hoàn Kiếm sang Long Biên',
-    type: 'bridge',
-    typeLabel: 'Cầu Vượt Sông',
-    lat: 21.0260,
-    lng: 105.8720,
-    district: 'Hoàn Kiếm - Long Biên',
-    status: 'planning',
-    year: '2027',
-    description: 'Cầu vòm kiến trúc phong cách Đông Dương nối phố Trần Hưng Đạo với đường Cổ Linh, Long Biên.',
-    impactScore: 9.4,
-    priceImpactSummary: 'Rút ngắn thời gian di chuyển từ Long Biên vào phố cổ còn 5 phút',
+    year: '2026',
+    description: 'Nâng cấp mở rộng lòng đường lên 25m, chỉnh trang vỉa hè đồng bộ kết nối trục Đội Cấn - Giang Văn Minh - Hào Nam tới nhà ga Metro Cát Linh.',
+    impactScore: 8.9,
+    priceImpactSummary: 'Gia tăng trực tiếp giá trị thương mại cho nhà mặt phố và ngõ lớn lân cận',
+    color: '#f59e0b',
+    routeCoordinates: [
+      [21.0360, 105.8240], // Đội Cấn
+      [21.0315, 105.8265], // Giang Văn Minh
+      [21.0280, 105.8285], // Nút Cát Linh - Hào Nam
+    ],
   },
   {
     id: 'infra-vanhdai-2-trencao',
@@ -660,13 +661,83 @@ export const HANOI_INFRASTRUCTURE_PROJECTS: InfrastructureProjectItem[] = [
     type: 'ring_road',
     typeLabel: 'Đường Vành Đai',
     lat: 21.0010,
-    lng: 105.8360,
-    district: 'Đống Đa - Hai Bà Trưng',
+    lng: 105.8205, // Nút giao Ngã Tư Sở (kết nối Đống Đa - Thanh Xuân)
+    district: 'Đống Đa - Thanh Xuân - Hai Bà Trưng',
     status: 'completed',
     year: '2023',
-    description: 'Tuyến đường trên cao hiện đại 4 làn xe giải tỏa áp lực giao thông cho toàn bộ vành đai trung tâm.',
+    description: 'Tuyến đường trên cao hiện đại 4 làn xe tốc độ cao giải tỏa áp lực giao thông cho toàn bộ vành đai trung tâm, kết nối thẳng cầu Vĩnh Tuy đến Ngã Tư Sở.',
     impactScore: 8.8,
     priceImpactSummary: 'Nâng cao kết nối vùng liên quận Đống Đa - Thanh Xuân - Hai Bà Trưng',
+    color: '#f97316',
+    routeCoordinates: [
+      [21.0015, 105.8750], // Cầu Vĩnh Tuy
+      [20.9980, 105.8620], // Minh Khai
+      [20.9995, 105.8410], // Nút giao Ngã Tư Vọng
+      [21.0005, 105.8310], // Trục Trường Chinh
+      [21.0010, 105.8205], // Nút giao Ngã Tư Sở
+    ],
+  },
+  {
+    id: 'infra-cau-tranhungdao',
+    name: 'Cầu Trần Hưng Đạo nối Hoàn Kiếm sang Long Biên',
+    type: 'bridge',
+    typeLabel: 'Cầu Vượt Sông',
+    lat: 21.0185,
+    lng: 105.8590, // Đầu cầu phố Trần Hưng Đạo - Lê Thánh Tông
+    district: 'Hoàn Kiếm - Long Biên',
+    status: 'planning',
+    year: '2027',
+    description: 'Cầu vòm kiến trúc phong cách Đông Dương biểu tượng, chiều dài 5.5km nối phố Trần Hưng Đạo với đường Cổ Linh, Long Biên.',
+    impactScore: 9.4,
+    priceImpactSummary: 'Rút ngắn thời gian di chuyển từ Long Biên vào phố cổ còn 5 phút',
+    color: '#ec4899',
+    routeCoordinates: [
+      [21.0185, 105.8590], // Trần Hưng Đạo - Lê Thánh Tông
+      [21.0235, 105.8720], // Thân cầu vượt sông Hồng
+      [21.0280, 105.8850], // Nút giao Cổ Linh, Long Biên
+    ],
+  },
+  {
+    id: 'infra-cau-tulien',
+    name: 'Cầu Tứ Liên vượt sông Hồng & Đường nối cao tốc Hà Nội - Thái Nguyên',
+    type: 'bridge',
+    typeLabel: 'Cầu Vượt Sông',
+    lat: 21.0650,
+    lng: 105.8380, // Nút Nghi Tàm - Âu Cơ, Tây Hồ
+    district: 'Tây Hồ - Đông Anh',
+    status: 'construction',
+    year: '2027',
+    description: 'Cầu dây văng hiện đại kết nối trực tiếp quận Tây Hồ với trung tâm tài chính Đông Anh, chiều dài 4.8km.',
+    impactScore: 9.6,
+    priceImpactSummary: 'Tạo cú hích đột phá cho giá đất bán đảo Quảng An, Tứ Liên và Đông Anh',
+    color: '#ef4444',
+    routeCoordinates: [
+      [21.0650, 105.8380], // Nút giao Nghi Tàm - Âu Cơ, Tây Hồ
+      [21.0750, 105.8520], // Thân cầu dây văng giữa sông Hồng
+      [21.0850, 105.8650], // Điểm hạ cầu phía Đông Anh
+    ],
+  },
+  {
+    id: 'infra-metro-line-5',
+    name: 'Tuyến Metro số 5 (Văn Cao - Ngọc Khánh - Láng Hòa Lạc)',
+    type: 'metro',
+    typeLabel: 'Metro Quy Hoạch',
+    lat: 21.0375,
+    lng: 105.8175, // Ga ngầm Văn Cao (Ba Đình)
+    district: 'Ba Đình - Cầu Giấy - Nam Từ Liêm',
+    status: 'planning',
+    year: '2028',
+    description: 'Tuyến metro trục Tây dài 39km kết nối lõi nội đô Ba Đình với Khu công nghệ cao Hòa Lạc.',
+    impactScore: 9.2,
+    priceImpactSummary: 'Tác động mạnh mẽ đến các BĐS dọc trục Liễu Giai - Nguyễn Chí Thanh - Trần Duy Hưng',
+    color: '#3b82f6',
+    routeCoordinates: [
+      [21.0375, 105.8175], // Ga Văn Cao
+      [21.0320, 105.8130], // Ga Liễu Giai
+      [21.0260, 105.8080], // Ga Ngọc Khánh - Nguyễn Chí Thanh
+      [21.0110, 105.7950], // Ga Trần Duy Hưng
+      [20.9980, 105.7650], // Đại lộ Thăng Long
+    ],
   },
   {
     id: 'infra-hamchui-vanhdai-25',
@@ -675,12 +746,18 @@ export const HANOI_INFRASTRUCTURE_PROJECTS: InfrastructureProjectItem[] = [
     typeLabel: 'Nút Giao Trọng Điểm',
     lat: 21.0450,
     lng: 105.7950,
-    district: 'Cầu Giấy',
+    district: 'Cầu Giấy - Bắc Từ Liêm',
     status: 'construction',
     year: '2026',
     description: 'Nút giao ngầm thông suốt trục Vành đai 2.5 kết nối Cầu Giấy, Tây Hồ Tây và Bắc Từ Liêm.',
     impactScore: 8.9,
     priceImpactSummary: 'Thúc đẩy giá trị các phân khu đô thị mới Tây Hồ Tây và Nghĩa Đô',
+    color: '#eab308',
+    routeCoordinates: [
+      [21.0480, 105.7900],
+      [21.0450, 105.7950],
+      [21.0420, 105.8000],
+    ],
   },
   {
     id: 'infra-vanhdai-4',
@@ -688,27 +765,19 @@ export const HANOI_INFRASTRUCTURE_PROJECTS: InfrastructureProjectItem[] = [
     type: 'ring_road',
     typeLabel: 'Cao Tốc Vành Đai',
     lat: 20.9700,
-    lng: 105.7000,
+    lng: 105.7350,
     district: 'Hà Đông - Hoài Đức - Thanh Trì',
     status: 'construction',
     year: '2027',
     description: 'Đại dự án liên kết vùng thủ đô kết nối Hà Nội, Hưng Yên và Bắc Ninh, quy mô 6 làn xe cao tốc.',
     impactScore: 9.7,
     priceImpactSummary: 'Mở rộng không gian phát triển đô thị vệ tinh toàn vùng Tây Nam',
-  },
-  {
-    id: 'infra-moduong-haonam',
-    name: 'Mở rộng trục giao thông Đội Cấn - Hào Nam - Ga Cát Linh',
-    type: 'road_expansion',
-    typeLabel: 'Mở Rộng Trục Phố',
-    lat: 21.0290,
-    lng: 105.8320,
-    district: 'Đống Đa',
-    status: 'construction',
-    year: '2026',
-    description: 'Nâng cấp mở rộng lòng đường lên 25m, chỉnh trang vỉa hè đồng bộ kết nối nhà ga Metro Cát Linh.',
-    impactScore: 8.7,
-    priceImpactSummary: 'Gia tăng trực tiếp giá trị thương mại cho nhà mặt phố và ngõ lớn',
+    color: '#0284c7',
+    routeCoordinates: [
+      [21.0200, 105.6900], // Hoài Đức
+      [20.9700, 105.7350], // Hà Đông - QL6
+      [20.9200, 105.7800], // Thanh Oai - Thường Tín
+    ],
   },
 ];
 
@@ -963,15 +1032,32 @@ export function getNearbyAmenitiesAndProjects(
   nearestMetro?: GeoPOIItem & { distanceMeters: number; distance: string };
   nearestPlanningZone?: PlanningPolygonZone;
 } {
-  // 1. Tính toán khoảng cách đến từng dự án hạ tầng
+  // 1. Tính toán khoảng cách đến từng dự án hạ tầng (sử dụng điểm gần nhất trên tuyến đường)
   const sortedProjects = HANOI_INFRASTRUCTURE_PROJECTS.map((proj) => {
-    const dist = haversineDistanceMeters(propLat, propLng, proj.lat, proj.lng);
+    let minDistance = haversineDistanceMeters(propLat, propLng, proj.lat, proj.lng);
+    let targetLat = proj.lat;
+    let targetLng = proj.lng;
+
+    // Nếu dự án có tọa độ tuyến đường (Route Polylines/Stations), tìm ga/điểm gần BĐS nhất
+    if (proj.routeCoordinates && proj.routeCoordinates.length > 0) {
+      proj.routeCoordinates.forEach(([rLat, rLng]) => {
+        const d = haversineDistanceMeters(propLat, propLng, rLat, rLng);
+        if (d < minDistance) {
+          minDistance = d;
+          targetLat = rLat;
+          targetLng = rLng;
+        }
+      });
+    }
+
     return {
       ...proj,
-      distanceMeters: dist,
-      distance: formatDistanceFriendly(dist),
-      travelTime: estimateTravelTime(dist),
-      googleMapsUrls: createGoogleMapsUrls(proj.name, proj.lat, proj.lng, propLat, propLng),
+      lat: targetLat,
+      lng: targetLng,
+      distanceMeters: minDistance,
+      distance: formatDistanceFriendly(minDistance),
+      travelTime: estimateTravelTime(minDistance),
+      googleMapsUrls: createGoogleMapsUrls(proj.name, targetLat, targetLng, propLat, propLng),
     };
   })
     .filter((p) => p.distanceMeters <= radiusMeters || p.impactScore >= 9.2) // Lấy dự án trong bán kính hoặc đại dự án tác động cao

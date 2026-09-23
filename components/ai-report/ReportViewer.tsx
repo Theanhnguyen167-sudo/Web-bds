@@ -500,8 +500,8 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
         {/* Component Bản Đồ Chuyên Sâu */}
         <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
           <InfrastructureMap
-            propertyLat={listing.lat || 21.0285}
-            propertyLng={listing.lng || 105.8412}
+            propertyLat={listing.lat || 21.0265}
+            propertyLng={listing.lng || 105.8285}
             propertyTitle={listing.title}
             propertyAddress={listing.address}
             propertyDistrict={listing.district}
@@ -602,9 +602,11 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
                   <button
                     onClick={() => {
                       setMapFocusTarget({
+                        id: project.id,
                         lat: project.lat!,
                         lng: project.lng!,
                         name: project.name,
+                        category: 'infrastructure',
                       });
                       mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }}
@@ -698,6 +700,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
                         lat: item.lat!,
                         lng: item.lng!,
                         name: item.name,
+                        category: item.type,
                       });
                       mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }}

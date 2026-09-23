@@ -99,6 +99,8 @@ export default function InfrastructureMap({
   const mapInstanceRef = useRef<any>(null);
   const tileLayerRef = useRef<any>(null);
   const markersLayerRef = useRef<any>(null);
+  const routesLayerRef = useRef<any>(null);
+  const connectorLayerRef = useRef<any>(null);
   const polygonsLayerRef = useRef<any>(null);
   const circlesLayerRef = useRef<any>(null);
   const markersMapRef = useRef<Map<string, any>>(new Map());
@@ -143,10 +145,14 @@ export default function InfrastructureMap({
       // Layer Groups
       const circlesGroup = L.layerGroup().addTo(map);
       const polygonsGroup = L.layerGroup().addTo(map);
+      const routesGroup = L.layerGroup().addTo(map);
+      const connectorGroup = L.layerGroup().addTo(map);
       const markersGroup = L.layerGroup().addTo(map);
 
       circlesLayerRef.current = circlesGroup;
       polygonsLayerRef.current = polygonsGroup;
+      routesLayerRef.current = routesGroup;
+      connectorLayerRef.current = connectorGroup;
       markersLayerRef.current = markersGroup;
 
       mapInstanceRef.current = map;
@@ -302,6 +308,76 @@ export default function InfrastructureMap({
     drawPlanningZones();
   }, [isMapReady, showPlanningZones, planningOpacity]);
 
+  // ── 4b. VẼ CÁC TUYẾN METRO & ĐƯỜNG HUYẾT MẠCH (POLYLINES + GLOW + STATIONS) ──
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current || !routesLayerRef.current) return;
+
+    const drawRoutes = async () => {
+      const L = (await import('leaflet')).default;
+      routesLayerRef.current.clearLayers();
+
+      const showRoutes = activeCategory === 'all' || activeCategory === 'infrastructure' || activeCategory === 'metro';
+      if (!showRoutes) return;
+
+      HANOI_INFRASTRUCTURE_PROJECTS.forEach((proj) => {
+        if (!proj.routeCoordinates || proj.routeCoordinates.length < 2) return;
+
+        const isMetro = proj.type === 'metro';
+        const routeColor = proj.color || (isMetro ? '#9333ea' : '#f59e0b');
+
+        // Lớp hiệu ứng ánh sáng (glow layer)
+        L.polyline(proj.routeCoordinates, {
+          color: routeColor,
+          weight: isMetro ? 8 : 7,
+          opacity: 0.28,
+          lineCap: 'round',
+          lineJoin: 'round',
+        }).addTo(routesLayerRef.current);
+
+        // Lớp tim tuyến chính
+        const polyline = L.polyline(proj.routeCoordinates, {
+          color: routeColor,
+          weight: isMetro ? 4 : 3.5,
+          opacity: 0.95,
+          dashArray: proj.status === 'planning' ? '8, 8' : undefined,
+          lineCap: 'round',
+          lineJoin: 'round',
+        }).addTo(routesLayerRef.current);
+
+        polyline.bindTooltip(
+          `<div style="font-family: inherit; font-size: 11px; font-weight: 700;">
+            <div style="color:${routeColor}; font-size:12px; margin-bottom:2px;">${isMetro ? '🚇' : '🛣️'} ${proj.name}</div>
+            <div style="color:#64748b; font-weight:600;">${proj.typeLabel} · ${proj.status === 'completed' ? 'Đã vận hành' : 'Đang thi công'}</div>
+          </div>`,
+          {
+            sticky: true,
+            className: 'custom-route-tooltip shadow-md rounded-lg p-2 border border-slate-200',
+          }
+        );
+
+        // Các điểm dừng / nhà ga trên tuyến Metro
+        if (isMetro) {
+          proj.routeCoordinates.forEach((coord, idx) => {
+            const stationDot = L.circleMarker(coord, {
+              radius: 4,
+              fillColor: '#ffffff',
+              color: routeColor,
+              weight: 2.5,
+              fillOpacity: 1,
+            }).addTo(routesLayerRef.current);
+
+            stationDot.bindTooltip(
+              `<div style="font-size:10px; font-weight:700;">Ga ${idx + 1} (${proj.name.split('(')[0].trim()})</div>`,
+              { direction: 'top', className: 'text-[10px] font-bold px-1.5 py-0.5 rounded shadow' }
+            );
+          });
+        }
+      });
+    };
+
+    drawRoutes();
+  }, [isMapReady, activeCategory]);
+
   // ── 5. VẼ CÁC MARKER: BẤT ĐỘNG SẢN, DỰ ÁN HẠ TẦNG & TIỆN ÍCH GOOGLE MAPS ──
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current || !markersLayerRef.current) return;
@@ -368,14 +444,29 @@ export default function InfrastructureMap({
       // ── B. Marker Các Dự Án Hạ Tầng Trọng Điểm ──
       if (activeCategory === 'all' || activeCategory === 'infrastructure' || activeCategory === 'metro') {
         HANOI_INFRASTRUCTURE_PROJECTS.forEach((proj) => {
-          const distMeters = haversineDistanceMeters(propertyLat, propertyLng, proj.lat, proj.lng);
+          // Tính điểm nút/ga gần BĐS nhất trên tuyến nếu có routeCoordinates
+          let bestLat = proj.lat;
+          let bestLng = proj.lng;
+          if (proj.routeCoordinates && proj.routeCoordinates.length > 0) {
+            let minD = Infinity;
+            for (const [rLat, rLng] of proj.routeCoordinates) {
+              const d = haversineDistanceMeters(propertyLat, propertyLng, rLat, rLng);
+              if (d < minD) {
+                minD = d;
+                bestLat = rLat;
+                bestLng = rLng;
+              }
+            }
+          }
+
+          const distMeters = haversineDistanceMeters(propertyLat, propertyLng, bestLat, bestLng);
           const distFriendly = formatDistanceFriendly(distMeters);
           const travel = estimateTravelTime(distMeters);
-          const urls = createGoogleMapsUrls(proj.name, proj.lat, proj.lng, propertyLat, propertyLng);
+          const urls = createGoogleMapsUrls(proj.name, bestLat, bestLng, propertyLat, propertyLng);
 
           // Icon theo loại
           const isMetro = proj.type === 'metro';
-          const pinColor = isMetro ? '#8b5cf6' : '#f59e0b';
+          const pinColor = proj.color || (isMetro ? '#9333ea' : '#f59e0b');
           const pinEmoji = isMetro ? '🚇' : proj.type === 'bridge' ? '🌉' : '🛣️';
 
           const infraIcon = L.divIcon({
@@ -395,7 +486,7 @@ export default function InfrastructureMap({
             popupAnchor: [0, -32],
           });
 
-          const marker = L.marker([proj.lat, proj.lng], { icon: infraIcon }).addTo(
+          const marker = L.marker([bestLat, bestLng], { icon: infraIcon }).addTo(
             markersLayerRef.current
           );
 
@@ -447,7 +538,38 @@ export default function InfrastructureMap({
 
           marker.bindPopup(popupContent, { className: 'custom-leaflet-popup' });
           marker.on('click', () => {
-            onSelectItem?.({ ...proj, distFriendly, travel, urls });
+            onSelectItem?.({ ...proj, distFriendly, travel, urls, lat: bestLat, lng: bestLng });
+            // Vẽ đường gióng nối thẳng tới BĐS khi click marker
+            if (connectorLayerRef.current) {
+              connectorLayerRef.current.clearLayers();
+              L.polyline(
+                [
+                  [propertyLat, propertyLng],
+                  [bestLat, bestLng],
+                ],
+                {
+                  color: '#ea580c',
+                  weight: 2.5,
+                  dashArray: '6, 6',
+                  opacity: 0.9,
+                }
+              ).addTo(connectorLayerRef.current);
+
+              const midLat = (propertyLat + bestLat) / 2;
+              const midLng = (propertyLng + bestLng) / 2;
+              const badgeIcon = L.divIcon({
+                html: `
+                  <div style="background:#ea580c; color:#ffffff; font-weight:800; font-size:10px; padding:3px 8px; border-radius:9999px; box-shadow:0 3px 10px rgba(0,0,0,0.35); border:2px solid #ffffff; white-space:nowrap; transform:translate(-50%, -50%); display:inline-flex; align-items:center; gap:4px;">
+                    <span>📏</span>
+                    <span>Cự ly thực tế: <strong>${distFriendly}</strong></span>
+                  </div>
+                `,
+                className: 'distance-connector-badge',
+                iconSize: [0, 0],
+                iconAnchor: [0, 0],
+              });
+              L.marker([midLat, midLng], { icon: badgeIcon, interactive: false }).addTo(connectorLayerRef.current);
+            }
           });
 
           markersMapRef.current.set(proj.id, marker);
@@ -556,6 +678,37 @@ export default function InfrastructureMap({
         marker.bindPopup(popupContent, { className: 'custom-leaflet-popup' });
         marker.on('click', () => {
           onSelectItem?.({ ...poi, distFriendly, travel, urls });
+          // Vẽ đường gióng nối thẳng tới BĐS khi click marker
+          if (connectorLayerRef.current) {
+            connectorLayerRef.current.clearLayers();
+            L.polyline(
+              [
+                [propertyLat, propertyLng],
+                [poi.lat, poi.lng],
+              ],
+              {
+                color: '#3b82f6',
+                weight: 2.5,
+                dashArray: '6, 6',
+                opacity: 0.9,
+              }
+            ).addTo(connectorLayerRef.current);
+
+            const midLat = (propertyLat + poi.lat) / 2;
+            const midLng = (propertyLng + poi.lng) / 2;
+            const badgeIcon = L.divIcon({
+              html: `
+                <div style="background:#3b82f6; color:#ffffff; font-weight:800; font-size:10px; padding:3px 8px; border-radius:9999px; box-shadow:0 3px 10px rgba(0,0,0,0.35); border:2px solid #ffffff; white-space:nowrap; transform:translate(-50%, -50%); display:inline-flex; align-items:center; gap:4px;">
+                  <span>📏</span>
+                  <span>Cự ly: <strong>${distFriendly}</strong></span>
+                </div>
+              `,
+              className: 'distance-connector-badge',
+              iconSize: [0, 0],
+              iconAnchor: [0, 0],
+            });
+            L.marker([midLat, midLng], { icon: badgeIcon, interactive: false }).addTo(connectorLayerRef.current);
+          }
         });
 
         markersMapRef.current.set(poi.id, marker);
@@ -579,21 +732,117 @@ export default function InfrastructureMap({
     if (!isMapReady || !mapInstanceRef.current || !focusTarget) return;
 
     const map = mapInstanceRef.current;
-    map.flyTo([focusTarget.lat, focusTarget.lng], 16, {
-      duration: 1.2,
-      easeLinearity: 0.25,
-    });
 
-    if (focusTarget.id && markersMapRef.current.has(focusTarget.id)) {
-      const targetMarker = markersMapRef.current.get(focusTarget.id);
-      targetMarker.openPopup();
-    }
-  }, [focusTarget, isMapReady]);
+    const handleFocus = async () => {
+      const L = (await import('leaflet')).default;
+
+      // 1. Xóa đường kết nối cũ nếu có
+      if (connectorLayerRef.current) {
+        connectorLayerRef.current.clearLayers();
+      }
+
+      // 2. Chuyển category sang 'all' nếu target đang bị ẩn do bộ lọc
+      if (focusTarget.category === 'infrastructure' || focusTarget.category === 'metro') {
+        if (activeCategory !== 'all' && activeCategory !== 'infrastructure' && activeCategory !== 'metro') {
+          setActiveCategory('all');
+        }
+      } else if (focusTarget.category && activeCategory !== 'all' && activeCategory !== focusTarget.category) {
+        setActiveCategory('all');
+      }
+
+      // 3. Tính khoảng cách và vẽ đường gióng nối thẳng từ BĐS đến điểm hạ tầng
+      const distMeters = haversineDistanceMeters(propertyLat, propertyLng, focusTarget.lat, focusTarget.lng);
+      const distFriendly = formatDistanceFriendly(distMeters);
+
+      if (connectorLayerRef.current) {
+        // Đường gióng đứt nét màu cam nổi bật
+        L.polyline(
+          [
+            [propertyLat, propertyLng],
+            [focusTarget.lat, focusTarget.lng],
+          ],
+          {
+            color: '#ea580c',
+            weight: 3,
+            dashArray: '6, 6',
+            opacity: 0.95,
+          }
+        ).addTo(connectorLayerRef.current);
+
+        // Badge hiển thị cự ly ngay tại trung điểm đường nối
+        const midLat = (propertyLat + focusTarget.lat) / 2;
+        const midLng = (propertyLng + focusTarget.lng) / 2;
+        const badgeIcon = L.divIcon({
+          html: `
+            <div style="background:#ea580c; color:#ffffff; font-weight:800; font-size:11px; padding:3px 10px; border-radius:9999px; box-shadow:0 3px 10px rgba(0,0,0,0.35); border:2px solid #ffffff; white-space:nowrap; transform:translate(-50%, -50%); display:inline-flex; align-items:center; gap:4px;">
+              <span>📏</span>
+              <span>Cự ly thực tế: <strong>${distFriendly}</strong></span>
+            </div>
+          `,
+          className: 'distance-connector-badge',
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+        });
+
+        L.marker([midLat, midLng], { icon: badgeIcon, interactive: false }).addTo(connectorLayerRef.current);
+      }
+
+      // 4. Di chuyển camera / Zoom bao quát cả BĐS và điểm hạ tầng nếu cự ly < 4.5km
+      if (distMeters > 250 && distMeters < 4500) {
+        map.flyToBounds(
+          [
+            [propertyLat, propertyLng],
+            [focusTarget.lat, focusTarget.lng],
+          ],
+          {
+            padding: [70, 70],
+            maxZoom: 16,
+            duration: 1.2,
+            easeLinearity: 0.25,
+          }
+        );
+      } else {
+        map.flyTo([focusTarget.lat, focusTarget.lng], 16, {
+          duration: 1.2,
+          easeLinearity: 0.25,
+        });
+      }
+
+      // 5. Mở Popup của Marker tương ứng
+      let targetMarker = focusTarget.id ? markersMapRef.current.get(focusTarget.id) : null;
+
+      // Fallback: Nếu không tìm thấy bằng id, tìm marker gần tọa độ focusTarget nhất (< 100m)
+      if (!targetMarker) {
+        let nearestMarker = null;
+        let minDistance = 100;
+        markersMapRef.current.forEach((marker) => {
+          if (marker && marker.getLatLng) {
+            const mPos = marker.getLatLng();
+            const d = haversineDistanceMeters(focusTarget.lat, focusTarget.lng, mPos.lat, mPos.lng);
+            if (d < minDistance) {
+              minDistance = d;
+              nearestMarker = marker;
+            }
+          }
+        });
+        targetMarker = nearestMarker;
+      }
+
+      if (targetMarker) {
+        setTimeout(() => {
+          targetMarker.openPopup();
+        }, 400);
+      }
+    };
+
+    handleFocus();
+  }, [focusTarget, isMapReady, propertyLat, propertyLng, activeCategory]);
 
   // Điều khiển Zoom & Re-center
   const handleZoomIn = () => mapInstanceRef.current?.zoomIn();
   const handleZoomOut = () => mapInstanceRef.current?.zoomOut();
   const handleRecenter = () => {
+    connectorLayerRef.current?.clearLayers();
     mapInstanceRef.current?.flyTo([propertyLat, propertyLng], 15, { duration: 1 });
     const propMarker = markersMapRef.current.get('property');
     propMarker?.openPopup();

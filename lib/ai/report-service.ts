@@ -13,6 +13,7 @@ export interface PropertyAIReport {
   floorAreaRatio: number;
   maxHeight: string;
   nearbyProjects: Array<{
+    id?: string;
     name: string;
     distance: string;
     distanceMeters?: number;
@@ -25,6 +26,8 @@ export interface PropertyAIReport {
     priceImpactSummary?: string;
     googleMapsUrl?: string;
     directionsUrl?: string;
+    routeCoordinates?: [number, number][];
+    color?: string;
   }>;
   amenities: Array<{
     id?: string;
@@ -276,6 +279,7 @@ Về pháp lý & sang tên: Khẳng định 100% hồ sơ pháp lý hoàn chỉn
   const nearbyProjects =
     spatialData && spatialData.projects.length > 0
       ? spatialData.projects.map((p) => ({
+          id: p.id,
           name: p.name,
           distance: p.distance,
           distanceMeters: p.distanceMeters,
@@ -288,6 +292,8 @@ Về pháp lý & sang tên: Khẳng định 100% hồ sơ pháp lý hoàn chỉn
           priceImpactSummary: p.priceImpactSummary,
           googleMapsUrl: p.googleMapsUrls.searchUrl,
           directionsUrl: p.googleMapsUrls.directionsUrl,
+          routeCoordinates: p.routeCoordinates,
+          color: p.color,
         }))
       : preset.nearbyProjects || [
           { name: 'Tuyến Metro đô thị kết nối trung tâm', distance: '600m', status: 'construction', year: '2027' },

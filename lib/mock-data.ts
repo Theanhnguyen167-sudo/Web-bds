@@ -42,8 +42,8 @@ export const mockListings: ListingItem[] = [
     address: "Phố Hào Nam, Đống Đa, Hà Nội",
     district: "Đống Đa",
     ward: "Phường Ô Chợ Dừa",
-    lat: 21.0285,
-    lng: 105.8412,
+    lat: 21.0265,
+    lng: 105.8285,
     type: "house",
     images: [
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80",
