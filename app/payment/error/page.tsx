@@ -54,13 +54,30 @@ function ErrorContent() {
         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 text-xs text-left space-y-2">
           <div className="flex items-center gap-1.5 font-bold text-navy">
             <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-            <span>Nguyên nhân phổ biến có thể do:</span>
+            <span>Gợi ý xử lý theo hình thức ({method === 'momo' ? 'Ví MoMo' : method === 'vnpay' ? 'Cổng VNPay' : 'Chuyển khoản'}):</span>
           </div>
           <ul className="list-disc list-inside text-slate-600 text-[11px] space-y-1 pl-1">
-            <li>Số dư tài khoản ví / thẻ không đủ thanh toán</li>
-            <li>Thẻ ATM chưa kích hoạt thanh toán Internet Banking</li>
-            <li>Quá thời gian 15 phút xác nhận mã OTP hoặc QR</li>
-            <li>Người dùng chủ động bấm Hủy trên ứng dụng</li>
+            {method === 'momo' && (
+              <>
+                <li>Số dư Ví MoMo không đủ hoặc thẻ liên kết bị từ chối</li>
+                <li>Hết thời hạn 15 phút quét mã MoMo QR</li>
+                <li>Chủ động bấm Hủy giao dịch trên ứng dụng MoMo</li>
+              </>
+            )}
+            {method === 'vnpay' && (
+              <>
+                <li>Thẻ ATM chưa kích hoạt thanh toán trực tuyến (Internet Banking)</li>
+                <li>Nhập sai mã OTP SMS hoặc hết thời gian xác thực ngân hàng</li>
+                <li>Hạn mức giao dịch trực tuyến ngày của thẻ vượt quá mức cho phép</li>
+              </>
+            )}
+            {method === 'bank_transfer' && (
+              <>
+                <li>Nhập thiếu hoặc sai cú pháp nội dung chuyển khoản</li>
+                <li>Chuyển khoản liên ngân hàng vào ban đêm chậm hơn bình thường</li>
+                <li>Vui lòng lưu lại biên lai và liên hệ Hotline để đối soát tức thì</li>
+              </>
+            )}
           </ul>
         </div>
 

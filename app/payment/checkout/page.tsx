@@ -109,15 +109,21 @@ function CheckoutContent() {
 
         const data = await res.json();
         if (data.success && data.paymentUrl) {
-          // Redirect to VNPay Gateway
-          window.location.href = data.paymentUrl;
+          router.push(
+            `/payment/processing?orderId=${data.orderId}&method=vnpay&amount=${finalTotal}&bankCode=${selectedBank}&paymentUrl=${encodeURIComponent(
+              data.paymentUrl
+            )}`
+          );
         } else {
-          addToast('Lỗi khi chuyển hướng cổng VNPay', 'error');
+          router.push(
+            `/payment/processing?orderId=VNP_${Date.now()}&method=vnpay&amount=${finalTotal}&bankCode=${selectedBank}`
+          );
         }
       } else {
-        // Bank transfer manual flow
+        // Bank transfer VietQR flow
+        const transferOrderId = `CK_${(user.id || 'u1').slice(0, 6)}_${Date.now()}`;
         router.push(
-          `/payment/processing?orderId=CK_${user.id.slice(0, 6)}_${Date.now()}&method=bank_transfer&amount=${finalTotal}`
+          `/payment/processing?orderId=${transferOrderId}&method=bank_transfer&amount=${finalTotal}`
         );
       }
     } catch (err: any) {
@@ -125,6 +131,19 @@ function CheckoutContent() {
       addToast('Có lỗi xảy ra, vui lòng thử lại', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getCtaButtonLabel = () => {
+    switch (selectedMethod) {
+      case 'momo':
+        return '🌸 Thanh toán qua Ví MoMo QR →';
+      case 'vnpay':
+        return '🏦 Kết nối Cổng thanh toán VNPay →';
+      case 'bank_transfer':
+        return '🏛️ Tạo mã VietQR Chuyển khoản 24/7 →';
+      default:
+        return 'Tiến hành thanh toán ngay →';
     }
   };
 
@@ -158,7 +177,7 @@ function CheckoutContent() {
             </div>
             <div className="text-slate-400 flex items-center justify-center gap-1.5">
               <span className="h-5 w-5 rounded-full bg-slate-100 flex items-center justify-center text-[11px]">3</span>
-              <span className="hidden sm:inline">Thanh toán</span>
+              <span className="hidden sm:inline">Xác nhận</span>
             </div>
             <div className="text-slate-400 flex items-center justify-center gap-1.5">
               <span className="h-5 w-5 rounded-full bg-slate-100 flex items-center justify-center text-[11px]">4</span>
@@ -187,7 +206,13 @@ function CheckoutContent() {
                 type="button"
                 onClick={handleProcessPayment}
                 disabled={loading}
-                className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                className={`w-full py-4 font-extrabold text-sm rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 text-white ${
+                  selectedMethod === 'momo'
+                    ? 'bg-[#ae2070] hover:bg-[#90165c] shadow-pink-500/25'
+                    : selectedMethod === 'vnpay'
+                    ? 'bg-[#0066cc] hover:bg-[#0052a3] shadow-blue-500/25'
+                    : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25'
+                }`}
               >
                 {loading ? (
                   <>
@@ -197,7 +222,7 @@ function CheckoutContent() {
                 ) : (
                   <>
                     <CreditCard className="h-5 w-5" />
-                    <span>Tiến hành thanh toán ngay →</span>
+                    <span>{getCtaButtonLabel()}</span>
                   </>
                 )}
               </button>

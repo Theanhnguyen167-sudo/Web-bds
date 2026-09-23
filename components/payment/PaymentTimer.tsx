@@ -4,14 +4,17 @@ import React, { useState, useEffect } from 'react';
 
 interface PaymentTimerProps {
   initialSeconds?: number;
+  durationMinutes?: number;
   onExpire?: () => void;
 }
 
 export const PaymentTimer: React.FC<PaymentTimerProps> = ({
-  initialSeconds = 15 * 60, // 15 minutes
+  initialSeconds,
+  durationMinutes,
   onExpire,
 }) => {
-  const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
+  const totalSeconds = durationMinutes ? durationMinutes * 60 : initialSeconds || 15 * 60;
+  const [secondsLeft, setSecondsLeft] = useState(totalSeconds);
 
   useEffect(() => {
     if (secondsLeft <= 0) {
@@ -28,7 +31,7 @@ export const PaymentTimer: React.FC<PaymentTimerProps> = ({
 
   const minutes = Math.floor(secondsLeft / 60);
   const remainingSeconds = secondsLeft % 60;
-  const progressPercent = (secondsLeft / initialSeconds) * 100;
+  const progressPercent = (secondsLeft / totalSeconds) * 100;
 
   // Color transitions
   const getColorClass = () => {

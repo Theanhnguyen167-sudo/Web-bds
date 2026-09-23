@@ -28,7 +28,7 @@ export const Header: React.FC = () => {
             <Layers className="h-4 w-4 text-emerald-600" />
             Tra cứu Quy hoạch
           </Link>
-          <Link href="/reports/demo" className="flex items-center gap-1.5 transition-colors hover:text-primary text-foreground/80">
+          <Link href="/reports" className="flex items-center gap-1.5 transition-colors hover:text-primary text-foreground/80">
             <Sparkles className="h-4 w-4 text-amber-500" />
             Thẩm định AI
           </Link>

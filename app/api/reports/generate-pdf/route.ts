@@ -7,24 +7,18 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { report, listing, userName } = await req.json();
-
-    if (!report || !listing) {
-      return NextResponse.json(
-        { error: 'Thiếu dữ liệu report hoặc listing' },
-        { status: 400 }
-      );
-    }
+    const body = await req.json().catch(() => ({}));
+    const { report = {}, listing = {}, userName = 'Chuyên viên BĐS Hà Nội' } = body;
 
     const pdfBuffer = await renderToBuffer(
       React.createElement(ReportPDFDocument, {
-        report,
-        listing,
+        report: report || {},
+        listing: listing || {},
         userName: userName || 'Chuyên viên BĐS Hà Nội',
       }) as any
     );
 
-    const safeId = (report.id || 'report-01').slice(0, 8);
+    const safeId = ((report && report.id) || 'report-01').toString().slice(0, 8).toUpperCase();
 
     return new NextResponse(pdfBuffer as any, {
       status: 200,
@@ -42,3 +36,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

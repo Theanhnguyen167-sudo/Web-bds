@@ -13,6 +13,7 @@ function SuccessContent() {
   const orderId = searchParams.get('orderId') || `HNREALTY_${Date.now()}`;
   const method = searchParams.get('method') || 'momo';
   const amount = Number(searchParams.get('amount') || '658900');
+  const bankCode = searchParams.get('bankCode') || '';
 
   return (
     <div className="min-h-screen bg-page-bg py-12 px-4 flex flex-col justify-center items-center relative overflow-hidden">
@@ -26,6 +27,7 @@ function SuccessContent() {
           amount={amount}
           packageName="Pro (1 tháng)"
           userEmail={user?.email || 'khachhang@gmail.com'}
+          bankCode={bankCode}
         />
       </div>
     </div>

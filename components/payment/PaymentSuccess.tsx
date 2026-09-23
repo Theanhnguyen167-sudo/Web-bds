@@ -22,6 +22,7 @@ interface PaymentSuccessProps {
   amount: number;
   packageName?: string;
   userEmail?: string;
+  bankCode?: string;
 }
 
 export const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
@@ -30,13 +31,14 @@ export const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
   amount,
   packageName = 'Pro (1 tháng)',
   userEmail = 'user@example.com',
+  bankCode,
 }) => {
   const methodLabel =
     method === 'momo'
-      ? '🌸 Ví MoMo'
+      ? '🌸 Ví điện tử MoMo'
       : method === 'vnpay'
-      ? '🏦 Cổng VNPay'
-      : '🏛️ Chuyển khoản';
+      ? `🏦 Cổng thanh toán VNPay${bankCode && bankCode !== 'ALL' ? ` (${bankCode})` : ''}`
+      : '🏛️ Chuyển khoản VietQR 24/7 (Vietcombank)';
 
   const today = new Date().toLocaleString('vi-VN');
   const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN');
@@ -58,7 +60,7 @@ export const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
       <div className="space-y-1">
         <h2 className="text-2xl font-black text-navy">Thanh toán thành công!</h2>
         <p className="text-xs text-slate-500">
-          Gói <strong className="text-orange-600">{packageName}</strong> đã được kích hoạt thành công cho tài khoản của bạn.
+          Gói dịch vụ <strong className="text-orange-600">{packageName}</strong> đã được kích hoạt thành công cho tài khoản của bạn.
         </p>
       </div>
 
@@ -70,24 +72,38 @@ export const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
         </div>
 
         <div className="flex justify-between">
-          <span className="text-slate-500">Phương thức:</span>
+          <span className="text-slate-500">Phương thức thanh toán:</span>
           <span className="font-bold text-slate-700">{methodLabel}</span>
         </div>
 
+        {method === 'bank_transfer' && (
+          <div className="flex justify-between">
+            <span className="text-slate-500">Ngân hàng thụ hưởng:</span>
+            <span className="font-bold text-emerald-700">Vietcombank - CN Thăng Long</span>
+          </div>
+        )}
+
+        {method === 'vnpay' && (
+          <div className="flex justify-between">
+            <span className="text-slate-500">Chuẩn kết nối:</span>
+            <span className="font-bold text-[#0066cc]">VNPAY-QR / Napas PCI-DSS</span>
+          </div>
+        )}
+
         <div className="flex justify-between">
-          <span className="text-slate-500">Số tiền:</span>
+          <span className="text-slate-500">Số tiền thanh toán:</span>
           <span className="font-black text-orange-600 text-sm">
             {formatCurrencyVND(amount)}
           </span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-slate-500">Thời gian:</span>
+          <span className="text-slate-500">Thời gian thực hiện:</span>
           <span className="text-slate-700">{today}</span>
         </div>
 
         <div className="flex justify-between pt-2 border-t border-slate-200">
-          <span className="text-slate-500">Thời hạn gói đến:</span>
+          <span className="text-slate-500">Thời hạn gói dịch vụ:</span>
           <strong className="text-emerald-600 font-bold">{expiryDate}</strong>
         </div>
       </div>
