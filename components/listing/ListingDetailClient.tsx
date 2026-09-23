@@ -9,6 +9,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import FloatingContactWidget from '@/components/contact/FloatingContactWidget';
 import { useApp } from '@/lib/context/AppContext';
 import { mockListings, mockUser } from '@/lib/mock-data';
+import PropertyAmenities from '@/components/listing/PropertyAmenities';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import {
   Home,
@@ -747,6 +748,14 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                   )}
                 </button>
               </div>
+
+              {/* ── TIỆN ÍCH & DỊCH VỤ XUNG QUANH BẤT ĐỘNG SẢN (ĐỊNH VỊ GOOGLE MAPS) ── */}
+              <PropertyAmenities
+                district={listing.district}
+                lat={listing.lat || 21.0280}
+                lng={listing.lng || 105.8350}
+                listingAddress={listing.address}
+              />
 
             </div>
 
