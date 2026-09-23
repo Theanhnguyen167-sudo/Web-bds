@@ -27,6 +27,7 @@ export interface PropertyAIReport {
     directionsUrl?: string;
   }>;
   amenities: Array<{
+    id?: string;
     type: 'school' | 'hospital' | 'mall' | 'park' | 'metro';
     name: string;
     distance: string;
@@ -297,6 +298,7 @@ Về pháp lý & sang tên: Khẳng định 100% hồ sơ pháp lý hoàn chỉn
   const amenities =
     spatialData && spatialData.amenities.length > 0
       ? spatialData.amenities.map((a) => ({
+          id: a.id,
           type:
             a.category === 'metro'
               ? ('metro' as const)
@@ -314,7 +316,7 @@ Về pháp lý & sang tên: Khẳng định 100% hồ sơ pháp lý hoàn chỉn
           lat: a.lat,
           lng: a.lng,
           address: a.address,
-          travelTimeText: a.travelTime.walkingText,
+          travelTimeText: a.distanceMeters && a.distanceMeters < 1000 ? a.travelTime.walkingText : a.travelTime.motorbikeText,
           googleMapsUrl: a.googleMapsUrls.searchUrl,
           directionsUrl: a.googleMapsUrls.directionsUrl,
         }))

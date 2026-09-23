@@ -694,6 +694,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
                   <button
                     onClick={() => {
                       setMapFocusTarget({
+                        id: item.id,
                         lat: item.lat!,
                         lng: item.lng!,
                         name: item.name,
@@ -712,11 +713,15 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
                 <a
                   href={
                     item.directionsUrl ||
-                    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.name + ' Hà Nội')}`
+                    (item.lat && item.lng
+                      ? (listing.lat && listing.lng
+                          ? `https://www.google.com/maps/dir/?api=1&origin=${listing.lat},${listing.lng}&destination=${item.lat},${item.lng}&travelmode=driving`
+                          : `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`)
+                      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.name + ' Hà Nội')}`)
                   }
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1"
+                  className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1 hover:underline"
                 >
                   <span>Chỉ đường Google Maps</span>
                   <ExternalLink className="h-3 w-3" />

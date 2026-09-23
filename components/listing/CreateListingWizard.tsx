@@ -309,7 +309,13 @@ export const CreateListingWizard: React.FC = () => {
         pricePerM2: formData.price / formData.area,
       });
 
-      clearDraftStorage(); // Dọn dẹp bản nháp đã lưu sau khi xuất bản thành công
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('listing_wizard_draft');
+        } catch {
+          // Ignore localStorage errors
+        }
+      }
 
       router.push('/dashboard');
     } catch (e) {

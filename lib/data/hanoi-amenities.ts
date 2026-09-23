@@ -46,8 +46,8 @@ export const HANOI_AMENITIES: AmenityLocation[] = [
     rating: 4.6,
     address: 'Phố Quốc Tử Giám, Văn Miếu, Đống Đa, Hà Nội',
     district: 'Đống Đa',
-    lat: 21.0277,
-    lng: 105.8350,
+    lat: 21.0285,
+    lng: 105.8362,
     note: 'Ga ngầm tuyến Metro 3 (Nhổn - Ga Hà Nội), cạnh Văn Miếu Quốc Tử Giám',
   },
   {

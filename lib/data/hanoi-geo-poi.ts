@@ -79,15 +79,15 @@ export const HANOI_GEO_POIS: GeoPOIItem[] = [
   },
   {
     id: 'poi-metro-vanmieu',
-    name: 'Ga Metro Văn Miếu (Tuyến 2A)',
+    name: 'Ga Metro Văn Miếu (Tuyến 3 Ngầm)',
     category: 'metro',
     categoryLabel: 'Ga Metro',
-    lat: 21.0277,
-    lng: 105.8350,
-    address: 'Đường Hào Nam, Đống Đa, Hà Nội',
+    lat: 21.0285,
+    lng: 105.8362,
+    address: 'Phố Quốc Tử Giám, Văn Miếu, Đống Đa, Hà Nội',
     district: 'Đống Đa',
     rating: 4.6,
-    description: 'Ga trung tâm gần Nhạc viện Hà Nội và hồ Hào Nam',
+    description: 'Ga ngầm S10 tuyến Metro số 3 (Nhổn - Ga Hà Nội), cạnh di tích Quốc gia đặc biệt Văn Miếu - Quốc Tử Giám',
   },
   {
     id: 'poi-metro-lathanh',
@@ -324,8 +324,8 @@ export const HANOI_GEO_POIS: GeoPOIItem[] = [
     name: 'Bệnh viện Đa khoa Đống Đa',
     category: 'hospital',
     categoryLabel: 'Bệnh viện',
-    lat: 21.0268,
-    lng: 105.8340,
+    lat: 21.0152,
+    lng: 105.8273,
     address: 'Ngõ 180 Nguyễn Lương Bằng, Quang Trung, Đống Đa, Hà Nội',
     district: 'Đống Đa',
     rating: 4.6,
@@ -362,7 +362,7 @@ export const HANOI_GEO_POIS: GeoPOIItem[] = [
     name: 'Đại học Kinh tế Quốc dân (NEU)',
     category: 'school',
     categoryLabel: 'Giáo dục',
-    lat: 21.0163,
+    lat: 21.0015,
     lng: 105.8427,
     address: '207 Giải Phóng, Đồng Tâm, Hai Bà Trưng, Hà Nội',
     district: 'Hai Bà Trưng',
@@ -926,8 +926,7 @@ export function createGoogleMapsUrls(
   searchUrl: string;
   directionsUrl: string;
 } {
-  const queryParam = encodeURIComponent(`${name}, Hà Nội`);
-  const searchUrl = `https://www.google.com/maps/search/?api=1&query=${destLat},${destLng}&query_place_id=${queryParam}`;
+  const searchUrl = `https://www.google.com/maps/search/?api=1&query=${destLat},${destLng}`;
 
   const directionsUrl =
     originLat && originLng
