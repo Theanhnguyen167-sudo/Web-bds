@@ -246,11 +246,11 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
           </div>
         </div>
 
-        {/* ════════════ 1. KHỐI ẢNH (60%) & NGƯỜI ĐĂNG BÁN (40%) ════════════ */}
-        <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start mb-10">
+        {/* ════════════ 1. KHỐI ẢNH (70%) & NGƯỜI ĐĂNG BÁN (30%) ════════════ */}
+        <section className="grid grid-cols-1 lg:grid-cols-10 gap-6 lg:gap-8 items-start mb-10">
           
-          {/* ── BÊN TRÁI (60% / lg:col-span-3): ẢNH CỦA BÀI ĐĂNG ── */}
-          <div className="lg:col-span-3 flex flex-col gap-3">
+          {/* ── BÊN TRÁI (70% / lg:col-span-7): ẢNH CỦA BÀI ĐĂNG ── */}
+          <div className="lg:col-span-7 flex flex-col gap-3">
             {/* Ảnh lớn chính */}
             <div
               onClick={() => openLightbox(activeImageIndex)}
@@ -343,8 +343,8 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
             )}
           </div>
 
-          {/* ── BÊN PHẢI (40% / lg:col-span-2): THÔNG TIN CHI TIẾT CỦA NGƯỜI ĐĂNG BÁN ── */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm flex flex-col justify-between space-y-4">
+          {/* ── BÊN PHẢI (30% / lg:col-span-3): THÔNG TIN CHI TIẾT CỦA NGƯỜI ĐĂNG BÁN ── */}
+          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm flex flex-col justify-between space-y-4">
             {/* Header thông tin người đăng bán */}
             <div>
               <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
