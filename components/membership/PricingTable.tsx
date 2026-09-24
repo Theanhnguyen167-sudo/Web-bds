@@ -39,7 +39,7 @@ export const PricingTable: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-8 space-y-12">
+    <div className="w-full max-w-7xl mx-auto py-8 space-y-12">
       {/* Header & Toggle */}
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-3.5 py-1 text-xs font-extrabold text-accent">
@@ -102,7 +102,7 @@ export const PricingTable: React.FC = () => {
       </div>
 
       {/* Pricing Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6 items-stretch">
         {mockPackages.map((pkg, idx) => {
           const isPro = pkg.isPopular;
           const calculatedPrice =
@@ -117,23 +117,23 @@ export const PricingTable: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: idx * 0.1 }}
               whileHover={{ y: -6 }}
-              className={`relative flex flex-col justify-between rounded-3xl border bg-white p-6 shadow-sm transition-all duration-200 ${
+              className={`relative flex flex-col justify-between rounded-3xl border bg-white p-5 xl:p-6 shadow-sm transition-all duration-200 min-w-0 ${
                 isPro
-                  ? 'border-accent ring-4 ring-accent/15 shadow-glow lg:scale-105 z-10'
+                  ? 'border-accent ring-4 ring-accent/15 shadow-glow lg:-translate-y-2 z-10'
                   : 'border-border hover:shadow-lg'
               }`}
             >
               {/* Popular Badge */}
               {isPro && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-md">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-md whitespace-nowrap">
                   🔥 Phổ biến nhất
                 </div>
               )}
 
-              <div>
+              <div className="flex-1 flex flex-col">
                 {/* Package Name */}
-                <h3 className="text-base font-extrabold text-text-primary">{pkg.name}</h3>
-                <p className="text-[11px] text-text-secondary mt-1">
+                <h3 className="text-base sm:text-lg font-extrabold text-text-primary">{pkg.name}</h3>
+                <p className="text-[11px] text-text-secondary mt-1 min-h-[16px]">
                   {pkg.id === 'free'
                     ? 'Trải nghiệm cá nhân'
                     : pkg.id === 'basic'
@@ -144,71 +144,52 @@ export const PricingTable: React.FC = () => {
                 </p>
 
                 {/* Price Display */}
-                <div className="my-5 flex items-baseline gap-1">
-                  <span className="text-2xl sm:text-3xl font-black text-text-primary">
-                    {calculatedPrice === 0 ? 'Miễn phí' : `${calculatedPrice.toLocaleString('vi-VN')} đ`}
+                <div
+                  className="my-5 flex items-baseline gap-1 whitespace-nowrap flex-nowrap min-w-0"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  <span className="text-xl sm:text-[22px] xl:text-2xl font-black text-text-primary tracking-tight shrink-0 whitespace-nowrap">
+                    {calculatedPrice === 0 ? 'Miễn phí' : calculatedPrice.toLocaleString('vi-VN')}
                   </span>
                   {calculatedPrice > 0 && (
-                    <span className="text-xs font-semibold text-text-muted">/tháng</span>
+                    <span className="text-xs sm:text-sm font-bold text-text-muted whitespace-nowrap shrink-0">
+                      đ/tháng
+                    </span>
                   )}
                 </div>
 
-                {/* Feature List */}
-                <div className="border-t border-border pt-4 space-y-2.5 text-xs text-text-primary">
-                  <div className="flex items-center gap-2 font-semibold">
-                    <CheckCircle2 className="h-4 w-4 text-accent shrink-0" />
-                    <span>
-                      {pkg.listings === -1 ? 'Không giới hạn tin đăng' : `Đăng tối đa ${pkg.listings} tin`}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 font-semibold">
-                    <CheckCircle2 className="h-4 w-4 text-accent shrink-0" />
-                    <span>Thời hạn tin: {pkg.duration} ngày</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 font-semibold">
-                    <CheckCircle2 className="h-4 w-4 text-accent shrink-0" />
-                    <span>
-                      {pkg.aiReports === -1
-                        ? 'Báo cáo AI không giới hạn'
-                        : pkg.aiReports === 0
-                        ? 'Chưa hỗ trợ báo cáo AI'
-                        : `${pkg.aiReports} Báo cáo AI chuyên sâu`}
-                    </span>
-                  </div>
-
-                  {pkg.features.map((feat, fIdx) => (
-                    <div key={fIdx} className="flex items-center gap-2 text-text-secondary">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
-                      <span>{feat}</span>
+                {/* Unified Feature List */}
+                <div className="border-t border-border pt-4 space-y-2.5 text-xs flex-1">
+                  {pkg.features.map((featureText, fIdx) => (
+                    <div
+                      key={fIdx}
+                      className="flex items-start gap-2 leading-snug text-text-primary font-medium"
+                    >
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{featureText}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Action Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => handleSelectPackage(pkg)}
-                className={`mt-8 flex w-full items-center justify-center gap-2 rounded-xl py-3 px-4 text-xs font-extrabold transition-all shadow-sm cursor-pointer ${
-                  user?.package?.toLowerCase() === pkg.id.toLowerCase()
-                    ? 'bg-slate-100 text-slate-500 border border-slate-200 shadow-none'
-                    : isPro
-                    ? 'bg-accent text-white shadow-md shadow-accent/25 hover:bg-accent-hover'
-                    : 'bg-primary text-white hover:bg-primary-hover'
-                }`}
-              >
-                <span>
-                  {user?.package?.toLowerCase() === pkg.id.toLowerCase()
-                    ? 'Đang sử dụng'
-                    : pkg.id === 'free'
-                    ? 'Gói cơ bản (Free)'
-                    : `Nâng cấp ${pkg.name} →`}
-                </span>
-                {user?.package?.toLowerCase() !== pkg.id.toLowerCase() && <ArrowRight className="h-4 w-4" />}
-              </motion.button>
+              <div className="pt-5 mt-auto border-t border-slate-100">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleSelectPackage(pkg)}
+                  className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 px-3 text-xs sm:text-sm font-extrabold transition-all shadow-sm cursor-pointer whitespace-nowrap ${
+                    isPro
+                      ? 'bg-accent text-white shadow-md shadow-accent/25 hover:bg-accent-hover'
+                      : 'bg-primary text-white hover:bg-primary-hover'
+                  }`}
+                >
+                  <span className="truncate">
+                    {pkg.id === 'free' ? 'Gói cơ bản (Free)' : `Nâng cấp ${pkg.name}`}
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
+                </motion.button>
+              </div>
             </motion.div>
           );
         })}
