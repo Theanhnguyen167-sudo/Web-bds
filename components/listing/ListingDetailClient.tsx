@@ -195,7 +195,121 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
           </div>
         </div>
 
-        {/* ════════════ 1. KHỐI TRÊN (TOP HALF): ẢNH (60%) & NGƯỜI ĐĂNG BÁN (40%) ════════════ */}
+        {/* ── HEADER BÀI ĐĂNG (TIÊU ĐỀ, GIÁ, ĐỊA CHỈ, THÔNG SỐ CỐT LÕI) ── */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-7 shadow-sm space-y-4 mb-6">
+          {/* Badge phân khu & quy hoạch */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 border border-blue-200/60">
+              <Layers className="h-3 w-3" />
+              {listing.planningZone || 'Đất ở đô thị'}
+            </span>
+            <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+              Quy hoạch {listing.planningYear || 2030}
+            </span>
+            {listing.isFeatured && (
+              <span className="rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 border border-amber-200 flex items-center gap-1">
+                <span>⭐</span> Tin nổi bật
+              </span>
+            )}
+          </div>
+
+          {/* Tiêu đề bài đăng */}
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+            {listing.title}
+          </h1>
+
+          {/* Giá + thông tin ngày đăng / lượt xem */}
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 pt-0.5 border-b border-slate-100 pb-4">
+            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-rose-600 tracking-tight">
+              {formatCurrencyVND(listing.price)}
+            </span>
+            <span className="text-sm sm:text-base font-semibold text-slate-500">
+              · {formatPricePerM2(listing.price, listing.area)}
+            </span>
+            <div className="flex items-center gap-3 text-xs text-slate-400 ml-auto pt-1 sm:pt-0">
+              <span className="flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5" />
+                Đăng ngày {listing.createdAt || '2025-08-18'}
+              </span>
+              <span>·</span>
+              <span className="flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" />
+                {listing.views || 234} lượt xem
+              </span>
+            </div>
+          </div>
+
+          {/* Địa chỉ bài đăng */}
+          <div className="flex items-center gap-2 text-sm sm:text-base text-slate-700 font-medium">
+            <MapPin className="h-4 w-4 text-orange-500 shrink-0" />
+            <span>{listing.address}</span>
+          </div>
+
+          {/* Hàng thông số cốt lõi */}
+          <div className="pt-2">
+            <div className="hidden sm:flex items-center gap-5 text-sm text-slate-700 font-medium bg-slate-50/80 p-3.5 rounded-xl border border-slate-100">
+              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                <Maximize2 className="h-4 w-4 text-slate-400" />
+                {listing.area} m²
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                <Building className="h-4 w-4 text-slate-400" />
+                {listing.floors} tầng
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                <Bed className="h-4 w-4 text-slate-400" />
+                {listing.bedrooms} PN
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                <Bath className="h-4 w-4 text-slate-400" />
+                {listing.bathrooms} PT
+              </span>
+              {listing.direction && (
+                <>
+                  <span className="text-slate-300">|</span>
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <Compass className="h-4 w-4 text-slate-400" />
+                    Hướng <strong className="text-slate-900 font-bold">{listing.direction}</strong>
+                  </span>
+                </>
+              )}
+              {listing.legalStatus && (
+                <>
+                  <span className="text-slate-300">|</span>
+                  <span className="text-emerald-700 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    {listing.legalStatus} · Sang tên ngay
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Mobile grid thông số */}
+            <div className="grid grid-cols-2 sm:hidden gap-2 text-xs font-medium text-slate-700 pt-1">
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                <span className="text-slate-500">Diện tích</span>
+                <span className="font-bold text-slate-900">{listing.area} m²</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                <span className="text-slate-500">Số tầng</span>
+                <span className="font-bold text-slate-900">{listing.floors} tầng</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                <span className="text-slate-500">Phòng ngủ</span>
+                <span className="font-bold text-slate-900">{listing.bedrooms} PN</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                <span className="text-slate-500">Phòng tắm</span>
+                <span className="font-bold text-slate-900">{listing.bathrooms} PT</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ════════════ 1. KHỐI ẢNH (60%) & NGƯỜI ĐĂNG BÁN (40%) ════════════ */}
         <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start mb-10">
           
           {/* ── BÊN TRÁI (60% / lg:col-span-3): ẢNH CỦA BÀI ĐĂNG ── */}
@@ -422,120 +536,6 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
         {/* ════════════ 2. KHỐI DƯỚI (BOTTOM SECTION): TOÀN BỘ THÔNG TIN CHI TIẾT BÀI ĐĂNG ════════════ */}
         <section className="space-y-6 pt-4 border-t border-slate-200">
           
-          {/* ── HEADER BÀI ĐĂNG (TIÊU ĐỀ, GIÁ, ĐỊA CHỈ, THÔNG SỐ CỐT LÕI) ── */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-7 shadow-sm space-y-4">
-            {/* Badge phân khu & quy hoạch */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 border border-blue-200/60">
-                <Layers className="h-3 w-3" />
-                {listing.planningZone || 'Đất ở đô thị'}
-              </span>
-              <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-                Quy hoạch {listing.planningYear || 2030}
-              </span>
-              {listing.isFeatured && (
-                <span className="rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 border border-amber-200 flex items-center gap-1">
-                  <span>⭐</span> Tin nổi bật
-                </span>
-              )}
-            </div>
-
-            {/* Tiêu đề bài đăng */}
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
-              {listing.title}
-            </h1>
-
-            {/* Giá + thông tin ngày đăng / lượt xem */}
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 pt-0.5 border-b border-slate-100 pb-4">
-              <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-rose-600 tracking-tight">
-                {formatCurrencyVND(listing.price)}
-              </span>
-              <span className="text-sm sm:text-base font-semibold text-slate-500">
-                · {formatPricePerM2(listing.price, listing.area)}
-              </span>
-              <div className="flex items-center gap-3 text-xs text-slate-400 ml-auto pt-1 sm:pt-0">
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Đăng ngày {listing.createdAt || '2025-08-18'}
-                </span>
-                <span>·</span>
-                <span className="flex items-center gap-1">
-                  <Eye className="h-3.5 w-3.5" />
-                  {listing.views || 234} lượt xem
-                </span>
-              </div>
-            </div>
-
-            {/* Địa chỉ bài đăng */}
-            <div className="flex items-center gap-2 text-sm sm:text-base text-slate-700 font-medium">
-              <MapPin className="h-4 w-4 text-orange-500 shrink-0" />
-              <span>{listing.address}</span>
-            </div>
-
-            {/* Hàng thông số cốt lõi */}
-            <div className="pt-2">
-              <div className="hidden sm:flex items-center gap-5 text-sm text-slate-700 font-medium bg-slate-50/80 p-3.5 rounded-xl border border-slate-100">
-                <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                  <Maximize2 className="h-4 w-4 text-slate-400" />
-                  {listing.area} m²
-                </span>
-                <span className="text-slate-300">|</span>
-                <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                  <Building className="h-4 w-4 text-slate-400" />
-                  {listing.floors} tầng
-                </span>
-                <span className="text-slate-300">|</span>
-                <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                  <Bed className="h-4 w-4 text-slate-400" />
-                  {listing.bedrooms} PN
-                </span>
-                <span className="text-slate-300">|</span>
-                <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                  <Bath className="h-4 w-4 text-slate-400" />
-                  {listing.bathrooms} PT
-                </span>
-                {listing.direction && (
-                  <>
-                    <span className="text-slate-300">|</span>
-                    <span className="text-slate-600 flex items-center gap-1.5">
-                      <Compass className="h-4 w-4 text-slate-400" />
-                      Hướng <strong className="text-slate-900 font-bold">{listing.direction}</strong>
-                    </span>
-                  </>
-                )}
-                {listing.legalStatus && (
-                  <>
-                    <span className="text-slate-300">|</span>
-                    <span className="text-emerald-700 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                      {listing.legalStatus} · Sang tên ngay
-                    </span>
-                  </>
-                )}
-              </div>
-
-              {/* Mobile grid thông số */}
-              <div className="grid grid-cols-2 sm:hidden gap-2 text-xs font-medium text-slate-700 pt-1">
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-slate-500">Diện tích</span>
-                  <span className="font-bold text-slate-900">{listing.area} m²</span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-slate-500">Số tầng</span>
-                  <span className="font-bold text-slate-900">{listing.floors} tầng</span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-slate-500">Phòng ngủ</span>
-                  <span className="font-bold text-slate-900">{listing.bedrooms} PN</span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <span className="text-slate-500">Phòng tắm</span>
-                  <span className="font-bold text-slate-900">{listing.bathrooms} PT</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* ── BANNER THẨM ĐỊNH QUY HOẠCH & ĐỊNH GIÁ AI ── */}
           <div className="rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 sm:p-5 shadow-sm transition-all">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
