@@ -14,7 +14,7 @@ export interface ListingItem {
   lng: number;
   type: "house" | "apartment" | "land" | "villa";
   images: string[];
-  status: "active" | "pending" | "sold" | "rejected";
+  status: "active" | "pending" | "sold";
   isFeatured: boolean;
   views: number;
   createdAt: string;
@@ -23,10 +23,6 @@ export interface ListingItem {
   legalStatus: string;
   direction?: string;
   description?: string;
-  userId?: string;
-  authorName?: string;
-  authorPhone?: string;
-  authorEmail?: string;
 }
 
 export const mockListings: ListingItem[] = [
@@ -42,8 +38,8 @@ export const mockListings: ListingItem[] = [
     address: "Phố Hào Nam, Đống Đa, Hà Nội",
     district: "Đống Đa",
     ward: "Phường Ô Chợ Dừa",
-    lat: 21.0265,
-    lng: 105.8285,
+    lat: 21.0285,
+    lng: 105.8412,
     type: "house",
     images: [
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80",
@@ -314,13 +310,13 @@ export const mockUser: UserProfile = {
   name: "Nguyễn Văn An",
   email: "an@example.com",
   phone: "0988 123 456",
-  role: "user",
-  package: "Free",
-  packageExpiry: "Vĩnh viễn",
-  aiReportsUsed: 0,
-  aiReportsLimit: 1,
-  listingsCount: 0,
-  activeListings: 0,
+  role: "agent",
+  package: "pro",
+  packageExpiry: "2025-09-15",
+  aiReportsUsed: 8,
+  aiReportsLimit: 30,
+  listingsCount: 12,
+  activeListings: 8,
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
 };
 
@@ -354,7 +350,24 @@ export const mockAIReport = {
   investmentRecommendation: "Nên mua để đầu tư dài hạn kết hợp khai thác dòng tiền cho thuê căn hộ dịch vụ cao cấp.",
 };
 
-export const mockPackages = [
+export interface PackageChecklistItem {
+  text: string;
+  included: boolean;
+}
+
+export interface MockPackageItem {
+  id: string;
+  name: string;
+  price: number;
+  listings: number;
+  duration: number;
+  aiReports: number;
+  features: string[];
+  checklist: PackageChecklistItem[];
+  isPopular: boolean;
+}
+
+export const mockPackages: MockPackageItem[] = [
   {
     id: "free",
     name: "Free",
@@ -362,7 +375,16 @@ export const mockPackages = [
     listings: 3,
     duration: 7,
     aiReports: 0,
-    features: ["Đăng 3 tin cơ bản", "Thời hạn tin 7 ngày", "Xem bản đồ quy hoạch", "Hỗ trợ cộng đồng"],
+    features: [
+      "Đăng tối đa: 3 tin BĐS (Thời hạn 7 ngày)",
+      "Xem bản đồ quy hoạch cơ bản",
+      "Hỗ trợ cộng đồng trực tuyến",
+    ],
+    checklist: [
+      { text: "Đăng tối đa: 3 tin BĐS (Thời hạn 7 ngày)", included: true },
+      { text: "Xem bản đồ quy hoạch cơ bản", included: true },
+      { text: "Hỗ trợ cộng đồng trực tuyến", included: true },
+    ],
     isPopular: false,
   },
   {
@@ -372,7 +394,22 @@ export const mockPackages = [
     listings: 20,
     duration: 30,
     aiReports: 5,
-    features: ["Đăng 20 tin BĐS", "Thời hạn tin 30 ngày", "2 tin nổi bật/tháng", "5 Báo cáo AI định giá", "Xuất file PDF"],
+    features: [
+      "Đăng tối đa: 20 tin BĐS (Thời hạn 30 ngày)",
+      "2 tin nổi bật / tháng",
+      "5 Báo cáo AI chuyên sâu & định giá",
+      "Tra cứu bản đồ quy hoạch chi tiết",
+      "Xuất file báo cáo PDF",
+      "Hỗ trợ qua Ticket & Email",
+    ],
+    checklist: [
+      { text: "Đăng tối đa: 20 tin BĐS (Thời hạn 30 ngày)", included: true },
+      { text: "2 tin nổi bật / tháng", included: true },
+      { text: "5 Báo cáo AI chuyên sâu & định giá", included: true },
+      { text: "Tra cứu bản đồ quy hoạch chi tiết", included: true },
+      { text: "Xuất file báo cáo PDF", included: true },
+      { text: "Hỗ trợ qua Ticket & Email", included: true },
+    ],
     isPopular: false,
   },
   {
@@ -382,17 +419,45 @@ export const mockPackages = [
     listings: 50,
     duration: 60,
     aiReports: 30,
-    features: ["Đăng 50 tin BĐS", "Thời hạn tin 60 ngày", "10 tin nổi bật/tháng", "30 Báo cáo AI chuyên sâu", "Phân tích quy hoạch 2030", "Hỗ trợ ưu tiên 24/7"],
+    features: [
+      "Đăng tối đa: 50 tin BĐS (Thời hạn 60 ngày)",
+      "10 tin nổi bật / tháng",
+      "30 Báo cáo AI chuyên sâu & định giá",
+      "Phân tích lớp quy hoạch 2030 & giá đất",
+      "Xuất file báo cáo PDF chuẩn chuyên nghiệp",
+      "Hỗ trợ ưu tiên 24/7",
+    ],
+    checklist: [
+      { text: "Đăng tối đa: 50 tin BĐS (Thời hạn 60 ngày)", included: true },
+      { text: "10 tin nổi bật / tháng", included: true },
+      { text: "30 Báo cáo AI chuyên sâu & định giá", included: true },
+      { text: "Phân tích lớp quy hoạch 2030 & giá đất", included: true },
+      { text: "Xuất file báo cáo PDF chuẩn chuyên nghiệp", included: true },
+      { text: "Hỗ trợ ưu tiên 24/7", included: true },
+    ],
     isPopular: true,
   },
   {
     id: "agency",
     name: "Agency",
-    price: 1299000,
-    listings: -1, // Unlimited
+    price: 1999000,
+    listings: 250,
     duration: 90,
-    aiReports: -1, // Unlimited
-    features: ["Không giới hạn tin đăng", "Thời hạn tin 90 ngày", "Tin nổi bật không giới hạn", "Không giới hạn Báo cáo AI", "Quản trị đội ngũ môi giới", "Dedicated Account Manager"],
+    aiReports: 150,
+    features: [
+      "Đăng tối đa: 250 tin BĐS (Thời hạn 90 ngày)",
+      "40 tin nổi bật / tháng",
+      "150 Báo cáo AI chuyên sâu & thẩm định giá",
+      "Quản trị phân quyền đội ngũ môi giới",
+      "Dedicated Account Manager",
+    ],
+    checklist: [
+      { text: "Đăng tối đa: 250 tin BĐS (Thời hạn 90 ngày)", included: true },
+      { text: "40 tin nổi bật / tháng", included: true },
+      { text: "150 Báo cáo AI chuyên sâu & thẩm định giá", included: true },
+      { text: "Quản trị phân quyền đội ngũ môi giới", included: true },
+      { text: "Dedicated Account Manager", included: true },
+    ],
     isPopular: false,
   },
 ];
