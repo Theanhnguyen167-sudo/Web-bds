@@ -244,69 +244,6 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
             <MapPin className="h-4 w-4 text-orange-500 shrink-0" />
             <span>{listing.address}</span>
           </div>
-
-          {/* Hàng thông số cốt lõi */}
-          <div className="pt-2">
-            <div className="hidden sm:flex items-center gap-5 text-sm text-slate-700 font-medium bg-slate-50/80 p-3.5 rounded-xl border border-slate-100">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Maximize2 className="h-4 w-4 text-slate-400" />
-                {listing.area} m²
-              </span>
-              <span className="text-slate-300">|</span>
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Building className="h-4 w-4 text-slate-400" />
-                {listing.floors} tầng
-              </span>
-              <span className="text-slate-300">|</span>
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Bed className="h-4 w-4 text-slate-400" />
-                {listing.bedrooms} PN
-              </span>
-              <span className="text-slate-300">|</span>
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Bath className="h-4 w-4 text-slate-400" />
-                {listing.bathrooms} PT
-              </span>
-              {listing.direction && (
-                <>
-                  <span className="text-slate-300">|</span>
-                  <span className="text-slate-600 flex items-center gap-1.5">
-                    <Compass className="h-4 w-4 text-slate-400" />
-                    Hướng <strong className="text-slate-900 font-bold">{listing.direction}</strong>
-                  </span>
-                </>
-              )}
-              {listing.legalStatus && (
-                <>
-                  <span className="text-slate-300">|</span>
-                  <span className="text-emerald-700 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                    {listing.legalStatus} · Sang tên ngay
-                  </span>
-                </>
-              )}
-            </div>
-
-            {/* Mobile grid thông số */}
-            <div className="grid grid-cols-2 sm:hidden gap-2 text-xs font-medium text-slate-700 pt-1">
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                <span className="text-slate-500">Diện tích</span>
-                <span className="font-bold text-slate-900">{listing.area} m²</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                <span className="text-slate-500">Số tầng</span>
-                <span className="font-bold text-slate-900">{listing.floors} tầng</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                <span className="text-slate-500">Phòng ngủ</span>
-                <span className="font-bold text-slate-900">{listing.bedrooms} PN</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                <span className="text-slate-500">Phòng tắm</span>
-                <span className="font-bold text-slate-900">{listing.bathrooms} PT</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* ════════════ 1. KHỐI ẢNH (60%) & NGƯỜI ĐĂNG BÁN (40%) ════════════ */}
