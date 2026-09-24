@@ -40,7 +40,8 @@ function CheckoutContent() {
     mockPackages.find((p) => p.id === 'pro')!;
 
   const priceMonth = currentPkg.price;
-  const priceYear = Math.round(currentPkg.price * 12 * 0.8); // 20% discount on yearly
+  const yearlyMonthlyPrice = Math.floor((currentPkg.price * 0.8) / 1000) * 1000;
+  const priceYear = yearlyMonthlyPrice * 12; // 20% discount on yearly (rounded to thousands per month)
 
   const basePrice = billing === 'yearly' ? priceYear : priceMonth;
   const priceAfterDiscount = Math.max(basePrice - discountAmount, 0);

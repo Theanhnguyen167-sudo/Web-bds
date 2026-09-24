@@ -107,7 +107,7 @@ export const PricingTable: React.FC = () => {
           const isPro = pkg.isPopular;
           const calculatedPrice =
             billingCycle === 'yearly' && pkg.price > 0
-              ? Math.round(pkg.price * 0.8)
+              ? Math.floor((pkg.price * 0.8) / 1000) * 1000
               : pkg.price;
 
           return (
