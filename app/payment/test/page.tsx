@@ -46,7 +46,7 @@ export default function PaymentTestPage() {
         listingsCount: user.listingsCount + 50,
       });
     }
-    router.push('/payment/success?orderId=TEST_MOCK_SUCCESS_99&method=momo&amount=599000');
+    router.push('/payment/success?orderId=TEST_MOCK_SUCCESS_99&method=momo&amount=799000');
   };
 
   const handleSimulateError = () => {
@@ -79,7 +79,7 @@ export default function PaymentTestPage() {
                 <span>Kiểm thử Luồng MoMo QR</span>
               </div>
               <p className="text-xs text-slate-500">
-                Tạo đơn hàng gói Pro 1 tháng ({formatCurrencyVND(599000)}) và mở giao diện quét QR với đồng hồ đếm ngược.
+                Tạo đơn hàng gói Pro 1 tháng ({formatCurrencyVND(799000)}) và mở giao diện quét QR với đồng hồ đếm ngược.
               </p>
             </div>
             <button

@@ -335,7 +335,7 @@ export default function AdminOverviewPage() {
               <span className="text-base">🟢</span>
               <div className="flex-1">
                 <span className="font-bold text-navy">Nguyễn Văn An</span> đăng ký gói{' '}
-                <strong className="text-orange-600">Pro</strong> · 599.000đ
+                <strong className="text-orange-600">Pro</strong> · 799.000đ
               </div>
               <span className="text-slate-400 text-[11px]">2 phút trước</span>
             </div>

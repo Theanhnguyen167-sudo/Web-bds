@@ -190,7 +190,7 @@ CREATE POLICY "Users can manage saved listings" ON public.saved_listings FOR ALL
 INSERT INTO public.packages (id, name, price_monthly, price_yearly, max_listings, listing_duration_days, featured_listings_count, has_ai_report, max_ai_reports_monthly, has_export_pdf, description, features)
 VALUES 
 ('free', 'Miễn phí', 0, 0, 3, 7, 0, false, 0, false, 'Dành cho người dùng cá nhân trải nghiệm', '["Đăng tối đa 3 tin", "Thời hạn tin 7 ngày", "Xem quy hoạch Hà Nội"]'::jsonb),
-('basic', 'Cơ bản', 299000, 2990000, 20, 30, 2, true, 5, true, 'Dành cho môi giới độc lập', '["Đăng tối đa 20 tin", "Thời hạn tin 30 ngày", "2 tin nổi bật/tháng", "5 Báo cáo AI định giá", "Xuất báo cáo PDF"]'::jsonb),
-('pro', 'Chuyên nghiệp', 599000, 5990000, 50, 60, 10, true, 30, true, 'Dành cho nhà đầu tư & môi giới VIP', '["Đăng tối đa 50 tin", "Thời hạn tin 60 ngày", "10 tin nổi bật/tháng", "30 Báo cáo AI chi tiết", "Phân tích quy hoạch nâng cao", "Hỗ trợ ưu tiên"]'::jsonb),
-('agency', 'Doanh nghiệp', 1299000, 12990000, 9999, 90, 999, true, 999, true, 'Dành cho sàn giao dịch BĐS', '["Không giới hạn tin đăng", "Thời hạn tin 90 ngày", "Tin nổi bật không giới hạn", "Báo cáo AI không giới hạn", "Quản lý team & phân quyền", "Dedicated Support"]'::jsonb)
+('basic', 'Cơ bản', 399000, 3990000, 20, 30, 2, true, 5, true, 'Dành cho môi giới độc lập', '["Đăng tối đa 20 tin", "Thời hạn tin 30 ngày", "2 tin nổi bật/tháng", "5 Báo cáo AI định giá", "Xuất báo cáo PDF"]'::jsonb),
+('pro', 'Chuyên nghiệp', 799000, 7990000, 50, 60, 10, true, 30, true, 'Dành cho nhà đầu tư & môi giới VIP', '["Đăng tối đa 50 tin", "Thời hạn tin 60 ngày", "10 tin nổi bật/tháng", "30 Báo cáo AI chi tiết", "Phân tích quy hoạch nâng cao", "Hỗ trợ ưu tiên"]'::jsonb),
+('agency', 'Doanh nghiệp', 1999000, 19990000, 250, 90, 40, true, 150, true, 'Dành cho sàn giao dịch BĐS', '["Đăng tối đa: 250 tin BĐS", "Thời hạn tin 90 ngày", "40 tin nổi bật / tháng", "150 Báo cáo AI chuyên sâu & thẩm định giá", "Quản trị phân quyền đội ngũ môi giới", "Dedicated Account Manager"]'::jsonb)
 ON CONFLICT (id) DO NOTHING;

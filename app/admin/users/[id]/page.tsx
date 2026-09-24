@@ -156,7 +156,7 @@ export default function AdminUserDetailPage() {
                     <p className="text-[11px] text-slate-400">22/08/2025 14:15 · VNPay</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-extrabold text-navy">1.599.000đ</p>
+                    <p className="font-extrabold text-navy">2.199.000đ</p>
                     <span className="text-[10px] font-bold text-emerald-600">Thành công</span>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Check, X, ShieldCheck, Zap } from 'lucide-react';
 import { formatCurrencyVND } from '@/lib/utils';
+import { mockPackages } from '@/lib/mock-data';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -20,6 +21,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   featureDescription = 'Vui lòng nâng cấp gói thành viên để sử dụng tính năng báo cáo AI chuyên sâu và đăng tin nổi bật.',
 }) => {
   if (!isOpen) return null;
+
+  const basicPrice = mockPackages.find((p) => p.id === 'basic')?.price || 399000;
+  const proPrice = mockPackages.find((p) => p.id === 'pro')?.price || 799000;
 
   return (
     <AnimatePresence>
@@ -55,7 +59,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex flex-col justify-between space-y-3">
               <div>
                 <span className="font-bold text-xs text-navy block">Gói Basic</span>
-                <span className="text-lg font-black text-navy">{formatCurrencyVND(299000)}/th</span>
+                <span className="text-lg font-black text-navy">{formatCurrencyVND(basicPrice)}/th</span>
                 <ul className="space-y-1 text-[11px] text-slate-600 mt-2">
                   <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 20 tin đăng BĐS</li>
                   <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 5 Báo cáo AI/tháng</li>
@@ -77,7 +81,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               </span>
               <div>
                 <span className="font-bold text-xs text-navy block">Gói Pro</span>
-                <span className="text-lg font-black text-orange-600">{formatCurrencyVND(599000)}/th</span>
+                <span className="text-lg font-black text-orange-600">{formatCurrencyVND(proPrice)}/th</span>
                 <ul className="space-y-1 text-[11px] text-slate-600 mt-2">
                   <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 50 tin đăng BĐS</li>
                   <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 30 Báo cáo AI/tháng</li>

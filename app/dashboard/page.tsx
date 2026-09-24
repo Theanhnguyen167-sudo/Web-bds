@@ -696,7 +696,7 @@ function DashboardContent() {
                   <h3 className="text-sm font-extrabold text-text-primary">Thông tin gói hội viên PRO</h3>
                   <div className="rounded-2xl bg-orange-50/40 border border-orange-200 p-5 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-accent">GÓI PRO (599.000 đ/tháng)</span>
+                      <span className="text-xs font-extrabold text-accent">GÓI PRO (799.000 đ/tháng)</span>
                       <span className="text-[11px] font-bold text-success">Đang hoạt động</span>
                     </div>
                     <p className="text-xs text-text-secondary">Đã kích hoạt quyền lợi đăng 50 tin và 30 Báo cáo AI chuyên sâu mỗi tháng.</p>
