@@ -390,7 +390,7 @@ export const mockPackages: MockPackageItem[] = [
   {
     id: "basic",
     name: "Basic",
-    price: 299000,
+    price: 399000,
     listings: 20,
     duration: 30,
     aiReports: 5,
@@ -415,7 +415,7 @@ export const mockPackages: MockPackageItem[] = [
   {
     id: "pro",
     name: "Pro",
-    price: 599000,
+    price: 799000,
     listings: 50,
     duration: 60,
     aiReports: 30,
