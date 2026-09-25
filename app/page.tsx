@@ -12,6 +12,8 @@ import { DistrictPropertyExplorer } from '@/components/home/DistrictPropertyExpl
 import { ListingCard } from '@/components/listing/ListingCard';
 import { mockListings, ListingItem } from '@/lib/mock-data';
 import { useCountUp } from '@/lib/hooks/useScrollAnimation';
+import { useApp } from '@/lib/context/AppContext';
+import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import {
   Search,
   MapPin,
@@ -194,6 +196,7 @@ const heroFeatureCards = [
 
 export default function HomePage() {
   const router = useRouter();
+  const { savedListingIds, toggleSaveListing } = useApp();
 
   // ── Dynamic Navy Background Height (Phủ từ đỉnh đến đúng 1/4 hình ảnh) ──
   const heroSectionRef = useRef<HTMLElement>(null);
@@ -606,67 +609,179 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Carousel)
+          📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Bố cục chuẩn Ảnh 1: Tràn viền phải)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="featured" className="bg-slate-50 py-16">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Header Row */}
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <div className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-600 font-extrabold text-[11px] px-2.5 py-0.5 rounded-full mb-1">
+      <section id="featured" className="bg-slate-50/70 py-16 sm:py-20 overflow-hidden relative border-b border-slate-200/80">
+        <div className="w-full pl-4 sm:pl-6 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+2rem))] pr-0">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12">
+            
+            {/* ── CỘT TRÁI: TEXT & CTA (Cố định, vừa vặn khung) ── */}
+            <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 pr-4 sm:pr-6 lg:pr-0 text-left">
+              {/* Top Badge */}
+              <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3.5 shadow-xs">
                 <Flame className="h-3.5 w-3.5 fill-orange-500" />
                 <span>HOT · ĐƯỢC XEM NHIỀU NHẤT</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-navy">
-                Bất động sản nổi bật tuần này
+
+              {/* H2 Headline: 2 dòng Navy + Cam chuẩn Image 1 */}
+              <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-[1.15]">
+                <span className="text-[#0a1128] block">Bất động sản,</span>
+                <span className="text-orange-500 block">nổi bật nhất tuần</span>
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Các bất động sản có quy hoạch đẹp, giá tốt và lượt quan tâm cao nhất
+
+              {/* Subtitle có in đậm từ khóa */}
+              <p className="text-slate-600 text-sm sm:text-base mt-4 mb-7 leading-relaxed font-normal">
+                Cho dù bạn đang tìm kiếm không gian để <strong>an cư dài lâu</strong>, <strong>nghỉ dưỡng tinh hoa</strong> hay <strong>đầu tư sinh lời vượt trội</strong>, luôn có một bất động sản hoàn hảo dành riêng cho bạn tại Hà Nội.
               </p>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => scrollFeatured('left')}
-                className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center shadow-sm transition-all"
-                title="Trước"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => scrollFeatured('right')}
-                className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center shadow-sm transition-all"
-                title="Sau"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-              <Link
-                href="/search"
-                className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-orange-500 hover:underline ml-2"
-              >
-                <span>Xem tất cả</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
+              {/* Action Buttons & Indicator Controls */}
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/search"
+                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
+                >
+                  <span>Khám phá các bất động sản</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
 
-          {/* Carousel container */}
-          <div
-            ref={featuredScrollRef}
-            className="flex gap-5 overflow-x-auto py-5 px-1 snap-x scrollbar-thin scrollbar-thumb-slate-200 scroll-smooth"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {featuredListings.map((listing) => (
-              <div
-                key={listing.id}
-                className="min-w-[280px] sm:min-w-[320px] max-w-[320px] snap-start shrink-0"
-              >
-                <ListingCard listing={listing} />
+                {/* Desktop Mini Nav Arrows */}
+                <div className="hidden sm:flex items-center gap-2 ml-1">
+                  <button
+                    type="button"
+                    onClick={() => scrollFeatured('left')}
+                    className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300 flex items-center justify-center shadow-xs transition-all cursor-pointer"
+                    title="Trượt sang trái"
+                    aria-label="Trượt sang trái"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => scrollFeatured('right')}
+                    className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300 flex items-center justify-center shadow-xs transition-all cursor-pointer"
+                    title="Trượt sang phải"
+                    aria-label="Trượt sang phải"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
 
+            {/* ── CỘT PHẢI: DẢI THẺ ẢNH CHẠY HẾT VIỀN BÊN PHẢI (Full Bleed Right Carousel) ── */}
+            <div className="w-full lg:flex-1 relative min-w-0">
+              {/* Carousel Track */}
+              <div
+                ref={featuredScrollRef}
+                className="flex gap-4 sm:gap-5 overflow-x-auto py-4 pr-6 sm:pr-12 snap-x scrollbar-none scroll-smooth"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {featuredListings.map((listing) => (
+                  <div
+                    key={listing.id}
+                    className="w-[280px] sm:w-[320px] md:w-[340px] shrink-0 snap-start"
+                  >
+                    <Link
+                      href={`/listings/${listing.id}`}
+                      className="group relative h-[420px] sm:h-[460px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
+                    >
+                      {/* Background Image */}
+                      <img
+                        src={listing.images[0]}
+                        alt={listing.title}
+                        className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                        loading="lazy"
+                      />
+
+                      {/* Navy Deep Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/50 to-transparent" />
+
+                      {/* Top Badges (Price & Save) */}
+                      <div className="absolute top-4 inset-x-4 flex items-center justify-between z-10">
+                        <span className="px-3.5 py-1.5 rounded-full bg-orange-500 text-white font-black text-xs sm:text-sm shadow-md shadow-orange-500/30">
+                          {formatCurrencyVND(listing.price)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleSaveListing(listing.id);
+                          }}
+                          className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
+                            savedListingIds.includes(listing.id)
+                              ? 'bg-rose-500 text-white'
+                              : 'bg-white/80 hover:bg-white text-slate-700 hover:text-rose-500'
+                          }`}
+                          title="Lưu tin đăng"
+                        >
+                          <Heart
+                            className={`w-4 h-4 ${
+                              savedListingIds.includes(listing.id) ? 'fill-current' : ''
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Planning Status Badge (Top-left below price if exists) */}
+                      {(listing.planningZone || listing.legalStatus) && (
+                        <div className="absolute top-14 left-4 z-10">
+                          <span className="px-2.5 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-[10px] font-bold text-white/90 border border-white/20">
+                            {listing.planningZone || listing.legalStatus}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Bottom Info Overlay (Chuẩn Ảnh 1) */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10">
+                        {/* Title */}
+                        <h3 className="text-base sm:text-lg font-bold text-white line-clamp-2 mb-2 tracking-tight group-hover:text-orange-400 transition-colors">
+                          {listing.title}
+                        </h3>
+
+                        {/* Location */}
+                        <div className="flex items-center gap-1.5 text-xs text-white/85 mb-3">
+                          <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                          <span className="truncate">
+                            Quận {listing.district}, Hà Nội
+                          </span>
+                        </div>
+
+                        {/* Specs Bar (Area, Bed, Bath) */}
+                        <div className="flex items-center gap-3 pt-2.5 border-t border-white/15 text-[11px] text-white/75">
+                          <span className="font-semibold">{listing.area} m²</span>
+                          <span>•</span>
+                          <span>{listing.bedrooms} PN</span>
+                          <span>•</span>
+                          <span>{listing.bathrooms} PT</span>
+                          {listing.price && listing.area && (
+                            <>
+                              <span>•</span>
+                              <span className="text-orange-300 font-bold">
+                                {formatPricePerM2(listing.price, listing.area)}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+
+              {/* Floating Right Arrow Button (Chuẩn Ảnh 1) */}
+              <button
+                type="button"
+                onClick={() => scrollFeatured('right')}
+                className="hidden md:flex absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+                title="Xem tiếp các bất động sản nổi bật"
+                aria-label="Xem tiếp"
+              >
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
+
+          </div>
         </div>
       </section>
 
