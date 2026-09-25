@@ -501,41 +501,280 @@ export function AirbnbStickySearchBar() {
   return (
     <>
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          1. HERO IN-PLACE FULL SEARCH BAR (Khi ở đầu trang scrollY <= 50)
+          1. HERO IN-PLACE FLOATING SEARCH WIDGET CHUẨN ẢNH 2 (scrollY <= 50)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div ref={heroSearchRef} className="w-full relative z-30">
-        {/* TAB ROW (Mua / Thuê / Dự án / Định giá) */}
-        <div className="flex items-center justify-center gap-4 sm:gap-7 mb-2.5 text-xs sm:text-sm font-bold">
-          {[
-            { key: 'buy', label: '🏠 Mua bán' },
-            { key: 'rent', label: '🔑 Cho thuê' },
-            { key: 'project', label: '🏗️ Dự án' },
-            { key: 'estimate', label: '💰 Định giá AI' },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setSearchTab(tab.key as any)}
-              className={`relative pb-2 transition-all cursor-pointer ${
-                searchTab === tab.key
-                  ? 'text-white font-extrabold'
-                  : 'text-white/60 hover:text-white/90 font-medium'
-              }`}
-            >
-              <span>{tab.label}</span>
-              {searchTab === tab.key && (
-                <motion.div
-                  layoutId="heroSearchTabUnderline"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-orange-500"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
+      <div ref={heroSearchRef} className="w-full relative z-30 max-w-4xl mx-auto">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.12)] border border-slate-200/90 text-left">
+          {/* HÀNG TRÊN (TABS FILTER): 3 nút dạng viên thuốc (Pill tabs) */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {[
+              { key: 'buy', label: 'Mua bán BĐS', icon: '🏠' },
+              { key: 'rent', label: 'Cho thuê BĐS', icon: '🔑' },
+              { key: 'project', label: 'Dự án & Quy hoạch', icon: '🏗️' },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setSearchTab(tab.key as any)}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  searchTab === tab.key
+                    ? 'bg-[#0f172a] text-white shadow-md shadow-slate-900/10'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 font-semibold'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
 
-        {/* Hero Full Search Controls */}
-        {renderSearchControls()}
+          {/* HÀNG DƯỚI (INPUTS BAR): Khung bo tròn chia 3 cột thông tin + Nút Tìm kiếm cam */}
+          <div className="mt-3.5 rounded-xl border border-slate-200/90 hover:border-slate-300 p-2 sm:p-2.5 flex flex-col md:flex-row items-stretch md:items-center bg-white transition-all">
+            
+            {/* CỘT 1: ĐỊA ĐIỂM */}
+            <div className={`relative flex-1 ${locationDropdownOpen ? 'z-50' : ''}`}>
+              <div className="px-3 py-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                  Địa điểm
+                </span>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                  <input
+                    type="text"
+                    value={locationQuery}
+                    onChange={(e) => {
+                      setLocationQuery(e.target.value);
+                      setLocationDropdownOpen(true);
+                    }}
+                    onFocus={() => setLocationDropdownOpen(true)}
+                    placeholder="Quận, huyện, tên đường..."
+                    className="w-full text-xs sm:text-sm font-semibold text-slate-800 bg-transparent focus:outline-none placeholder:text-slate-400 py-0.5 truncate"
+                  />
+                  {locationQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setLocationQuery('')}
+                      className="p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Autocomplete Dropdown */}
+              <AnimatePresence>
+                {locationDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 right-0 mt-2 rounded-xl bg-white p-3 shadow-2xl border border-slate-100 z-[100] text-left max-h-72 overflow-y-auto"
+                  >
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">
+                      Khu vực phổ biến Hà Nội
+                    </p>
+                    <div className="space-y-1">
+                      {filteredDistricts.map((district) => (
+                        <button
+                          key={district.name}
+                          type="button"
+                          onClick={() => {
+                            setLocationQuery(district.name);
+                            setLocationDropdownOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-orange-50 text-slate-700 hover:text-orange-600 transition-colors text-xs cursor-pointer"
+                        >
+                          <span className="font-semibold flex items-center gap-2">
+                            <span>🏙️</span>
+                            <span>Quận {district.name}, Hà Nội</span>
+                          </span>
+                          <span className="text-[11px] text-slate-400">{district.count} tin</span>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Phân cách kẻ dọc mảnh */}
+            <div className="hidden md:block w-px h-9 bg-slate-200 mx-2 shrink-0" />
+
+            {/* CỘT 2: LOẠI HÌNH BĐS */}
+            <div className={`relative md:w-56 shrink-0 ${typeDropdownOpen ? 'z-50' : ''}`}>
+              <button
+                type="button"
+                onClick={() => {
+                  setTypeDropdownOpen(!typeDropdownOpen);
+                  setLocationDropdownOpen(false);
+                  setPriceDropdownOpen(false);
+                }}
+                className="w-full px-3 py-1 text-left cursor-pointer group"
+              >
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                  Loại hình BĐS
+                </span>
+                <div className="flex items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Building2 className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                    <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">
+                      {propertyTypes.find((t) => t.value === selectedType)?.shortLabel || 'Tất cả loại BĐS'}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 group-hover:text-slate-600" />
+                </div>
+              </button>
+
+              {/* Dropdown Types */}
+              <AnimatePresence>
+                {typeDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 mt-2 w-64 rounded-xl bg-white p-2 shadow-2xl border border-slate-100 z-[100] text-left"
+                  >
+                    {propertyTypes.map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => {
+                          setSelectedType(type.value);
+                          setTypeDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                          selectedType === type.value
+                            ? 'bg-orange-50 text-orange-600 font-bold'
+                            : 'hover:bg-slate-50 text-slate-700'
+                        }`}
+                      >
+                        <span className="text-base">{type.icon}</span>
+                        <span>{type.label}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Phân cách kẻ dọc mảnh */}
+            <div className="hidden md:block w-px h-9 bg-slate-200 mx-2 shrink-0" />
+
+            {/* CỘT 3: KHOẢNG GIÁ */}
+            <div className={`relative md:w-48 shrink-0 ${priceDropdownOpen ? 'z-50' : ''}`}>
+              <button
+                type="button"
+                onClick={() => {
+                  setPriceDropdownOpen(!priceDropdownOpen);
+                  setTypeDropdownOpen(false);
+                  setLocationDropdownOpen(false);
+                }}
+                className="w-full px-3 py-1 text-left cursor-pointer group"
+              >
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                  Mức giá
+                </span>
+                <div className="flex items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="text-orange-500 font-bold text-xs sm:text-sm shrink-0">₫</span>
+                    <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">
+                      {compactPriceLabel}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 group-hover:text-slate-600" />
+                </div>
+              </button>
+
+              {/* Dropdown Price Range */}
+              <AnimatePresence>
+                {priceDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 md:right-0 md:left-auto mt-2 w-72 rounded-xl bg-white p-3 shadow-2xl border border-slate-100 z-[100] text-left"
+                  >
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                      Chọn khoảng giá
+                    </p>
+                    <div className="grid grid-cols-2 gap-1.5 mb-3">
+                      {pricePresets.map((preset) => (
+                        <button
+                          key={preset.value}
+                          type="button"
+                          onClick={() => {
+                            setPriceRange(preset.value);
+                            setCustomMinPrice('');
+                            setCustomMaxPrice('');
+                            setPriceDropdownOpen(false);
+                          }}
+                          className={`px-2.5 py-2 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer ${
+                            priceRange === preset.value
+                              ? 'bg-orange-500 text-white font-bold'
+                              : 'hover:bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Custom Range Inputs */}
+                    <div className="border-t border-slate-100 pt-2 space-y-2">
+                      <span className="text-[11px] font-semibold text-slate-500">Hoặc tự nhập (tỷ VNĐ):</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          placeholder="Từ (tỷ)"
+                          value={customMinPrice}
+                          onChange={(e) => {
+                            setCustomMinPrice(e.target.value);
+                            setPriceRange('custom');
+                          }}
+                          className="p-1.5 text-xs border rounded-lg focus:outline-none focus:border-orange-500"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Đến (tỷ)"
+                          value={customMaxPrice}
+                          onChange={(e) => {
+                            setCustomMaxPrice(e.target.value);
+                            setPriceRange('custom');
+                          }}
+                          className="p-1.5 text-xs border rounded-lg focus:outline-none focus:border-orange-500"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setPriceDropdownOpen(false)}
+                        className="w-full py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-colors cursor-pointer"
+                      >
+                        Áp dụng
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* NÚT TÌM KIẾM HÌNH VUÔNG BO GÓC MÀU CAM NỔI BẬT VỚI KÍNH LÚP TRẮNG Ở GIỮA */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={handleExecuteSearch}
+              title="Tìm kiếm ngay"
+              className="w-12 h-12 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-orange-500/30 transition-all hover:scale-105 shrink-0 ml-1.5 sm:ml-2.5 cursor-pointer mt-2 md:mt-0"
+            >
+              <Search className="w-5 h-5 text-white stroke-[2.5]" />
+            </motion.button>
+
+          </div>
+        </div>
       </div>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

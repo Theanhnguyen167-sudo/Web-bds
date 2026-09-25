@@ -165,6 +165,33 @@ const partnerLogos = [
   },
 ];
 
+const heroFeatureCards = [
+  {
+    title: 'Không gian Độc bản',
+    description: 'Biệt thự, nhà phố kiến trúc tinh hoa tại các quận trung tâm Hà Nội.',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
+    href: '/search?type=house',
+  },
+  {
+    title: 'Căn hộ Hạng sang',
+    description: 'Chung cư cao cấp, penthouse view hồ với tiện ích 5 sao đồng bộ.',
+    image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80',
+    href: '/search?type=apartment',
+  },
+  {
+    title: 'Quy hoạch GIS 2030',
+    description: 'Tra cứu quy hoạch số, chỉ giới đường đỏ & phân khu đô thị minh bạch.',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
+    href: '/planning',
+  },
+  {
+    title: 'Định giá & Thẩm định AI',
+    description: 'Báo cáo xu hướng giá, phân tích tiềm năng tăng trưởng theo thời gian thực.',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
+    href: '/reports',
+  },
+];
+
 export default function HomePage() {
   const router = useRouter();
 
@@ -267,106 +294,131 @@ export default function HomePage() {
       <QuickNav />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 1 — HERO SEARCH (Phong cách batdongsan.com.vn)
+          📌 SECTION 1 — HERO SEARCH & 4-CARD GRID (Chuẩn bố cục Ảnh 2)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="hero" className="relative flex flex-col items-center overflow-hidden bg-[#0a0f1e] text-white pt-20 pb-0">
-        {/* Hanoi Skyline Background Image Overlay */}
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none mix-blend-luminosity scale-105 transition-transform duration-1000"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1920&auto=format&fit=crop&q=80')`,
-          }}
-        />
+      <section id="hero" className="relative flex flex-col items-center overflow-hidden bg-gradient-to-b from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] text-slate-800 pt-24 sm:pt-28 pb-0 border-b border-slate-200/80">
+        {/* Soft Ambient Background Glows */}
+        <div className="absolute top-12 left-1/4 w-96 h-96 rounded-full bg-orange-400/10 blur-[130px] pointer-events-none" />
+        <div className="absolute top-28 right-1/4 w-96 h-96 rounded-full bg-blue-500/10 blur-[140px] pointer-events-none" />
 
-        {/* Dark Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/80 via-[#1a2744]/90 to-[#1a2744] pointer-events-none" />
-
-        {/* Animated Floating Glow Orbs */}
-        <motion.div
-          animate={{ x: [0, 30, 0], y: [0, -25, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-1/4 left-12 w-80 h-80 rounded-full bg-orange-500/15 blur-[120px] pointer-events-none"
-        />
-        <motion.div
-          animate={{ x: [0, -30, 0], y: [0, 30, 0] }}
-          transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-1/3 right-12 w-96 h-96 rounded-full bg-blue-500/15 blur-[130px] pointer-events-none"
-        />
-
-        {/* Center Search Container */}
-        <div className="max-w-5xl w-full mx-auto text-center relative z-30 py-1 sm:py-2 px-4 sm:px-6">
-          
+        {/* 1. KHU VỰC TIÊU ĐỀ (HERO HEADER) - CĂN GIỮA */}
+        <div className="max-w-4xl w-full mx-auto text-center relative z-20 px-4 sm:px-6">
           {/* Top Badge */}
           <motion.div
-            initial={{ opacity: 0, y: -15 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 border border-orange-500/40 bg-orange-500/20 text-orange-300 rounded-full px-3.5 py-1 text-xs font-semibold backdrop-blur-md shadow-lg shadow-orange-500/10 mb-2.5"
+            className="inline-flex items-center gap-2 border border-orange-200/90 bg-orange-50 text-orange-600 rounded-full px-4 py-1 text-xs font-bold shadow-sm mb-3.5 select-none"
           >
             <span>🏆</span>
             <span>Nền tảng BĐS thông minh #1 Hà Nội</span>
           </motion.div>
 
-          {/* Headline */}
+          {/* Tiêu đề chính (H1, Font to, Rất đậm) */}
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight flex flex-col items-center gap-2 sm:gap-3 md:gap-3.5 leading-[1.2] sm:leading-[1.25] md:leading-[1.3]"
+            className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight flex flex-col items-center gap-1.5 sm:gap-2 leading-[1.18] sm:leading-[1.2]"
           >
-            <span className="text-white block">
+            <span className="text-[#0a1128] block">
               Tìm ngôi nhà mơ ước
             </span>
-            <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-300 bg-clip-text text-transparent block pb-1">
+            <span className="text-orange-500 block">
               tại Hà Nội
             </span>
           </motion.h1>
 
-          {/* Subtext */}
+          {/* Tiêu đề phụ (Subtitle): Chữ nhỏ hơn, màu Navy nhạt/Xám Navy */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-white/70 text-xs sm:text-sm md:text-base mt-2 mb-3.5 max-w-2xl mx-auto font-normal"
+            className="text-slate-500 text-xs sm:text-sm md:text-base mt-3 mb-6 sm:mb-8 max-w-2xl mx-auto font-medium leading-relaxed"
           >
-            Hơn 10,000+ tin đăng · Dữ liệu quy hoạch thực · Phân tích AI chuyên sâu
+            Hơn 10,000+ tin đăng chính chủ · Dữ liệu quy hoạch thực 2030-2045 · Thẩm định AI chuyên sâu.
           </motion.p>
-
-          {/* ━━ AIRBNB STICKY SEARCH BAR COMPONENT ━━ */}
-          <AirbnbStickySearchBar />
-
-          {/* Quick Search Preset Tags */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-1.5 pt-2 text-xs font-medium text-white/80"
-          >
-            <span className="text-white/60">Tìm kiếm phổ biến:</span>
-            {[
-              { label: 'Nhà phố Đống Đa', href: '/search?district=Đống Đa&type=house' },
-              { label: 'Chung cư Cầu Giấy', href: '/search?district=Cầu Giấy&type=apartment' },
-              { label: 'Đất Hà Đông', href: '/search?district=Hà Đông&type=land' },
-              { label: 'Biệt thự Tây Hồ', href: '/search?district=Tây Hồ&type=villa' },
-              { label: 'Căn hộ 2PN', href: '/search?type=apartment' },
-              { label: 'Nhà dưới 3 tỷ', href: '/search?maxPrice=3000000000' },
-            ].map((tag) => (
-              <Link
-                key={tag.label}
-                href={tag.href}
-                className="bg-white/10 hover:bg-white/20 text-white/90 hover:text-white backdrop-blur-sm border border-white/10 rounded-full px-3 py-1 text-xs transition-all"
-              >
-                {tag.label}
-              </Link>
-            ))}
-          </motion.div>
-
         </div>
 
-        {/* BOTTOM STATS BAR */}
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="w-full rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 py-1.5 sm:py-2 px-3 sm:px-4 mt-1.5 mb-0">
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">
+        {/* 2. KHUNG TÌM KIẾM NỔI (FLOATING SEARCH WIDGET) */}
+        {/* Đặt nổi giữa màn hình, đè lên Ranh giới giữa Header và Dải 4 ảnh bên dưới */}
+        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 relative z-30">
+          <AirbnbStickySearchBar />
+        </div>
+
+        {/* 3. LƯỚI 4 CỘT HÌNH ẢNH (4-COLUMN CARD GRID) */}
+        {/* Nằm phía dưới khung tìm kiếm (đỉnh của 4 thẻ ảnh bị khung tìm kiếm che nhẹ lên) */}
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 relative z-10 -mt-10 sm:-mt-14">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {heroFeatureCards.map((card, idx) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 + idx * 0.08 }}
+              >
+                <Link
+                  href={card.href}
+                  className="group relative h-[360px] sm:h-[390px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/70 block hover:-translate-y-1.5"
+                >
+                  {/* Full height background image */}
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                    loading="eager"
+                  />
+
+                  {/* Gradient màu Xanh Navy đậm chuyển từ trong suốt ở giữa xuống phủ tối ở đáy thẻ */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/50 to-transparent" />
+
+                  {/* Text đè lên đáy ảnh (Căn giữa) */}
+                  <div className="absolute inset-x-0 bottom-0 p-5 text-center z-10">
+                    {/* Dòng 1: Tiêu đề thẻ (Thẻ/Loại hình) - Chữ Trắng, In đậm, Cỡ vừa */}
+                    <h3 className="text-lg font-bold text-white mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors">
+                      {card.title}
+                    </h3>
+                    {/* Dòng 2: Đoạn mô tả ngắn (2 dòng) - Chữ Trắng/Xám nhạt, Cỡ nhỏ */}
+                    <p className="text-xs text-white/80 line-clamp-2 max-w-[210px] mx-auto leading-relaxed font-normal">
+                      {card.description}
+                    </p>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Search Preset Tags */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="flex flex-wrap items-center justify-center gap-2 pt-7 pb-2 text-xs font-medium text-slate-600 max-w-4xl mx-auto px-4 relative z-10"
+        >
+          <span className="text-slate-400 font-semibold">Tìm kiếm phổ biến:</span>
+          {[
+            { label: 'Nhà phố Đống Đa', href: '/search?district=Đống Đa&type=house' },
+            { label: 'Chung cư Cầu Giấy', href: '/search?district=Cầu Giấy&type=apartment' },
+            { label: 'Đất Hà Đông', href: '/search?district=Hà Đông&type=land' },
+            { label: 'Biệt thự Tây Hồ', href: '/search?district=Tây Hồ&type=villa' },
+            { label: 'Căn hộ 2PN', href: '/search?type=apartment' },
+            { label: 'Nhà dưới 3 tỷ', href: '/search?maxPrice=3000000000' },
+          ].map((tag) => (
+            <Link
+              key={tag.label}
+              href={tag.href}
+              className="bg-white hover:bg-orange-50 border border-slate-200/90 hover:border-orange-300 text-slate-700 hover:text-orange-600 rounded-full px-3.5 py-1 text-xs transition-all shadow-sm font-medium"
+            >
+              {tag.label}
+            </Link>
+          ))}
+        </motion.div>
+
+        {/* BOTTOM STATS BAR (Deep Navy Card) */}
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 mb-2 relative z-10">
+          <div className="w-full rounded-2xl bg-[#0f172a] text-white shadow-xl border border-slate-800 py-3 sm:py-3.5 px-4 sm:px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-800">
               <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
               <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
               <HeroCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
@@ -375,13 +427,13 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* PARTNER & PRESS MARQUEE STRIP (Trải dài full-width & chạy liên tục) */}
-        <div className="w-full border-t border-white/[0.08] bg-black/35 backdrop-blur-md py-2 sm:py-2.5 mt-2.5 sm:mt-3 relative z-10 overflow-hidden">
+        {/* PARTNER & PRESS MARQUEE STRIP (Deep Navy Strip) */}
+        <div className="w-full border-t border-slate-800/80 bg-[#0a0f1e] py-2.5 sm:py-3 mt-4 relative z-10 overflow-hidden">
           <div className="w-full flex items-center">
             {/* Fixed Left Badge */}
-            <div className="flex items-center gap-1.5 px-3 sm:px-5 shrink-0 border-r border-white/10 z-20 bg-gradient-to-r from-[#0a0f1e] via-[#0a0f1e]/90 to-transparent py-0.5">
+            <div className="flex items-center gap-1.5 px-3 sm:px-5 shrink-0 border-r border-slate-800 z-20 bg-gradient-to-r from-[#0a0f1e] via-[#0a0f1e]/90 to-transparent py-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse shrink-0" />
-              <span className="text-[10px] sm:text-[11px] font-bold text-white/40 uppercase tracking-widest whitespace-nowrap">
+              <span className="text-[10px] sm:text-[11px] font-bold text-white/50 uppercase tracking-widest whitespace-nowrap">
                 <span className="sm:hidden">Đối tác & Báo chí</span>
                 <span className="hidden sm:inline">Đối tác chiến lược & Báo chí</span>
               </span>
@@ -394,7 +446,7 @@ export default function HomePage() {
                   <div
                     key={`${partner.name}-${idx}`}
                     title={partner.name}
-                    className="grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer shrink-0 hover:scale-105"
+                    className="grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer shrink-0 hover:scale-105"
                   >
                     {partner.node}
                   </div>
