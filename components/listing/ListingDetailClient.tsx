@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import FloatingContactWidget from '@/components/contact/FloatingContactWidget';
 import { useApp } from '@/lib/context/AppContext';
-import { mockListings, mockUser } from '@/lib/mock-data';
+import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import PropertyAmenities from '@/components/listing/PropertyAmenities';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import {
@@ -59,13 +59,71 @@ const ListingDetailMap = dynamic(
 
 interface ListingDetailClientProps {
   listingId: string;
+  initialListing?: ListingItem;
 }
 
-export default function ListingDetailClient({ listingId }: ListingDetailClientProps) {
+export default function ListingDetailClient({ listingId, initialListing }: ListingDetailClientProps) {
   const router = useRouter();
   const { user, listings, savedListingIds, toggleSaveListing, addToast } = useApp();
 
+  const [activeListing, setActiveListing] = useState<ListingItem | null>(() => {
+    if (initialListing) return initialListing;
+    const found = listings.find((l) => l.id === listingId) || mockListings.find((l) => l.id === listingId);
+    if (found) return found;
+    return null;
+  });
+
+  const [isLoading, setIsLoading] = useState<boolean>(!activeListing);
+
+  // Đồng bộ và tải chi tiết bài đăng từ API nếu chưa có sẵn
+  useEffect(() => {
+    // 1. Kiểm tra trong listings từ context
+    const foundInListings = listings.find((l) => l.id === listingId);
+    if (foundInListings) {
+      setActiveListing(foundInListings);
+      setIsLoading(false);
+      return;
+    }
+
+    // 2. Kiểm tra initialListing từ server
+    if (initialListing && initialListing.id === listingId) {
+      setActiveListing(initialListing);
+      setIsLoading(false);
+      return;
+    }
+
+    // 3. Tự động fetch từ API /api/listings/[id]
+    let isMounted = true;
+    setIsLoading(true);
+
+    fetch(`/api/listings/${listingId}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (!isMounted) return;
+        if (json.success && json.data) {
+          setActiveListing(json.data);
+        } else {
+          // Thử tìm trong mockListings
+          const mockFound = mockListings.find((m) => m.id === listingId);
+          if (mockFound) {
+            setActiveListing(mockFound);
+          }
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.warn('Lỗi khi fetch chi tiết tin đăng:', err);
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [listingId, listings, initialListing]);
+
   const listing =
+    activeListing ||
+    initialListing ||
     listings.find((l) => l.id === listingId) ||
     mockListings.find((l) => l.id === listingId) ||
     listings[0];
@@ -340,7 +398,7 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
             {/* Dải ảnh thumbnails trượt bên dưới */}
             {images.length > 1 && (
               <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar">
-                {images.map((img, idx) => (
+                {images.map((img: string, idx: number) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImageIndex(idx)}
@@ -608,7 +666,7 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                     <span className="text-xs font-normal text-slate-500 block">Số tầng</span>
                     <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
                       <Building className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                      {listing.floors} tầng
+                      {listing.floors || 4} tầng
                     </p>
                   </div>
 
@@ -617,7 +675,7 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                     <span className="text-xs font-normal text-slate-500 block">Phòng ngủ / Tắm</span>
                     <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
                       <Bed className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                      {listing.bedrooms} PN / {listing.bathrooms} PT
+                      {listing.bedrooms || 3} PN / {listing.bathrooms || 2} PT
                     </p>
                   </div>
 
@@ -688,12 +746,14 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                       !isDescriptionExpanded ? 'line-clamp-5' : ''
                     }`}
                   >
-                    {listing.description ||
-                      `Cần bán gấp bất động sản toạ lạc tại vị trí cực đẹp ${listing.address}.
-                      - Diện tích ${listing.area}m², mặt tiền rộng, thoáng trước sau.
-                      - Giao thông thuận tiện kết nối các trục đường huyết mạch quận ${listing.district}.
-                      - Khu dân trí cao, an ninh tốt, tiện ích xung quanh đầy đủ: trường học, siêu thị, bệnh viện.
-                      - Sổ đỏ chính chủ, pháp lý minh bạch sẵn sàng sang tên ngay.`}
+                    {listing.description && listing.description.trim().length > 15
+                      ? listing.description
+                      : `Bán ${listing.title || 'bất động sản'} vị trí đắc địa tại ${listing.address || listing.district || 'Hà Nội'}.
+- Diện tích: ${listing.area}m², mặt tiền rộng thoáng, ô tô đỗ cửa hoặc vào nhà thuận tiện.
+- Thiết kế hiện đại ${listing.floors || 4} tầng kiên cố, công năng tối ưu gồm ${listing.bedrooms || 3} phòng ngủ, ${listing.bathrooms || 2} phòng tắm khép kín, phòng khách và bếp sang trọng.
+- Vị trí trung tâm quận ${listing.district || 'Hà Nội'}, hạ tầng đồng bộ, gần trường học các cấp, bệnh viện, siêu thị và công viên cây xanh.
+- Pháp lý: ${listing.legalStatus || 'Sổ đỏ chính chủ, pháp lý minh bạch'}, sẵn sàng công chứng sang tên ngay trong ngày.
+- Phù hợp an cư lâu dài, làm văn phòng công ty hoặc đầu tư cho thuê sinh lời cao.`}
                   </p>
 
                   {/* Gradient fade khi thu gọn */}
@@ -866,7 +926,7 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
 
             {/* Bottom Thumbnail Bar */}
             <div className="flex justify-center gap-2 overflow-x-auto py-2 border-t border-white/10 no-scrollbar">
-              {images.map((img, idx) => (
+              {images.map((img: string, idx: number) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImageIndex(idx)}

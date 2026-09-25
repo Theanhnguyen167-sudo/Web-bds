@@ -313,10 +313,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Hàm tải các tin đăng đã được duyệt (status === 'active') từ Supabase
+  // Hàm tải các tin đăng từ Supabase (cả active và pending của người dùng)
   const refreshListings = async () => {
     try {
-      const res = await fetch('/api/listings?status=active');
+      const res = await fetch('/api/listings?status=all');
       let supabaseListings: ListingItem[] = [];
       if (res.ok) {
         const json = await res.json();
@@ -326,15 +326,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const lat = typeof row.lat === 'number' && !isNaN(row.lat) && row.lat !== 0 ? row.lat : coords.lat;
             const lng = typeof row.lng === 'number' && !isNaN(row.lng) && row.lng !== 0 ? row.lng : coords.lng;
 
+            const area = Number(row.area) || 75;
+            const price = Number(row.price) || 8500000000;
+            const pricePerM2 = row.price_per_m2 || Math.round(price / (area || 1));
+
+            const autoDesc =
+              row.description && row.description.trim().length > 10
+                ? row.description
+                : `Bán ${row.title || 'bất động sản'} vị trí đắc địa tại ${row.address || row.district || 'Hà Nội'}.
+- Diện tích: ${area}m², mặt tiền rộng thoáng, ô tô đỗ cửa hoặc vào nhà thuận tiện.
+- Thiết kế hiện đại ${row.floors || 4} tầng kiên cố, công năng tối ưu gồm ${row.bedrooms || 3} phòng ngủ, ${row.bathrooms || 2} phòng tắm khép kín, phòng khách và phòng bếp sang trọng.
+- Vị trí trung tâm khu vực ${row.district || 'Hà Nội'}, hạ tầng đồng bộ, gần trường học các cấp, bệnh viện, chợ dân sinh và trung tâm thương mại.
+- Pháp lý: ${row.legal_status || 'Sổ đỏ chính chủ, pháp lý minh bạch'}, sẵn sàng công chứng sang tên ngay trong ngày.
+- Thích hợp an cư lâu dài, mở văn phòng đại diện hoặc đầu tư cho thuê sinh lời cao.`;
+
             return {
               id: row.id,
               title: row.title,
-              price: row.price,
-              pricePerM2: row.price_per_m2 || Math.round(row.price / (row.area || 1)),
-              area: row.area,
-              floors: 3,
-              bedrooms: 3,
-              bathrooms: 2,
+              price,
+              pricePerM2,
+              area,
+              floors: row.floors || 4,
+              bedrooms: row.bedrooms || 3,
+              bathrooms: row.bathrooms || 2,
               address: row.address,
               district: row.district,
               ward: row.ward || '',
@@ -342,15 +356,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               lng,
               type: row.property_type || 'house',
               images: row.images && row.images.length > 0 ? row.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
-              status: 'active',
+              status: row.status || 'active',
               isFeatured: row.is_featured || false,
-              views: row.views || 1,
+              views: row.views || 48,
               createdAt: row.created_at ? row.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
               planningZone: row.planning_zone || 'Đất ở đô thị',
               planningYear: 2030,
               legalStatus: row.legal_status || 'Sổ đỏ chính chủ',
               direction: row.direction || 'Đông Nam',
-              description: row.description || '',
+              description: autoDesc,
               userId: row.user_id,
               authorName: row.users?.full_name || row.author_name,
               authorPhone: row.users?.phone || row.author_phone,
