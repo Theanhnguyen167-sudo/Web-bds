@@ -346,11 +346,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               isFeatured: row.is_featured || false,
               views: row.views || 1,
               createdAt: row.created_at ? row.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-              planningZone: 'Đất ở đô thị',
+              planningZone: row.planning_zone || 'Đất ở đô thị',
               planningYear: 2030,
-              legalStatus: 'Sổ đỏ chính chủ',
-              direction: 'Đông Nam',
+              legalStatus: row.legal_status || 'Sổ đỏ chính chủ',
+              direction: row.direction || 'Đông Nam',
               description: row.description || '',
+              userId: row.user_id,
+              authorName: row.users?.full_name || row.author_name,
+              authorPhone: row.users?.phone || row.author_phone,
+              authorEmail: row.author_email,
+              authorAvatar: row.users?.avatar_url || row.author_avatar,
+              users: row.users,
             };
           });
         }
@@ -459,6 +465,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       authorName: user?.name || 'Cozy Hollys',
       authorEmail: user?.email || 'cozyhollys@gmail.com',
       authorPhone: user?.phone || '0988 123 456',
+      authorAvatar: user?.avatar,
+      users: user ? {
+        full_name: user.name,
+        avatar_url: user.avatar,
+        phone: user.phone || '0988 123 456',
+        role: user.role,
+      } : undefined,
     };
 
     // 1. Lưu ngay vào localStorage để không bao giờ bị mất khi refresh hay chuyển trang

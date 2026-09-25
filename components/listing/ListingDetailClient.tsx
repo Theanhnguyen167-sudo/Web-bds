@@ -63,12 +63,42 @@ interface ListingDetailClientProps {
 
 export default function ListingDetailClient({ listingId }: ListingDetailClientProps) {
   const router = useRouter();
-  const { listings, savedListingIds, toggleSaveListing, addToast } = useApp();
+  const { user, listings, savedListingIds, toggleSaveListing, addToast } = useApp();
 
   const listing =
     listings.find((l) => l.id === listingId) ||
     mockListings.find((l) => l.id === listingId) ||
     listings[0];
+
+  // Đồng bộ thông tin người đăng bán với tài khoản đăng nhập:
+  // - Nếu bài đăng của tài khoản hiện tại hoặc bài đăng mẫu: tự động đồng bộ ảnh đại diện & thông tin từ tài khoản đăng nhập (user)
+  // - Nếu bài đăng có tác giả cụ thể khác từ CSDL: hiển thị tác giả tương ứng
+  // - Fallback khi chưa đăng nhập: mockUser
+  const isOwner = Boolean(
+    user && (listing.userId === user.id || listing.authorEmail === user.email)
+  );
+
+  const hasOtherSpecificAuthor = Boolean(
+    listing.userId && user && listing.userId !== user.id && (listing.authorAvatar || (listing as any).users?.avatar_url)
+  );
+
+  const sellerAvatar =
+    (hasOtherSpecificAuthor
+      ? (listing.authorAvatar || (listing as any).users?.avatar_url)
+      : (user?.avatar || listing.authorAvatar || (listing as any).users?.avatar_url || mockUser.avatar)
+    );
+
+  const sellerName =
+    (hasOtherSpecificAuthor
+      ? (listing.authorName || (listing as any).users?.full_name)
+      : (user?.name || listing.authorName || (listing as any).users?.full_name || mockUser.name)
+    );
+
+  const sellerPhone =
+    (hasOtherSpecificAuthor
+      ? (listing.authorPhone || (listing as any).users?.phone)
+      : (user?.phone || listing.authorPhone || (listing as any).users?.phone || mockUser.phone || '0988 123 456')
+    );
 
   const images = listing.images && listing.images.length > 0
     ? listing.images
@@ -363,8 +393,8 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                 {/* Avatar khống chế kích thước chuẩn đẹp */}
                 <div className="relative shrink-0">
                   <img
-                    src={(listing as any).users?.avatar_url || mockUser.avatar}
-                    alt={(listing as any).users?.full_name || mockUser.name}
+                    src={sellerAvatar}
+                    alt={sellerName}
                     className="w-20 h-20 sm:w-22 sm:h-22 rounded-full object-cover ring-4 ring-orange-50 border-2 border-orange-400 shadow-md"
                     style={{ width: '84px', height: '84px' }}
                   />
@@ -378,7 +408,7 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
-                      {(listing as any).users?.full_name || mockUser.name || 'Nguyễn Văn Minh'}
+                      {sellerName}
                     </h3>
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md">
                       <Award className="h-3 w-3 text-amber-600" />
@@ -421,16 +451,16 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
             {/* Kênh liên hệ & CTA gọi / nhắn tin */}
             <div className="space-y-2.5">
               <a
-                href={`tel:${((listing as any).users?.phone || mockUser.phone || '0988123456').replace(/\s+/g, '')}`}
+                href={`tel:${sellerPhone.replace(/\s+/g, '')}`}
                 className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 py-3.5 px-4 text-white font-bold text-base shadow-md hover:shadow-lg transition-all"
               >
                 <Phone className="h-5 w-5" />
-                <span>Gọi ngay: {(listing as any).users?.phone || mockUser.phone || '0988 123 456'}</span>
+                <span>Gọi ngay: {sellerPhone}</span>
               </a>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <a
-                  href={`https://zalo.me/${((listing as any).users?.phone || mockUser.phone || '0988123456').replace(/\s+/g, '')}`}
+                  href={`https://zalo.me/${sellerPhone.replace(/\s+/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white py-2.5 px-3 text-xs sm:text-sm font-bold shadow-xs transition-colors"
@@ -442,7 +472,7 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
                 <button
                   onClick={() =>
                     addToast(
-                      `Đã gửi yêu cầu hẹn lịch xem nhà tới ${(listing as any).users?.full_name || mockUser.name}!`,
+                      `Đã gửi yêu cầu hẹn lịch xem nhà tới ${sellerName}!`,
                       'success'
                     )
                   }
@@ -856,9 +886,9 @@ export default function ListingDetailClient({ listingId }: ListingDetailClientPr
 
       {/* Floating Contact Widget & Appointment Booking */}
       <FloatingContactWidget
-        agentPhone={(listing as any).users?.phone || mockUser.phone || '0988123456'}
-        agentName={(listing as any).users?.full_name || mockUser.name || 'Nguyễn Văn Minh'}
-        agentZalo={(listing as any).users?.phone || mockUser.phone || '0988123456'}
+        agentPhone={sellerPhone}
+        agentName={sellerName}
+        agentZalo={sellerPhone}
         listingTitle={listing.title}
         listingId={listing.id}
       />
