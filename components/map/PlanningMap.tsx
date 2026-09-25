@@ -3,7 +3,8 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Layers, X, Info, ZoomIn, ZoomOut, 
-  RotateCcw, Sliders, ChevronDown, ChevronUp, FileText 
+  RotateCcw, Sliders, ChevronDown, ChevronUp, FileText,
+  Locate, Crosshair, Loader2, Navigation, Compass, MapPin
 } from 'lucide-react'
 import { 
   HANOI_CENTER, HANOI_PLANNING_ZONES, PLANNING_ZONE_TYPES,
@@ -11,6 +12,8 @@ import {
 } from '@/lib/leaflet/hanoi-data'
 import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
 import { useApp } from '@/lib/context/AppContext'
+import { MapLocationSearch } from './MapLocationSearch'
+import { HanoiLocationItem } from '@/lib/data/hanoi-locations'
 
 export interface SelectedZoneInfo {
   id: string
@@ -65,28 +68,33 @@ export default function PlanningMap({
   const metroMarkersRef = useRef<any[]>([])
   const tileLayerRef = useRef<any>(null)
 
+  // Custom marker refs for user GPS & searched pin
+  const userLocationMarkerRef = useRef<any>(null)
+  const userLocationCircleRef = useRef<any>(null)
+  const searchedLocationMarkerRef = useRef<any>(null)
+
   const [isMapReady, setIsMapReady] = useState(false)
   const [selectedZone, setSelectedZone] = useState<SelectedZoneInfo | null>(null)
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
   const [showInfoPanel, setShowInfoPanel] = useState(false)
-  const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'hybrid'>('dark')
+  const [mapStyle, setMapStyle] = useState<'light' | 'satellite'>('light')
+  const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(13)
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
+  const [isLocating, setIsLocating] = useState(false)
+  const [searchedLocation, setSearchedLocation] = useState<HanoiLocationItem | null>(null)
 
+  // ── TILE CONFIGS (2 lớp: Đường phố & Vệ tinh Google Maps) ──
   const TILE_CONFIGS = {
-    dark: {
-      label: '🌙 Tối',
-      base: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      label_url: null,
+    light: {
+      label: '☀️ Đường phố',
+      base: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+      attribution: '©Google Maps',
     },
     satellite: {
       label: '🛰️ Vệ tinh',
-      base: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      label_url: null,
-    },
-    hybrid: {
-      label: '🌍 Hybrid',
-      base: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      label_url: 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+      base: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+      attribution: '©Google Maps',
     },
   }
 
@@ -108,9 +116,10 @@ export default function PlanningMap({
       })
 
       // Base tile
+      const initialConfig = TILE_CONFIGS.light
       tileLayerRef.current = L.tileLayer(
-        TILE_CONFIGS.dark.base,
-        { attribution: '©CartoDB', subdomains: 'abcd', maxZoom: 19 }
+        initialConfig.base,
+        { attribution: initialConfig.attribution, maxZoom: 19 }
       ).addTo(map)
 
       map.on('zoomend', () => setZoomLevel(map.getZoom()))
@@ -136,19 +145,132 @@ export default function PlanningMap({
       })
       const config = TILE_CONFIGS[mapStyle]
       L.tileLayer(config.base, { 
-        attribution: '©Esri ©CartoDB', 
-        subdomains: 'abcd', 
+        attribution: config.attribution, 
         maxZoom: 19 
       }).addTo(map)
-      if (config.label_url) {
-        L.tileLayer(config.label_url, { 
-          attribution: '', 
-          subdomains: 'abcd' 
-        }).addTo(map)
-      }
     }
     updateStyle()
   }, [mapStyle, isMapReady])
+
+  // ── GET USER LOCATION (HIGH ACCURACY & PULSING RADAR) ──
+  const handleLocateMe = useCallback(async () => {
+    if (!mapInstanceRef.current) return
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      alert('Trình duyệt của bạn không hỗ trợ định vị GPS.')
+      return
+    }
+
+    setIsLocating(true)
+    const L = (await import('leaflet')).default
+    const map = mapInstanceRef.current
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords
+        setUserLocation([lat, lng])
+        setIsLocating(false)
+
+        // Clear existing user marker & circle if any
+        if (userLocationMarkerRef.current) {
+          map.removeLayer(userLocationMarkerRef.current)
+          userLocationMarkerRef.current = null
+        }
+        if (userLocationCircleRef.current) {
+          map.removeLayer(userLocationCircleRef.current)
+          userLocationCircleRef.current = null
+        }
+
+        // Create animated sonar GPS marker
+        const gpsHtml = `
+          <div class="user-gps-container">
+            <div class="user-gps-pulse"></div>
+            <div class="user-gps-pulse-delay"></div>
+            <div class="user-gps-dot"></div>
+            <div class="user-gps-label">📍 Vị trí của bạn</div>
+          </div>
+        `
+        const icon = L.divIcon({
+          html: gpsHtml,
+          className: 'user-location-marker',
+          iconSize: [48, 48],
+          iconAnchor: [24, 24],
+        })
+
+        const marker = L.marker([lat, lng], { icon, zIndexOffset: 2000 })
+        marker.addTo(map)
+        userLocationMarkerRef.current = marker
+
+        // Create 2km translucent radius circle
+        const circle = L.circle([lat, lng], {
+          radius: 2000,
+          color: '#2563eb',
+          weight: 1.5,
+          opacity: 0.8,
+          fillColor: '#3b82f6',
+          fillOpacity: 0.12,
+          dashArray: '5,5',
+        }).addTo(map)
+        userLocationCircleRef.current = circle
+
+        // Smooth fly to current position
+        map.flyTo([lat, lng], 15, { duration: 1.2 })
+      },
+      (err) => {
+        setIsLocating(false)
+        console.warn('Geolocation failed:', err)
+        alert('Không thể xác định vị trí: Vui lòng cho phép quyền truy cập vị trí trên trình duyệt của bạn.')
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    )
+  }, [])
+
+  // ── SELECT LOCATION FROM SEARCH BAR ──
+  const handleSelectLocation = useCallback(
+    async (loc: HanoiLocationItem) => {
+      if (!mapInstanceRef.current) return
+      const L = (await import('leaflet')).default
+      const map = mapInstanceRef.current
+
+      setSearchedLocation(loc)
+
+      // Clear previous searched marker
+      if (searchedLocationMarkerRef.current) {
+        map.removeLayer(searchedLocationMarkerRef.current)
+        searchedLocationMarkerRef.current = null
+      }
+
+      // Add high-contrast drop pin
+      const pinHtml = `
+        <div class="searched-pin-container">
+          <div class="searched-pin-badge">📍 ${loc.name}</div>
+          <div class="searched-pin-dot"></div>
+        </div>
+      `
+      const icon = L.divIcon({
+        html: pinHtml,
+        className: 'searched-location-pin',
+        iconSize: [160, 48],
+        iconAnchor: [80, 40],
+      })
+
+      const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: 1500 })
+      marker.addTo(map)
+      searchedLocationMarkerRef.current = marker
+
+      // Fly to location
+      map.flyTo([loc.lat, loc.lng], loc.zoom || 15.5, { duration: 1.2 })
+    },
+    []
+  )
+
+  // ── CLEAR SEARCHED LOCATION ──
+  const handleClearSearched = useCallback(() => {
+    if (searchedLocationMarkerRef.current && mapInstanceRef.current) {
+      mapInstanceRef.current.removeLayer(searchedLocationMarkerRef.current)
+      searchedLocationMarkerRef.current = null
+    }
+    setSearchedLocation(null)
+  }, [])
 
   // ── RENDER PLANNING POLYGONS ──
   useEffect(() => {
@@ -398,43 +520,128 @@ export default function PlanningMap({
       {/* ── Zoom + Controls (top-right) ── */}
       <div className="absolute top-4 right-4 z-[400] flex flex-col gap-2">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg 
-                        overflow-hidden border border-gray-200">
-          <button onClick={handleZoomIn}
-            className="w-10 h-10 flex items-center justify-center text-navy 
-                       font-bold text-xl hover:bg-orange-500 hover:text-white 
-                       transition-colors border-b border-gray-100">+</button>
-          <button onClick={handleZoomOut}
-            className="w-10 h-10 flex items-center justify-center text-navy 
-                       font-bold text-xl hover:bg-orange-500 hover:text-white 
-                       transition-colors">−</button>
+                        overflow-hidden border border-gray-200 dark:border-gray-700">
+          <motion.button
+            onClick={handleZoomIn}
+            whileHover={{ backgroundColor: '#f97316', color: '#fff' }}
+            whileTap={{ scale: 0.9 }}
+            className="w-10 h-10 flex items-center justify-center 
+                       text-navy dark:text-white font-bold text-xl
+                       hover:bg-orange-500 hover:text-white transition-colors
+                       border-b border-gray-200 dark:border-gray-700"
+          >
+            +
+          </motion.button>
+          <motion.button
+            onClick={handleZoomOut}
+            whileHover={{ backgroundColor: '#f97316', color: '#fff' }}
+            whileTap={{ scale: 0.9 }}
+            className="w-10 h-10 flex items-center justify-center 
+                       text-navy dark:text-white font-bold text-xl
+                       hover:bg-orange-500 hover:text-white transition-colors"
+          >
+            −
+          </motion.button>
         </div>
         
         <motion.button onClick={handleReset}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className="w-10 h-10 bg-white dark:bg-gray-800 rounded-2xl shadow-lg 
-                     border border-gray-200 flex items-center justify-center 
-                     text-navy hover:bg-orange-500 hover:text-white transition-all"
+                     border border-gray-200 dark:border-gray-700 flex items-center justify-center 
+                     text-navy dark:text-white hover:bg-orange-500 hover:text-white transition-all"
           title="Về vị trí ban đầu">
           <RotateCcw size={15} />
         </motion.button>
 
-        {/* Map Style Toggle */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg 
-                        overflow-hidden border border-gray-200">
-          {Object.entries(TILE_CONFIGS).map(([key, cfg]) => (
-            <button key={key}
-              onClick={() => setMapStyle(key as typeof mapStyle)}
-              title={cfg.label}
-              className={`w-10 h-8 flex items-center justify-center text-xs
-                         transition-colors border-b border-gray-100 last:border-0
-                         ${mapStyle === key 
-                           ? 'bg-orange-500 text-white' 
-                           : 'text-navy hover:bg-orange-50'}`}>
-              {cfg.label.split(' ')[0]}
-            </button>
-          ))}
+        {/* Locate Me */}
+        <motion.button
+          onClick={handleLocateMe}
+          disabled={isLocating}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`w-10 h-10 rounded-2xl shadow-lg border flex items-center justify-center transition-all ${
+            userLocation
+              ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/20'
+              : 'bg-white dark:bg-gray-800 text-navy dark:text-white border-gray-200 dark:border-gray-700 hover:bg-orange-500 hover:text-white hover:border-orange-500'
+          }`}
+          title="Vị trí của tôi (Định vị GPS)"
+        >
+          {isLocating ? (
+            <Loader2 size={16} className="animate-spin text-orange-500" />
+          ) : userLocation ? (
+            <Crosshair size={16} className="animate-pulse" />
+          ) : (
+            <Locate size={16} />
+          )}
+        </motion.button>
+
+        {/* Layer Switcher (Giống phần Tìm kiếm) */}
+        <div className="relative">
+          <motion.button
+            onClick={() => setShowLayerPanel(!showLayerPanel)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-10 h-10 bg-white dark:bg-gray-800 rounded-2xl 
+                       shadow-lg border border-gray-200 dark:border-gray-700
+                       flex items-center justify-center text-navy dark:text-white
+                       hover:bg-orange-500 hover:text-white transition-all"
+            title="Chọn lớp bản đồ"
+          >
+            <Layers size={16} />
+          </motion.button>
+
+          <AnimatePresence>
+            {showLayerPanel && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, x: 10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.9, x: 10 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="absolute right-12 top-0 bg-white dark:bg-gray-800 
+                           rounded-2xl shadow-xl border border-gray-200 
+                           dark:border-gray-700 p-3 min-w-[160px]"
+              >
+                <p className="text-xs font-semibold text-gray-500 mb-2 
+                              uppercase tracking-wide">Lớp bản đồ</p>
+                {Object.entries(TILE_CONFIGS).map(([key, tile]) => (
+                  <motion.button
+                    key={key}
+                    onClick={() => {
+                      setMapStyle(key as typeof mapStyle)
+                      setShowLayerPanel(false)
+                    }}
+                    whileHover={{ x: 2 }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 
+                               rounded-xl text-sm font-medium transition-all ${
+                      mapStyle === key
+                        ? 'bg-orange-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {tile.label}
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
+
+      {/* ── Top-Left: Location Search Bar ── */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: isMapReady ? 1 : 0, y: isMapReady ? 0 : -10 }}
+        className="absolute top-4 left-4 sm:left-[390px] z-[400] max-w-[calc(100%-88px)] sm:max-w-xs"
+      >
+        <MapLocationSearch
+          onSelectLocation={handleSelectLocation}
+          onLocateMe={handleLocateMe}
+          isLocating={isLocating}
+          activeLocationName={searchedLocation?.name}
+          onClearLocation={handleClearSearched}
+        />
+      </motion.div>
 
       {/* ── Zoom Level Badge ── */}
       <div className="absolute bottom-6 right-4 z-[400] bg-black/50 
