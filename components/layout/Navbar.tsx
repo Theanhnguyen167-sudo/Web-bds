@@ -34,9 +34,9 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 15);
+      setIsScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -81,7 +81,7 @@ export const Navbar: React.FC = () => {
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Logo Left */}
-        <Link href="/" className="flex items-center gap-2.5 group">
+        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
           <motion.div
             whileHover={{ scale: 1.08, rotate: -4 }}
             whileTap={{ scale: 0.95 }}
@@ -99,8 +99,14 @@ export const Navbar: React.FC = () => {
           </div>
         </Link>
 
-        {/* Center Nav Links (Desktop) */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+        {/* Center Nav Links (Desktop) - Ẩn mượt khi cuộn trang chủ để nhường chỗ cho Airbnb Compact Search Bar */}
+        <nav
+          className={`hidden md:flex items-center gap-1 lg:gap-2 transition-all duration-300 ${
+            pathname === '/' && isScrolled
+              ? 'opacity-0 pointer-events-none scale-95'
+              : 'opacity-100 pointer-events-auto scale-100'
+          }`}
+        >
           {navLinks.map((link) => {
             const isActive =
               link.href === '/'
