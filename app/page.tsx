@@ -194,6 +194,21 @@ const heroFeatureCards = [
   },
 ];
 
+const propertyCategories = [
+  { name: 'Nhà phố', count: '4,231 tin', icon: '🏠', href: '/search?type=house' },
+  { name: 'Chung cư', count: '2,891 tin', icon: '🏢', href: '/search?type=apartment' },
+  { name: 'Đất nền', count: '1,432 tin', icon: '🌿', href: '/search?type=land' },
+  { name: 'Biệt thự', count: '456 tin', icon: '🏰', href: '/search?type=villa' },
+  { name: 'Thương mại', count: '234 tin', icon: '🏪', href: '/search?type=commercial' },
+  { name: 'Dự án mới', count: '89 dự án', icon: '🏗️', href: '/search?type=project' },
+  { name: 'Cho thuê', count: '1,876 tin', icon: '🔑', href: '/search?purpose=rent' },
+  { name: 'Quy hoạch', count: 'Sở QHKT', icon: '🗺️', href: '/planning' },
+  { name: 'Penthouse', count: '128 tin', icon: '✨', href: '/search?type=apartment&keyword=penthouse' },
+  { name: 'Nhà mặt phố', count: '890 tin', icon: '🏬', href: '/search?type=house&keyword=mặt+phố' },
+  { name: 'Bản đồ 3D', count: 'Metro & VĐ4', icon: '🌐', href: '/planning' },
+  { name: 'Định giá AI', count: 'Tra cứu giá', icon: '🤖', href: '/reports' },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const { savedListingIds, toggleSaveListing } = useApp();
@@ -462,148 +477,58 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* PARTNER & PRESS MARQUEE STRIP (Deep Navy Strip) */}
-        <div className="w-full border-t border-slate-800/80 bg-[#0a0f1e] py-2.5 sm:py-3 mt-4 relative z-10 overflow-hidden">
-          <div className="w-full flex items-center">
-            {/* Fixed Left Badge */}
-            <div className="flex items-center gap-1.5 px-3 sm:px-5 shrink-0 border-r border-slate-800 z-20 bg-gradient-to-r from-[#0a0f1e] via-[#0a0f1e]/90 to-transparent py-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse shrink-0" />
-              <span className="text-[10px] sm:text-[11px] font-bold text-white/50 uppercase tracking-widest whitespace-nowrap">
-                <span className="sm:hidden">Đối tác & Báo chí</span>
-                <span className="hidden sm:inline">Đối tác chiến lược & Báo chí</span>
-              </span>
-            </div>
-
-            {/* Infinite Marquee Track with gradient fade masks on edges */}
-            <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)]">
-              <div className="flex gap-8 sm:gap-12 w-max animate-[marquee_30s_linear_infinite] hover:[animation-play-state:paused] items-center py-0.5">
-                {[...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, idx) => (
-                  <div
-                    key={`${partner.name}-${idx}`}
-                    title={partner.name}
-                    className="grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer shrink-0 hover:scale-105"
-                  >
-                    {partner.node}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 2 — DANH MỤC NHANH (Quick Property Types)
+          📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Chạy ngang liên tục)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="categories" className="bg-white pt-3 pb-6 sm:pt-4 sm:pb-7 border-b border-slate-100">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-3.5 sm:mb-4">
+      <section id="categories" className="bg-white py-10 sm:py-12 border-b border-slate-100 overflow-hidden relative">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
-              <span className="text-orange-500 font-extrabold text-[11px] tracking-wider uppercase block mb-1">
+              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
                 KHÁM PHÁ THEO NHU CẦU
               </span>
-              <h2 className="text-lg sm:text-xl font-black text-navy leading-snug">
-                Danh mục bất động sản Hà Nội
+              <h2 className="text-2xl sm:text-3xl font-black text-[#0a1128] leading-tight">
+                Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
               </h2>
+              <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-xl">
+                Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              {/* Carousel navigation buttons */}
-              <button
-                type="button"
-                onClick={() => scrollCategories('left')}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-50 hover:bg-orange-50 border border-slate-200 hover:border-orange-400 text-slate-700 hover:text-orange-600 flex items-center justify-center shadow-xs transition-all cursor-pointer"
-                title="Trượt sang trái"
-                aria-label="Trượt sang trái"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollCategories('right')}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-50 hover:bg-orange-50 border border-slate-200 hover:border-orange-400 text-slate-700 hover:text-orange-600 flex items-center justify-center shadow-xs transition-all cursor-pointer"
-                title="Trượt sang phải"
-                aria-label="Trượt sang phải"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
+            
+            <div className="flex items-center gap-3">
               <Link
                 href="/search"
-                className="text-xs sm:text-sm font-bold text-orange-500 hover:text-orange-600 inline-flex items-center gap-1 ml-1"
+                className="text-xs sm:text-sm font-bold text-orange-500 hover:text-orange-600 inline-flex items-center gap-1 group"
               >
-                <span className="hidden sm:inline">Xem tất cả loại BĐS</span>
-                <span className="sm:hidden">Xem tất cả</span>
-                <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span>Xem tất cả loại BĐS</span>
+                <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
           </div>
+        </div>
 
-          {/* 1 HÀNG NGANG CAROUSEL (Single Row Compact Carousel) */}
-          <div className="relative group/cat-carousel">
-            {/* Left Floating Arrow Button */}
-            <button
-              type="button"
-              onClick={() => scrollCategories('left')}
-              className="hidden lg:flex absolute -left-3.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 hover:text-orange-600 hover:border-orange-400 items-center justify-center transition-all hover:scale-110 cursor-pointer"
-              title="Trượt sang trái"
-              aria-label="Trượt sang trái"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-
-            {/* Horizontal Scroll Track */}
-            <div
-              ref={categoriesScrollRef}
-              className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto scroll-smooth snap-x scrollbar-none py-1.5 px-0.5"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {[
-                { name: 'Nhà phố', count: '4,231 tin', icon: '🏠', href: '/search?type=house' },
-                { name: 'Chung cư', count: '2,891 tin', icon: '🏢', href: '/search?type=apartment' },
-                { name: 'Đất nền', count: '1,432 tin', icon: '🌿', href: '/search?type=land' },
-                { name: 'Biệt thự', count: '456 tin', icon: '🏰', href: '/search?type=villa' },
-                { name: 'Thương mại', count: '234 tin', icon: '🏪', href: '/search?type=commercial' },
-                { name: 'Dự án mới', count: '89 dự án', icon: '🏗️', href: '/search?type=project' },
-                { name: 'Cho thuê', count: '1,876 tin', icon: '🔑', href: '/search?purpose=rent' },
-                { name: 'Quy hoạch', count: 'Sở QHKT', icon: '🗺️', href: '/planning' },
-              ].map((cat, idx) => (
-                <motion.div
-                  key={cat.name}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.25, delay: idx * 0.02 }}
-                  whileHover={{ y: -4, scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex-1 min-w-[110px] sm:min-w-[130px] shrink-0 snap-start"
-                >
-                  <Link
-                    href={cat.href}
-                    className="flex flex-col items-center justify-center text-center px-3 py-2 sm:py-2.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-200 group h-full cursor-pointer"
-                  >
-                    <span className="text-xl sm:text-2xl mb-1.5 group-hover:scale-120 group-hover:-translate-y-0.5 transition-transform duration-200 inline-block">
-                      {cat.icon}
-                    </span>
-                    <span className="font-bold text-xs text-navy group-hover:text-orange-600 transition-colors duration-200 whitespace-nowrap">
-                      {cat.name}
-                    </span>
-                    <span className="text-[10px] text-slate-400 mt-1 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap">
-                      {cat.count}
-                    </span>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Right Floating Arrow Button */}
-            <button
-              type="button"
-              onClick={() => scrollCategories('right')}
-              className="hidden lg:flex absolute -right-3.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 hover:text-orange-600 hover:border-orange-400 items-center justify-center transition-all hover:scale-110 cursor-pointer"
-              title="Trượt sang phải"
-              aria-label="Trượt sang phải"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
+        {/* Dải Danh mục chạy ngang liên tục (Infinite Smooth Marquee) */}
+        <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)] py-2">
+          <div className="flex gap-3 sm:gap-4 w-max animate-[marquee_30s_linear_infinite] hover:[animation-play-state:paused] items-center px-4">
+            {[...propertyCategories, ...propertyCategories].map((cat, idx) => (
+              <Link
+                key={`${cat.name}-${idx}`}
+                href={cat.href}
+                className="w-[140px] sm:w-[160px] md:w-[170px] h-[115px] sm:h-[130px] shrink-0 flex flex-col items-center justify-center text-center p-3 sm:p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-1 select-none"
+              >
+                <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-120 group-hover:-translate-y-0.5 transition-transform duration-300 inline-block">
+                  {cat.icon}
+                </span>
+                <span className="font-bold text-xs sm:text-sm text-[#0a1128] group-hover:text-orange-500 transition-colors whitespace-nowrap">
+                  {cat.name}
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 mt-1 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap">
+                  {cat.count}
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
