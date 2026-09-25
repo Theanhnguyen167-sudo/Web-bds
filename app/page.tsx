@@ -195,6 +195,28 @@ const heroFeatureCards = [
 export default function HomePage() {
   const router = useRouter();
 
+  // ── Dynamic Navy Background Height (Phủ từ đỉnh đến đúng 1/4 hình ảnh) ──
+  const heroSectionRef = useRef<HTMLElement>(null);
+  const heroCardsRef = useRef<HTMLDivElement>(null);
+  const [navyHeight, setNavyHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const updateNavyHeight = () => {
+      if (heroCardsRef.current && heroSectionRef.current) {
+        const heroTop = heroSectionRef.current.getBoundingClientRect().top;
+        const cardsRect = heroCardsRef.current.getBoundingClientRect();
+        const cardTop = cardsRect.top - heroTop;
+        const cardHeight = cardsRect.height;
+        // Exactly 1/4 (25%) of the 4 cards height!
+        const targetHeight = Math.round(cardTop + (cardHeight * 0.25));
+        setNavyHeight(targetHeight);
+      }
+    };
+    updateNavyHeight();
+    window.addEventListener('resize', updateNavyHeight);
+    return () => window.removeEventListener('resize', updateNavyHeight);
+  }, []);
+
   // ── Section 2: Property Categories Carousel Scroll ──
   const categoriesScrollRef = useRef<HTMLDivElement>(null);
   const scrollCategories = (direction: 'left' | 'right') => {
@@ -296,19 +318,29 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1 — HERO SEARCH & 4-CARD GRID (Chuẩn bố cục Ảnh 2)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="hero" className="relative flex flex-col items-center overflow-hidden bg-gradient-to-b from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] text-slate-800 pt-24 sm:pt-28 pb-0 border-b border-slate-200/80">
-        {/* Soft Ambient Background Glows */}
-        <div className="absolute top-12 left-1/4 w-96 h-96 rounded-full bg-orange-400/10 blur-[130px] pointer-events-none" />
-        <div className="absolute top-28 right-1/4 w-96 h-96 rounded-full bg-blue-500/10 blur-[140px] pointer-events-none" />
+      <section
+        id="hero"
+        ref={heroSectionRef}
+        className="relative flex flex-col items-center overflow-hidden bg-slate-50 text-slate-800 pt-20 sm:pt-24 pb-0 border-b border-slate-200/80"
+      >
+        {/* ━━━ NỀN XANH NAVY PHỦ TỪ ĐỈNH ĐẾN 1/4 HÌNH ẢNH ━━━ */}
+        <div
+          className="absolute top-0 inset-x-0 bg-[#0a1128] z-0 pointer-events-none transition-[height] duration-200 ease-out h-[480px] sm:h-[520px] md:h-[550px] lg:h-[570px]"
+          style={navyHeight ? { height: `${navyHeight}px` } : undefined}
+        >
+          {/* Subtle Ambient Glows on Navy */}
+          <div className="absolute top-12 left-1/4 w-96 h-96 rounded-full bg-orange-500/15 blur-[140px]" />
+          <div className="absolute top-28 right-1/4 w-96 h-96 rounded-full bg-blue-600/15 blur-[150px]" />
+        </div>
 
-        {/* 1. KHU VỰC TIÊU ĐỀ (HERO HEADER) - CĂN GIỮA */}
+        {/* 1. KHU VỰC TIÊU ĐỀ (HERO HEADER) - CĂN GIỮA TRÊN NỀN NAVY */}
         <div className="max-w-4xl w-full mx-auto text-center relative z-20 px-4 sm:px-6">
           {/* Top Badge */}
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 border border-orange-200/90 bg-orange-50 text-orange-600 rounded-full px-4 py-1 text-xs font-bold shadow-sm mb-3.5 select-none"
+            className="inline-flex items-center gap-2 border border-orange-500/30 bg-orange-500/15 text-orange-300 rounded-full px-4 py-1 text-xs font-bold shadow-sm mb-3.5 select-none backdrop-blur-sm"
           >
             <span>🏆</span>
             <span>Nền tảng BĐS thông minh #1 Hà Nội</span>
@@ -321,7 +353,7 @@ export default function HomePage() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight flex flex-col items-center gap-1.5 sm:gap-2 leading-[1.18] sm:leading-[1.2]"
           >
-            <span className="text-[#0a1128] block">
+            <span className="text-white block">
               Tìm ngôi nhà mơ ước
             </span>
             <span className="text-orange-500 block">
@@ -329,26 +361,26 @@ export default function HomePage() {
             </span>
           </motion.h1>
 
-          {/* Tiêu đề phụ (Subtitle): Chữ nhỏ hơn, màu Navy nhạt/Xám Navy */}
+          {/* Tiêu đề phụ (Subtitle): Sáng rõ trên nền Navy */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-slate-500 text-xs sm:text-sm md:text-base mt-3 mb-6 sm:mb-8 max-w-2xl mx-auto font-medium leading-relaxed"
+            className="text-slate-300 text-xs sm:text-sm md:text-base mt-3 mb-6 sm:mb-8 max-w-2xl mx-auto font-normal leading-relaxed"
           >
             Hơn 10,000+ tin đăng chính chủ · Dữ liệu quy hoạch thực 2030-2045 · Thẩm định AI chuyên sâu.
           </motion.p>
         </div>
 
         {/* 2. KHUNG TÌM KIẾM NỔI (FLOATING SEARCH WIDGET) */}
-        {/* Đặt nổi giữa màn hình, đè lên Ranh giới giữa Header và Dải 4 ảnh bên dưới */}
+        {/* Nổi bật trên nền Navy và đè lên 1/4 dải ảnh bên dưới */}
         <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 relative z-30">
           <AirbnbStickySearchBar />
         </div>
 
         {/* 3. LƯỚI 4 CỘT HÌNH ẢNH (4-COLUMN CARD GRID) */}
-        {/* Nằm phía dưới khung tìm kiếm (đỉnh của 4 thẻ ảnh bị khung tìm kiếm che nhẹ lên) */}
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 relative z-10 -mt-10 sm:-mt-14">
+        {/* Nằm phía dưới khung tìm kiếm (đỉnh của 4 thẻ ảnh bị khung tìm kiếm che nhẹ lên, 1/4 nằm trong nền Navy) */}
+        <div ref={heroCardsRef} className="w-full max-w-6xl mx-auto px-4 sm:px-6 relative z-10 -mt-10 sm:-mt-14">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {heroFeatureCards.map((card, idx) => (
               <motion.div
