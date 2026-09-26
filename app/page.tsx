@@ -1073,9 +1073,9 @@ export default function HomePage() {
                         <span>📝</span>
                         <span>Mô tả chi tiết bài đăng</span>
                       </h4>
-                      <p className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                      <div className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line max-h-52 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 pr-2">
                         {selectedListingDetail.description || 'Chưa có mô tả chi tiết cho bất động sản này.'}
-                      </p>
+                      </div>
                     </div>
 
                     {/* Seller Contact & AI evaluation */}
@@ -1147,6 +1147,7 @@ export default function HomePage() {
 
                     <Link
                       href={`/listings/${selectedListingDetail.id}`}
+                      onClick={() => handleCloseDetailModal()}
                       className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all hover:scale-105"
                     >
                       <span>Xem toàn bộ trang chi tiết</span>

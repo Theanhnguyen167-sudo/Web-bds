@@ -121,12 +121,17 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
     };
   }, [listingId, listings, initialListing]);
 
+  // Luôn tự động cuộn lên đầu trang khi mở trang chi tiết bất động sản
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [listingId]);
+
   const listing =
     activeListing ||
     initialListing ||
     listings.find((l) => l.id === listingId) ||
     mockListings.find((l) => l.id === listingId) ||
-    listings[0];
+    mockListings[0];
 
   // Đồng bộ thông tin người đăng bán với tài khoản đăng nhập:
   // - Nếu bài đăng của tài khoản hiện tại hoặc bài đăng mẫu: tự động đồng bộ ảnh đại diện & thông tin từ tài khoản đăng nhập (user)
@@ -169,8 +174,8 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
   // Mobile selected preview
   const [mobileSelectedImageIndex, setMobileSelectedImageIndex] = useState(0);
 
-  // Description expand state
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  // Description expand state (mặc định mở rộng để người dùng luôn đọc được toàn bộ nội dung chi tiết)
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
 
   // AI Report Generation state
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
@@ -748,7 +753,7 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
                   >
                     {listing.description && listing.description.trim().length > 15
                       ? listing.description
-                      : `Bán ${listing.title || 'bất động sản'} vị trí đắc địa tại ${listing.address || listing.district || 'Hà Nội'}.
+                      : `${listing.title?.toLowerCase().startsWith('bán') ? listing.title : `Bán ${listing.title || 'bất động sản'}`} vị trí đắc địa tại ${listing.address || listing.district || 'Hà Nội'}.
 - Diện tích: ${listing.area}m², mặt tiền rộng thoáng, ô tô đỗ cửa hoặc vào nhà thuận tiện.
 - Thiết kế hiện đại ${listing.floors || 4} tầng kiên cố, công năng tối ưu gồm ${listing.bedrooms || 3} phòng ngủ, ${listing.bathrooms || 2} phòng tắm khép kín, phòng khách và bếp sang trọng.
 - Vị trí trung tâm quận ${listing.district || 'Hà Nội'}, hạ tầng đồng bộ, gần trường học các cấp, bệnh viện, siêu thị và công viên cây xanh.
