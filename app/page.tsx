@@ -1147,8 +1147,16 @@ export default function HomePage() {
 
                     <Link
                       href={`/listings/${selectedListingDetail.id}`}
-                      onClick={() => handleCloseDetailModal()}
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all hover:scale-105"
+                      onClick={(e) => {
+                        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+                          return;
+                        }
+                        e.preventDefault();
+                        const targetId = selectedListingDetail.id;
+                        router.push(`/listings/${targetId}`);
+                        handleCloseDetailModal();
+                      }}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all hover:scale-105 cursor-pointer"
                     >
                       <span>Xem toàn bộ trang chi tiết</span>
                       <ExternalLink className="h-4 w-4" />
