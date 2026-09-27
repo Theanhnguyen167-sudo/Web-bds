@@ -176,23 +176,31 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
     listing.userId && user && listing.userId !== user.id && (listing.authorAvatar || (listing as any).users?.avatar_url)
   );
 
-  const sellerAvatar =
+  const rawSellerAvatar =
     (hasOtherSpecificAuthor
       ? (listing.authorAvatar || (listing as any).users?.avatar_url)
       : (user?.avatar || listing.authorAvatar || (listing as any).users?.avatar_url || mockUser.avatar)
     );
 
-  const sellerName =
+  const rawSellerName =
     (hasOtherSpecificAuthor
       ? (listing.authorName || (listing as any).users?.full_name)
       : (user?.name || listing.authorName || (listing as any).users?.full_name || mockUser.name)
     );
 
-  const sellerPhone =
+  const rawSellerPhone =
     (hasOtherSpecificAuthor
       ? (listing.authorPhone || (listing as any).users?.phone)
-      : (user?.phone || listing.authorPhone || (listing as any).users?.phone || mockUser.phone || '0988 123 456')
+      : (user?.phone || listing.authorPhone || (listing as any).users?.phone || mockUser.phone)
     );
+
+  const sellerAvatar =
+    rawSellerAvatar ||
+    mockUser.avatar ||
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80';
+  const sellerName = rawSellerName || 'Chuyên viên BĐS Hà Nội';
+  const sellerPhone = rawSellerPhone || '0988 123 456';
+  const cleanSellerPhone = (sellerPhone || '0988123456').replace(/\s+/g, '');
 
   const images: string[] = listing.images && listing.images.length > 0
     ? listing.images
@@ -545,7 +553,7 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             {/* Kênh liên hệ & CTA gọi / nhắn tin */}
             <div className="space-y-2.5">
               <a
-                href={`tel:${sellerPhone.replace(/\s+/g, '')}`}
+                href={`tel:${cleanSellerPhone}`}
                 className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 py-3.5 px-4 text-white font-bold text-base shadow-md hover:shadow-lg transition-all"
               >
                 <Phone className="h-5 w-5" />
@@ -554,7 +562,7 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
 
               <div className="grid grid-cols-2 gap-2.5">
                 <a
-                  href={`https://zalo.me/${sellerPhone.replace(/\s+/g, '')}`}
+                  href={`https://zalo.me/${cleanSellerPhone}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white py-2.5 px-3 text-xs sm:text-sm font-bold shadow-xs transition-colors"

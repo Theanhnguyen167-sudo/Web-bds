@@ -869,9 +869,13 @@ export default function HomePage() {
                   {/* Content Details */}
                   <div className="flex flex-1 flex-col p-4">
                     {/* Title */}
-                    <h3 className="line-clamp-2 text-[13px] font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-orange-600">
+                    <Link
+                      href={`/listings/${listing.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="line-clamp-2 text-[13px] font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
+                    >
                       {listing.title}
-                    </h3>
+                    </Link>
 
                     {/* Address */}
                     <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">

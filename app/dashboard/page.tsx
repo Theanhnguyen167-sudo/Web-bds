@@ -341,11 +341,17 @@ function DashboardContent() {
                         className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border p-4 hover:border-accent hover:bg-orange-50/15 transition-all cursor-pointer shadow-sm"
                       >
                         <div className="flex items-center gap-3.5">
-                          <img
-                            src={listing.images[0]}
-                            alt={listing.title}
-                            className="h-16 w-24 rounded-xl object-cover shrink-0"
-                          />
+                          <Link
+                            href={`/listings/${listing.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="shrink-0 block"
+                          >
+                            <img
+                              src={listing.images[0]}
+                              alt={listing.title}
+                              className="h-16 w-24 rounded-xl object-cover hover:opacity-90 transition-opacity"
+                            />
+                          </Link>
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-black text-accent">
@@ -367,9 +373,13 @@ function DashboardContent() {
                                 </span>
                               )}
                             </div>
-                            <h4 className="text-xs font-bold text-text-primary group-hover:text-accent transition-colors line-clamp-1 mt-1">
+                            <Link
+                              href={`/listings/${listing.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-xs font-bold text-text-primary hover:text-accent transition-colors line-clamp-1 mt-1 block cursor-pointer"
+                            >
                               {listing.title}
-                            </h4>
+                            </Link>
                             <p className="text-[11px] text-text-muted mt-0.5">{listing.district}, Hà Nội</p>
                           </div>
                         </div>
@@ -507,9 +517,13 @@ function DashboardContent() {
                           {/* Card Body */}
                           <div className="flex flex-1 flex-col p-4">
                             {/* Title */}
-                            <h4 className="text-xs sm:text-sm font-bold leading-snug text-text-primary group-hover:text-accent transition-colors line-clamp-2">
+                            <Link
+                              href={`/listings/${listing.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-xs sm:text-sm font-bold leading-snug text-text-primary hover:text-accent transition-colors line-clamp-2 block cursor-pointer"
+                            >
                               {listing.title}
-                            </h4>
+                            </Link>
 
                             {/* Address */}
                             <div className="mt-2 flex items-center gap-1 text-[11px] text-text-secondary">
