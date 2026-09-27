@@ -59,7 +59,7 @@ const ListingDetailMap = dynamic(
 
 interface ListingDetailClientProps {
   listingId: string;
-  initialListing?: ListingItem;
+  initialListing?: ListingItem | null;
 }
 
 export default function ListingDetailClient({ listingId, initialListing }: ListingDetailClientProps) {
@@ -126,17 +126,48 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [listingId]);
 
-  const listing =
+  const rawListing =
     activeListing ||
     initialListing ||
     listings.find((l) => l.id === listingId) ||
     mockListings.find((l) => l.id === listingId) ||
-    mockListings[0];
+    (isLoading ? null : (listings[0] || mockListings[0]));
+
+  const listing: ListingItem = {
+    id: rawListing?.id || listingId,
+    title: rawListing?.title || 'Bất động sản Hà Nội',
+    price: typeof rawListing?.price === 'number' && !isNaN(rawListing.price) ? rawListing.price : 8500000000,
+    area: typeof rawListing?.area === 'number' && !isNaN(rawListing.area) ? rawListing.area : 75,
+    pricePerM2: Math.round((typeof rawListing?.price === 'number' ? rawListing.price : 8500000000) / (typeof rawListing?.area === 'number' && rawListing.area > 0 ? rawListing.area : 75)),
+    address: rawListing?.address || `${rawListing?.district || 'Cầu Giấy'}, Hà Nội`,
+    district: rawListing?.district || 'Cầu Giấy',
+    ward: rawListing?.ward || '',
+    type: (rawListing?.type as any) || 'house',
+    description: rawListing?.description || '',
+    images: Array.isArray(rawListing?.images) && rawListing.images.length > 0
+      ? rawListing.images
+      : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+    lat: typeof rawListing?.lat === 'number' && !isNaN(rawListing.lat) && rawListing.lat !== 0 ? rawListing.lat : 21.0285,
+    lng: typeof rawListing?.lng === 'number' && !isNaN(rawListing.lng) && rawListing.lng !== 0 ? rawListing.lng : 105.8542,
+    planningZone: rawListing?.planningZone || 'Đất ở đô thị',
+    planningYear: rawListing?.planningYear || 2030,
+    bedrooms: typeof rawListing?.bedrooms === 'number' ? rawListing.bedrooms : 3,
+    bathrooms: typeof rawListing?.bathrooms === 'number' ? rawListing.bathrooms : 2,
+    floors: typeof rawListing?.floors === 'number' ? rawListing.floors : 4,
+    direction: rawListing?.direction || 'Đông Nam',
+    legalStatus: rawListing?.legalStatus || 'Sổ đỏ chính chủ',
+    isFeatured: Boolean(rawListing?.isFeatured),
+    status: (rawListing?.status as any) || 'active',
+    views: rawListing?.views || 150,
+    createdAt: rawListing?.createdAt || '2026-09-20',
+    userId: rawListing?.userId,
+    authorName: rawListing?.authorName,
+    authorPhone: rawListing?.authorPhone,
+    authorAvatar: rawListing?.authorAvatar,
+    authorEmail: rawListing?.authorEmail,
+  };
 
   // Đồng bộ thông tin người đăng bán với tài khoản đăng nhập:
-  // - Nếu bài đăng của tài khoản hiện tại hoặc bài đăng mẫu: tự động đồng bộ ảnh đại diện & thông tin từ tài khoản đăng nhập (user)
-  // - Nếu bài đăng có tác giả cụ thể khác từ CSDL: hiển thị tác giả tương ứng
-  // - Fallback khi chưa đăng nhập: mockUser
   const isOwner = Boolean(
     user && (listing.userId === user.id || listing.authorEmail === user.email)
   );
@@ -163,7 +194,7 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
       : (user?.phone || listing.authorPhone || (listing as any).users?.phone || mockUser.phone || '0988 123 456')
     );
 
-  const images = listing.images && listing.images.length > 0
+  const images: string[] = listing.images && listing.images.length > 0
     ? listing.images
     : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'];
 

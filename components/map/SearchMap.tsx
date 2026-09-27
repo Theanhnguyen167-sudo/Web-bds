@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -850,12 +851,16 @@ export default function SearchMap({
             </motion.button>
 
             {/* Image */}
-            <div className="relative h-[140px] bg-gray-100 dark:bg-gray-700 overflow-hidden">
+            <Link
+              href={`/listings/${popupListing.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="relative block h-[140px] bg-gray-100 dark:bg-gray-700 overflow-hidden group cursor-pointer"
+            >
               {popupListing.images && popupListing.images[0] ? (
                 <img
                   src={popupListing.images[0]}
                   alt={popupListing.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-4xl">
@@ -871,7 +876,7 @@ export default function SearchMap({
                   : popupListing.type === 'land' ? 'Đất nền'
                   : 'Biệt thự'}
               </div>
-            </div>
+            </Link>
 
             {/* Info */}
             <div className="p-4">
@@ -882,15 +887,18 @@ export default function SearchMap({
                 </span>
                 <span className="text-xs text-gray-400">VNĐ</span>
                 <span className="text-xs text-gray-400 ml-auto">
-                  {formatPriceShort(popupPrice / popupListing.area)}/m²
+                  {formatPriceShort(popupPrice / (popupListing.area || 1))}/m²
                 </span>
               </div>
 
               {/* Title */}
-              <p className="text-sm font-semibold text-navy dark:text-white 
-                            line-clamp-1 mb-2">
+              <Link
+                href={`/listings/${popupListing.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="text-sm font-bold text-navy dark:text-white line-clamp-1 mb-2 hover:text-orange-500 transition-colors block cursor-pointer"
+              >
                 {popupListing.title}
-              </p>
+              </Link>
 
               {/* Stats */}
               <div className="flex gap-3 text-xs text-gray-500 mb-3">
@@ -898,19 +906,17 @@ export default function SearchMap({
                 <span>📍 {popupListing.district}</span>
               </div>
 
-              {/* Action: Open Photo Gallery Modal, NO detail redirect */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onMarkerClick?.(popupListing.id)
-                }}
+              {/* Action */}
+              <Link
+                href={`/listings/${popupListing.id}`}
                 className="flex items-center justify-center gap-2 w-full 
                            bg-orange-500 hover:bg-orange-600 text-white text-sm 
-                           font-semibold py-2.5 rounded-xl transition-colors cursor-pointer"
+                           font-semibold py-2.5 rounded-xl transition-colors shadow-sm cursor-pointer"
+                onClick={e => e.stopPropagation()}
               >
-                <Eye size={14} /> Xem bộ ảnh BĐS
-              </button>
+                <Eye size={14} /> <span>Xem chi tiết BĐS</span>
+                <ExternalLink size={12} />
+              </Link>
             </div>
           </motion.div>
         )}
