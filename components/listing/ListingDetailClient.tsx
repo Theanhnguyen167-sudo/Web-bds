@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import FloatingContactWidget from '@/components/contact/FloatingContactWidget';
+import BookingModal from '@/components/contact/BookingModal';
 import { useApp } from '@/lib/context/AppContext';
 import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import PropertyAmenities from '@/components/listing/PropertyAmenities';
@@ -180,6 +181,9 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
   // AI Report Generation state
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [currentStepProgress, setCurrentStepProgress] = useState(0);
+
+  // Booking Modal State (Hẹn xem nhà)
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   const isSaved = savedListingIds.includes(listing.id);
 
@@ -533,13 +537,10 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
                 </a>
 
                 <button
-                  onClick={() =>
-                    addToast(
-                      `Đã gửi yêu cầu hẹn lịch xem nhà tới ${sellerName}!`,
-                      'success'
-                    )
-                  }
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 py-2.5 px-3 text-xs sm:text-sm font-semibold text-slate-700 shadow-xs transition-colors"
+                  type="button"
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 py-2.5 px-3 text-xs sm:text-sm font-semibold text-slate-700 shadow-xs transition-colors cursor-pointer"
+                  title="Đặt lịch hẹn xem nhà trực tiếp với người bán"
                 >
                   <Calendar className="h-4 w-4 text-orange-500" />
                   <span>Hẹn xem nhà</span>
@@ -946,6 +947,20 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
               ))}
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Booking Appointment Modal */}
+      <AnimatePresence>
+        {isBookingModalOpen && (
+          <BookingModal
+            agentName={sellerName}
+            agentPhone={sellerPhone}
+            agentAvatar={sellerAvatar}
+            listingTitle={listing.title}
+            listingId={listing.id}
+            onClose={() => setIsBookingModalOpen(false)}
+          />
         )}
       </AnimatePresence>
 
