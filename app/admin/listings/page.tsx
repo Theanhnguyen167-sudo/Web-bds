@@ -414,6 +414,15 @@ export default function AdminListingsPage() {
               )}
 
               <Link
+                href={`/listings/${listing.id}`}
+                target="_blank"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-orange-500 transition-colors"
+                title="Xem tin đăng trực tiếp trên web"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+
+              <Link
                 href={`/admin/listings/${listing.id}`}
                 className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-navy transition-colors"
                 title="Chỉnh sửa chi tiết"
@@ -473,9 +482,14 @@ export default function AdminListingsPage() {
 
                 {/* Details */}
                 <div className="space-y-2">
-                  <h4 className="font-bold text-sm text-navy leading-snug">
-                    {reviewListing.title}
-                  </h4>
+                  <Link
+                    href={`/listings/${reviewListing.id}`}
+                    target="_blank"
+                    className="font-bold text-sm text-navy hover:text-orange-600 transition-colors flex items-center justify-between gap-2"
+                  >
+                    <span>{reviewListing.title}</span>
+                    <ExternalLink className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                  </Link>
                   <p className="text-slate-500 flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5 text-orange-500" />
                     {reviewListing.address}

@@ -45,18 +45,23 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
       }`}
     >
       {/* Thumbnail Left (80x80px) */}
-      <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
+      <Link
+        href={`/listings/${listing.id}`}
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 block group/thumb cursor-pointer"
+        title="Xem chi tiết bài viết"
+      >
         <img
           src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80'}
           alt={listing.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300"
         />
         {listing.isFeatured && (
           <span className="absolute top-1 left-1 bg-orange-500 text-white font-extrabold text-[8px] px-1 py-0.2 rounded shadow">
             ⭐ HOT
           </span>
         )}
-      </div>
+      </Link>
 
       {/* Content Right */}
       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
@@ -72,14 +77,21 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
           </div>
 
           {/* Title */}
-          <h4 className="text-xs font-bold text-navy dark:text-white truncate group-hover:text-orange-600 transition-colors">
-            {listing.title}
-          </h4>
+          <Link
+            href={`/listings/${listing.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="block cursor-pointer mt-0.5"
+            title={listing.title}
+          >
+            <h4 className="text-xs font-bold text-navy dark:text-white truncate hover:text-orange-600 transition-colors">
+              {listing.title}
+            </h4>
+          </Link>
 
           {/* Location */}
           <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1 mt-0.5">
             <MapPin className="h-3 w-3 text-orange-500 shrink-0" />
-            <span className="truncate">{listing.district}, Hà Nội</span>
+            <span className="truncate">{listing.district || 'Hà Nội'}</span>
           </p>
         </div>
 
@@ -87,13 +99,13 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
         <div className="flex items-center justify-between pt-1 border-t border-slate-50 dark:border-slate-800 text-[10px] text-slate-500 font-semibold">
           <div className="flex items-center gap-2">
             <span>📐 {listing.area}m²</span>
-            <span>🛏 {listing.bedrooms} PN</span>
+            <span>🛏 {listing.bedrooms || 3} PN</span>
           </div>
 
           <Link
             href={`/listings/${listing.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="text-orange-500 hover:text-orange-600 font-bold flex items-center gap-0.5 hover:underline"
+            className="inline-flex items-center gap-1 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white font-bold px-2 py-0.5 transition-all text-[10px]"
           >
             <span>Chi tiết</span>
             <ArrowRight className="h-2.5 w-2.5" />

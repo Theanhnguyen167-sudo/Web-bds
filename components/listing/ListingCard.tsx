@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ListingItem } from '@/lib/mock-data';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
@@ -15,7 +17,8 @@ import {
   Layers,
   ShieldCheck,
   Building,
-  Eye
+  Eye,
+  ExternalLink
 } from 'lucide-react';
 import { LightboxModal } from '@/components/home/LightboxModal';
 
@@ -25,6 +28,7 @@ interface ListingCardProps {
 }
 
 export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick }) => {
+  const router = useRouter();
   const {
     activeListingId,
     setActiveListingId,
@@ -48,6 +52,10 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
     }
   };
 
+  const handleCardClick = () => {
+    router.push(`/listings/${listing.id}`);
+  };
+
   return (
     <>
       <motion.div
@@ -57,7 +65,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
         transition={{ type: 'spring', stiffness: 350, damping: 22 }}
         onMouseEnter={() => setHoveredListingId(listing.id)}
         onMouseLeave={() => setHoveredListingId(null)}
-        onClick={handleOpenGallery}
+        onClick={handleCardClick}
         className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-2xl hover:shadow-slate-900/20 hover:border-orange-400 hover:z-20 cursor-pointer ${
           isSelected
             ? 'border-l-4 border-l-accent border-accent ring-2 ring-accent/20 bg-orange-50/20 shadow-lg'
@@ -70,9 +78,9 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
         <div
           onClick={(e) => {
             e.stopPropagation();
-            handleOpenGallery();
+            handleCardClick();
           }}
-          className="relative aspect-video w-full overflow-hidden bg-slate-100 cursor-zoom-in"
+          className="relative aspect-video w-full overflow-hidden bg-slate-100 cursor-pointer"
         >
           <img
             src={listing.images[0]}
@@ -141,15 +149,13 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
         {/* Content Details */}
         <div className="flex flex-1 flex-col p-3.5">
           {/* Title */}
-          <h3
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenGallery();
-            }}
-            className="line-clamp-2 text-xs font-bold leading-snug text-text-primary group-hover:text-accent transition-colors cursor-pointer"
+          <Link
+            href={`/listings/${listing.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="line-clamp-2 text-xs font-bold leading-snug text-text-primary hover:text-accent transition-colors block cursor-pointer"
           >
             {listing.title}
-          </h3>
+          </Link>
 
           {/* Address truncated */}
           <div className="mt-2 flex items-center gap-1 text-[11px] text-text-secondary">
