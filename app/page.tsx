@@ -666,7 +666,11 @@ export default function HomePage() {
                         <span className="truncate">
                           {heroPropertyTypes.find((t) => t.value === heroType)?.label || 'Loại hình BĐS'}
                         </span>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-1 transition-transform duration-200 ${
+                            heroTypeDropdownOpen ? 'rotate-180 text-orange-500' : ''
+                          }`}
+                        />
                       </button>
                       <AnimatePresence>
                         {heroTypeDropdownOpen && (
@@ -674,7 +678,7 @@ export default function HomePage() {
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 6 }}
-                            className="absolute top-full left-0 w-56 mt-1.5 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 space-y-1"
+                            className="absolute top-full left-0 right-0 w-full mt-2 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
                           >
                             {heroPropertyTypes.map((t) => (
                               <button
@@ -684,14 +688,14 @@ export default function HomePage() {
                                   setHeroType(t.value);
                                   setHeroTypeDropdownOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
+                                className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
                                   heroType === t.value
-                                    ? 'bg-orange-500 text-white'
+                                    ? 'bg-orange-500 text-white shadow-sm'
                                     : 'hover:bg-slate-50 text-slate-700'
                                 }`}
                               >
-                                <span>{t.icon}</span>
-                                <span>{t.label}</span>
+                                <span className="shrink-0">{t.icon}</span>
+                                <span className="truncate">{t.label}</span>
                               </button>
                             ))}
                           </motion.div>
@@ -717,7 +721,11 @@ export default function HomePage() {
                         <span className="truncate">
                           {heroPricePresets.find((p) => p.value === heroPriceRange)?.label || 'Mức giá'}
                         </span>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-1 transition-transform duration-200 ${
+                            heroPriceDropdownOpen ? 'rotate-180 text-orange-500' : ''
+                          }`}
+                        />
                       </button>
                       <AnimatePresence>
                         {heroPriceDropdownOpen && (
@@ -725,7 +733,7 @@ export default function HomePage() {
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 6 }}
-                            className="absolute top-full right-0 w-52 mt-1.5 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 space-y-1"
+                            className="absolute top-full left-0 right-0 w-full mt-2 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
                           >
                             {heroPricePresets.map((p) => (
                               <button
@@ -735,14 +743,14 @@ export default function HomePage() {
                                   setHeroPriceRange(p.value);
                                   setHeroPriceDropdownOpen(false);
                                 }}
-                                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
+                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
                                   heroPriceRange === p.value
-                                    ? 'bg-orange-500 text-white'
+                                    ? 'bg-orange-500 text-white shadow-sm'
                                     : 'hover:bg-slate-50 text-slate-700'
                                 }`}
                               >
-                                <span>{p.label}</span>
-                                {heroPriceRange === p.value && <span>✓</span>}
+                                <span className="truncate">{p.label}</span>
+                                {heroPriceRange === p.value && <span className="shrink-0 font-bold ml-1">✓</span>}
                               </button>
                             ))}
                           </motion.div>
