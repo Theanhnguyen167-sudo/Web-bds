@@ -447,6 +447,14 @@ export default function HomePage() {
     return sourceList;
   }, [personalFilter, listings]);
 
+  // ── Section 5: Personalized Recommendations Carousel Scroll ──
+  const personalizedScrollRef = useRef<HTMLDivElement>(null);
+  const scrollPersonalized = (direction: 'left' | 'right') => {
+    if (personalizedScrollRef.current) {
+      const offset = direction === 'left' ? -380 : 380;
+      personalizedScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
 
   // ── Section 8: Reviews & Testimonials Carousel ──
   const reviews = [
@@ -1130,19 +1138,19 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 5 — BĐS DÀNH CHO BẠN (Gợi ý cá nhân hoá)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="roadmap" className="bg-navy py-20 text-white relative">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="roadmap" className="bg-white min-h-screen flex items-center justify-center py-12 lg:py-0 border-y border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-8 lg:py-12">
           
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
-              <span className="inline-flex items-center gap-1 text-orange-400 font-extrabold text-xs tracking-wider uppercase bg-orange-500/20 px-3 py-1 rounded-full border border-orange-500/30">
-                <Sparkles className="h-3 w-3" />
+              <span className="inline-flex items-center gap-1.5 text-orange-600 font-extrabold text-xs sm:text-sm tracking-wider uppercase bg-orange-50 px-3.5 py-1.5 rounded-full border border-orange-200/80 shadow-xs">
+                <Sparkles className="h-3.5 w-3.5 text-orange-500" />
                 <span>GỢI Ý THÔNG MINH</span>
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mt-2">
+              <h2 className="text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-black text-[#0a1128] mt-2 tracking-tight leading-tight">
                 Bất động sản phù hợp với bạn
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1">
+              <p className="text-sm sm:text-base text-slate-500 mt-2 font-medium">
                 Được AI tính toán dựa trên tiềm năng đầu tư, vị trí và pháp lý an toàn
               </p>
             </div>
@@ -1158,10 +1166,10 @@ export default function HomePage() {
                 <button
                   key={pill.id}
                   onClick={() => setPersonalFilter(pill.id)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all ${
+                  className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold shrink-0 transition-all cursor-pointer ${
                     personalFilter === pill.id
-                      ? 'bg-orange-500 text-white shadow-md'
-                      : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                      ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:text-slate-900'
                   }`}
                 >
                   {pill.label}
@@ -1170,152 +1178,185 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {personalizedListings.slice(0, 8).map((listing) => {
-              const isSaved = savedListingIds?.includes(listing.id);
-              const cardPricePerM2 = formatPricePerM2(listing.price, listing.area);
-              const formattedPrice = formatCurrencyVND(listing.price);
-              const firstImage =
-                listing.images?.[0] ||
-                'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80';
+          {/* 1 Row Carousel of Cards */}
+          <div className="relative group/personalized">
+            {/* Carousel Track */}
+            <div
+              ref={personalizedScrollRef}
+              className="flex gap-5 sm:gap-6 overflow-x-auto py-3 sm:py-4 snap-x scrollbar-none scroll-smooth"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {personalizedListings.slice(0, 10).map((listing) => {
+                const isSaved = savedListingIds?.includes(listing.id);
+                const cardPricePerM2 = formatPricePerM2(listing.price, listing.area);
+                const formattedPrice = formatCurrencyVND(listing.price);
+                const firstImage =
+                  listing.images?.[0] ||
+                  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80';
 
-              return (
-                <div
-                  key={listing.id}
-                  onClick={() => handleOpenDetailModal(listing)}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-700/80 bg-white text-slate-900 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/20 hover:border-orange-400 hover:-translate-y-1.5 cursor-pointer select-none"
-                  title="Nhấp để xem nội dung chi tiết bài đăng"
-                >
-                  {/* Thumbnail Image Container */}
-                  <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
-                    <img
-                      src={firstImage}
-                      alt={listing.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
-                    />
-
-                    {/* Badges (Top-left): Featured & Planning Zone */}
-                    <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1.5 items-center">
-                      {listing.isFeatured && (
-                        <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 px-2 py-0.5 text-[10px] font-black text-white shadow-md border border-white/20">
-                          <span className="text-yellow-200 text-xs">★</span> Nổi bật
-                        </span>
-                      )}
-                      {listing.planningZone && (
-                        <span className="inline-flex items-center rounded-lg bg-slate-900/85 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white shadow-md border border-white/20">
-                          {listing.planningZone}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Wishlist Heart Button (Top-right) */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleSaveListing(listing.id);
-                      }}
-                      className="absolute top-2.5 right-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-md transition-all hover:scale-115 hover:bg-white"
-                      title={isSaved ? 'Bỏ lưu tin' : 'Lưu tin yêu thích'}
+                return (
+                  <div
+                    key={listing.id}
+                    className="w-[300px] sm:w-[330px] md:w-[350px] lg:w-[365px] xl:w-[380px] shrink-0 snap-start"
+                  >
+                    <div
+                      onClick={() => handleOpenDetailModal(listing)}
+                      className="group/card relative flex flex-col h-full overflow-hidden rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-sm hover:shadow-2xl hover:shadow-orange-500/15 hover:border-orange-400 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer select-none"
+                      title="Nhấp để xem nội dung chi tiết bài đăng"
                     >
-                      <Heart
-                        className={`h-4 w-4 transition-colors ${
-                          isSaved ? 'fill-red-500 text-red-500' : 'text-slate-600 hover:text-red-500'
-                        }`}
-                      />
-                    </button>
+                      {/* Thumbnail Image Container */}
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+                        <img
+                          src={firstImage}
+                          alt={listing.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-108"
+                        />
 
-                    {/* Price Tag Overlay (Bottom-left) */}
-                    <div className="absolute bottom-2.5 left-2.5 z-20 rounded-xl bg-slate-900/90 backdrop-blur-md px-2.5 py-1 text-xs font-black text-white shadow-md border border-white/15">
-                      <span className="text-white font-black text-xs tracking-tight">
-                        {formattedPrice}
-                      </span>
-                      <span className="ml-1 text-[10px] font-medium text-slate-300">
-                        ({cardPricePerM2})
-                      </span>
-                    </div>
+                        {/* Badges (Top-left): Featured & Planning Zone */}
+                        <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1.5 items-center">
+                          {listing.isFeatured && (
+                            <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 px-2 py-0.5 text-[10px] font-black text-white shadow-md border border-white/20">
+                              <span className="text-yellow-200 text-xs">★</span> Nổi bật
+                            </span>
+                          )}
+                          {listing.planningZone && (
+                            <span className="inline-flex items-center rounded-lg bg-slate-900/85 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white shadow-md border border-white/20">
+                              {listing.planningZone}
+                            </span>
+                          )}
+                        </div>
 
-                    {/* Quick view hover pill (Bottom-right) */}
-                    <div className="absolute bottom-2.5 right-2.5 z-20 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
-                      <span className="inline-flex items-center gap-1 rounded-lg bg-orange-500 text-white text-[11px] font-bold px-2 py-1 shadow-md">
-                        <Eye className="h-3 w-3" />
-                        <span>Xem chi tiết</span>
-                      </span>
-                    </div>
-                  </div>
+                        {/* Wishlist Heart Button (Top-right) */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSaveListing(listing.id);
+                          }}
+                          className="absolute top-2.5 right-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-md transition-all hover:scale-115 hover:bg-white"
+                          title={isSaved ? 'Bỏ lưu tin' : 'Lưu tin yêu thích'}
+                        >
+                          <Heart
+                            className={`h-4 w-4 transition-colors ${
+                              isSaved ? 'fill-red-500 text-red-500' : 'text-slate-600 hover:text-red-500'
+                            }`}
+                          />
+                        </button>
 
-                  {/* Content Details */}
-                  <div className="flex flex-1 flex-col p-4">
-                    {/* Title */}
-                    <Link
-                      href={`/listings/${listing.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="line-clamp-2 text-[13px] font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
-                    >
-                      {listing.title}
-                    </Link>
+                        {/* Price Tag Overlay (Bottom-left) */}
+                        <div className="absolute bottom-2.5 left-2.5 z-20 rounded-xl bg-slate-900/90 backdrop-blur-md px-2.5 py-1 text-xs font-black text-white shadow-md border border-white/15">
+                          <span className="text-white font-black text-xs tracking-tight">
+                            {formattedPrice}
+                          </span>
+                          <span className="ml-1 text-[10px] font-medium text-slate-300">
+                            ({cardPricePerM2})
+                          </span>
+                        </div>
 
-                    {/* Address */}
-                    <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
-                      <span className="truncate font-semibold">
-                        {listing.ward ? `${listing.ward}, ` : ''}{listing.district}, Hà Nội
-                      </span>
-                    </div>
-
-                    {/* Specs Row */}
-                    <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-600">
-                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                        <Maximize2 className="h-3 w-3 text-slate-400" />
-                        <span className="font-bold text-slate-800 text-[11px]">{listing.area} m²</span>
+                        {/* Quick view hover pill (Bottom-right) */}
+                        <div className="absolute bottom-2.5 right-2.5 z-20 opacity-0 group-hover/card:opacity-100 transition-all duration-200 translate-y-1 group-hover/card:translate-y-0">
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-orange-500 text-white text-[11px] font-bold px-2 py-1 shadow-md">
+                            <Eye className="h-3 w-3" />
+                            <span>Xem chi tiết</span>
+                          </span>
+                        </div>
                       </div>
-                      {listing.floors > 0 && (
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                          <Building className="h-3 w-3 text-slate-400" />
-                          <span className="font-bold text-slate-700 text-[11px]">{listing.floors} tầng</span>
-                        </div>
-                      )}
-                      {listing.bedrooms > 0 && (
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                          <Bed className="h-3 w-3 text-slate-400" />
-                          <span className="font-bold text-slate-700 text-[11px]">{listing.bedrooms} PN</span>
-                        </div>
-                      )}
-                      {listing.bathrooms > 0 && (
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                          <Bath className="h-3 w-3 text-slate-400" />
-                          <span className="font-bold text-slate-700 text-[11px]">{listing.bathrooms} PT</span>
-                        </div>
-                      )}
-                    </div>
 
-                    {/* Action buttons */}
-                    <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenDetailModal(listing);
-                        }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        <span>Xem chi tiết</span>
-                      </button>
-                      <Link
-                        href={`/listings/${listing.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors"
-                        title="Mở toàn bộ trang chi tiết riêng"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </Link>
+                      {/* Content Details */}
+                      <div className="flex flex-1 flex-col p-4">
+                        {/* Title */}
+                        <Link
+                          href={`/listings/${listing.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="line-clamp-2 text-sm font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
+                        >
+                          {listing.title}
+                        </Link>
+
+                        {/* Address */}
+                        <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
+                          <span className="truncate font-semibold">
+                            {listing.ward ? `${listing.ward}, ` : ''}{listing.district}, Hà Nội
+                          </span>
+                        </div>
+
+                        {/* Specs Row */}
+                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-600">
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Maximize2 className="h-3 w-3 text-slate-400" />
+                            <span className="font-bold text-slate-800 text-[11px]">{listing.area} m²</span>
+                          </div>
+                          {listing.floors > 0 && (
+                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                              <Building className="h-3 w-3 text-slate-400" />
+                              <span className="font-bold text-slate-700 text-[11px]">{listing.floors} tầng</span>
+                            </div>
+                          )}
+                          {listing.bedrooms > 0 && (
+                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                              <Bed className="h-3 w-3 text-slate-400" />
+                              <span className="font-bold text-slate-700 text-[11px]">{listing.bedrooms} PN</span>
+                            </div>
+                          )}
+                          {listing.bathrooms > 0 && (
+                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                              <Bath className="h-3 w-3 text-slate-400" />
+                              <span className="font-bold text-slate-700 text-[11px]">{listing.bathrooms} PT</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDetailModal(listing);
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            <span>Xem chi tiết</span>
+                          </button>
+                          <Link
+                            href={`/listings/${listing.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors"
+                            title="Mở toàn bộ trang chi tiết riêng"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Link>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+
+            {/* Floating Left Arrow Button */}
+            <button
+              type="button"
+              onClick={() => scrollPersonalized('left')}
+              className="hidden md:flex absolute -left-4 lg:-left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+              title="Trượt sang trái"
+              aria-label="Trượt sang trái"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+
+            {/* Floating Right Arrow Button */}
+            <button
+              type="button"
+              onClick={() => scrollPersonalized('right')}
+              className="hidden md:flex absolute -right-4 lg:-right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+              title="Xem tiếp các gợi ý"
+              aria-label="Xem tiếp"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </div>
 
           {/* Modal Xem chi tiết bài đăng — Gợi ý thông minh */}
