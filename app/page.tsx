@@ -805,13 +805,10 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (1 HÀNG GỌN GÀNG)
+          📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (1 HÀNG GỌN GÀNG, DÓNG THẲNG LOGO)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 border-b border-slate-800/80 relative">
-        <div className="container max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 mb-5 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
@@ -837,8 +834,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Lưới Danh mục ô vuông thu nhỏ gọn gàng thành 1 hàng duy nhất */}
-        <div className="container max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Lưới Danh mục ô vuông thu nhỏ gọn gàng thành 1 hàng duy nhất - dóng thẳng mép logo */}
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
           <div className="flex lg:grid lg:grid-cols-12 gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none pb-2">
             {propertyCategories.map((cat) => (
               <Link
@@ -867,7 +864,7 @@ export default function HomePage() {
       <section id="featured" className="bg-slate-50/70 py-14 sm:py-20 overflow-hidden relative border-b border-slate-200/80">
         
         {/* ── PHẦN CHỮ Ở TRÊN (CĂN GIỮA CHUẨN HÌNH 2) ── */}
-        <div className="container max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 sm:mb-12">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 text-center mb-10 sm:mb-12">
           {/* Top Badge */}
           <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3.5 shadow-xs">
             <Flame className="h-3.5 w-3.5 fill-orange-500" />
@@ -886,7 +883,7 @@ export default function HomePage() {
         </div>
 
         {/* ── DẢI CÁC THẺ BÀI VIẾT Ở DƯỚI (DÓNG THẲNG LOGO WEB NHƯ HÌNH 2) ── */}
-        <div className="container max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative">
           <div className="relative group/carousel">
             
             {/* Carousel Track */}
