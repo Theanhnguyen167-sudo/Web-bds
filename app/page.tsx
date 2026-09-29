@@ -812,7 +812,7 @@ export default function HomePage() {
           </div>
 
           {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Thu gọn vừa vặn chuẩn Hình 2 để thấy trọn vẹn khi cuộn lên) */}
-          <div className="mt-3 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-100 overflow-hidden">
+          <div className="mt-3 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-100 overflow-hidden bg-white rounded-t-3xl -mx-4 sm:-mx-8 lg:-mx-[180px] xl:-mx-[220px] px-4 sm:px-8 lg:px-[180px] xl:px-[220px] shadow-sm">
             <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)] py-1.5 sm:py-2">
               <div className="flex gap-10 sm:gap-14 md:gap-18 w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] items-center text-slate-400 select-none">
                 {[
@@ -1092,7 +1092,7 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="map-search" className="bg-[#0a1128] z-10 min-h-screen snap-start flex items-center py-12 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-8 lg:py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center lg:items-stretch">
             
             {/* Left 45%: District List */}
             <div className="lg:col-span-5 flex flex-col justify-center space-y-4 sm:space-y-5">
@@ -1157,8 +1157,8 @@ export default function HomePage() {
             </div>
 
             {/* Right 55%: Interactive Mini Leaflet Map */}
-            <div className="lg:col-span-7">
-              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 h-[400px] sm:h-[460px] lg:h-[520px] xl:h-[540px] relative bg-slate-900 ring-1 ring-white/10">
+            <div className="lg:col-span-7 flex flex-col">
+              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 h-[400px] sm:h-[460px] lg:h-full min-h-[400px] relative bg-slate-900 ring-1 ring-white/10 flex-1">
                 <MiniSearchMap
                   listings={mockListings as any}
                   targetDistrict={hoveredDistrict}
