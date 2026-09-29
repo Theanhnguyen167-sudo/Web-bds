@@ -1668,16 +1668,16 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* News Layout: 1 Big Left + 4 Small Right */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-stretch">
+          {/* News Layout: 1 Big Top + 3 Small Bottom */}
+          <div className="flex flex-col gap-3 lg:gap-4">
             
-            {/* Big Featured Article (Left 50%) */}
-            <div className="lg:col-span-6 flex flex-col">
+            {/* Big Featured Article (Top 100%) */}
+            <div className="w-full flex flex-col">
               <Link
                 href="/streets"
-                className="group block bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 transition-all duration-300 h-full flex flex-col justify-between"
+                className="group flex flex-col sm:flex-row bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 transition-all duration-300"
               >
-                <div className="relative h-[130px] sm:h-[150px] overflow-hidden bg-slate-900">
+                <div className="relative w-full sm:w-5/12 h-[130px] sm:h-auto overflow-hidden bg-slate-900 shrink-0">
                   <img
                     src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80"
                     alt="Metro line Hanoi"
@@ -1691,19 +1691,19 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="p-3 sm:p-4 space-y-1.5 flex-1 flex flex-col justify-between">
-                  <div className="space-y-1">
-                    <h3 className="text-sm sm:text-base lg:text-lg font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug">
+                <div className="p-4 sm:p-6 lg:p-8 space-y-2 sm:space-y-3 flex-1 flex flex-col justify-center">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <h3 className="text-sm sm:text-base lg:text-xl font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug">
                       Thị trường BĐS Hà Nội Q4/2025: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức khởi công
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                    <p className="text-xs sm:text-sm lg:text-base text-slate-600 line-clamp-2 leading-relaxed">
                       Sự kết nối giữa các trục giao thông hướng tâm và đường vành đai đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố trung tâm và ven đô.
                     </p>
                   </div>
                   
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] sm:text-xs text-slate-500 font-medium">
+                  <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-100 text-[10px] sm:text-xs text-slate-500 font-medium">
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-600 font-bold flex items-center justify-center">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500/20 text-orange-600 font-bold flex items-center justify-center text-[10px] sm:text-xs">
                         HR
                       </div>
                       <span className="font-semibold text-slate-700">Ban biên tập HaNoi Realty</span>
@@ -1714,8 +1714,8 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* 4 Small Articles (Right 50%) */}
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            {/* 3 Small Articles (Bottom) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
               {[
                 {
                   title: 'Quy hoạch Vành đai 4: Cơ hội vàng cho nhà đầu tư BĐS ven đô',
@@ -1734,12 +1734,6 @@ export default function HomePage() {
                   category: 'Tài chính',
                   date: '17/08/2025',
                   image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&auto=format&fit=crop&q=80',
-                },
-                {
-                  title: 'Hướng dẫn kiểm tra quy hoạch phân khu BĐS chuẩn Sở QHKT',
-                  category: 'Pháp lý',
-                  date: '14/08/2025',
-                  image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&auto=format&fit=crop&q=80',
                 },
               ].map((article, idx) => (
                 <Link
