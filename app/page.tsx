@@ -1059,7 +1059,7 @@ export default function HomePage() {
               </div>
 
               {/* District Table List */}
-              <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-800 bg-[#131d3b]/70 backdrop-blur-md p-2 divide-y divide-slate-800/70 shadow-inner">
+              <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-2 divide-y divide-slate-100 shadow-xl">
                 {popularDistricts.map((d) => (
                   <div
                     key={d.name}
@@ -1068,18 +1068,18 @@ export default function HomePage() {
                     className={`flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-all ${
                       hoveredDistrict === d.name
                         ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                        : 'hover:bg-[#1b274e] text-slate-200'
+                        : 'hover:bg-slate-100 text-slate-700'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <MapPin className={`h-4 w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-400'}`} />
+                      <MapPin className={`h-4 w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-500'}`} />
                       <span className="font-bold text-xs sm:text-sm">Quận {d.name}</span>
                     </div>
                     <div className="flex items-center gap-3 text-xs">
-                      <span className={hoveredDistrict === d.name ? 'text-white/90' : 'text-slate-400'}>
+                      <span className={hoveredDistrict === d.name ? 'text-white/80' : 'text-slate-400'}>
                         {d.count} tin
                       </span>
-                      <span className={`font-mono font-bold ${hoveredDistrict === d.name ? 'text-yellow-200' : 'text-orange-400'}`}>
+                      <span className={`font-mono font-bold ${hoveredDistrict === d.name ? 'text-yellow-200' : 'text-orange-600'}`}>
                         {d.avgPrice}
                       </span>
                     </div>
