@@ -102,7 +102,7 @@ function DashboardContent() {
           const parsed = JSON.parse(raw);
           localStorage.setItem('hanoi_platform_user_listings', JSON.stringify(parsed.filter((item: any) => item.id !== id)));
         }
-      } catch {}
+      } catch { }
     }
     addToast('🗑️ Đã xoá tin đăng thành công', 'info');
   };
@@ -157,7 +157,7 @@ function DashboardContent() {
       <Navbar />
 
       <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-        
+
         {/* User Profile Header Banner */}
         <div className="rounded-3xl border border-border bg-white p-6 sm:p-8 shadow-sm mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -203,7 +203,7 @@ function DashboardContent() {
 
         {/* Dashboard Grid: Grouped Sidebar Menu (Left) | Main Panel Content (Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
+
           {/* Left Menu Categorized Tabs */}
           <div className="space-y-5">
             {menuGroups.map((group) => (
@@ -221,26 +221,23 @@ function DashboardContent() {
                       <button
                         key={item.id}
                         onClick={() => handleSelectTab(item.id)}
-                        className={`group relative flex w-full items-center justify-between rounded-2xl p-3.5 text-xs font-bold transition-all ${
-                          isActive
+                        className={`group relative flex w-full items-center justify-between rounded-2xl p-3.5 text-xs font-bold transition-all ${isActive
                             ? 'bg-primary text-white shadow-md'
                             : 'bg-white text-text-secondary hover:bg-slate-50 border border-border'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <Icon
-                            className={`h-4 w-4 transition-colors ${
-                              isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'
-                            }`}
+                            className={`h-4 w-4 transition-colors ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'
+                              }`}
                           />
                           <span>{item.label}</span>
                         </div>
 
                         {item.count !== undefined && (
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-colors ${
-                              isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-text-secondary'
-                            }`}
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-colors ${isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-text-secondary'
+                              }`}
                           >
                             {item.count}
                           </span>
@@ -248,11 +245,10 @@ function DashboardContent() {
 
                         {item.badge && (
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                              item.badge === 'CONNECTED'
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${item.badge === 'CONNECTED'
                                 ? 'bg-emerald-500 text-white'
                                 : 'bg-accent text-white'
-                            }`}
+                              }`}
                           >
                             {item.badge}
                           </span>
@@ -267,7 +263,7 @@ function DashboardContent() {
 
           {/* Right Main Content */}
           <div className="lg:col-span-3 space-y-6">
-            
+
             {/* Quick Metrics Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -772,3 +768,4 @@ export default function DashboardPage() {
     </Suspense>
   );
 }
+

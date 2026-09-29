@@ -101,15 +101,15 @@ function CodiStatCounter({
 }) {
   const { count, ref } = useCountUp(value || 0, 1600);
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center text-center px-3 sm:px-5 py-4 md:py-2">
+    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-8 py-5 md:py-2">
       <span
-        className={`text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-black tracking-tight leading-none ${
-          highlight ? 'text-[#0066ff]' : 'text-[#1e293b]'
+        className={`text-4xl sm:text-5xl lg:text-[54px] xl:text-[62px] font-black tracking-tight leading-none ${
+          highlight ? 'text-[#0066FF]' : 'text-[#1e293b]'
         }`}
       >
         {isFixed ? fixedText : `${count.toLocaleString('de-DE')}${suffix}`}
       </span>
-      <span className="text-xs sm:text-[13px] text-slate-500 font-semibold mt-2.5">
+      <span className="text-xs sm:text-sm text-slate-500 font-medium mt-3 text-center">
         {label}
       </span>
     </div>
@@ -775,28 +775,31 @@ export default function HomePage() {
 
           </div>
 
-          {/* 3. DẢI LOGO ĐỐI TÁC HỆ SINH THÁI (Partner Logos Strip matching Image 1) */}
-          <div className="mt-12 sm:mt-16 pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <span className="text-xs uppercase tracking-wider font-extrabold text-slate-400">
-              ĐỐI TÁC HỆ SINH THÁI
-            </span>
-            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-6 sm:gap-10 text-slate-500 font-bold text-xs sm:text-sm">
-              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🏢 Vinhomes</span>
-              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🏛️ Masterise Homes</span>
-              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🌿 Ecopark</span>
-              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🗺️ Sở QHKT Hà Nội</span>
-              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🏦 Techcombank</span>
-              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🛡️ Vietcombank</span>
+          {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Chuẩn giao diện ảnh: Căn giữa, wordmark xám thanh lịch) */}
+          <div className="mt-12 sm:mt-16 pt-8 sm:pt-10 border-t border-slate-200/80">
+            <div className="flex flex-wrap items-center justify-center gap-7 sm:gap-10 md:gap-12 lg:gap-14 text-slate-400 select-none">
+              <span className="font-black tracking-tight text-sm sm:text-base hover:text-slate-600 transition-colors cursor-default">VINHOMES</span>
+              <span className="font-serif font-bold tracking-wider text-xs sm:text-sm uppercase hover:text-slate-600 transition-colors cursor-default">Masterise Homes</span>
+              <span className="font-black italic tracking-tight text-sm sm:text-base hover:text-slate-600 transition-colors cursor-default">ecopark</span>
+              <span className="font-bold tracking-tight text-xs sm:text-sm hover:text-slate-600 transition-colors cursor-default">SỞ QHKT HN</span>
+              <span className="font-black tracking-tighter text-xs sm:text-sm uppercase hover:text-slate-600 transition-colors cursor-default">TECHCOMBANK</span>
+              <span className="font-black tracking-tight text-xs sm:text-sm hover:text-slate-600 transition-colors cursor-default">Vietcombank</span>
+              <span className="font-black tracking-wider text-xs sm:text-sm uppercase hover:text-slate-600 transition-colors cursor-default">CEN LAND</span>
+              <span className="font-black tracking-tight text-xs sm:text-sm hover:text-slate-600 transition-colors cursor-default">Batdongsan<span className="text-[10px] text-slate-400 font-semibold">.com</span></span>
             </div>
+            
+            {/* Dòng mô tả nhỏ căn giữa chuẩn ảnh: "Trusted by ops and people teams at fast-growing companies" */}
+            <p className="text-xs sm:text-[13px] text-slate-400 font-medium text-center mt-3 sm:mt-4">
+              Được tin tưởng bởi các đơn vị phát triển BĐS và hơn 10.000+ khách hàng tại 29 quận, huyện Hà Nội
+            </p>
           </div>
 
-          {/* 4. DẢI THỐNG KÊ CHUẨN HÌNH 1 (4 Cột, số lớn, vạch chia dọc, nền sáng thanh lịch) */}
-          <div className="w-full max-w-5xl lg:max-w-6xl mx-auto mt-8 sm:mt-10 mb-2">
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-4">
-              <CodiStatCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
-              <CodiStatCounter value={5832} suffix="+" highlight={true} label="Người dùng tháng này" />
-              <CodiStatCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
-              <CodiStatCounter value={29} suffix="" label="Quận/huyện có dữ liệu" />
+          {/* 4. DẢI THỐNG KÊ (Chuẩn giao diện ảnh 100%: 3 Cột lớn, vạch chia dọc, số giữa màu xanh dương #0066FF) */}
+          <div className="w-full max-w-4xl lg:max-w-5xl mx-auto mt-12 sm:mt-16 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-2">
+              <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
+              <CodiStatCounter value={5832} suffix="+" highlight={true} label="người dùng tháng này" />
+              <CodiStatCounter value={98} suffix="%" label="tỷ lệ khách hàng hài lòng" />
             </div>
           </div>
 
@@ -806,17 +809,17 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Chạy ngang liên tục)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="categories" className="bg-white py-10 sm:py-12 border-b border-slate-100 overflow-hidden relative">
+      <section id="categories" className="bg-[#0a1128] py-10 sm:py-12 border-b border-slate-800/80 overflow-hidden relative">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
                 KHÁM PHÁ THEO NHU CẦU
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#0a1128] leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
                 Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
               </h2>
-              <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-xl">
+              <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl">
                 Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
               </p>
             </div>
@@ -824,7 +827,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/search"
-                className="text-xs sm:text-sm font-bold text-orange-500 hover:text-orange-600 inline-flex items-center gap-1 group"
+                className="text-xs sm:text-sm font-bold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1 group"
               >
                 <span>Xem tất cả loại BĐS</span>
                 <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -840,15 +843,15 @@ export default function HomePage() {
               <Link
                 key={`${cat.name}-${idx}`}
                 href={cat.href}
-                className="w-[140px] sm:w-[160px] md:w-[170px] h-[115px] sm:h-[130px] shrink-0 flex flex-col items-center justify-center text-center p-3 sm:p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-1 select-none"
+                className="w-[140px] sm:w-[160px] md:w-[170px] h-[115px] sm:h-[130px] shrink-0 flex flex-col items-center justify-center text-center p-3 sm:p-4 rounded-2xl bg-[#131d3b]/90 border border-slate-700/60 shadow-lg hover:border-orange-500 hover:bg-[#1b274e] hover:shadow-xl hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-1 select-none backdrop-blur-sm"
               >
                 <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-120 group-hover:-translate-y-0.5 transition-transform duration-300 inline-block">
                   {cat.icon}
                 </span>
-                <span className="font-bold text-xs sm:text-sm text-[#0a1128] group-hover:text-orange-500 transition-colors whitespace-nowrap">
+                <span className="font-bold text-xs sm:text-sm text-white group-hover:text-orange-400 transition-colors whitespace-nowrap">
                   {cat.name}
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-slate-400 mt-1 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap">
+                <span className="text-[10px] sm:text-[11px] text-slate-400 mt-1 group-hover:text-orange-300 font-medium transition-colors whitespace-nowrap">
                   {cat.count}
                 </span>
               </Link>
@@ -1037,7 +1040,7 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="map-search" className="bg-white py-16 border-y border-slate-100">
+      <section id="map-search" className="bg-[#0a1128] py-16 border-y border-slate-800/80 text-white">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
@@ -1047,16 +1050,16 @@ export default function HomePage() {
                 <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
                   KHÁM PHÁ THEO KHU VỰC
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-navy mt-1">
+                <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
                   Tìm nhà trên bản đồ Hà Nội
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                <p className="text-xs sm:text-sm text-slate-300 mt-1">
                   Rê chuột vào quận để xem nhanh vị trí hoặc nhấp để lọc tin đăng chính xác
                 </p>
               </div>
 
               {/* District Table List */}
-              <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-100 bg-slate-50/50 p-2 divide-y divide-slate-100">
+              <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-800 bg-[#131d3b]/70 backdrop-blur-md p-2 divide-y divide-slate-800/70 shadow-inner">
                 {popularDistricts.map((d) => (
                   <div
                     key={d.name}
@@ -1064,19 +1067,19 @@ export default function HomePage() {
                     onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
                     className={`flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-all ${
                       hoveredDistrict === d.name
-                        ? 'bg-orange-500 text-white shadow-md'
-                        : 'hover:bg-white text-slate-700'
+                        ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
+                        : 'hover:bg-[#1b274e] text-slate-200'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <MapPin className={`h-4 w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-500'}`} />
+                      <MapPin className={`h-4 w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-400'}`} />
                       <span className="font-bold text-xs sm:text-sm">Quận {d.name}</span>
                     </div>
                     <div className="flex items-center gap-3 text-xs">
-                      <span className={hoveredDistrict === d.name ? 'text-white/80' : 'text-slate-400'}>
+                      <span className={hoveredDistrict === d.name ? 'text-white/90' : 'text-slate-400'}>
                         {d.count} tin
                       </span>
-                      <span className={`font-mono font-bold ${hoveredDistrict === d.name ? 'text-yellow-200' : 'text-orange-600'}`}>
+                      <span className={`font-mono font-bold ${hoveredDistrict === d.name ? 'text-yellow-200' : 'text-orange-400'}`}>
                         {d.avgPrice}
                       </span>
                     </div>
@@ -1095,9 +1098,9 @@ export default function HomePage() {
 
                 <Link
                   href="/planning"
-                  className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
+                  className="px-5 py-3 rounded-xl border border-slate-700 bg-[#131d3b]/80 hover:bg-[#1b274e] text-slate-200 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
                 >
-                  <Layers className="h-4 w-4 text-orange-500" />
+                  <Layers className="h-4 w-4 text-orange-400" />
                   <span>Xem bản đồ quy hoạch</span>
                 </Link>
               </div>
@@ -1105,7 +1108,7 @@ export default function HomePage() {
 
             {/* Right 55%: Interactive Mini Leaflet Map */}
             <div className="lg:col-span-7">
-              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-200 h-[420px] relative bg-slate-900">
+              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 h-[420px] relative bg-slate-900 ring-1 ring-white/5">
                 <MiniSearchMap
                   listings={mockListings as any}
                   targetDistrict={hoveredDistrict}
