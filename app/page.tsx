@@ -1908,7 +1908,7 @@ export default function HomePage() {
                 className="w-full flex flex-col items-center text-center"
               >
                 {/* Big Bold White Quote with Smart Quotes */}
-                <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-bold text-white leading-snug sm:leading-tight tracking-tight max-w-4xl mx-auto px-2">
+                <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl font-bold text-white leading-snug sm:leading-tight tracking-tight max-w-4xl mx-auto px-2">
                   “{reviews[activeReviewIdx].content}”
                 </h3>
 
