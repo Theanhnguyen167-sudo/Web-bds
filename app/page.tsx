@@ -555,15 +555,15 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="hero"
-        className="relative flex flex-col justify-between overflow-hidden bg-white text-slate-900 min-h-screen pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 border-b border-slate-200/80"
+        className="relative flex flex-col justify-between overflow-hidden bg-white text-slate-900 min-h-screen lg:h-screen lg:max-h-[920px] pt-20 sm:pt-22 lg:pt-24 pb-3 sm:pb-4 border-b border-slate-200/80"
       >
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] relative z-10 flex-1 flex flex-col justify-center">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] relative z-10 flex-1 flex flex-col justify-between my-auto">
           
-          {/* Main Visual Composition: Khung Thẻ Trắng Nổi + Khối Ảnh Kéo Dài Đến Chữ Trang Chủ */}
-          <div className="relative flex flex-col lg:block min-h-[460px] sm:min-h-[520px] lg:min-h-[580px] xl:min-h-[620px]">
+          {/* Main Visual Composition: Khung Thẻ Trắng Nổi + Khối Ảnh Thu Hẹp Vừa Mắt Chuẩn Hình 2 */}
+          <div className="relative flex flex-col lg:block min-h-[350px] sm:min-h-[380px] lg:min-h-[410px] xl:min-h-[430px] my-auto">
             
-            {/* 1. KHỐI ẢNH: KÉO DÀI ĐẾN CHỮ TRANG CHỦ & PHÓNG TO CHIỀU CAO VỪA MẮT */}
-            <div className="w-full lg:w-[calc(100%-240px)] xl:w-[calc(100%-260px)] lg:ml-auto relative h-[360px] sm:h-[440px] lg:h-[540px] xl:h-[600px] 2xl:h-[640px] rounded-[28px] sm:rounded-[36px] lg:rounded-[42px] overflow-hidden shadow-2xl border border-slate-100 bg-slate-100 group">
+            {/* 1. KHỐI ẢNH: THU HẸP CHIỀU DÀI & CHIỀU CAO VỪA MẮT CHUẨN HÌNH 2 */}
+            <div className="w-full lg:w-[calc(100%-240px)] xl:w-[calc(100%-270px)] lg:ml-auto relative h-[280px] sm:h-[330px] lg:h-[390px] xl:h-[420px] rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] overflow-hidden shadow-xl border border-slate-100 bg-slate-100 group">
               <img
                 src="/images/hanoi-luxury-home-hero.jpg"
                 alt="Bất động sản nhà ở cao cấp tại Hà Nội - Không gian sống tinh hoa"
@@ -573,24 +573,24 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Phóng to vừa mắt, dóng thẳng mép trái Logo web (left-0) & căn giữa chiều dọc ảnh */}
-            <div className="w-full md:w-[420px] lg:w-[450px] xl:w-[475px] md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 z-20 mt-6 md:mt-0">
+            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Dóng thẳng mép trái Logo web (left-0) & căn giữa chiều dọc ảnh */}
+            <div className="w-full md:w-[400px] lg:w-[420px] xl:w-[440px] md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 z-20 mt-4 md:mt-0">
               <motion.div
                 initial={{ opacity: 0, x: -25 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full"
               >
-                <div className="bg-white rounded-[26px] sm:rounded-[32px] p-6 sm:p-7 lg:p-8 shadow-[0_25px_60px_rgba(10,17,40,0.12)] border border-slate-200/90 flex flex-col justify-between">
+                <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 lg:p-6.5 shadow-[0_20px_50px_rgba(10,17,40,0.10)] border border-slate-200/90 flex flex-col justify-between">
                 
                 {/* H1 Title: Tìm ngôi nhà mơ ước tại Hà Nội */}
-                <h1 className="text-2xl sm:text-[28px] lg:text-[31px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-4">
+                <h1 className="text-xl sm:text-[23px] lg:text-[25px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-3">
                   Tìm ngôi nhà mơ ước <br className="hidden sm:inline" />
                   <span className="text-orange-500">tại Hà Nội</span>
                 </h1>
 
                 {/* THANH TÌM KIẾM ĐẦY ĐỦ TÍNH NĂNG */}
-                <div ref={heroSearchBoxRef} className="space-y-3">
+                <div ref={heroSearchBoxRef} className="space-y-2.5">
                   
                   {/* HÀNG 1: TABS NHU CẦU (Mua bán / Cho thuê / Dự án) */}
                   <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl w-fit">
@@ -603,7 +603,7 @@ export default function HomePage() {
                         key={tab.key}
                         type="button"
                         onClick={() => setHeroSearchTab(tab.key as any)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                           heroSearchTab === tab.key
                             ? 'bg-[#0a1128] text-white shadow-sm'
                             : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
@@ -632,7 +632,7 @@ export default function HomePage() {
                           setHeroPriceDropdownOpen(false);
                         }}
                         placeholder="Nhập quận, huyện, tên đường..."
-                        className="w-full pl-10 pr-9 py-3 sm:py-3.5 rounded-full border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/15 bg-white text-xs sm:text-sm text-slate-800 placeholder-slate-400 outline-none transition-all shadow-xs"
+                        className="w-full pl-10 pr-9 py-2.5 sm:py-3 rounded-full border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/15 bg-white text-xs sm:text-sm text-slate-800 placeholder-slate-400 outline-none transition-all shadow-xs"
                       />
                       {heroLocationQuery && (
                         <button
@@ -799,7 +799,7 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={() => handleExecuteHeroSearch()}
-                    className="w-full py-3 sm:py-3.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-1"
+                    className="w-full py-2.5 sm:py-3 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-0.5"
                   >
                     <Search className="w-4 h-4" />
                     <span>Tìm kiếm Bất động sản</span>
@@ -811,28 +811,28 @@ export default function HomePage() {
 
           </div>
 
-          {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Phóng to chữ chuẩn Hình 1 & Chạy ngang liên tục) */}
-          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-slate-100 overflow-hidden">
-            <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)] py-3">
-              <div className="flex gap-14 sm:gap-18 md:gap-24 w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] items-center text-slate-400 select-none">
+          {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Thu gọn vừa vặn chuẩn Hình 2 để thấy trọn vẹn khi cuộn lên) */}
+          <div className="mt-3 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-100 overflow-hidden">
+            <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)] py-1.5 sm:py-2">
+              <div className="flex gap-10 sm:gap-14 md:gap-18 w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] items-center text-slate-400 select-none">
                 {[
-                  { name: 'VINHOMES', className: 'font-black tracking-tight text-xl sm:text-2xl md:text-3xl' },
-                  { name: 'MASTERISE HOMES', className: 'font-serif font-bold tracking-wider text-lg sm:text-xl md:text-2xl' },
-                  { name: 'ecopark', className: 'font-black italic tracking-tight text-xl sm:text-2xl md:text-3xl' },
-                  { name: 'SỞ QHKT HÀ NỘI', className: 'font-bold tracking-tight text-lg sm:text-xl md:text-2xl' },
-                  { name: 'TECHCOMBANK', className: 'font-black tracking-tighter text-lg sm:text-xl md:text-2xl uppercase' },
-                  { name: 'Vietcombank', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
-                  { name: 'CEN LAND', className: 'font-black tracking-wider text-lg sm:text-xl md:text-2xl uppercase' },
-                  { name: 'Batdongsan.com.vn', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'VINHOMES', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'MASTERISE HOMES', className: 'font-serif font-bold tracking-wider text-base sm:text-lg md:text-xl' },
+                  { name: 'ecopark', className: 'font-black italic tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'SỞ QHKT HÀ NỘI', className: 'font-bold tracking-tight text-base sm:text-lg md:text-xl' },
+                  { name: 'TECHCOMBANK', className: 'font-black tracking-tighter text-base sm:text-lg md:text-xl uppercase' },
+                  { name: 'Vietcombank', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
+                  { name: 'CEN LAND', className: 'font-black tracking-wider text-base sm:text-lg md:text-xl uppercase' },
+                  { name: 'Batdongsan.com.vn', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
                   // Lặp lại
-                  { name: 'VINHOMES', className: 'font-black tracking-tight text-xl sm:text-2xl md:text-3xl' },
-                  { name: 'MASTERISE HOMES', className: 'font-serif font-bold tracking-wider text-lg sm:text-xl md:text-2xl' },
-                  { name: 'ecopark', className: 'font-black italic tracking-tight text-xl sm:text-2xl md:text-3xl' },
-                  { name: 'SỞ QHKT HÀ NỘI', className: 'font-bold tracking-tight text-lg sm:text-xl md:text-2xl' },
-                  { name: 'TECHCOMBANK', className: 'font-black tracking-tighter text-lg sm:text-xl md:text-2xl uppercase' },
-                  { name: 'Vietcombank', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
-                  { name: 'CEN LAND', className: 'font-black tracking-wider text-lg sm:text-xl md:text-2xl uppercase' },
-                  { name: 'Batdongsan.com.vn', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'VINHOMES', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'MASTERISE HOMES', className: 'font-serif font-bold tracking-wider text-base sm:text-lg md:text-xl' },
+                  { name: 'ecopark', className: 'font-black italic tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'SỞ QHKT HÀ NỘI', className: 'font-bold tracking-tight text-base sm:text-lg md:text-xl' },
+                  { name: 'TECHCOMBANK', className: 'font-black tracking-tighter text-base sm:text-lg md:text-xl uppercase' },
+                  { name: 'Vietcombank', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
+                  { name: 'CEN LAND', className: 'font-black tracking-wider text-base sm:text-lg md:text-xl uppercase' },
+                  { name: 'Batdongsan.com.vn', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
                 ].map((brand, idx) => (
                   <span
                     key={`${brand.name}-${idx}`}
@@ -844,8 +844,8 @@ export default function HomePage() {
               </div>
             </div>
             
-            {/* Dòng mô tả nhỏ căn giữa chuẩn ảnh 1 */}
-            <p className="text-xs sm:text-[13px] text-slate-400 font-medium text-center mt-3 sm:mt-4">
+            {/* Dòng mô tả nhỏ căn giữa chuẩn ảnh 2 */}
+            <p className="text-xs text-slate-400 font-medium text-center mt-1.5 sm:mt-2">
               Được tin tưởng bởi các đơn vị phát triển BĐS và hơn 10.000+ khách hàng tại 29 quận, huyện Hà Nội
             </p>
           </div>
