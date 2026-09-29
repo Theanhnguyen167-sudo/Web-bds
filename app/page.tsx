@@ -102,13 +102,13 @@ function CodiStatCounter({
   return (
     <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-8 py-5 md:py-2">
       <span
-        className={`text-4xl sm:text-5xl lg:text-[54px] xl:text-[62px] font-black tracking-tight leading-none ${
-          highlight ? 'text-[#0066FF]' : 'text-[#1e293b]'
+        className={`text-5xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[88px] font-black tracking-tight leading-none ${
+          highlight ? 'text-[#0066FF]' : 'text-[#0a1128]'
         }`}
       >
         {isFixed ? fixedText : `${count.toLocaleString('de-DE')}${suffix}`}
       </span>
-      <span className="text-xs sm:text-sm text-slate-500 font-medium mt-3 text-center">
+      <span className="text-sm sm:text-base md:text-lg text-slate-500 font-semibold mt-3 sm:mt-4 text-center">
         {label}
       </span>
     </div>
@@ -810,73 +810,76 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 1.5 — DẢI THỐNG KÊ (Riêng biệt bên dưới để không bị nhìn thấy khi ở trên Hero)
+          📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ (PHÓNG TO) + DANH MỤC BĐS (TRỌN 1 MÀN HÌNH 100VH)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="hero-stats" className="bg-white py-14 sm:py-16 border-b border-slate-200/80">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
-          <div className="w-full max-w-4xl lg:max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-2">
-              <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
-              <CodiStatCounter value={5832} suffix="+" highlight={true} label="người dùng tháng này" />
-              <CodiStatCounter value={98} suffix="%" label="tỷ lệ khách hàng hài lòng" />
+      <div id="stats-and-categories" className="min-h-screen flex flex-col justify-between border-b border-slate-800/80">
+        
+        {/* 1. DẢI THỐNG KÊ PHÓNG TO (Chiếm nửa trên màn hình, nền trắng) */}
+        <section id="hero-stats" className="bg-white flex-1 flex flex-col justify-center py-10 sm:py-14 lg:py-16 border-b border-slate-200/80">
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
+            <div className="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-4 sm:py-6">
+                <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
+                <CodiStatCounter value={5832} suffix="+" highlight={true} label="người dùng tháng này" />
+                <CodiStatCounter value={98} suffix="%" label="tỷ lệ khách hàng hài lòng" />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (1 HÀNG GỌN GÀNG, DÓNG THẲNG LOGO)
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 border-b border-slate-800/80 relative">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 mb-5 sm:mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div>
-              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
-                KHÁM PHÁ THEO NHU CẦU
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
-                Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
-              </h2>
-              <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl">
-                Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Link
-                href="/search"
-                className="text-xs sm:text-sm font-bold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1 group"
-              >
-                <span>Xem tất cả loại BĐS</span>
-                <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
+        {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Chiếm nửa dưới màn hình, nền navy, 1 hàng) */}
+        <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 lg:py-12 relative text-white">
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 mb-5 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+              <div>
+                <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
+                  KHÁM PHÁ THEO NHU CẦU
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                  Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
+                </h2>
+                <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl">
+                  Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/search"
+                  className="text-xs sm:text-sm font-bold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1 group"
+                >
+                  <span>Xem tất cả loại BĐS</span>
+                  <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Lưới Danh mục ô vuông thu nhỏ gọn gàng thành 1 hàng duy nhất - dóng thẳng mép logo */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
-          <div className="flex lg:grid lg:grid-cols-12 gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none pb-2">
-            {propertyCategories.map((cat) => (
-              <Link
-                key={cat.name}
-                href={cat.href}
-                className="shrink-0 w-[100px] sm:w-[110px] lg:w-auto h-[88px] sm:h-[94px] lg:h-[98px] flex flex-col items-center justify-center text-center p-2 rounded-xl sm:rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-md hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-0.5 select-none"
-              >
-                <span className="text-xl sm:text-2xl mb-1 group-hover:scale-110 transition-transform duration-200 inline-block">
-                  {cat.icon}
-                </span>
-                <span className="font-bold text-[11px] sm:text-xs text-[#0a1128] group-hover:text-orange-500 transition-colors whitespace-nowrap truncate max-w-full px-0.5">
-                  {cat.name}
-                </span>
-                <span className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap truncate max-w-full">
-                  {cat.count}
-                </span>
-              </Link>
-            ))}
+          {/* Lưới Danh mục ô vuông thu nhỏ gọn gàng thành 1 hàng duy nhất - dóng thẳng mép logo */}
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
+            <div className="flex lg:grid lg:grid-cols-12 gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none pb-2">
+              {propertyCategories.map((cat) => (
+                <Link
+                  key={cat.name}
+                  href={cat.href}
+                  className="shrink-0 w-[100px] sm:w-[110px] lg:w-auto h-[88px] sm:h-[94px] lg:h-[98px] flex flex-col items-center justify-center text-center p-2 rounded-xl sm:rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-md hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-0.5 select-none"
+                >
+                  <span className="text-xl sm:text-2xl mb-1 group-hover:scale-110 transition-transform duration-200 inline-block">
+                    {cat.icon}
+                  </span>
+                  <span className="font-bold text-[11px] sm:text-xs text-[#0a1128] group-hover:text-orange-500 transition-colors whitespace-nowrap truncate max-w-full px-0.5">
+                    {cat.name}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap truncate max-w-full">
+                    {cat.count}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+      </div>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Bố cục chuẩn Hình 2: Tiêu đề ở giữa, thẻ ở dưới dóng thẳng Logo)
