@@ -503,12 +503,32 @@ export default function HomePage() {
   ];
 
   const [activeReviewIdx, setActiveReviewIdx] = useState<number>(0);
+  const [reviewDirection, setReviewDirection] = useState<number>(1);
+  const [isReviewPaused, setIsReviewPaused] = useState<boolean>(false);
+
+  const nextReview = () => {
+    setReviewDirection(1);
+    setActiveReviewIdx((prev) => (prev + 1) % reviews.length);
+  };
+
+  const prevReview = () => {
+    setReviewDirection(-1);
+    setActiveReviewIdx((prev) => (prev - 1 + reviews.length) % reviews.length);
+  };
+
+  const goToReview = (idx: number) => {
+    setReviewDirection(idx > activeReviewIdx ? 1 : -1);
+    setActiveReviewIdx(idx);
+  };
+
   useEffect(() => {
+    if (isReviewPaused) return;
     const interval = setInterval(() => {
+      setReviewDirection(1);
       setActiveReviewIdx((prev) => (prev + 1) % reviews.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [reviews.length]);
+  }, [isReviewPaused, reviews.length]);
 
   return (
     <div className="min-h-screen bg-page-bg text-text-primary overflow-x-hidden font-sans">
@@ -1771,111 +1791,106 @@ export default function HomePage() {
 
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 8 — ĐÁNH GIÁ KHÁCH HÀNG
+          📌 SECTION 8 — ĐÁNH GIÁ KHÁCH HÀNG (BỐ CỤC CHUẨN ẢNH 1 - CODI TESTIMONIAL SLIDER)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-slate-50 py-16 border-y border-slate-100">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section
+        id="reviews"
+        onMouseEnter={() => setIsReviewPaused(true)}
+        onMouseLeave={() => setIsReviewPaused(false)}
+        className="relative bg-gradient-to-r from-[#060a22] via-[#0d1645] to-[#121c5b] text-white py-24 sm:py-32 lg:py-36 overflow-hidden flex flex-col justify-center items-center select-none"
+      >
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[850px] h-[350px] bg-blue-500/12 rounded-full blur-[140px] pointer-events-none" />
+
+        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
           
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
-              ⭐ ĐÁNH GIÁ TỪ NGƯỜI DÙNG
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-navy mt-1">
-              Khách hàng nói gì về HaNoi Realty?
-            </h2>
-          </div>
+          {/* Subtitle at top matching Image 1 */}
+          <p className="text-slate-400 text-xs sm:text-sm font-medium tracking-wide mb-8 sm:mb-10 text-center">
+            Teams that flipped the switch
+          </p>
 
-          {/* Rating summary bar */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-3xl mx-auto shadow-sm border border-slate-100 mb-12 flex flex-col sm:flex-row items-center justify-around gap-6">
-            <div className="text-center sm:text-left">
-              <span className="text-5xl font-black text-navy">4.8</span>
-              <span className="text-slate-400 font-bold text-lg"> / 5.0</span>
-              <div className="flex items-center gap-1 text-amber-400 text-lg my-1">
-                ★★★★★
-              </div>
-              <p className="text-xs text-slate-400">Dựa trên 1,247 đánh giá đã kiểm thực</p>
-            </div>
-
-            <div className="w-full sm:w-64 space-y-1.5 text-xs text-slate-500">
-              <div className="flex items-center gap-2">
-                <span>5★</span>
-                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full w-[82%]" />
-                </div>
-                <span>82%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>4★</span>
-                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full w-[12%]" />
-                </div>
-                <span>12%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>3★</span>
-                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full w-[4%]" />
-                </div>
-                <span>4%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>2★</span>
-                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full w-[1%]" />
-                </div>
-                <span>1%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>1★</span>
-                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full w-[1%]" />
-                </div>
-                <span>1%</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Testimonial Cards Carousel */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {reviews.slice(activeReviewIdx, activeReviewIdx + 3).concat(
-              reviews.slice(0, Math.max(0, activeReviewIdx + 3 - reviews.length))
-            ).map((review, idx) => (
+          {/* Testimonial Quote Slider */}
+          <div className="relative w-full min-h-[190px] sm:min-h-[160px] md:min-h-[140px] flex items-center justify-center overflow-hidden">
+            <AnimatePresence mode="wait" custom={reviewDirection}>
               <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between space-y-4"
+                key={activeReviewIdx}
+                custom={reviewDirection}
+                variants={{
+                  enter: (dir: number) => ({
+                    x: dir > 0 ? 80 : -80,
+                    opacity: 0,
+                  }),
+                  center: {
+                    x: 0,
+                    opacity: 1,
+                  },
+                  exit: (dir: number) => ({
+                    x: dir > 0 ? -80 : 80,
+                    opacity: 0,
+                  }),
+                }}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full flex flex-col items-center text-center"
               >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-amber-400 text-sm">★★★★★</span>
-                    <span className="text-[11px] text-slate-400">{review.date}</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
-                    "{review.content}"
-                  </p>
-                </div>
+                {/* Big Bold White Quote with Smart Quotes */}
+                <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-bold text-white leading-snug sm:leading-tight tracking-tight max-w-4xl mx-auto px-2">
+                  “{reviews[activeReviewIdx].content}”
+                </h3>
 
-                <div className="flex items-center gap-3 pt-3 border-t border-slate-50">
-                  <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-black text-xs flex items-center justify-center shadow-md">
-                    {review.name[0]}
+                {/* Author Info matching Image 1: [K] Katrina · Chief of Staff */}
+                <div className="flex items-center justify-center gap-2.5 mt-8 sm:mt-10">
+                  <div className="w-8 h-8 rounded-full bg-orange-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-md shadow-orange-500/30">
+                    {reviews[activeReviewIdx].name[0]}
                   </div>
-                  <div>
-                    <h4 className="font-extrabold text-xs text-navy flex items-center gap-1.5">
-                      <span>{review.name}</span>
-                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded font-semibold">
-                        ✓ Verified
-                      </span>
-                    </h4>
-                    <p className="text-[11px] text-slate-400">{review.role}</p>
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm">
+                    <span className="text-white font-medium">{reviews[activeReviewIdx].name}</span>
+                    <span className="text-slate-400">·</span>
+                    <span className="text-slate-400">{reviews[activeReviewIdx].role}</span>
                   </div>
                 </div>
               </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Pagination Navigation Dots matching Image 1 */}
+          <div className="flex items-center justify-center gap-2 mt-6 sm:mt-8">
+            {reviews.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => goToReview(idx)}
+                aria-label={`Chuyển đến đánh giá ${idx + 1}`}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  activeReviewIdx === idx
+                    ? 'w-2 h-2 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.9)] ring-2 ring-blue-500/30'
+                    : 'w-1.5 h-1.5 bg-slate-600/70 hover:bg-slate-400'
+                }`}
+              />
             ))}
           </div>
 
         </div>
+
+        {/* Floating Subtle Arrows for Desktop */}
+        <button
+          type="button"
+          onClick={prevReview}
+          aria-label="Đánh giá trước"
+          className="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 hover:bg-white/15 text-white/40 hover:text-white items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <button
+          type="button"
+          onClick={nextReview}
+          aria-label="Đánh giá tiếp theo"
+          className="hidden md:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 hover:bg-white/15 text-white/40 hover:text-white items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
