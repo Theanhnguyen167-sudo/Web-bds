@@ -83,15 +83,31 @@ function FadeInSection({ children, delay = 0, className = '' }: { children: Reac
   );
 }
 
-// Stats Counter item
-function HeroCounter({ value, suffix, label }: { value: number; suffix: string; label: string }) {
-  const { count, ref } = useCountUp(value, 1500);
+// Stats Counter item chuẩn Hình 1 (Codi style)
+function CodiStatCounter({
+  value,
+  label,
+  highlight = false,
+  isFixed = false,
+  fixedText = '',
+}: {
+  value?: number;
+  label: string;
+  highlight?: boolean;
+  isFixed?: boolean;
+  fixedText?: string;
+}) {
+  const { count, ref } = useCountUp(value || 0, 1600);
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center text-center px-3 py-1">
-      <span className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight">
-        {count.toLocaleString()}{suffix}
+    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-5 md:py-2">
+      <span
+        className={`text-4xl sm:text-5xl lg:text-[56px] font-black tracking-tight leading-none ${
+          highlight ? 'text-[#0066ff]' : 'text-[#1e293b]'
+        }`}
+      >
+        {isFixed ? fixedText : count.toLocaleString('de-DE')}
       </span>
-      <span className="text-white/70 text-[10px] sm:text-xs font-medium mt-0.5">
+      <span className="text-xs sm:text-[13px] text-slate-500 font-medium mt-2.5 lowercase">
         {label}
       </span>
     </div>
@@ -772,15 +788,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* 4. KHỐI THỐNG KÊ (BOTTOM STATS BAR) */}
-          <div className="w-full mt-6">
-            <div className="w-full rounded-2xl bg-[#0a1128] text-white shadow-xl border border-slate-800/80 py-3 sm:py-3.5 px-4 sm:px-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-800/80">
-                <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
-                <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
-                <HeroCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
-                <HeroCounter value={29} suffix="" label="Quận/huyện có dữ liệu" />
-              </div>
+          {/* 4. DẢI THỐNG KÊ CHUẨN HÌNH 1 (3 Cột lớn, số giữa xanh #0066ff, nền sáng, vạch chia dọc) */}
+          <div className="w-full max-w-4xl lg:max-w-5xl mx-auto mt-8 sm:mt-10 mb-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-4">
+              <CodiStatCounter value={728000} label="hours saved for teams" />
+              <CodiStatCounter isFixed={true} fixedText="$1.3M" highlight={true} label="saved" />
+              <CodiStatCounter value={15695} label="office tasks resolved" />
             </div>
           </div>
 
