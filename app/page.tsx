@@ -2036,7 +2036,7 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="cta-dang-tin"
-        className="bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white py-12 sm:py-16 lg:py-18 relative overflow-hidden min-h-screen snap-start flex flex-col justify-center"
+        className="bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white py-10 sm:py-12 lg:py-14 relative overflow-hidden flex flex-col justify-center"
       >
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative z-10">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8">
