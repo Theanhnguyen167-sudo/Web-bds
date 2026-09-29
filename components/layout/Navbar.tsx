@@ -74,14 +74,16 @@ export const Navbar: React.FC = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-primary/95 shadow-md backdrop-blur-md border-b border-primary-light'
-          : 'bg-primary border-b border-primary/50'
+          ? 'bg-[#0a1128]/95 shadow-md backdrop-blur-md border-b border-slate-800'
+          : pathname === '/'
+          ? 'bg-transparent border-b border-transparent'
+          : 'bg-[#0a1128] border-b border-slate-800'
       }`}
     >
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Logo Left */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+        <Link href="/" className="flex items-center gap-2.5 group shrink-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
           <motion.div
             whileHover={{ scale: 1.08, rotate: -4 }}
             whileTap={{ scale: 0.95 }}
@@ -93,7 +95,7 @@ export const Navbar: React.FC = () => {
             <span className="text-lg font-extrabold tracking-tight text-white flex items-center gap-1">
               HaNoi <span className="text-accent font-black">Realty</span>
             </span>
-            <span className="text-[10px] font-medium text-slate-300 uppercase tracking-widest -mt-1">
+            <span className="text-[10px] font-medium text-slate-200 uppercase tracking-widest -mt-1 drop-shadow-sm">
               PropTech & Quy Hoạch
             </span>
           </div>
@@ -101,7 +103,7 @@ export const Navbar: React.FC = () => {
 
         {/* Center Nav Links (Desktop) - Ẩn mượt khi cuộn trang chủ để nhường chỗ cho Airbnb Compact Search Bar */}
         <nav
-          className={`hidden md:flex items-center gap-1 lg:gap-2 transition-all duration-300 ${
+          className={`hidden md:flex items-center gap-1.5 lg:gap-2 transition-all duration-300 ${
             pathname === '/' && isScrolled
               ? 'opacity-0 pointer-events-none scale-95'
               : 'opacity-100 pointer-events-auto scale-100'
@@ -116,18 +118,13 @@ export const Navbar: React.FC = () => {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`relative px-3.5 py-2 text-xs font-semibold transition-colors ${
-                  isActive ? 'text-white font-bold' : 'text-slate-200 hover:text-white'
+                className={`relative px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
+                    : 'text-white/90 hover:text-white hover:bg-black/20 backdrop-blur-xs drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]'
                 }`}
               >
                 <span>{link.name}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeNavIndicator"
-                    className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-accent"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
               </Link>
             );
           })}
@@ -308,16 +305,26 @@ export const Navbar: React.FC = () => {
             className="md:hidden border-t border-primary-light bg-primary px-4 py-4 text-white shadow-xl"
           >
             <div className="flex flex-col gap-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg px-3 py-2 text-xs font-semibold hover:bg-primary-light"
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive =
+                  link.href === '/'
+                    ? pathname === '/'
+                    : pathname === link.href || pathname.startsWith(link.href + '/');
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                      isActive
+                        ? 'border-2 border-orange-500 bg-orange-500/15 text-white font-bold'
+                        : 'hover:bg-primary-light text-slate-200'
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
 
               <div className="border-t border-slate-700 pt-3 mt-1 flex flex-col gap-2">
                 {user ? (

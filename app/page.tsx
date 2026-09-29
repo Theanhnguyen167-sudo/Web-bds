@@ -169,28 +169,53 @@ const partnerLogos = [
 
 const heroFeatureCards = [
   {
+    title: 'Định giá & Thẩm định AI',
+    description: 'Báo cáo xu hướng giá, phân tích tiềm năng tăng trưởng theo thời gian thực.',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
+    href: '/reports',
+    actionText: 'Thẩm định AI',
+  },
+  {
     title: 'Không gian Độc bản',
     description: 'Biệt thự, nhà phố kiến trúc tinh hoa tại các quận trung tâm Hà Nội.',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
     href: '/search?type=house',
+    actionText: 'Khám phá ngay',
   },
   {
     title: 'Căn hộ Hạng sang',
     description: 'Chung cư cao cấp, penthouse view hồ với tiện ích 5 sao đồng bộ.',
     image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80',
     href: '/search?type=apartment',
+    actionText: 'Khám phá ngay',
   },
   {
     title: 'Quy hoạch GIS 2030',
     description: 'Tra cứu quy hoạch số, chỉ giới đường đỏ & phân khu đô thị minh bạch.',
     image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
     href: '/planning',
+    actionText: 'Xem bản đồ số',
   },
   {
-    title: 'Định giá & Thẩm định AI',
-    description: 'Báo cáo xu hướng giá, phân tích tiềm năng tăng trưởng theo thời gian thực.',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
-    href: '/reports',
+    title: 'Nhà phố & Shophouse',
+    description: 'Vị trí đắc địa phố cổ & các trục giao thương sầm uất thủ đô.',
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
+    href: '/search?type=house&keyword=mặt+phố',
+    actionText: 'Khám phá ngay',
+  },
+  {
+    title: 'Biệt thự Sinh thái Ven đô',
+    description: 'Không gian xanh khoáng đạt, cảnh quan sinh thái nghỉ dưỡng chuẩn resort.',
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
+    href: '/search?type=villa',
+    actionText: 'Khám phá ngay',
+  },
+  {
+    title: 'Penthouse & Sky Villa',
+    description: 'Tầm nhìn panorama 360 độ ngắm trọn Hồ Tây và toàn cảnh sông Hồng.',
+    image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80',
+    href: '/search?type=apartment&keyword=penthouse',
+    actionText: 'Khám phá ngay',
   },
 ];
 
@@ -213,27 +238,14 @@ export default function HomePage() {
   const router = useRouter();
   const { savedListingIds, toggleSaveListing } = useApp();
 
-  // ── Dynamic Navy Background Height (Phủ từ đỉnh đến đúng 1/4 hình ảnh) ──
-  const heroSectionRef = useRef<HTMLElement>(null);
-  const heroCardsRef = useRef<HTMLDivElement>(null);
-  const [navyHeight, setNavyHeight] = useState<number | null>(null);
-
-  useEffect(() => {
-    const updateNavyHeight = () => {
-      if (heroCardsRef.current && heroSectionRef.current) {
-        const heroTop = heroSectionRef.current.getBoundingClientRect().top;
-        const cardsRect = heroCardsRef.current.getBoundingClientRect();
-        const cardTop = cardsRect.top - heroTop;
-        const cardHeight = cardsRect.height;
-        // Exactly 1/4 (25%) of the 4 cards height!
-        const targetHeight = Math.round(cardTop + (cardHeight * 0.25));
-        setNavyHeight(targetHeight);
-      }
-    };
-    updateNavyHeight();
-    window.addEventListener('resize', updateNavyHeight);
-    return () => window.removeEventListener('resize', updateNavyHeight);
-  }, []);
+  // ── Hero Section (Image 1 Breda Layout): Cards Horizontal Scroll Ref ──
+  const heroCardsScrollRef = useRef<HTMLDivElement>(null);
+  const scrollHeroCards = (direction: 'left' | 'right') => {
+    if (heroCardsScrollRef.current) {
+      const offset = direction === 'left' ? -340 : 340;
+      heroCardsScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
 
   // ── Section 2: Property Categories Carousel Scroll ──
   const categoriesScrollRef = useRef<HTMLDivElement>(null);
@@ -334,117 +346,157 @@ export default function HomePage() {
       <QuickNav />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 1 — HERO SEARCH & 4-CARD GRID (Chuẩn bố cục Ảnh 2)
+          📌 SECTION 1 — HERO THEO CHUẨN CẤU TRÚC ẢNH 1 (BREDA DUAL-TIER OVERLAP LAYOUT)
+          - Tầng trên (Upper Tier): Ảnh Panorama Hà Nội góc rộng + H1 căn giữa + Nút CTA viên thuốc + Floating Search Bar
+          - Tầng dưới (Lower Tier): Nền Deep Navy (#0a1128)
+          - Điểm giao thoa (Overlap Bridge): Cột Trái chứa Text truyền cảm hứng & nút điều hướng (< >); Cột Phải là các thẻ ảnh đứng dọc (Tall Portrait) nhô cao đè lên ranh giới và lướt ngang tràn viền
+          - Bảo lưu toàn vẹn: Quick Search Tags & Bottom Stats Bar
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="hero"
-        ref={heroSectionRef}
-        className="relative flex flex-col items-center overflow-hidden bg-slate-50 text-slate-800 pt-20 sm:pt-24 pb-0 border-b border-slate-200/80"
+        className="relative flex flex-col overflow-hidden bg-[#0a1128] text-white pt-0 border-b border-slate-800/80"
       >
-        {/* ━━━ NỀN XANH NAVY PHỦ TỪ ĐỈNH ĐẾN 1/4 HÌNH ẢNH ━━━ */}
-        <div
-          className="absolute top-0 inset-x-0 bg-[#0a1128] z-0 pointer-events-none transition-[height] duration-200 ease-out h-[480px] sm:h-[520px] md:h-[550px] lg:h-[570px]"
-          style={navyHeight ? { height: `${navyHeight}px` } : undefined}
-        >
-          {/* Subtle Ambient Glows on Navy */}
-          <div className="absolute top-12 left-1/4 w-96 h-96 rounded-full bg-orange-500/15 blur-[140px]" />
-          <div className="absolute top-28 right-1/4 w-96 h-96 rounded-full bg-blue-600/15 blur-[150px]" />
-        </div>
+        {/* ── TẦNG 1: ẢNH BÌA PANORAMA TOÀN CẢNH HÀ NỘI (UPPER PANORAMIC BANNER) ── */}
+        <div className="relative w-full h-[100vh] min-h-[720px] flex flex-col justify-start pt-36 sm:pt-44 md:pt-48 lg:pt-52 px-4 sm:px-6 overflow-hidden">
+          {/* Background Image: 100% ánh sáng tự nhiên, loại bỏ ánh sáng tối */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="/images/hanoi-panoramic-hero.jpg"
+              alt="Toàn cảnh Bất động sản Hà Nội"
+              className="w-full h-full object-cover object-[center_25%]"
+              loading="eager"
+            />
+            {/* Gradient Deep Navy được đẩy lên cao hơn phía trên các thẻ bài viết để chuyển tiếp sắc sảo */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-36% via-[#0a1128]/75 via-50% to-[#0a1128]" />
+          </div>
 
-        {/* 1. KHU VỰC TIÊU ĐỀ (HERO HEADER) - CĂN GIỮA TRÊN NỀN NAVY */}
-        <div className="max-w-4xl w-full mx-auto text-center relative z-20 px-4 sm:px-6">
-          {/* Top Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 border border-orange-500/30 bg-orange-500/15 text-orange-300 rounded-full px-4 py-1 text-xs font-bold shadow-sm mb-3.5 select-none backdrop-blur-sm"
-          >
-            <span>🏆</span>
-            <span>Nền tảng BĐS thông minh #1 Hà Nội</span>
-          </motion.div>
+          {/* Tiêu đề căn giữa (Center-aligned Header giống Welkom in Breda) */}
+          <div className="max-w-4xl w-full mx-auto text-center relative z-20">
+            {/* Top Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 border border-white/40 bg-black/30 backdrop-blur-md text-orange-400 rounded-full px-4 py-1 text-xs font-bold shadow-md mb-3.5 select-none"
+            >
+              <span>🏆</span>
+              <span>Nền tảng BĐS thông minh #1 Hà Nội</span>
+            </motion.div>
 
-          {/* Tiêu đề chính (H1, Font to, Rất đậm) */}
-          <motion.h1
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight flex flex-col items-center gap-1.5 sm:gap-2 leading-[1.18] sm:leading-[1.2]"
-          >
-            <span className="text-white block">
-              Tìm ngôi nhà mơ ước
-            </span>
-            <span className="text-orange-500 block">
-              tại Hà Nội
-            </span>
-          </motion.h1>
+            {/* Tiêu đề chính H1 rất to, đậm, rõ nét có bóng đổ sắc sảo */}
+            <motion.h1
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-[1.16] drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]"
+            >
+              Tìm ngôi nhà mơ ước <span className="text-orange-500 drop-shadow-[0_3px_12px_rgba(249,115,22,0.45)]">tại Hà Nội</span>
+            </motion.h1>
+          </div>
 
-          {/* Tiêu đề phụ (Subtitle): Sáng rõ trên nền Navy */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-slate-300 text-xs sm:text-sm md:text-base mt-3 mb-6 sm:mb-8 max-w-2xl mx-auto font-normal leading-relaxed"
-          >
-            Hơn 10,000+ tin đăng chính chủ · Dữ liệu quy hoạch thực 2030-2045 · Thẩm định AI chuyên sâu.
-          </motion.p>
-        </div>
-
-        {/* 2. KHUNG TÌM KIẾM NỔI (FLOATING SEARCH WIDGET) */}
-        {/* Nổi bật trên nền Navy và đè lên 1/4 dải ảnh bên dưới */}
-        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 relative z-30">
-          <AirbnbStickySearchBar />
-        </div>
-
-        {/* 3. LƯỚI 4 CỘT HÌNH ẢNH (4-COLUMN CARD GRID) */}
-        {/* Nằm phía dưới khung tìm kiếm (đỉnh của 4 thẻ ảnh bị khung tìm kiếm che nhẹ lên, 1/4 nằm trong nền Navy) */}
-        <div ref={heroCardsRef} className="w-full max-w-6xl mx-auto px-4 sm:px-6 relative z-10 -mt-10 sm:-mt-14">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {heroFeatureCards.map((card, idx) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 + idx * 0.08 }}
-              >
-                <Link
-                  href={card.href}
-                  className="group relative h-[360px] sm:h-[390px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/70 block hover:-translate-y-1.5"
-                >
-                  {/* Full height background image */}
-                  <img
-                    src={card.image}
-                    alt={card.title}
-                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-                    loading="eager"
-                  />
-
-                  {/* Gradient màu Xanh Navy đậm chuyển từ trong suốt ở giữa xuống phủ tối ở đáy thẻ */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/50 to-transparent" />
-
-                  {/* Text đè lên đáy ảnh (Căn giữa) */}
-                  <div className="absolute inset-x-0 bottom-0 p-5 text-center z-10">
-                    {/* Dòng 1: Tiêu đề thẻ (Thẻ/Loại hình) - Chữ Trắng, In đậm, Cỡ vừa */}
-                    <h3 className="text-lg font-bold text-white mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors">
-                      {card.title}
-                    </h3>
-                    {/* Dòng 2: Đoạn mô tả ngắn (2 dòng) - Chữ Trắng/Xám nhạt, Cỡ nhỏ */}
-                    <p className="text-xs text-white/80 line-clamp-2 max-w-[210px] mx-auto leading-relaxed font-normal">
-                      {card.description}
-                    </p>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+          {/* Thanh tìm kiếm nổi (Được kéo dài sang 2 bên & thu gọn chiều cao) */}
+          <div className="w-full max-w-6xl lg:max-w-7xl mx-auto mt-6 sm:mt-8 relative z-30 px-2 sm:px-4">
+            <AirbnbStickySearchBar />
           </div>
         </div>
 
-        {/* Quick Search Preset Tags */}
+        {/* ── TẦNG 2: MẢNG NỀN XANH NAVY (#0a1128) & BỐ CỤC CHIA CỘT GIAO THOA (OVERLAPPING SPLIT GRID) ── */}
+        {/* Âm margin đúng ~1/2 chiều cao thẻ (-mt-[250px]) để khi ở đầu trang, chỉ hiện 1/2 thẻ và hiện rõ tiêu đề Khơi nguồn cảm hứng an cư */}
+        <div className="w-full pl-4 sm:pl-6 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+2rem))] pr-0 relative z-20 -mt-[230px] sm:-mt-[250px] lg:-mt-[260px] pb-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-10">
+            
+            {/* CỘT TRÁI (LEFT COLUMN - Cố định độ rộng căn chuẩn lề trang, tiêu đề Khơi nguồn cảm hứng an cư hiện rõ ở đáy màn 1) */}
+            <div className="w-full lg:w-[320px] xl:w-[360px] shrink-0 pr-4 sm:pr-6 lg:pr-2 pt-0">
+              <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase block mb-1.5 drop-shadow-sm">
+                BẤT ĐỘNG SẢN HÀ NỘI
+              </span>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-[1.18] mb-3 tracking-tight drop-shadow-md">
+                Khơi nguồn cảm hứng an cư
+              </h2>
+              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6 font-normal">
+                Khám phá các phân khúc BĐS tinh hoa tại các quận trung tâm Hà Nội, từ căn hộ hạng sang ven hồ đến biệt thự sân vườn độc bản.
+              </p>
+              
+              {/* Nút tròn điều khiển lướt trái/phải chuẩn Ảnh 1 (< >) */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => scrollHeroCards('left')}
+                  aria-label="Xem trước"
+                  className="w-10 h-10 rounded-full border border-white/30 hover:border-orange-500 hover:bg-orange-500/20 text-white flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollHeroCards('right')}
+                  aria-label="Xem tiếp"
+                  className="w-10 h-10 rounded-full border border-white/30 hover:border-orange-500 hover:bg-orange-500/20 text-white flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* CỘT PHẢI (RIGHT COLUMN - TRÀN RA TẬN VIỀN PHẢI MÀN HÌNH / THANH TRƯỢT DỌC): Dải thẻ chữ nhật đứng chuẩn Ảnh 1 */}
+            <div className="w-full flex-1 min-w-0 overflow-hidden relative">
+              <div
+                ref={heroCardsScrollRef}
+                className="flex gap-4 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth pr-4 sm:pr-8 lg:pr-12 py-3"
+                style={{ scrollSnapType: 'x mandatory' }}
+              >
+                {heroFeatureCards.map((card, idx) => (
+                  <motion.div
+                    key={card.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 + idx * 0.08 }}
+                    className="w-[260px] sm:w-[290px] lg:w-[315px] shrink-0"
+                    style={{ scrollSnapAlign: 'start' }}
+                  >
+                    <Link
+                      href={card.href}
+                      className="group relative h-[420px] sm:h-[460px] lg:h-[490px] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 border border-white/20 block hover:-translate-y-2 hover:shadow-orange-500/20"
+                    >
+                      {/* Full height background image */}
+                      <img
+                        src={card.image}
+                        alt={card.title}
+                        className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                        loading="eager"
+                      />
+
+                      {/* Gradient tối ở chân thẻ (Đảm bảo độ tương phản hoàn hảo cho text) */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/55 to-transparent" />
+
+                      {/* Text đè lên đáy ảnh (Căn lề trái giống hệt Ảnh 1) */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-left z-10">
+                        <h3 className="text-lg sm:text-xl font-black text-white mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors">
+                          {card.title}
+                        </h3>
+                        <p className="text-xs text-slate-300 line-clamp-2 mb-3 leading-relaxed font-normal">
+                          {card.description}
+                        </p>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-400 group-hover:text-orange-300 group-hover:translate-x-1 transition-all">
+                          <span>{card.actionText || 'Khám phá ngay'}</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── BẢO LƯU: THANH TÌM KIẾM PHỔ BIẾN (QUICK SEARCH TAGS) ── */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap items-center justify-center gap-2 pt-7 pb-2 text-xs font-medium text-slate-600 max-w-4xl mx-auto px-4 relative z-10"
+          className="flex flex-wrap items-center justify-center gap-2 pt-6 pb-2 text-xs font-medium text-slate-300 max-w-4xl mx-auto px-4 relative z-10"
         >
           <span className="text-slate-400 font-semibold">Tìm kiếm phổ biến:</span>
           {[
@@ -458,17 +510,17 @@ export default function HomePage() {
             <Link
               key={tag.label}
               href={tag.href}
-              className="bg-white hover:bg-orange-50 border border-slate-200/90 hover:border-orange-300 text-slate-700 hover:text-orange-600 rounded-full px-3.5 py-1 text-xs transition-all shadow-sm font-medium"
+              className="bg-white/10 hover:bg-orange-500/25 border border-white/15 hover:border-orange-400/50 text-slate-200 hover:text-white rounded-full px-3.5 py-1 text-xs transition-all backdrop-blur-sm shadow-sm font-medium"
             >
               {tag.label}
             </Link>
           ))}
         </motion.div>
 
-        {/* BOTTOM STATS BAR (Deep Navy Card) */}
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 mb-2 relative z-10">
-          <div className="w-full rounded-2xl bg-[#0f172a] text-white shadow-xl border border-slate-800 py-3 sm:py-3.5 px-4 sm:px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+        {/* ── BẢO LƯU: KHỐI THỐNG KÊ (BOTTOM STATS BAR) ── */}
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 mb-8 relative z-10">
+          <div className="w-full rounded-2xl bg-[#070d1e] text-white shadow-xl border border-slate-800/80 py-3 sm:py-3.5 px-4 sm:px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-800/80">
               <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
               <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
               <HeroCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
