@@ -926,10 +926,10 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Bố cục chuẩn Hình 2: Tiêu đề ở giữa, thẻ ở dưới dóng thẳng Logo)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="featured" className="bg-slate-50/70 min-h-screen snap-start flex flex-col justify-center py-8 sm:py-12 overflow-hidden relative border-b border-slate-200/80">
+      <section id="featured" className="bg-slate-50/70 min-h-screen snap-start flex flex-col justify-center py-4 sm:py-6 overflow-hidden relative border-b border-slate-200/80">
         
         {/* ── PHẦN CHỮ Ở TRÊN (CĂN GIỮA CHUẨN HÌNH 2) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] text-center mb-6 sm:mb-8">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] text-center mb-3 sm:mb-4">
           {/* Top Badge */}
           <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3.5 shadow-xs">
             <Flame className="h-3.5 w-3.5 fill-orange-500" />
@@ -937,12 +937,12 @@ export default function HomePage() {
           </div>
 
           {/* Heading */}
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0a1128] tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] tracking-tight leading-tight">
             Bất động sản, <span className="text-orange-500">nổi bật nhất tuần</span>
           </h2>
 
           {/* Subtitle */}
-          <p className="text-slate-600 text-sm sm:text-base mt-3 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-slate-600 text-[11px] sm:text-xs mt-2 max-w-2xl mx-auto leading-relaxed">
             Cho dù bạn đang tìm kiếm không gian để <strong>an cư dài lâu</strong>, <strong>nghỉ dưỡng tinh hoa</strong> hay <strong>đầu tư sinh lời vượt trội</strong>, luôn có một bất động sản hoàn hảo dành riêng cho bạn tại Hà Nội.
           </p>
         </div>
@@ -954,17 +954,17 @@ export default function HomePage() {
             {/* Carousel Track */}
             <div
               ref={featuredScrollRef}
-              className="flex gap-5 sm:gap-6 overflow-x-auto py-2 sm:py-4 snap-x scrollbar-none scroll-smooth"
+              className="flex gap-3 sm:gap-4 overflow-x-auto py-2 snap-x scrollbar-none scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {featuredListings.map((listing) => (
                 <div
                   key={listing.id}
-                  className="w-[240px] sm:w-[260px] md:w-[280px] lg:w-[300px] shrink-0 snap-start"
+                  className="w-[220px] sm:w-[240px] md:w-[260px] lg:w-[270px] shrink-0 snap-start"
                 >
                   <Link
                     href={`/listings/${listing.id}`}
-                    className="group relative h-[240px] sm:h-[280px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
+                    className="group relative h-[210px] sm:h-[240px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
                   >
                     {/* Background Image */}
                     <img
@@ -1074,10 +1074,10 @@ export default function HomePage() {
           </div>
 
           {/* ── NÚT KHÁM PHÁ Ở GIỮA BÊN DƯỚI (Chuẩn nút Book a tour trong Hình 2) ── */}
-          <div className="mt-6 sm:mt-8 flex justify-center">
+          <div className="mt-4 sm:mt-5 flex justify-center">
             <Link
               href="/search"
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm sm:text-base shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
             >
               <span>Khám phá các bất động sản</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
