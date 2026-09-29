@@ -1645,31 +1645,31 @@ export default function HomePage() {
           📌 SECTION 6 — TIN TỨC & PHÂN TÍCH THỊ TRƯỜNG
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="market-updates" className="bg-[#0a1128] min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-6 lg:py-8">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-3 lg:py-4">
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-3 gap-2">
             <div>
-              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+              <span className="text-orange-500 font-extrabold text-[10px] sm:text-xs tracking-wider uppercase">
                 TIN TỨC & KIẾN THỨC
               </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-4xl font-black text-white mt-1.5 leading-tight tracking-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-3xl font-black text-white mt-1 leading-tight tracking-tight">
                 Cập nhật thị trường BĐS Hà Nội
               </h2>
-              <p className="text-sm sm:text-base text-slate-300 mt-2">
+              <p className="text-xs sm:text-sm text-slate-300 mt-1">
                 Phân tích chuyên sâu từ đội ngũ chuyên gia quy hoạch và định giá
               </p>
             </div>
             <Link
               href="/streets"
-              className="text-xs sm:text-sm font-bold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1.5 transition-colors shrink-0 group"
+              className="text-[10px] sm:text-xs font-bold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1.5 transition-colors shrink-0 group"
             >
               <span>Xem tất cả tin tức</span>
-              <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
           {/* News Layout: 1 Big Left + 4 Small Right */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-stretch">
             
             {/* Big Featured Article (Left 50%) */}
             <div className="lg:col-span-6 flex flex-col">
@@ -1677,7 +1677,7 @@ export default function HomePage() {
                 href="/streets"
                 className="group block bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 transition-all duration-300 h-full flex flex-col justify-between"
               >
-                <div className="relative h-[200px] sm:h-[240px] overflow-hidden bg-slate-900">
+                <div className="relative h-[130px] sm:h-[150px] overflow-hidden bg-slate-900">
                   <img
                     src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80"
                     alt="Metro line Hanoi"
@@ -1691,19 +1691,19 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="p-4 sm:p-5 space-y-2 flex-1 flex flex-col justify-between">
-                  <div className="space-y-1.5">
-                    <h3 className="text-base sm:text-lg lg:text-xl font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug">
+                <div className="p-3 sm:p-4 space-y-1.5 flex-1 flex flex-col justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-sm sm:text-base lg:text-lg font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug">
                       Thị trường BĐS Hà Nội Q4/2025: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức khởi công
                     </h3>
-                    <p className="text-sm sm:text-base text-slate-600 line-clamp-2 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
                       Sự kết nối giữa các trục giao thông hướng tâm và đường vành đai đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố trung tâm và ven đô.
                     </p>
                   </div>
                   
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs sm:text-sm text-slate-500 font-medium">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-orange-500/20 text-orange-600 font-bold text-xs flex items-center justify-center">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] sm:text-xs text-slate-500 font-medium">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-600 font-bold flex items-center justify-center">
                         HR
                       </div>
                       <span className="font-semibold text-slate-700">Ban biên tập HaNoi Realty</span>
@@ -1745,9 +1745,9 @@ export default function HomePage() {
                 <Link
                   key={idx}
                   href="/streets"
-                  className="group bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/90 shadow-md hover:shadow-xl hover:border-orange-400 transition-all flex flex-col justify-between"
+                  className="group bg-white rounded-2xl p-2 border border-slate-200/90 shadow-md hover:shadow-xl hover:border-orange-400 transition-all flex flex-col justify-between"
                 >
-                  <div className="h-[100px] sm:h-[120px] rounded-xl overflow-hidden mb-2 bg-slate-100">
+                  <div className="h-[65px] sm:h-[80px] rounded-xl overflow-hidden mb-1.5 bg-slate-100">
                     <img
                       src={article.image}
                       alt={article.title}
@@ -1755,13 +1755,13 @@ export default function HomePage() {
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] sm:text-[11px] font-extrabold text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-md">
+                    <span className="text-[9px] sm:text-[10px] font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
                       {article.category}
                     </span>
-                    <h4 className="font-bold text-[11px] sm:text-xs text-[#0a1128] group-hover:text-orange-600 transition-colors line-clamp-2 mt-1.5 leading-snug">
+                    <h4 className="font-bold text-[10px] sm:text-xs text-[#0a1128] group-hover:text-orange-600 transition-colors line-clamp-2 mt-1 leading-snug">
                       {article.title}
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-2 font-medium">{article.date}</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-medium">{article.date}</p>
                   </div>
                 </Link>
               ))}
@@ -1770,12 +1770,12 @@ export default function HomePage() {
           </div>
 
           {/* Market Mini Dashboard Row */}
-          <div className="mt-4 sm:mt-6 bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/90 shadow-2xl">
-            <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-1.5">
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
+          <div className="mt-2 sm:mt-3 bg-white rounded-3xl p-3 sm:p-4 border border-slate-200/90 shadow-2xl">
+            <h4 className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               <span>Chỉ số thị trường tuần này</span>
             </h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
               <div className="p-2">
                 <p className="text-xs sm:text-sm text-slate-500 font-medium">Giá TB Đống Đa</p>
                 <p className="text-xl sm:text-2xl font-black text-[#0a1128] mt-0.5">85 tr/m²</p>
