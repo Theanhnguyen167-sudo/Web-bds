@@ -34,8 +34,11 @@ export default function FloatingContactWidget({
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const zaloPhone = agentZalo || agentPhone
-  const zaloUrl = `https://zalo.me/${zaloPhone.replace(/\D/g, '')}`
+  const safeAgentPhone = agentPhone || '0988 123 456'
+  const cleanAgentPhone = (safeAgentPhone || '').replace(/\D/g, '') || '0988123456'
+  const zaloPhone = agentZalo || safeAgentPhone
+  const cleanZaloPhone = (zaloPhone || '').replace(/\D/g, '') || '0988123456'
+  const zaloUrl = `https://zalo.me/${cleanZaloPhone}`
 
   return (
     <>
@@ -60,7 +63,7 @@ export default function FloatingContactWidget({
                 >
                   {/* Call Button */}
                   <motion.a
-                    href={`tel:${agentPhone}`}
+                    href={`tel:${cleanAgentPhone}`}
                     whileHover={{ scale: 1.05, x: -4 }}
                     whileTap={{ scale: 0.95 }}
                     className="flex items-center gap-3 bg-green-500 hover:bg-green-600 
@@ -68,7 +71,7 @@ export default function FloatingContactWidget({
                                shadow-green-500/30 transition-colors"
                   >
                     <span className="text-sm font-medium">
-                      {showPhoneReveal ? agentPhone : 'Gọi ngay'}
+                      {showPhoneReveal ? safeAgentPhone : 'Gọi ngay'}
                     </span>
                     <Phone size={18} />
                   </motion.a>

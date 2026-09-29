@@ -33,8 +33,11 @@ export default function PropertyAmenities({
   lng = 105.8350,
   listingAddress
 }: PropertyAmenitiesProps) {
+  const safeLat = typeof lat === 'number' && !isNaN(lat) && lat !== 0 ? lat : 21.0280;
+  const safeLng = typeof lng === 'number' && !isNaN(lng) && lng !== 0 ? lng : 105.8350;
+  const safeDistrict = district || 'Hà Nội';
   // Tính toán cự ly thực tế và link Google Maps chuẩn xác từ tọa độ BĐS
-  const amenities = getNearbyAmenitiesForListing(lat, lng, 8);
+  const amenities = getNearbyAmenitiesForListing(safeLat, safeLng, 8);
   const [activeModalItem, setActiveModalItem] = useState<CalculatedAmenity | null>(null);
 
   // Render icon theo phân loại chuẩn

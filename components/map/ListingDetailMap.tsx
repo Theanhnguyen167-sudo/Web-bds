@@ -19,13 +19,14 @@ interface ListingDetailMapProps {
   title: string
   address: string
   price: number
-  district: string
+  district?: string
   planningZone?: string
   planningYear?: number
   height?: string
 }
 
-function formatPriceShort(price: number): string {
+function formatPriceShort(price?: number): string {
+  if (!price && price !== 0) return 'Thoả thuận'
   if (price >= 1_000_000_000) {
     const val = price / 1_000_000_000
     return val % 1 === 0 ? `${val} Tỷ` : `${val.toFixed(1)} Tỷ`
@@ -33,7 +34,7 @@ function formatPriceShort(price: number): string {
   if (price >= 1_000_000) {
     return `${Math.round(price / 1_000_000)} Triệu`
   }
-  return price.toLocaleString('vi-VN')
+  return Number(price).toLocaleString('vi-VN')
 }
 
 export default function ListingDetailMap({
@@ -42,7 +43,7 @@ export default function ListingDetailMap({
   title,
   address,
   price,
-  district,
+  district = 'Hà Nội',
   planningZone,
   planningYear = 2030,
   height = '320px',
@@ -69,8 +70,12 @@ export default function ListingDetailMap({
       fixLeafletIcons()
       if (!mapRef.current || mapInstanceRef.current) return
 
+      const safeLat = typeof lat === 'number' && !isNaN(lat) && lat !== 0 ? lat : 21.0285;
+      const safeLng = typeof lng === 'number' && !isNaN(lng) && lng !== 0 ? lng : 105.8542;
+      const safeDistrict = (district || 'Hà Nội').trim();
+
       const map = L.map(mapRef.current, {
-        center: [lat, lng],
+        center: [safeLat, safeLng],
         zoom: 16,
         zoomControl: false,
         scrollWheelZoom: true,
@@ -85,7 +90,7 @@ export default function ListingDetailMap({
       tileLayerRef.current = tile
 
       // ── 500m Walking Radius Circle ──
-      L.circle([lat, lng], {
+      L.circle([safeLat, safeLng], {
         radius: 500,
         color: '#f97316',
         fillColor: '#f97316',
@@ -99,9 +104,11 @@ export default function ListingDetailMap({
       })
 
       // ── Planning Zones for this District ──
-      const districtZones = HANOI_PLANNING_ZONES.filter(
-        z => z.district.toLowerCase() === district.toLowerCase()
-      )
+      const districtZones = safeDistrict
+        ? HANOI_PLANNING_ZONES.filter(
+            z => z.district && z.district.toLowerCase() === safeDistrict.toLowerCase()
+          )
+        : []
       districtZones.forEach(zone => {
         L.polygon(zone.coordinates, {
           color: zone.color,
@@ -118,8 +125,8 @@ export default function ListingDetailMap({
       // ── Nearby Metro Stations ──
       HANOI_METRO_STATIONS.forEach(station => {
         // Only show if reasonably close (< 3km)
-        const dLat = Math.abs(station.lat - lat)
-        const dLng = Math.abs(station.lng - lng)
+        const dLat = Math.abs(station.lat - safeLat)
+        const dLng = Math.abs(station.lng - safeLng)
         if (dLat < 0.03 && dLng < 0.03) {
           const metroIcon = L.divIcon({
             html: `
@@ -151,20 +158,20 @@ export default function ListingDetailMap({
         iconAnchor: [30, 36],
       })
 
-      const marker = L.marker([lat, lng], { icon: propertyIcon }).addTo(map)
+      const marker = L.marker([safeLat, safeLng], { icon: propertyIcon }).addTo(map)
 
       // Popup Content
       const popupHtml = `
         <div style="padding:10px;min-width:200px;font-family:sans-serif">
           <p style="font-size:13px;font-weight:800;color:#1e293b;margin:0 0 4px 0;line-height:1.3">
-            ${title}
+            ${title || 'Bất động sản Hà Nội'}
           </p>
           <p style="font-size:11px;color:#64748b;margin:0 0 8px 0;">
-            📍 ${address}
+            📍 ${address || safeDistrict}
           </p>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <span style="font-size:14px;font-weight:900;color:#f97316;">${formatPriceShort(price)}</span>
-            <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" rel="noopener noreferrer" style="font-size:11px;font-weight:700;color:#2563eb;text-decoration:none;">
+            <a href="https://www.google.com/maps/search/?api=1&query=${safeLat},${safeLng}" target="_blank" rel="noopener noreferrer" style="font-size:11px;font-weight:700;color:#2563eb;text-decoration:none;">
               Google Maps ↗
             </a>
           </div>

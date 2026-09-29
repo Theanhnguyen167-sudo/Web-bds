@@ -21,10 +21,14 @@ import {
   BellOff,
   Sliders,
   Send,
-  Volume2
+  Volume2,
+  Phone,
+  Calendar,
+  Clock,
+  User
 } from 'lucide-react';
 import { useApp } from '@/lib/context/AppContext';
-import { NotificationItem, NotificationCategory, NotificationPreferences } from '@/types/notification';
+import { NotificationItem, NotificationCategory, NotificationPreferences, AppointmentData } from '@/types/notification';
 
 const STORAGE_KEY_NOTIFICATIONS = 'hanoi_realty_notifications';
 const STORAGE_KEY_PREFS = 'hanoi_realty_notification_prefs';
@@ -49,8 +53,17 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
     createdAt: '25 phút trước',
     timestamp: Date.now() - 25 * 60 * 1000,
     isRead: false,
-    link: '/dashboard',
-    tag: 'Khách hàng'
+    link: '/listings/1',
+    tag: 'Hẹn xem nhà',
+    appointmentData: {
+      buyerName: 'Hoàng Nam',
+      buyerPhone: '0912 888 999',
+      date: 'Ngày mai',
+      time: '14:30',
+      listingId: '1',
+      listingTitle: 'Nhà phố phân lô Dịch Vọng 65m²',
+      note: 'Tôi muốn kiểm tra sổ đỏ và hiện trạng thực tế'
+    }
   },
   {
     id: 'notif-3',
@@ -101,7 +114,8 @@ export const NotificationBell: React.FC = () => {
   const { addToast } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'settings'>('list');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'planning' | 'listings'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'planning' | 'listings' | 'appointments'>('all');
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentData | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>(DEFAULT_NOTIFICATIONS);
   const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFS);
   const [browserPermission, setBrowserPermission] = useState<NotificationPermission>('default');
@@ -251,6 +265,7 @@ export const NotificationBell: React.FC = () => {
     if (activeFilter === 'unread') return !n.isRead;
     if (activeFilter === 'planning') return n.category === 'planning';
     if (activeFilter === 'listings') return ['listing', 'message', 'ai'].includes(n.category);
+    if (activeFilter === 'appointments') return n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData);
     return true;
   });
 
@@ -292,6 +307,10 @@ export const NotificationBell: React.FC = () => {
   // Click on a notification item
   const handleItemClick = (notif: NotificationItem) => {
     handleMarkAsRead(notif.id);
+    if (notif.appointmentData) {
+      setSelectedAppointment(notif.appointmentData);
+      return;
+    }
     setIsOpen(false);
     if (notif.link) {
       router.push(notif.link);
@@ -389,7 +408,15 @@ export const NotificationBell: React.FC = () => {
   };
 
   // Helper for Category Icon & Styling
-  const getCategoryDetails = (category: NotificationCategory) => {
+  const getCategoryDetails = (category: NotificationCategory, tag?: string) => {
+    if (tag === 'Hẹn xem nhà') {
+      return {
+        icon: Calendar,
+        label: 'Hẹn xem nhà',
+        badgeClass: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+        iconBg: 'bg-orange-500/20 text-orange-400'
+      };
+    }
     switch (category) {
       case 'planning':
         return {
@@ -548,7 +575,7 @@ export const NotificationBell: React.FC = () => {
             {viewMode === 'list' ? (
               <>
                 {/* Filter Pills */}
-                <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-700/60 bg-primary/20 overflow-x-auto text-[11px]">
+                <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-700/60 bg-primary/20 overflow-x-auto text-[11px] no-scrollbar">
                   <button
                     type="button"
                     onClick={() => setActiveFilter('all')}
@@ -570,6 +597,17 @@ export const NotificationBell: React.FC = () => {
                     }`}
                   >
                     Chưa đọc ({unreadCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter('appointments')}
+                    className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-all ${
+                      activeFilter === 'appointments'
+                        ? 'bg-orange-500 text-white shadow-sm'
+                        : 'text-slate-300 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    📅 Lịch hẹn ({notifications.filter(n => n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData)).length})
                   </button>
                   <button
                     type="button"
@@ -599,7 +637,7 @@ export const NotificationBell: React.FC = () => {
                 <div className="max-h-[350px] sm:max-h-[380px] overflow-y-auto divide-y divide-slate-700/50">
                   {filteredNotifications.length > 0 ? (
                     filteredNotifications.map((item) => {
-                      const details = getCategoryDetails(item.category);
+                      const details = getCategoryDetails(item.category, item.tag);
                       const Icon = details.icon;
 
                       return (
@@ -649,8 +687,57 @@ export const NotificationBell: React.FC = () => {
                               {item.content}
                             </p>
 
+                            {/* Appointment Info Box cho người bán */}
+                            {item.appointmentData && (
+                              <div className="mt-2.5 p-2.5 rounded-xl bg-slate-950/80 border border-orange-500/30 text-xs space-y-1.5 shadow-sm">
+                                <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-1.5 text-orange-400 font-extrabold text-[11px]">
+                                    <Calendar className="h-3.5 w-3.5 text-orange-400" />
+                                    <span>{item.appointmentData.time} • {item.appointmentData.date}</span>
+                                  </span>
+                                  <span className="rounded-full bg-orange-500/20 text-orange-300 text-[10px] font-bold px-1.5 py-0.2 border border-orange-500/30">
+                                    Lịch hẹn mới
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 text-slate-300 text-[11px]">
+                                  <User className="h-3 w-3 text-slate-400 shrink-0" />
+                                  <span className="font-bold text-white">{item.appointmentData.buyerName}</span>
+                                  <span className="text-slate-500">•</span>
+                                  <span className="text-emerald-400 font-mono font-bold">{item.appointmentData.buyerPhone}</span>
+                                </div>
+
+                                {item.appointmentData.note && (
+                                  <p className="text-[10px] text-slate-400 italic line-clamp-2 bg-slate-900/60 p-1.5 rounded-lg border border-white/5">
+                                    "{item.appointmentData.note}"
+                                  </p>
+                                )}
+
+                                <div className="pt-1.5 flex items-center gap-2 border-t border-slate-800">
+                                  <a
+                                    href={`tel:${item.appointmentData.buyerPhone.replace(/\s+/g, '')}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition-colors shadow-xs"
+                                  >
+                                    <Phone className="h-3 w-3" />
+                                    <span>Gọi ngay</span>
+                                  </a>
+                                  <a
+                                    href={`https://zalo.me/${item.appointmentData.buyerPhone.replace(/\D/g, '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#0068FF] hover:bg-[#0055d4] text-white font-bold text-[10px] transition-colors shadow-xs"
+                                  >
+                                    <MessageSquare className="h-3 w-3" />
+                                    <span>Chat Zalo</span>
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+
                             {/* Quick Link Hint */}
-                            {item.link && (
+                            {item.link && !item.appointmentData && (
                               <div className="mt-2 flex items-center gap-1 text-[10px] font-bold text-accent opacity-90 group-hover:opacity-100 transition-opacity">
                                 <span>Xem chi tiết</span>
                                 <ChevronRight className="h-3 w-3" />
@@ -879,6 +966,138 @@ export const NotificationBell: React.FC = () => {
                 </div>
               </div>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── APPOINTMENT DETAILS MODAL CHO NGƯỜI BÁN ── */}
+      <AnimatePresence>
+        {selectedAppointment && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm"
+            onClick={() => setSelectedAppointment(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-slate-900 border border-slate-700 rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-2xl text-slate-100 space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/20 text-orange-400">
+                    <Calendar className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-sm sm:text-base text-white">
+                      Khách Hẹn Xem Nhà
+                    </h3>
+                    <p className="text-[11px] text-slate-400">Thông báo gửi về cho người bán</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAppointment(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Thông tin BĐS */}
+              <div className="bg-slate-950/70 rounded-2xl p-3.5 border border-slate-800 space-y-2 text-xs">
+                <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400">
+                  Bất động sản hẹn xem:
+                </span>
+                <p className="font-bold text-white text-sm line-clamp-2">
+                  {selectedAppointment.listingTitle}
+                </p>
+                {selectedAppointment.listingId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedAppointment(null);
+                      setIsOpen(false);
+                      router.push(`/listings/${selectedAppointment.listingId}`);
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-400 hover:underline pt-1 cursor-pointer"
+                  >
+                    <span>Xem trang bài đăng</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Thời gian & Khung giờ */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-semibold">Khung giờ hẹn:</span>
+                  <span className="text-base font-extrabold text-orange-400 mt-0.5 block">
+                    {selectedAppointment.time}
+                  </span>
+                </div>
+                <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-semibold">Ngày hẹn xem:</span>
+                  <span className="text-xs font-bold text-slate-200 mt-1 block">
+                    {selectedAppointment.date}
+                  </span>
+                </div>
+              </div>
+
+              {/* Thông tin người mua */}
+              <div className="bg-slate-950/60 rounded-2xl p-3.5 border border-slate-800 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400">
+                    Khách hàng đặt hẹn:
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    Chờ liên hệ
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-white text-sm">{selectedAppointment.buyerName}</span>
+                  <span className="font-mono font-bold text-emerald-400 text-sm">{selectedAppointment.buyerPhone}</span>
+                </div>
+                {selectedAppointment.note && (
+                  <div className="pt-2 border-t border-slate-800/70 text-[11px] text-slate-300">
+                    <span className="text-slate-400 font-medium">Ghi chú của khách: </span>
+                    <span className="italic">"{selectedAppointment.note}"</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="pt-2 flex items-center gap-2.5">
+                <a
+                  href={`tel:${selectedAppointment.buyerPhone.replace(/\s+/g, '')}`}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition-colors"
+                >
+                  <Phone className="h-4 w-4" />
+                  <span>Gọi điện ngay</span>
+                </a>
+                <a
+                  href={`https://zalo.me/${selectedAppointment.buyerPhone.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white font-extrabold text-xs shadow-md transition-colors"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Nhắn Zalo</span>
+                </a>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedAppointment(null)}
+                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Đóng
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

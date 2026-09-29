@@ -74,11 +74,14 @@ export async function GET(
       ];
     }
 
+    const rawTitle = row.title?.trim() || 'bất động sản';
+    const formattedTitle = rawTitle.toLowerCase().startsWith('bán') ? rawTitle : `Bán ${rawTitle}`;
+
     // Tự động hoàn thiện mô tả chi tiết nếu bài đăng người dùng chưa nhập mô tả
     const autoDescription =
       row.description && row.description.trim().length > 10
         ? row.description
-        : `Bán ${row.title || 'bất động sản'} vị trí đắc địa tại ${row.address || row.district || 'Hà Nội'}.
+        : `${formattedTitle} vị trí đắc địa tại ${row.address || row.district || 'Hà Nội'}.
 - Diện tích: ${area}m², mặt tiền rộng thoáng, ô tô đỗ cửa hoặc vào nhà thuận tiện.
 - Thiết kế hiện đại ${row.floors || 4} tầng kiên cố, công năng tối ưu gồm ${row.bedrooms || 3} phòng ngủ, ${row.bathrooms || 2} phòng tắm khép kín, phòng khách và phòng bếp sang trọng.
 - Vị trí trung tâm khu vực ${row.district || 'Hà Nội'}, hạ tầng đồng bộ, gần trường học các cấp, bệnh viện, chợ dân sinh và trung tâm thương mại.
