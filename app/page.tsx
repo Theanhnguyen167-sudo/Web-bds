@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
-import { QuickNav } from '@/components/layout/QuickNav';
 import { AirbnbStickySearchBar } from '@/components/home/AirbnbStickySearchBar';
 import { ListingCard } from '@/components/listing/ListingCard';
 import { mockListings, ListingItem } from '@/lib/mock-data';
@@ -506,7 +505,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-page-bg text-text-primary overflow-x-hidden font-sans">
       <Navbar />
-      <QuickNav />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1 — HERO THEO CHUẨN CẤU TRÚC ẢNH 1 (CODI FLOATING CARD & HERO IMAGE LAYOUT)
