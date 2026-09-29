@@ -1811,17 +1811,75 @@ export default function HomePage() {
         id="reviews"
         onMouseEnter={() => setIsReviewPaused(true)}
         onMouseLeave={() => setIsReviewPaused(false)}
-        className="relative bg-gradient-to-r from-[#060a22] via-[#0d1645] to-[#121c5b] text-white py-24 sm:py-32 lg:py-36 overflow-hidden flex flex-col justify-center items-center select-none"
+        className="relative bg-gradient-to-r from-[#060a22] via-[#0d1645] to-[#121c5b] text-white py-16 sm:py-20 lg:py-24 overflow-hidden flex flex-col justify-center items-center select-none"
       >
         {/* Subtle Ambient Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[850px] h-[350px] bg-blue-500/12 rounded-full blur-[140px] pointer-events-none" />
 
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
           
-          {/* Subtitle at top matching Image 1 */}
-          <p className="text-slate-400 text-xs sm:text-sm font-medium tracking-wide mb-8 sm:mb-10 text-center">
-            Teams that flipped the switch
-          </p>
+          {/* Header chuẩn Hình 1 */}
+          <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+            <span className="text-orange-400 font-extrabold text-xs uppercase tracking-wider block mb-2">
+              ⭐ ĐÁNH GIÁ TỪ NGƯỜI DÙNG
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+              Khách hàng nói gì về HaNoi Realty?
+            </h2>
+          </div>
+
+          {/* Overall Rating Card chuẩn Hình 1 */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-xl mx-auto mb-10 sm:mb-12 shadow-2xl border border-white/20 flex flex-col sm:flex-row items-center justify-between gap-6 text-[#0a1128]">
+            <div className="text-center sm:text-left shrink-0">
+              <div className="flex items-baseline justify-center sm:justify-start gap-1">
+                <span className="text-5xl font-black text-[#0a1128] tracking-tight">4.8</span>
+                <span className="text-lg text-slate-400 font-bold">/ 5.0</span>
+              </div>
+              <div className="flex text-amber-400 text-lg my-1.5 justify-center sm:justify-start tracking-wider">
+                ★★★★★
+              </div>
+              <p className="text-xs text-slate-500 font-medium">Dựa trên 1,247 đánh giá đã kiểm thực</p>
+            </div>
+
+            {/* Bars */}
+            <div className="space-y-1.5 w-full sm:w-64 text-xs font-semibold text-slate-600">
+              <div className="flex items-center gap-2">
+                <span className="w-5 text-slate-500 font-medium">5★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[82%]" />
+                </div>
+                <span className="w-8 text-right font-bold text-slate-700">82%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 text-slate-500 font-medium">4★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[12%]" />
+                </div>
+                <span className="w-8 text-right font-bold text-slate-700">12%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 text-slate-500 font-medium">3★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[4%]" />
+                </div>
+                <span className="w-8 text-right font-bold text-slate-700">4%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 text-slate-500 font-medium">2★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[1%]" />
+                </div>
+                <span className="w-8 text-right font-bold text-slate-700">1%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-5 text-slate-500 font-medium">1★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[1%]" />
+                </div>
+                <span className="w-8 text-right font-bold text-slate-700">1%</span>
+              </div>
+            </div>
+          </div>
 
           {/* Testimonial Quote Slider */}
           <div className="relative w-full min-h-[190px] sm:min-h-[160px] md:min-h-[140px] flex items-center justify-center overflow-hidden">
