@@ -807,8 +807,11 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="categories" className="bg-[#0a1128] py-10 sm:py-12 border-b border-slate-800/80 relative">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (1 HÀNG GỌN GÀNG)
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 border-b border-slate-800/80 relative">
+        <div className="container max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
@@ -834,22 +837,22 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Lưới Danh mục ô vuông nền trắng cố định (Bỏ hiệu ứng chạy ngang) */}
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+        {/* Lưới Danh mục ô vuông thu nhỏ gọn gàng thành 1 hàng duy nhất */}
+        <div className="container max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex lg:grid lg:grid-cols-12 gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none pb-2">
             {propertyCategories.map((cat) => (
               <Link
                 key={cat.name}
                 href={cat.href}
-                className="h-[115px] sm:h-[125px] flex flex-col items-center justify-center text-center p-3 sm:p-4 rounded-2xl bg-white border border-slate-100 shadow-md hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-1 select-none"
+                className="shrink-0 w-[100px] sm:w-[110px] lg:w-auto h-[88px] sm:h-[94px] lg:h-[98px] flex flex-col items-center justify-center text-center p-2 rounded-xl sm:rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-md hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-0.5 select-none"
               >
-                <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-115 transition-transform duration-300 inline-block">
+                <span className="text-xl sm:text-2xl mb-1 group-hover:scale-110 transition-transform duration-200 inline-block">
                   {cat.icon}
                 </span>
-                <span className="font-bold text-xs sm:text-sm text-[#0a1128] group-hover:text-orange-500 transition-colors whitespace-nowrap">
+                <span className="font-bold text-[11px] sm:text-xs text-[#0a1128] group-hover:text-orange-500 transition-colors whitespace-nowrap truncate max-w-full px-0.5">
                   {cat.name}
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-slate-500 mt-1 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap">
+                <span className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap truncate max-w-full">
                   {cat.count}
                 </span>
               </Link>
