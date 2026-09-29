@@ -856,17 +856,15 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ (THU NHỎ, TẬP TRUNG Ở GIỮA, GIÃN CÁCH ĐỀU) + DANH MỤC BĐS
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div id="stats-and-categories" className="min-h-screen flex flex-col justify-center border-b border-slate-800/80">
+      <div id="stats-and-categories" className="min-h-screen flex flex-col border-b border-slate-800/80">
         
-        {/* 1. DẢI THỐNG KÊ (Thu nhỏ, tập trung ở giữa, giãn cách đều nhau) */}
-        <section id="hero-stats" className="bg-white py-6 sm:py-8 lg:py-10 border-b border-slate-200/80">
-          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] flex justify-center">
-            <div className="w-full max-w-3xl lg:max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-2 sm:py-3">
-                <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
-                <CodiStatCounter value={5832} suffix="+" highlight={true} label="người dùng tháng này" />
-                <CodiStatCounter value={98} suffix="%" label="tỷ lệ khách hàng hài lòng" />
-              </div>
+        {/* 1. DẢI THỐNG KÊ (Thu nhỏ, cân bằng chính giữa cả chiều dọc và ngang) */}
+        <section id="hero-stats" className="bg-white flex-1 flex flex-col justify-center items-center py-8 sm:py-10 border-b border-slate-200/80">
+          <div className="w-full max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-2 sm:py-3 items-center">
+              <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
+              <CodiStatCounter value={5832} suffix="+" highlight={true} label="người dùng tháng này" />
+              <CodiStatCounter value={98} suffix="%" label="tỷ lệ khách hàng hài lòng" />
             </div>
           </div>
         </section>
