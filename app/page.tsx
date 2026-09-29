@@ -8,7 +8,6 @@ import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { QuickNav } from '@/components/layout/QuickNav';
 import { AirbnbStickySearchBar } from '@/components/home/AirbnbStickySearchBar';
-import { DistrictPropertyExplorer } from '@/components/home/DistrictPropertyExplorer';
 import { ListingCard } from '@/components/listing/ListingCard';
 import { mockListings, ListingItem } from '@/lib/mock-data';
 import { useCountUp } from '@/lib/hooks/useScrollAnimation';
@@ -55,6 +54,17 @@ import {
   Bath,
   Maximize2
 } from 'lucide-react';
+
+// Dynamic import for Leaflet GIS Map with SSR false
+const MiniSearchMap = dynamic(() => import('@/components/map/SearchMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] w-full rounded-2xl bg-slate-900 flex flex-col items-center justify-center text-slate-400 gap-3 border border-slate-700">
+      <div className="h-8 w-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+      <span className="text-xs font-semibold">Đang tải bản đồ Hà Nội...</span>
+    </div>
+  ),
+});
 
 // Reusable Scroll Animation Wrapper
 function FadeInSection({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -301,6 +311,23 @@ export default function HomePage() {
   const featuredListings = useMemo(() => {
     return mockListings.slice(0, 8);
   }, []);
+
+  // ── Section 4: District selection for Mini Map ──
+  const [hoveredDistrict, setHoveredDistrict] = useState<string>('Đống Đa');
+
+  // Popular Districts for Section 4
+  const popularDistricts = useMemo(() => [
+    { name: 'Đống Đa', count: 1234, avgPrice: '~85tr/m²' },
+    { name: 'Hoàn Kiếm', count: 891, avgPrice: '~120tr/m²' },
+    { name: 'Cầu Giấy', count: 2102, avgPrice: '~65tr/m²' },
+    { name: 'Tây Hồ', count: 567, avgPrice: '~95tr/m²' },
+    { name: 'Ba Đình', count: 743, avgPrice: '~110tr/m²' },
+    { name: 'Hai Bà Trưng', count: 1089, avgPrice: '~72tr/m²' },
+    { name: 'Hoàng Mai', count: 1456, avgPrice: '~45tr/m²' },
+    { name: 'Long Biên', count: 892, avgPrice: '~38tr/m²' },
+    { name: 'Nam Từ Liêm', count: 1234, avgPrice: '~42tr/m²' },
+    { name: 'Hà Đông', count: 2001, avgPrice: '~35tr/m²' },
+  ], []);
 
   // ── Section 5: Personalized Filter Pill ──
   const [personalFilter, setPersonalFilter] = useState<string>('all');
@@ -796,9 +823,88 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 4 — KHÁM PHÁ THEO KHU VỰC (Lưới Card & Bản đồ Hà Nội)
+          📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <DistrictPropertyExplorer />
+      <section id="map-search" className="bg-white py-16 border-y border-slate-100">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            {/* Left 45%: District List */}
+            <div className="lg:col-span-5 space-y-6">
+              <div>
+                <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+                  KHÁM PHÁ THEO KHU VỰC
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-navy mt-1">
+                  Tìm nhà trên bản đồ Hà Nội
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                  Rê chuột vào quận để xem nhanh vị trí hoặc nhấp để lọc tin đăng chính xác
+                </p>
+              </div>
+
+              {/* District Table List */}
+              <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-100 bg-slate-50/50 p-2 divide-y divide-slate-100">
+                {popularDistricts.map((d) => (
+                  <div
+                    key={d.name}
+                    onMouseEnter={() => setHoveredDistrict(d.name)}
+                    onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
+                    className={`flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-all ${
+                      hoveredDistrict === d.name
+                        ? 'bg-orange-500 text-white shadow-md'
+                        : 'hover:bg-white text-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <MapPin className={`h-4 w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-500'}`} />
+                      <span className="font-bold text-xs sm:text-sm">Quận {d.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className={hoveredDistrict === d.name ? 'text-white/80' : 'text-slate-400'}>
+                        {d.count} tin
+                      </span>
+                      <span className={`font-mono font-bold ${hoveredDistrict === d.name ? 'text-yellow-200' : 'text-orange-600'}`}>
+                        {d.avgPrice}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <Link
+                  href={`/search?district=${encodeURIComponent(hoveredDistrict)}`}
+                  className="px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span>Xem tin quận {hoveredDistrict}</span>
+                </Link>
+
+                <Link
+                  href="/planning"
+                  className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Layers className="h-4 w-4 text-orange-500" />
+                  <span>Xem bản đồ quy hoạch</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right 55%: Interactive Mini Leaflet Map */}
+            <div className="lg:col-span-7">
+              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-200 h-[420px] relative bg-slate-900">
+                <MiniSearchMap
+                  listings={mockListings as any}
+                  targetDistrict={hoveredDistrict}
+                  onMarkerClick={(id) => router.push(`/listings/${id}`)}
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 5 — BĐS DÀNH CHO BẠN (Gợi ý cá nhân hoá)
