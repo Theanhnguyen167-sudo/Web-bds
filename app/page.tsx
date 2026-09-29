@@ -100,15 +100,15 @@ function CodiStatCounter({
 }) {
   const { count, ref } = useCountUp(value || 0, 1600);
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-8 py-5 md:py-2">
+    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-2.5 sm:py-3 w-full">
       <span
-        className={`text-5xl sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[88px] font-black tracking-tight leading-none ${
+        className={`text-3xl sm:text-4xl md:text-[42px] font-black tracking-tight leading-none ${
           highlight ? 'text-[#0066FF]' : 'text-[#0a1128]'
         }`}
       >
         {isFixed ? fixedText : `${count.toLocaleString('de-DE')}${suffix}`}
       </span>
-      <span className="text-sm sm:text-base md:text-lg text-slate-500 font-semibold mt-3 sm:mt-4 text-center">
+      <span className="text-xs sm:text-[13px] text-slate-500 font-medium mt-2 text-center whitespace-nowrap">
         {label}
       </span>
     </div>
@@ -854,15 +854,15 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ (PHÓNG TO) + DANH MỤC BĐS (TRỌN 1 MÀN HÌNH 100VH)
+          📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ (THU NHỎ, TẬP TRUNG Ở GIỮA, GIÃN CÁCH ĐỀU) + DANH MỤC BĐS
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div id="stats-and-categories" className="min-h-screen flex flex-col justify-between border-b border-slate-800/80">
+      <div id="stats-and-categories" className="min-h-screen flex flex-col justify-center border-b border-slate-800/80">
         
-        {/* 1. DẢI THỐNG KÊ PHÓNG TO (Chiếm nửa trên màn hình, nền trắng) */}
-        <section id="hero-stats" className="bg-white flex-1 flex flex-col justify-center py-10 sm:py-14 lg:py-16 border-b border-slate-200/80">
-          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
-            <div className="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-4 sm:py-6">
+        {/* 1. DẢI THỐNG KÊ (Thu nhỏ, tập trung ở giữa, giãn cách đều nhau) */}
+        <section id="hero-stats" className="bg-white py-6 sm:py-8 lg:py-10 border-b border-slate-200/80">
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 flex justify-center">
+            <div className="w-full max-w-3xl lg:max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-2 sm:py-3">
                 <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
                 <CodiStatCounter value={5832} suffix="+" highlight={true} label="người dùng tháng này" />
                 <CodiStatCounter value={98} suffix="%" label="tỷ lệ khách hàng hài lòng" />
