@@ -773,20 +773,41 @@ export default function HomePage() {
 
           </div>
 
-          {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Chuẩn giao diện ảnh: Căn giữa, wordmark xám thanh lịch) */}
-          <div className="mt-12 sm:mt-16 pt-8 sm:pt-10 border-t border-slate-200/80">
-            <div className="flex flex-wrap items-center justify-center gap-7 sm:gap-10 md:gap-12 lg:gap-14 text-slate-400 select-none">
-              <span className="font-black tracking-tight text-sm sm:text-base hover:text-slate-600 transition-colors cursor-default">VINHOMES</span>
-              <span className="font-serif font-bold tracking-wider text-xs sm:text-sm uppercase hover:text-slate-600 transition-colors cursor-default">Masterise Homes</span>
-              <span className="font-black italic tracking-tight text-sm sm:text-base hover:text-slate-600 transition-colors cursor-default">ecopark</span>
-              <span className="font-bold tracking-tight text-xs sm:text-sm hover:text-slate-600 transition-colors cursor-default">SỞ QHKT HN</span>
-              <span className="font-black tracking-tighter text-xs sm:text-sm uppercase hover:text-slate-600 transition-colors cursor-default">TECHCOMBANK</span>
-              <span className="font-black tracking-tight text-xs sm:text-sm hover:text-slate-600 transition-colors cursor-default">Vietcombank</span>
-              <span className="font-black tracking-wider text-xs sm:text-sm uppercase hover:text-slate-600 transition-colors cursor-default">CEN LAND</span>
-              <span className="font-black tracking-tight text-xs sm:text-sm hover:text-slate-600 transition-colors cursor-default">Batdongsan<span className="text-[10px] text-slate-400 font-semibold">.com</span></span>
+          {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Phóng to chữ & Chạy ngang liên tục) */}
+          <div className="mt-12 sm:mt-16 pt-8 sm:pt-10 border-t border-slate-200/80 overflow-hidden">
+            {/* Dải chữ thương hiệu phóng to chạy ngang liên tục */}
+            <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)] py-2">
+              <div className="flex gap-12 sm:gap-16 md:gap-20 w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] items-center text-slate-400 select-none">
+                {[
+                  { name: 'VINHOMES', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'MASTERISE HOMES', className: 'font-serif font-bold tracking-wider text-base sm:text-lg md:text-xl' },
+                  { name: 'ecopark', className: 'font-black italic tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'SỞ QHKT HÀ NỘI', className: 'font-bold tracking-tight text-base sm:text-lg md:text-xl' },
+                  { name: 'TECHCOMBANK', className: 'font-black tracking-tighter text-base sm:text-lg md:text-xl uppercase' },
+                  { name: 'Vietcombank', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
+                  { name: 'CEN LAND', className: 'font-black tracking-wider text-base sm:text-lg md:text-xl uppercase' },
+                  { name: 'Batdongsan.com.vn', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
+                  // Lặp lại để chạy nối tiếp liên tục
+                  { name: 'VINHOMES', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'MASTERISE HOMES', className: 'font-serif font-bold tracking-wider text-base sm:text-lg md:text-xl' },
+                  { name: 'ecopark', className: 'font-black italic tracking-tight text-lg sm:text-xl md:text-2xl' },
+                  { name: 'SỞ QHKT HÀ NỘI', className: 'font-bold tracking-tight text-base sm:text-lg md:text-xl' },
+                  { name: 'TECHCOMBANK', className: 'font-black tracking-tighter text-base sm:text-lg md:text-xl uppercase' },
+                  { name: 'Vietcombank', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
+                  { name: 'CEN LAND', className: 'font-black tracking-wider text-base sm:text-lg md:text-xl uppercase' },
+                  { name: 'Batdongsan.com.vn', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
+                ].map((brand, idx) => (
+                  <span
+                    key={`${brand.name}-${idx}`}
+                    className={`${brand.className} hover:text-slate-700 transition-colors cursor-default whitespace-nowrap`}
+                  >
+                    {brand.name}
+                  </span>
+                ))}
+              </div>
             </div>
             
-            {/* Dòng mô tả nhỏ căn giữa chuẩn ảnh: "Trusted by ops and people teams at fast-growing companies" */}
+            {/* Dòng mô tả nhỏ căn giữa chuẩn ảnh */}
             <p className="text-xs sm:text-[13px] text-slate-400 font-medium text-center mt-3 sm:mt-4">
               Được tin tưởng bởi các đơn vị phát triển BĐS và hơn 10.000+ khách hàng tại 29 quận, huyện Hà Nội
             </p>
