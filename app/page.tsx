@@ -557,7 +557,7 @@ export default function HomePage() {
         id="hero"
         className="relative flex flex-col justify-between overflow-hidden bg-white text-slate-900 min-h-screen pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 border-b border-slate-200/80"
       >
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative z-10 flex-1 flex flex-col justify-center">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] relative z-10 flex-1 flex flex-col justify-center">
           
           {/* Main Visual Composition: Khung Thẻ Trắng Nổi + Khối Ảnh Kéo Dài Đến Chữ Trang Chủ */}
           <div className="relative flex flex-col lg:block min-h-[460px] sm:min-h-[520px] lg:min-h-[580px] xl:min-h-[620px]">
@@ -860,7 +860,7 @@ export default function HomePage() {
         
         {/* 1. DẢI THỐNG KÊ (Thu nhỏ, tập trung ở giữa, giãn cách đều nhau) */}
         <section id="hero-stats" className="bg-white py-6 sm:py-8 lg:py-10 border-b border-slate-200/80">
-          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 flex justify-center">
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] flex justify-center">
             <div className="w-full max-w-3xl lg:max-w-4xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-2 sm:py-3">
                 <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
@@ -873,7 +873,7 @@ export default function HomePage() {
 
         {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Chiếm nửa dưới màn hình, nền navy, 1 hàng) */}
         <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 lg:py-12 relative text-white">
-          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 mb-5 sm:mb-6">
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] mb-5 sm:mb-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
                 <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
@@ -900,7 +900,7 @@ export default function HomePage() {
           </div>
 
           {/* Lưới Danh mục ô vuông thu nhỏ gọn gàng thành 1 hàng duy nhất - dóng thẳng mép logo */}
-          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px]">
             <div className="flex lg:grid lg:grid-cols-12 gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none pb-2">
               {propertyCategories.map((cat) => (
                 <Link
@@ -931,7 +931,7 @@ export default function HomePage() {
       <section id="featured" className="bg-slate-50/70 py-14 sm:py-20 overflow-hidden relative border-b border-slate-200/80">
         
         {/* ── PHẦN CHỮ Ở TRÊN (CĂN GIỮA CHUẨN HÌNH 2) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 text-center mb-10 sm:mb-12">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] text-center mb-10 sm:mb-12">
           {/* Top Badge */}
           <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3.5 shadow-xs">
             <Flame className="h-3.5 w-3.5 fill-orange-500" />
@@ -950,7 +950,7 @@ export default function HomePage() {
         </div>
 
         {/* ── DẢI CÁC THẺ BÀI VIẾT Ở DƯỚI (DÓNG THẲNG LOGO WEB NHƯ HÌNH 2) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] relative">
           <div className="relative group/carousel">
             
             {/* Carousel Track */}
@@ -1093,7 +1093,7 @@ export default function HomePage() {
           📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="map-search" className="bg-[#0a1128] min-h-screen flex items-center py-12 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-8 lg:py-12">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] py-8 lg:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
             
             {/* Left 45%: District List */}
@@ -1177,7 +1177,7 @@ export default function HomePage() {
           📌 SECTION 5 — BĐS DÀNH CHO BẠN (Gợi ý cá nhân hoá)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="roadmap" className="bg-white min-h-screen flex items-center justify-center py-12 lg:py-0 border-y border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-8 lg:py-12">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] py-8 lg:py-12">
           
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
@@ -1647,7 +1647,7 @@ export default function HomePage() {
           📌 SECTION 6 — TIN TỨC & PHÂN TÍCH THỊ TRƯỜNG
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="market-updates" className="bg-[#0a1128] min-h-screen flex items-center justify-center py-12 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-8 lg:py-12">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] py-8 lg:py-12">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
             <div>
@@ -1982,7 +1982,7 @@ export default function HomePage() {
         id="newsletter"
         className="bg-[#002ea8] text-white py-12 sm:py-16 lg:py-20 relative overflow-hidden"
       >
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative z-10">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] relative z-10">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8">
             
             {/* Left text matching Image 2 */}
