@@ -70,68 +70,87 @@ export const Navbar: React.FC = () => {
     }
   };
 
+  const isHomePageLight = pathname === '/' && !isScrolled;
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-[#0a1128]/95 shadow-md backdrop-blur-md border-b border-slate-800'
+          ? 'bg-white/95 shadow-xs backdrop-blur-md border-b border-slate-200/80 text-[#0a1128]'
           : pathname === '/'
           ? 'bg-transparent border-b border-transparent'
           : 'bg-[#0a1128] border-b border-slate-800'
       }`}
     >
-      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1600px] mx-auto flex h-16 sm:h-20 items-center justify-between px-4 sm:px-8 lg:px-12 xl:px-16">
         
-        {/* Logo Left */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
-          <motion.div
-            whileHover={{ scale: 1.08, rotate: -4 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20"
-          >
-            <Home className="h-5 w-5" />
-          </motion.div>
-          <div className="flex flex-col">
-            <span className="text-lg font-extrabold tracking-tight text-white flex items-center gap-1">
-              HaNoi <span className="text-accent font-black">Realty</span>
-            </span>
-            <span className="text-[10px] font-medium text-slate-200 uppercase tracking-widest -mt-1 drop-shadow-sm">
-              PropTech & Quy Hoạch
-            </span>
-          </div>
-        </Link>
+        {/* Left Group: Logo + Nav Links (Bố cục Codi chuẩn) */}
+        <div className="flex items-center gap-6 sm:gap-8 lg:gap-10 xl:gap-12">
+          {/* Logo Left */}
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+            <motion.div
+              whileHover={{ scale: 1.08, rotate: -4 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20"
+            >
+              <Home className="h-5 w-5" />
+            </motion.div>
+            <div className="flex flex-col">
+              <span className={`text-lg font-extrabold tracking-tight flex items-center gap-1 transition-colors ${
+                isHomePageLight || isScrolled ? 'text-[#0a1128]' : 'text-white'
+              }`}>
+                HaNoi <span className="text-accent font-black">Realty</span>
+              </span>
+              <span className={`text-[10px] font-medium uppercase tracking-widest -mt-1 transition-colors ${
+                isHomePageLight || isScrolled ? 'text-slate-500' : 'text-slate-200'
+              }`}>
+                PropTech & Quy Hoạch
+              </span>
+            </div>
+          </Link>
 
-        {/* Center Nav Links (Desktop) - Ẩn mượt khi cuộn trang chủ để nhường chỗ cho Airbnb Compact Search Bar */}
-        <nav
-          className={`hidden md:flex items-center gap-1.5 lg:gap-2 transition-all duration-300 ${
-            pathname === '/' && isScrolled
-              ? 'opacity-0 pointer-events-none scale-95'
-              : 'opacity-100 pointer-events-auto scale-100'
-          }`}
-        >
-          {navLinks.map((link) => {
-            const isActive =
-              link.href === '/'
-                ? pathname === '/'
-                : pathname === link.href || pathname.startsWith(link.href + '/');
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`relative px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
-                    : 'text-white/90 hover:text-white hover:bg-black/20 backdrop-blur-xs drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]'
-                }`}
-              >
-                <span>{link.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
+          {/* Nav Links (Desktop) - Bắt đầu ngay sau Logo từ chữ Trang chủ */}
+          <nav className="hidden md:flex items-center gap-2 sm:gap-3.5 lg:gap-5 xl:gap-7 transition-all duration-300">
+            {navLinks.map((link) => {
+              const isActive =
+                link.href === '/'
+                  ? pathname === '/'
+                  : pathname === link.href || pathname.startsWith(link.href + '/');
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`relative px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-[13px] font-semibold tracking-wide transition-all ${
+                    isActive
+                      ? isHomePageLight || isScrolled
+                        ? 'text-orange-600 font-bold border-2 border-orange-500 bg-orange-500/10 shadow-xs'
+                        : 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
+                      : isHomePageLight || isScrolled
+                      ? 'text-[#0a1128]/85 hover:text-orange-500 hover:bg-slate-100/60'
+                      : 'text-white/90 hover:text-white hover:bg-black/20 backdrop-blur-xs'
+                  }`}
+                >
+                  <span>{link.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
         {/* Right Section Actions */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3 sm:gap-4 lg:gap-5">
+          {/* Quick Search Shortcut */}
+          <Link
+            href="/search"
+            className={`p-2 rounded-xl transition-all ${
+              isHomePageLight || isScrolled
+                ? 'text-slate-700 hover:text-orange-500 hover:bg-slate-100/70'
+                : 'text-slate-300 hover:text-white hover:bg-white/10'
+            }`}
+            title="Tìm kiếm BĐS"
+          >
+            <Search className="h-4 w-4" />
+          </Link>
           {/* Admin Portal Quick Switch Button for Admins */}
           {user?.role === 'admin' && (
             <Link
@@ -266,7 +285,11 @@ export const Navbar: React.FC = () => {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 rounded-lg border border-slate-600 bg-primary-light/40 px-3.5 py-2 text-xs font-semibold text-white hover:bg-primary-light transition-all"
+                className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                  isHomePageLight || isScrolled
+                    ? 'border border-slate-200 bg-white text-[#0a1128] hover:text-orange-500 hover:border-orange-300 shadow-xs'
+                    : 'border border-slate-600 bg-primary-light/40 text-white hover:bg-primary-light'
+                }`}
               >
                 <User className="h-4 w-4" />
                 <span>Đăng nhập</span>

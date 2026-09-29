@@ -248,9 +248,94 @@ const propertyCategories = [
   { name: 'Định giá AI', count: 'Tra cứu giá', icon: '🤖', href: '/reports' },
 ];
 
+// ── Hero Search Constants ──
+const heroPopularDistricts = [
+  { name: 'Đống Đa', count: 1234, avgPrice: '~85tr/m²' },
+  { name: 'Hoàn Kiếm', count: 891, avgPrice: '~120tr/m²' },
+  { name: 'Cầu Giấy', count: 2102, avgPrice: '~65tr/m²' },
+  { name: 'Tây Hồ', count: 567, avgPrice: '~95tr/m²' },
+  { name: 'Ba Đình', count: 743, avgPrice: '~110tr/m²' },
+  { name: 'Hai Bà Trưng', count: 1089, avgPrice: '~72tr/m²' },
+  { name: 'Hoàng Mai', count: 1456, avgPrice: '~45tr/m²' },
+  { name: 'Long Biên', count: 892, avgPrice: '~38tr/m²' },
+  { name: 'Nam Từ Liêm', count: 1234, avgPrice: '~42tr/m²' },
+  { name: 'Hà Đông', count: 2001, avgPrice: '~35tr/m²' },
+];
+
+const heroPropertyTypes = [
+  { value: 'all', label: 'Tất cả loại BĐS', shortLabel: 'Tất cả BĐS', icon: '🏠' },
+  { value: 'house', label: 'Nhà phố / Nhà riêng', shortLabel: 'Nhà phố', icon: '🏠' },
+  { value: 'apartment', label: 'Chung cư / Căn hộ', shortLabel: 'Chung cư', icon: '🏢' },
+  { value: 'land', label: 'Đất nền / Trang trại', shortLabel: 'Đất nền', icon: '🌿' },
+  { value: 'villa', label: 'Biệt thự / Villa', shortLabel: 'Biệt thự', icon: '🏰' },
+  { value: 'commercial', label: 'Văn phòng / Thương mại', shortLabel: 'Văn phòng', icon: '🏪' },
+];
+
+const heroPricePresets = [
+  { label: 'Tất cả mức giá', shortLabel: 'Tất cả giá', value: 'all' },
+  { label: 'Dưới 1 tỷ', shortLabel: '< 1 tỷ', value: '0-1' },
+  { label: '1 - 3 tỷ', shortLabel: '1 - 3 tỷ', value: '1-3' },
+  { label: '3 - 5 tỷ', shortLabel: '3 - 5 tỷ', value: '3-5' },
+  { label: '5 - 10 tỷ', shortLabel: '5 - 10 tỷ', value: '5-10' },
+  { label: '10 - 20 tỷ', shortLabel: '10 - 20 tỷ', value: '10-20' },
+  { label: 'Trên 20 tỷ', shortLabel: '> 20 tỷ', value: '20-999' },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const { user, listings, savedListingIds, toggleSaveListing } = useApp();
+
+  // ── Hero Search State ──
+  const [heroSearchTab, setHeroSearchTab] = useState<'buy' | 'rent' | 'project'>('buy');
+  const [heroLocationQuery, setHeroLocationQuery] = useState('');
+  const [heroLocationDropdownOpen, setHeroLocationDropdownOpen] = useState(false);
+  const [heroType, setHeroType] = useState('all');
+  const [heroTypeDropdownOpen, setHeroTypeDropdownOpen] = useState(false);
+  const [heroPriceRange, setHeroPriceRange] = useState('all');
+  const [heroPriceDropdownOpen, setHeroPriceDropdownOpen] = useState(false);
+  const heroSearchBoxRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (heroSearchBoxRef.current && !heroSearchBoxRef.current.contains(e.target as Node)) {
+        setHeroLocationDropdownOpen(false);
+        setHeroTypeDropdownOpen(false);
+        setHeroPriceDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Autocomplete districts filter
+  const heroFilteredDistricts = useMemo(() => {
+    if (!heroLocationQuery.trim()) return heroPopularDistricts;
+    return heroPopularDistricts.filter((d) =>
+      d.name.toLowerCase().includes(heroLocationQuery.toLowerCase())
+    );
+  }, [heroLocationQuery]);
+
+  // Execute Search handler
+  const handleExecuteHeroSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const params = new URLSearchParams();
+    if (heroType !== 'all') params.set('type', heroType);
+    if (heroLocationQuery.trim()) params.set('district', heroLocationQuery.trim());
+    if (heroSearchTab === 'rent') params.set('purpose', 'rent');
+    if (heroSearchTab === 'project') params.set('type', 'project');
+
+    if (heroPriceRange !== 'all') {
+      const [min, max] = heroPriceRange.split('-');
+      if (min && min !== '0') params.set('minPrice', (Number(min) * 1e9).toString());
+      if (max && max !== '999') params.set('maxPrice', (Number(max) * 1e9).toString());
+    }
+
+    setHeroLocationDropdownOpen(false);
+    setHeroTypeDropdownOpen(false);
+    setHeroPriceDropdownOpen(false);
+    router.push(`/search?${params.toString()}`);
+  };
 
   // State xem chi tiết cho Section 5: Gợi ý thông minh
   const [selectedListingDetail, setSelectedListingDetail] = useState<ListingItem | null>(null);
@@ -406,189 +491,300 @@ export default function HomePage() {
       <QuickNav />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 1 — HERO THEO CHUẨN CẤU TRÚC ẢNH 1 (BREDA DUAL-TIER OVERLAP LAYOUT)
-          - Tầng trên (Upper Tier): Ảnh Panorama Hà Nội góc rộng + H1 căn giữa + Nút CTA viên thuốc + Floating Search Bar
-          - Tầng dưới (Lower Tier): Nền Deep Navy (#0a1128)
-          - Điểm giao thoa (Overlap Bridge): Cột Trái chứa Text truyền cảm hứng & nút điều hướng (< >); Cột Phải là các thẻ ảnh đứng dọc (Tall Portrait) nhô cao đè lên ranh giới và lướt ngang tràn viền
-          - Bảo lưu toàn vẹn: Quick Search Tags & Bottom Stats Bar
+          📌 SECTION 1 — HERO THEO CHUẨN CẤU TRÚC ẢNH 1 (CODI FLOATING CARD & HERO IMAGE LAYOUT)
+          - Background: Trắng Xám (#f2f4f8) thanh lịch, nền nã
+          - Khối ảnh bên phải: Chiều rộng 72-74% layout, hình chữ nhật nằm ngang sang trọng (Rounded 36px)
+          - Card trắng nổi bên trái: Đã thu nhỏ gọn gàng, căn giữa theo chiều dọc ở mép trái khối ảnh
+          - Tiêu đề: "Tìm ngôi nhà mơ ước tại Hà Nội", đã loại bỏ hoàn toàn phần nội dung nhỏ phía dưới
+          - Thanh tìm kiếm: Bảo toàn 100% tính năng ban đầu (Tabs Nhu cầu, Input địa điểm kèm Autocomplete quận, Dropdown Loại hình & Mức giá, Nút tìm kiếm cam)
+          - Dải đối tác hệ sinh thái & Thanh thống kê chỉ số
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="hero"
-        className="relative flex flex-col overflow-hidden bg-[#0a1128] text-white pt-0 border-b border-slate-800/80"
+        className="relative flex flex-col overflow-hidden bg-[#f2f4f8] text-slate-900 pt-24 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 border-b border-slate-200/80"
       >
-        {/* ── TẦNG 1: ẢNH BÌA PANORAMA TOÀN CẢNH HÀ NỘI (UPPER PANORAMIC BANNER) ── */}
-        <div className="relative w-full h-[100vh] min-h-[720px] flex flex-col justify-start pt-36 sm:pt-44 md:pt-48 lg:pt-52 px-4 sm:px-6 overflow-hidden">
-          {/* Background Image: 100% ánh sáng tự nhiên, loại bỏ ánh sáng tối */}
-          <div className="absolute inset-0 z-0">
-            <img
-              src="/images/hanoi-panoramic-hero.jpg"
-              alt="Toàn cảnh Bất động sản Hà Nội"
-              className="w-full h-full object-cover object-[center_25%]"
-              loading="eager"
-            />
-            {/* Gradient Deep Navy được đẩy lên cao hơn phía trên các thẻ bài viết để chuyển tiếp sắc sảo */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-36% via-[#0a1128]/75 via-50% to-[#0a1128]" />
-          </div>
-
-          {/* Tiêu đề căn giữa (Center-aligned Header giống Welkom in Breda) */}
-          <div className="max-w-4xl w-full mx-auto text-center relative z-20">
-            {/* Top Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-2 border border-white/40 bg-black/30 backdrop-blur-md text-orange-400 rounded-full px-4 py-1 text-xs font-bold shadow-md mb-3.5 select-none"
-            >
-              <span>🏆</span>
-              <span>Nền tảng BĐS thông minh #1 Hà Nội</span>
-            </motion.div>
-
-            {/* Tiêu đề chính H1 rất to, đậm, rõ nét có bóng đổ sắc sảo */}
-            <motion.h1
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-[1.16] drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]"
-            >
-              Tìm ngôi nhà mơ ước <span className="text-orange-500 drop-shadow-[0_3px_12px_rgba(249,115,22,0.45)]">tại Hà Nội</span>
-            </motion.h1>
-          </div>
-
-          {/* Thanh tìm kiếm nổi (Được kéo dài sang 2 bên & thu gọn chiều cao) */}
-          <div className="w-full max-w-6xl lg:max-w-7xl mx-auto mt-6 sm:mt-8 relative z-30 px-2 sm:px-4">
-            <AirbnbStickySearchBar />
-          </div>
-        </div>
-
-        {/* ── TẦNG 2: MẢNG NỀN XANH NAVY (#0a1128) & BỐ CỤC CHIA CỘT GIAO THOA (OVERLAPPING SPLIT GRID) ── */}
-        {/* Âm margin đúng ~1/2 chiều cao thẻ (-mt-[250px]) để khi ở đầu trang, chỉ hiện 1/2 thẻ và hiện rõ tiêu đề Khơi nguồn cảm hứng an cư */}
-        <div className="w-full pl-4 sm:pl-6 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+2rem))] pr-0 relative z-20 -mt-[230px] sm:-mt-[250px] lg:-mt-[260px] pb-8">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-10">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative z-10">
+          
+          {/* Main Visual Composition: Khung Thẻ Trắng Nổi + Khối Ảnh Kéo Dài Đến Chữ Trang Chủ */}
+          <div className="relative flex flex-col lg:block min-h-[380px] lg:min-h-[430px]">
             
-            {/* CỘT TRÁI (LEFT COLUMN - Cố định độ rộng căn chuẩn lề trang, tiêu đề Khơi nguồn cảm hứng an cư hiện rõ ở đáy màn 1) */}
-            <div className="w-full lg:w-[320px] xl:w-[360px] shrink-0 pr-4 sm:pr-6 lg:pr-2 pt-0">
-              <span className="text-orange-500 font-extrabold text-xs tracking-widest uppercase block mb-1.5 drop-shadow-sm">
-                BẤT ĐỘNG SẢN HÀ NỘI
-              </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-[1.18] mb-3 tracking-tight drop-shadow-md">
-                Khơi nguồn cảm hứng an cư
-              </h2>
-              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6 font-normal">
-                Khám phá các phân khúc BĐS tinh hoa tại các quận trung tâm Hà Nội, từ căn hộ hạng sang ven hồ đến biệt thự sân vườn độc bản.
-              </p>
-              
-              {/* Nút tròn điều khiển lướt trái/phải chuẩn Ảnh 1 (< >) */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => scrollHeroCards('left')}
-                  aria-label="Xem trước"
-                  className="w-10 h-10 rounded-full border border-white/30 hover:border-orange-500 hover:bg-orange-500/20 text-white flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollHeroCards('right')}
-                  aria-label="Xem tiếp"
-                  className="w-10 h-10 rounded-full border border-white/30 hover:border-orange-500 hover:bg-orange-500/20 text-white flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+            {/* 1. KHỐI ẢNH: KÉO DÀI ĐẾN CHỮ TRANG CHỦ & THU GỌN CHIỀU DÀI/CHIỀU CAO THÀNH HÌNH CHỮ NHẬT NẰM NGANG */}
+            <div className="w-full lg:w-[calc(100%-220px)] xl:w-[calc(100%-235px)] lg:ml-auto relative h-[300px] sm:h-[360px] lg:h-[400px] xl:h-[425px] rounded-[24px] sm:rounded-[34px] lg:rounded-[38px] overflow-hidden shadow-2xl border border-white/90 bg-slate-100 group">
+              <img
+                src="/images/hanoi-luxury-home-hero.jpg"
+                alt="Bất động sản nhà ở cao cấp tại Hà Nội - Không gian sống tinh hoa"
+                className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-700 ease-out"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* CỘT PHẢI (RIGHT COLUMN - TRÀN RA TẬN VIỀN PHẢI MÀN HÌNH / THANH TRƯỢT DỌC): Dải thẻ chữ nhật đứng chuẩn Ảnh 1 */}
-            <div className="w-full flex-1 min-w-0 overflow-hidden relative">
-              <div
-                ref={heroCardsScrollRef}
-                className="flex gap-4 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth pr-4 sm:pr-8 lg:pr-12 py-3"
-                style={{ scrollSnapType: 'x mandatory' }}
+            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Kéo mép trái thẳng hàng với Logo web (left-0) & căn giữa chiều dọc ảnh */}
+            <div className="w-full md:w-[390px] lg:w-[410px] xl:w-[420px] md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 z-20 mt-6 md:mt-0">
+              <motion.div
+                initial={{ opacity: 0, x: -25 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full"
               >
-                {heroFeatureCards.map((card, idx) => (
-                  <motion.div
-                    key={card.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 + idx * 0.08 }}
-                    className="w-[260px] sm:w-[290px] lg:w-[315px] shrink-0"
-                    style={{ scrollSnapAlign: 'start' }}
-                  >
-                    <Link
-                      href={card.href}
-                      className="group relative h-[420px] sm:h-[460px] lg:h-[490px] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 border border-white/20 block hover:-translate-y-2 hover:shadow-orange-500/20"
-                    >
-                      {/* Full height background image */}
-                      <img
-                        src={card.image}
-                        alt={card.title}
-                        className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-                        loading="eager"
+                <div className="bg-white rounded-[24px] sm:rounded-[30px] p-5 sm:p-6 shadow-[0_20px_50px_rgba(10,17,40,0.14)] border border-slate-100/90 flex flex-col justify-between">
+                
+                {/* H1 Title: Tìm ngôi nhà mơ ước tại Hà Nội (Đã bỏ nội dung nhỏ bên dưới theo yêu cầu) */}
+                <h1 className="text-2xl sm:text-[25px] lg:text-[27px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-3.5">
+                  Tìm ngôi nhà mơ ước <br className="hidden sm:inline" />
+                  <span className="text-orange-500">tại Hà Nội</span>
+                </h1>
+
+                {/* THANH TÌM KIẾM ĐẦY ĐỦ TÍNH NĂNG NHƯ BAN ĐẦU */}
+                <div ref={heroSearchBoxRef} className="space-y-2.5">
+                  
+                  {/* HÀNG 1: TABS NHU CẦU (Mua bán / Cho thuê / Dự án) */}
+                  <div className="flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl w-fit">
+                    {[
+                      { key: 'buy', label: 'Mua bán', icon: '🏠' },
+                      { key: 'rent', label: 'Cho thuê', icon: '🔑' },
+                      { key: 'project', label: 'Dự án', icon: '🏗️' },
+                    ].map((tab) => (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setHeroSearchTab(tab.key as any)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                          heroSearchTab === tab.key
+                            ? 'bg-[#0a1128] text-white shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                        }`}
+                      >
+                        <span>{tab.icon}</span>
+                        <span>{tab.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* HÀNG 2: THANH TÌM KIẾM ĐỊA ĐIỂM DẠNG VIÊN THUỐC (Pill Input chuẩn Image 1) */}
+                  <div className="relative">
+                    <div className="relative flex items-center">
+                      <MapPin className="absolute left-3.5 h-4 w-4 text-orange-500 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={heroLocationQuery}
+                        onChange={(e) => {
+                          setHeroLocationQuery(e.target.value);
+                          setHeroLocationDropdownOpen(true);
+                        }}
+                        onFocus={() => {
+                          setHeroLocationDropdownOpen(true);
+                          setHeroTypeDropdownOpen(false);
+                          setHeroPriceDropdownOpen(false);
+                        }}
+                        placeholder="Nhập quận, huyện, tên đường..."
+                        className="w-full pl-10 pr-9 py-2.5 sm:py-3 rounded-full border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/15 bg-white text-xs sm:text-sm text-slate-800 placeholder-slate-400 outline-none transition-all shadow-xs"
                       />
+                      {heroLocationQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setHeroLocationQuery('')}
+                          className="absolute right-3 p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
 
-                      {/* Gradient tối ở chân thẻ (Đảm bảo độ tương phản hoàn hảo cho text) */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/55 to-transparent" />
+                    {/* Autocomplete Dropdown Khu vực Hà Nội */}
+                    <AnimatePresence>
+                      {heroLocationDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-full left-0 right-0 mt-2 rounded-2xl bg-white p-2.5 shadow-2xl border border-slate-100 z-50 text-left max-h-60 overflow-y-auto"
+                        >
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-2">
+                            Khu vực phổ biến Hà Nội
+                          </p>
+                          <div className="space-y-0.5">
+                            {heroFilteredDistricts.map((district) => (
+                              <button
+                                key={district.name}
+                                type="button"
+                                onClick={() => {
+                                  setHeroLocationQuery(district.name);
+                                  setHeroLocationDropdownOpen(false);
+                                }}
+                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-orange-50 text-slate-700 hover:text-orange-600 transition-colors text-xs cursor-pointer"
+                              >
+                                <span className="font-semibold flex items-center gap-2">
+                                  <span>🏙️</span>
+                                  <span>Quận {district.name}, Hà Nội</span>
+                                </span>
+                                <span className="text-[11px] text-slate-400 font-medium">{district.count} tin</span>
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
 
-                      {/* Text đè lên đáy ảnh (Căn lề trái giống hệt Ảnh 1) */}
-                      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-left z-10">
-                        <h3 className="text-lg sm:text-xl font-black text-white mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors">
-                          {card.title}
-                        </h3>
-                        <p className="text-xs text-slate-300 line-clamp-2 mb-3 leading-relaxed font-normal">
-                          {card.description}
-                        </p>
-                        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-400 group-hover:text-orange-300 group-hover:translate-x-1 transition-all">
-                          <span>{card.actionText || 'Khám phá ngay'}</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
+                  {/* HÀNG 3: BỘ LỌC LOẠI HÌNH & MỨC GIÁ */}
+                  <div className="grid grid-cols-2 gap-2 relative">
+                    
+                    {/* Dropdown 1: Loại hình BĐS */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHeroTypeDropdownOpen(!heroTypeDropdownOpen);
+                          setHeroPriceDropdownOpen(false);
+                          setHeroLocationDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
+                          heroTypeDropdownOpen
+                            ? 'border-orange-500 ring-2 ring-orange-500/20 bg-orange-50/20 text-[#0a1128]'
+                            : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
+                        }`}
+                      >
+                        <span className="truncate">
+                          {heroPropertyTypes.find((t) => t.value === heroType)?.label || 'Loại hình BĐS'}
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+                      </button>
+
+                      {/* Popover Loại hình */}
+                      <AnimatePresence>
+                        {heroTypeDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 6 }}
+                            className="absolute top-full left-0 w-56 mt-1.5 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 space-y-1"
+                          >
+                            {heroPropertyTypes.map((t) => (
+                              <button
+                                key={t.value}
+                                type="button"
+                                onClick={() => {
+                                  setHeroType(t.value);
+                                  setHeroTypeDropdownOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
+                                  heroType === t.value
+                                    ? 'bg-orange-500 text-white'
+                                    : 'hover:bg-slate-50 text-slate-700'
+                                }}`}
+                              >
+                                <span>{t.icon}</span>
+                                <span>{t.label}</span>
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Dropdown 2: Mức giá */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHeroPriceDropdownOpen(!heroPriceDropdownOpen);
+                          setHeroTypeDropdownOpen(false);
+                          setHeroLocationDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
+                          heroPriceDropdownOpen
+                            ? 'border-orange-500 ring-2 ring-orange-500/20 bg-orange-50/20 text-[#0a1128]'
+                            : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
+                        }`}
+                      >
+                        <span className="truncate">
+                          {heroPricePresets.find((p) => p.value === heroPriceRange)?.label || 'Mức giá'}
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+                      </button>
+
+                      {/* Popover Mức giá */}
+                      <AnimatePresence>
+                        {heroPriceDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 6 }}
+                            className="absolute top-full right-0 w-52 mt-1.5 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 space-y-1"
+                          >
+                            {heroPricePresets.map((p) => (
+                              <button
+                                key={p.value}
+                                type="button"
+                                onClick={() => {
+                                  setHeroPriceRange(p.value);
+                                  setHeroPriceDropdownOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
+                                  heroPriceRange === p.value
+                                    ? 'bg-orange-500 text-white'
+                                    : 'hover:bg-slate-50 text-slate-700'
+                                }`}
+                              >
+                                <span>{p.label}</span>
+                                {heroPriceRange === p.value && <span>✓</span>}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                  </div>
+
+                  {/* HÀNG 4: NÚT TÌM KIẾM TO MÀU CAM */}
+                  <button
+                    type="button"
+                    onClick={() => handleExecuteHeroSearch()}
+                    className="w-full py-2.5 sm:py-3 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-0.5"
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Tìm kiếm Bất động sản</span>
+                  </button>
+
+                </div>
+
+              </div>
+            </motion.div>
+          </div>
+
+          </div>
+
+          {/* 3. DẢI LOGO ĐỐI TÁC HỆ SINH THÁI (Partner Logos Strip matching Image 1) */}
+          <div className="mt-12 sm:mt-16 pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <span className="text-xs uppercase tracking-wider font-extrabold text-slate-400">
+              ĐỐI TÁC HỆ SINH THÁI
+            </span>
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-6 sm:gap-10 text-slate-500 font-bold text-xs sm:text-sm">
+              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🏢 Vinhomes</span>
+              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🏛️ Masterise Homes</span>
+              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🌿 Ecopark</span>
+              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🗺️ Sở QHKT Hà Nội</span>
+              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🏦 Techcombank</span>
+              <span className="flex items-center gap-1.5 hover:text-orange-500 transition-colors cursor-default">🛡️ Vietcombank</span>
+            </div>
+          </div>
+
+          {/* 4. KHỐI THỐNG KÊ (BOTTOM STATS BAR) */}
+          <div className="w-full mt-6">
+            <div className="w-full rounded-2xl bg-[#0a1128] text-white shadow-xl border border-slate-800/80 py-3 sm:py-3.5 px-4 sm:px-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-800/80">
+                <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
+                <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
+                <HeroCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
+                <HeroCounter value={29} suffix="" label="Quận/huyện có dữ liệu" />
               </div>
             </div>
-
           </div>
+
         </div>
-
-        {/* ── BẢO LƯU: THANH TÌM KIẾM PHỔ BIẾN (QUICK SEARCH TAGS) ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap items-center justify-center gap-2 pt-6 pb-2 text-xs font-medium text-slate-300 max-w-4xl mx-auto px-4 relative z-10"
-        >
-          <span className="text-slate-400 font-semibold">Tìm kiếm phổ biến:</span>
-          {[
-            { label: 'Nhà phố Đống Đa', href: '/search?district=Đống Đa&type=house' },
-            { label: 'Chung cư Cầu Giấy', href: '/search?district=Cầu Giấy&type=apartment' },
-            { label: 'Đất Hà Đông', href: '/search?district=Hà Đông&type=land' },
-            { label: 'Biệt thự Tây Hồ', href: '/search?district=Tây Hồ&type=villa' },
-            { label: 'Căn hộ 2PN', href: '/search?type=apartment' },
-            { label: 'Nhà dưới 3 tỷ', href: '/search?maxPrice=3000000000' },
-          ].map((tag) => (
-            <Link
-              key={tag.label}
-              href={tag.href}
-              className="bg-white/10 hover:bg-orange-500/25 border border-white/15 hover:border-orange-400/50 text-slate-200 hover:text-white rounded-full px-3.5 py-1 text-xs transition-all backdrop-blur-sm shadow-sm font-medium"
-            >
-              {tag.label}
-            </Link>
-          ))}
-        </motion.div>
-
-        {/* ── BẢO LƯU: KHỐI THỐNG KÊ (BOTTOM STATS BAR) ── */}
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 mb-8 relative z-10">
-          <div className="w-full rounded-2xl bg-[#070d1e] text-white shadow-xl border border-slate-800/80 py-3 sm:py-3.5 px-4 sm:px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-800/80">
-              <HeroCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
-              <HeroCounter value={5832} suffix="+" label="Người dùng tháng này" />
-              <HeroCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
-              <HeroCounter value={29} suffix="" label="Quận/huyện có dữ liệu" />
-            </div>
-          </div>
-        </div>
-
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
