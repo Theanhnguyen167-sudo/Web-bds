@@ -1046,42 +1046,42 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="map-search" className="bg-[#0a1128] py-16 border-y border-slate-800/80 text-white">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <section id="map-search" className="bg-[#0a1128] min-h-screen flex items-center py-12 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-8 lg:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
             
             {/* Left 45%: District List */}
-            <div className="lg:col-span-5 space-y-6">
+            <div className="lg:col-span-5 flex flex-col justify-center space-y-6 sm:space-y-7">
               <div>
-                <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
+                <span className="text-orange-500 font-extrabold text-xs sm:text-sm tracking-wider uppercase">
                   KHÁM PHÁ THEO KHU VỰC
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                <h2 className="text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-black text-white mt-1.5 leading-tight tracking-tight">
                   Tìm nhà trên bản đồ Hà Nội
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 mt-1">
+                <p className="text-sm sm:text-base text-slate-300 mt-2 leading-relaxed">
                   Rê chuột vào quận để xem nhanh vị trí hoặc nhấp để lọc tin đăng chính xác
                 </p>
               </div>
 
               {/* District Table List */}
-              <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-2 divide-y divide-slate-100 shadow-xl">
+              <div className="max-h-[380px] sm:max-h-[440px] lg:max-h-[480px] xl:max-h-[500px] overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-2.5 sm:p-3 divide-y divide-slate-100 shadow-2xl">
                 {popularDistricts.map((d) => (
                   <div
                     key={d.name}
                     onMouseEnter={() => setHoveredDistrict(d.name)}
                     onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
-                    className={`flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-all ${
+                    className={`flex items-center justify-between py-3 px-3.5 sm:px-4 rounded-xl cursor-pointer transition-all ${
                       hoveredDistrict === d.name
                         ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
                         : 'hover:bg-slate-100 text-slate-700'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <MapPin className={`h-4 w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-500'}`} />
-                      <span className="font-bold text-xs sm:text-sm">Quận {d.name}</span>
+                    <div className="flex items-center gap-2.5">
+                      <MapPin className={`h-4 w-4 sm:h-5 sm:w-5 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-500'}`} />
+                      <span className="font-bold text-xs sm:text-sm md:text-base">Quận {d.name}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs">
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
                       <span className={hoveredDistrict === d.name ? 'text-white/80' : 'text-slate-400'}>
                         {d.count} tin
                       </span>
@@ -1093,10 +1093,10 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-3.5 pt-1">
                 <Link
                   href={`/search?district=${encodeURIComponent(hoveredDistrict)}`}
-                  className="px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all"
+                  className="px-6 sm:px-7 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-orange-500/25 transition-all"
                 >
                   <MapPin className="h-4 w-4" />
                   <span>Xem tin quận {hoveredDistrict}</span>
@@ -1104,7 +1104,7 @@ export default function HomePage() {
 
                 <Link
                   href="/planning"
-                  className="px-5 py-3 rounded-xl border border-slate-700 bg-[#131d3b]/80 hover:bg-[#1b274e] text-slate-200 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
+                  className="px-5 sm:px-6 py-3.5 rounded-xl border border-slate-700 bg-[#131d3b]/80 hover:bg-[#1b274e] text-slate-200 hover:text-white font-bold text-xs sm:text-sm flex items-center gap-2 transition-colors"
                 >
                   <Layers className="h-4 w-4 text-orange-400" />
                   <span>Xem bản đồ quy hoạch</span>
@@ -1114,7 +1114,7 @@ export default function HomePage() {
 
             {/* Right 55%: Interactive Mini Leaflet Map */}
             <div className="lg:col-span-7">
-              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 h-[420px] relative bg-slate-900 ring-1 ring-white/5">
+              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 h-[500px] sm:h-[580px] lg:h-[640px] xl:h-[700px] relative bg-slate-900 ring-1 ring-white/10">
                 <MiniSearchMap
                   listings={mockListings as any}
                   targetDistrict={hoveredDistrict}
