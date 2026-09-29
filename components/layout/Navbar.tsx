@@ -74,13 +74,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-white/95 shadow-xs backdrop-blur-md border-b border-slate-200/80 text-[#0a1128]'
-          : pathname === '/'
-          ? 'bg-transparent border-b border-transparent'
-          : 'bg-[#0a1128] border-b border-slate-800'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#0a1128] shadow-md border-b border-slate-800 text-white`}
     >
       <div className="w-full max-w-[1600px] mx-auto flex h-16 sm:h-20 items-center justify-between px-4 sm:px-8 lg:px-12 xl:px-16">
         
@@ -96,14 +90,10 @@ export const Navbar: React.FC = () => {
               <Home className="h-5 w-5" />
             </motion.div>
             <div className="flex flex-col">
-              <span className={`text-lg font-extrabold tracking-tight flex items-center gap-1 transition-colors ${
-                isHomePageLight || isScrolled ? 'text-[#0a1128]' : 'text-white'
-              }`}>
+              <span className="text-lg font-extrabold tracking-tight flex items-center gap-1 transition-colors text-white">
                 HaNoi <span className="text-accent font-black">Realty</span>
               </span>
-              <span className={`text-[10px] font-medium uppercase tracking-widest -mt-1 transition-colors ${
-                isHomePageLight || isScrolled ? 'text-slate-500' : 'text-slate-200'
-              }`}>
+              <span className="text-[10px] font-medium uppercase tracking-widest -mt-1 transition-colors text-slate-200">
                 PropTech & Quy Hoạch
               </span>
             </div>
@@ -122,11 +112,7 @@ export const Navbar: React.FC = () => {
                   href={link.href}
                   className={`relative px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-[13px] font-semibold tracking-wide transition-all ${
                     isActive
-                      ? isHomePageLight || isScrolled
-                        ? 'text-orange-600 font-bold border-2 border-orange-500 bg-orange-500/10 shadow-xs'
-                        : 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
-                      : isHomePageLight || isScrolled
-                      ? 'text-[#0a1128]/85 hover:text-orange-500 hover:bg-slate-100/60'
+                      ? 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
                       : 'text-white/90 hover:text-white hover:bg-black/20 backdrop-blur-xs'
                   }`}
                 >
@@ -142,11 +128,7 @@ export const Navbar: React.FC = () => {
           {/* Quick Search Shortcut */}
           <Link
             href="/search"
-            className={`p-2 rounded-xl transition-all ${
-              isHomePageLight || isScrolled
-                ? 'text-slate-700 hover:text-orange-500 hover:bg-slate-100/70'
-                : 'text-slate-300 hover:text-white hover:bg-white/10'
-            }`}
+            className="p-2 rounded-xl transition-all text-slate-300 hover:text-white hover:bg-white/10"
             title="Tìm kiếm BĐS"
           >
             <Search className="h-4 w-4" />
@@ -285,11 +267,7 @@ export const Navbar: React.FC = () => {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
               <Link
                 href="/login"
-                className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
-                  isHomePageLight || isScrolled
-                    ? 'border border-slate-200 bg-white text-[#0a1128] hover:text-orange-500 hover:border-orange-300 shadow-xs'
-                    : 'border border-slate-600 bg-primary-light/40 text-white hover:bg-primary-light'
-                }`}
+                className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all border border-slate-600 bg-primary-light/40 text-white hover:bg-primary-light"
               >
                 <User className="h-4 w-4" />
                 <span>Đăng nhập</span>

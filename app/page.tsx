@@ -555,7 +555,7 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="hero"
-        className="relative flex flex-col justify-between overflow-hidden bg-white text-slate-900 min-h-screen lg:h-screen lg:max-h-[1080px] pt-20 sm:pt-22 lg:pt-24 pb-3 sm:pb-4 border-b border-slate-200/80 snap-start"
+        className="relative flex flex-col justify-between overflow-hidden bg-slate-50 text-slate-900 min-h-screen lg:h-screen lg:max-h-[1080px] pt-20 sm:pt-22 lg:pt-24 pb-3 sm:pb-4 border-b border-slate-200/80 snap-start"
       >
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative z-10 flex-1 flex flex-col justify-between my-auto">
           
@@ -926,10 +926,10 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Bố cục chuẩn Hình 2: Tiêu đề ở giữa, thẻ ở dưới dóng thẳng Logo)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="featured" className="bg-slate-50/70 min-h-screen snap-start flex flex-col justify-center py-14 sm:py-20 overflow-hidden relative border-b border-slate-200/80">
+      <section id="featured" className="bg-slate-50/70 min-h-screen snap-start flex flex-col justify-center py-8 sm:py-12 overflow-hidden relative border-b border-slate-200/80">
         
         {/* ── PHẦN CHỮ Ở TRÊN (CĂN GIỮA CHUẨN HÌNH 2) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] text-center mb-10 sm:mb-12">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] text-center mb-6 sm:mb-8">
           {/* Top Badge */}
           <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3.5 shadow-xs">
             <Flame className="h-3.5 w-3.5 fill-orange-500" />
@@ -964,7 +964,7 @@ export default function HomePage() {
                 >
                   <Link
                     href={`/listings/${listing.id}`}
-                    className="group relative h-[420px] sm:h-[460px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
+                    className="group relative h-[320px] sm:h-[360px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
                   >
                     {/* Background Image */}
                     <img
@@ -1074,7 +1074,7 @@ export default function HomePage() {
           </div>
 
           {/* ── NÚT KHÁM PHÁ Ở GIỮA BÊN DƯỚI (Chuẩn nút Book a tour trong Hình 2) ── */}
-          <div className="mt-10 sm:mt-12 flex justify-center">
+          <div className="mt-6 sm:mt-8 flex justify-center">
             <Link
               href="/search"
               className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm sm:text-base shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
@@ -1090,12 +1090,12 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="map-search" className="bg-[#0a1128] min-h-screen snap-start flex items-center py-12 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden">
+      <section id="map-search" className="bg-[#0a1128] z-10 min-h-screen snap-start flex items-center py-12 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-8 lg:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
             
             {/* Left 45%: District List */}
-            <div className="lg:col-span-5 flex flex-col justify-center space-y-6 sm:space-y-7">
+            <div className="lg:col-span-5 flex flex-col justify-center space-y-4 sm:space-y-5">
               <div>
                 <span className="text-orange-500 font-extrabold text-xs sm:text-sm tracking-wider uppercase">
                   KHÁM PHÁ THEO KHU VỰC
@@ -1109,13 +1109,13 @@ export default function HomePage() {
               </div>
 
               {/* District Table List */}
-              <div className="max-h-[380px] sm:max-h-[440px] lg:max-h-[480px] xl:max-h-[500px] overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-2.5 sm:p-3 divide-y divide-slate-100 shadow-2xl">
+              <div className="max-h-[260px] sm:max-h-[300px] lg:max-h-[340px] xl:max-h-[360px] overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-2 sm:p-2.5 divide-y divide-slate-100 shadow-2xl">
                 {popularDistricts.map((d) => (
                   <div
                     key={d.name}
                     onMouseEnter={() => setHoveredDistrict(d.name)}
                     onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
-                    className={`flex items-center justify-between py-3 px-3.5 sm:px-4 rounded-xl cursor-pointer transition-all ${
+                    className={`flex items-center justify-between py-2 sm:py-2.5 px-3 sm:px-3.5 rounded-xl cursor-pointer transition-all ${
                       hoveredDistrict === d.name
                         ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
                         : 'hover:bg-slate-100 text-slate-700'
@@ -1158,7 +1158,7 @@ export default function HomePage() {
 
             {/* Right 55%: Interactive Mini Leaflet Map */}
             <div className="lg:col-span-7">
-              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 h-[500px] sm:h-[580px] lg:h-[640px] xl:h-[700px] relative bg-slate-900 ring-1 ring-white/10">
+              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 h-[400px] sm:h-[460px] lg:h-[520px] xl:h-[540px] relative bg-slate-900 ring-1 ring-white/10">
                 <MiniSearchMap
                   listings={mockListings as any}
                   targetDistrict={hoveredDistrict}
@@ -1174,19 +1174,19 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 5 — BĐS DÀNH CHO BẠN (Gợi ý cá nhân hoá)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="roadmap" className="bg-white min-h-screen snap-start flex items-center justify-center py-12 lg:py-0 border-y border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-8 lg:py-12">
+      <section id="roadmap" className="bg-white min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-4 lg:py-6">
           
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 gap-2">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-orange-600 font-extrabold text-xs sm:text-sm tracking-wider uppercase bg-orange-50 px-3.5 py-1.5 rounded-full border border-orange-200/80 shadow-xs">
+              <span className="inline-flex items-center gap-1.5 text-orange-600 font-extrabold text-xs tracking-wider uppercase bg-orange-50 px-3.5 py-1.5 rounded-full border border-orange-200/80 shadow-xs">
                 <Sparkles className="h-3.5 w-3.5 text-orange-500" />
                 <span>GỢI Ý THÔNG MINH</span>
               </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-black text-[#0a1128] mt-2 tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] mt-2 tracking-tight leading-tight">
                 Bất động sản phù hợp với bạn
               </h2>
-              <p className="text-sm sm:text-base text-slate-500 mt-2 font-medium">
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
                 Được AI tính toán dựa trên tiềm năng đầu tư, vị trí và pháp lý an toàn
               </p>
             </div>
@@ -1202,7 +1202,7 @@ export default function HomePage() {
                 <button
                   key={pill.id}
                   onClick={() => setPersonalFilter(pill.id)}
-                  className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold shrink-0 transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shrink-0 transition-all cursor-pointer ${
                     personalFilter === pill.id
                       ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:text-slate-900'
@@ -1219,7 +1219,7 @@ export default function HomePage() {
             {/* Carousel Track */}
             <div
               ref={personalizedScrollRef}
-              className="flex gap-5 sm:gap-6 overflow-x-auto py-3 sm:py-4 snap-x scrollbar-none scroll-smooth"
+              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 sm:py-3 snap-x scrollbar-none scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {personalizedListings.slice(0, 10).map((listing) => {
@@ -1233,7 +1233,7 @@ export default function HomePage() {
                 return (
                   <div
                     key={listing.id}
-                    className="w-[300px] sm:w-[330px] md:w-[350px] lg:w-[365px] xl:w-[380px] shrink-0 snap-start"
+                    className="w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] xl:w-[330px] shrink-0 snap-start"
                   >
                     <div
                       onClick={() => handleOpenDetailModal(listing)}
@@ -1299,7 +1299,7 @@ export default function HomePage() {
                       </div>
 
                       {/* Content Details */}
-                      <div className="flex flex-1 flex-col p-4">
+                      <div className="flex flex-1 flex-col p-3">
                         {/* Title */}
                         <Link
                           href={`/listings/${listing.id}`}
@@ -1344,7 +1344,7 @@ export default function HomePage() {
                         </div>
 
                         {/* Action buttons */}
-                        <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center gap-2">
+                        <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -1644,15 +1644,15 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 6 — TIN TỨC & PHÂN TÍCH THỊ TRƯỜNG
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="market-updates" className="bg-[#0a1128] min-h-screen snap-start flex items-center justify-center py-12 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-8 lg:py-12">
+      <section id="market-updates" className="bg-[#0a1128] min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-0">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-6 lg:py-8">
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-4">
             <div>
-              <span className="text-orange-500 font-extrabold text-xs sm:text-sm tracking-wider uppercase">
+              <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase">
                 TIN TỨC & KIẾN THỨC
               </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-black text-white mt-1.5 leading-tight tracking-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-4xl font-black text-white mt-1.5 leading-tight tracking-tight">
                 Cập nhật thị trường BĐS Hà Nội
               </h2>
               <p className="text-sm sm:text-base text-slate-300 mt-2">
@@ -1669,7 +1669,7 @@ export default function HomePage() {
           </div>
 
           {/* News Layout: 1 Big Left + 4 Small Right */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-stretch">
             
             {/* Big Featured Article (Left 50%) */}
             <div className="lg:col-span-6 flex flex-col">
@@ -1677,7 +1677,7 @@ export default function HomePage() {
                 href="/streets"
                 className="group block bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 transition-all duration-300 h-full flex flex-col justify-between"
               >
-                <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                <div className="relative h-[200px] sm:h-[240px] overflow-hidden bg-slate-900">
                   <img
                     src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80"
                     alt="Metro line Hanoi"
@@ -1691,9 +1691,9 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="p-6 sm:p-7 space-y-3 flex-1 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <h3 className="text-xl sm:text-2xl font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug">
+                <div className="p-4 sm:p-5 space-y-2 flex-1 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <h3 className="text-base sm:text-lg lg:text-xl font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug">
                       Thị trường BĐS Hà Nội Q4/2025: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức khởi công
                     </h3>
                     <p className="text-sm sm:text-base text-slate-600 line-clamp-2 leading-relaxed">
@@ -1715,7 +1715,7 @@ export default function HomePage() {
             </div>
 
             {/* 4 Small Articles (Right 50%) */}
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               {[
                 {
                   title: 'Quy hoạch Vành đai 4: Cơ hội vàng cho nhà đầu tư BĐS ven đô',
@@ -1745,9 +1745,9 @@ export default function HomePage() {
                 <Link
                   key={idx}
                   href="/streets"
-                  className="group bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-md hover:shadow-xl hover:border-orange-400 transition-all flex flex-col justify-between"
+                  className="group bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/90 shadow-md hover:shadow-xl hover:border-orange-400 transition-all flex flex-col justify-between"
                 >
-                  <div className="aspect-[16/10] rounded-xl overflow-hidden mb-2.5 bg-slate-100">
+                  <div className="h-[100px] sm:h-[120px] rounded-xl overflow-hidden mb-2 bg-slate-100">
                     <img
                       src={article.image}
                       alt={article.title}
@@ -1758,7 +1758,7 @@ export default function HomePage() {
                     <span className="text-[10px] sm:text-[11px] font-extrabold text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-md">
                       {article.category}
                     </span>
-                    <h4 className="font-bold text-xs sm:text-sm text-[#0a1128] group-hover:text-orange-600 transition-colors line-clamp-2 mt-1.5 leading-snug">
+                    <h4 className="font-bold text-[11px] sm:text-xs text-[#0a1128] group-hover:text-orange-600 transition-colors line-clamp-2 mt-1.5 leading-snug">
                       {article.title}
                     </h4>
                     <p className="text-[11px] text-slate-400 mt-2 font-medium">{article.date}</p>
@@ -1770,7 +1770,7 @@ export default function HomePage() {
           </div>
 
           {/* Market Mini Dashboard Row */}
-          <div className="mt-8 sm:mt-10 bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-2xl">
+          <div className="mt-4 sm:mt-6 bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/90 shadow-2xl">
             <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-1.5">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
               <span>Chỉ số thị trường tuần này</span>
