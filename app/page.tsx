@@ -2032,96 +2032,49 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 10 — STAY IN THE LOOP (BỐ CỤC CHUẨN ẢNH 2 - ROYAL BLUE NEWSLETTER)
+          📌 SECTION 10 — ĐĂNG TIN CTA (NỘI DUNG & MÀU NỀN CHUẨN HÌNH 2)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
-        id="newsletter"
-        className="bg-[#002ea8] text-white py-12 sm:py-16 lg:py-20 relative overflow-hidden"
+        id="cta-dang-tin"
+        className="bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white py-12 sm:py-16 lg:py-18 relative overflow-hidden"
       >
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[152px] lg:pr-[170px] xl:pl-[168px] xl:pr-[186px] relative z-10">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8">
             
-            {/* Left text matching Image 2 */}
-            <div className="space-y-1.5 text-left max-w-xl">
-              <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-white tracking-tight leading-tight">
-                Stay in the loop.
+            {/* Left info chuẩn Hình 2 */}
+            <div className="space-y-2.5 text-left max-w-2xl">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
+                Bạn muốn đăng tin bán hoặc cho thuê nhà?
               </h2>
-              <p className="text-xs sm:text-sm text-white/95 font-medium">
-                Interested in what we&apos;re doing? Get updates sent straight to your inbox.
+              <p className="text-xs sm:text-sm text-white/95 max-w-xl font-medium leading-relaxed">
+                Tiếp cận hàng nghìn khách mua tiềm năng mỗi ngày. Đăng tin miễn phí, định vị toạ độ chính xác trên bản đồ.
               </p>
+              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs font-semibold text-white/90">
+                <span>✓ Miễn phí không cần thẻ</span>
+                <span>·</span>
+                <span>✓ Hiển thị ngay trên bản đồ GIS</span>
+                <span>·</span>
+                <span>✓ Tự động thẩm định AI</span>
+              </div>
             </div>
 
-            {/* Right form matching Image 2 */}
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-              <div className="flex items-center bg-[#edf2f7] rounded-xl px-3.5 py-2.5 sm:py-3 shadow-inner w-full sm:w-80 md:w-96 relative">
-                
-                {/* Selector "Email ▾" */}
-                <div className="relative shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setNewsletterDropdownOpen(!newsletterDropdownOpen)}
-                    className="flex items-center gap-1.5 text-slate-800 text-xs sm:text-sm font-semibold pr-3 border-r border-slate-300 hover:text-blue-600 transition-colors cursor-pointer select-none"
-                  >
-                    <span>{newsletterChannel}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${newsletterDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  <AnimatePresence>
-                    {newsletterDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 6 }}
-                        className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-50 min-w-[110px]"
-                      >
-                        {(['Email', 'Zalo'] as const).map((ch) => (
-                          <button
-                            key={ch}
-                            type="button"
-                            onClick={() => {
-                              setNewsletterChannel(ch);
-                              setNewsletterDropdownOpen(false);
-                            }}
-                            className={`w-full px-3 py-1.5 text-left text-xs font-semibold flex items-center justify-between cursor-pointer hover:bg-slate-100 ${
-                              newsletterChannel === ch ? 'text-blue-600 bg-blue-50/50' : 'text-slate-700'
-                            }`}
-                          >
-                            <span>{ch}</span>
-                            {newsletterChannel === ch && <span className="text-blue-600">✓</span>}
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Text input */}
-                <input
-                  type={newsletterChannel === 'Email' ? 'email' : 'tel'}
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  placeholder={newsletterChannel === 'Email' ? '' : '09...'}
-                  required
-                  className="bg-transparent pl-3 w-full text-xs sm:text-sm text-slate-900 placeholder-slate-400 outline-none font-medium"
-                />
-              </div>
-
-              {/* Submit button "Connect with us" */}
-              <button
-                type="submit"
-                disabled={newsletterSubmitted}
-                className="px-6 py-2.5 sm:py-3 rounded-xl bg-[#0070f3] hover:bg-[#0060e0] active:scale-98 text-white font-bold text-xs sm:text-sm transition-all shadow-md cursor-pointer shrink-0 text-center flex items-center justify-center gap-1.5"
+            {/* Right buttons chuẩn Hình 2 */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
+              <Link
+                href="/listings/create"
+                className="w-full sm:w-auto px-7 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-white text-orange-600 hover:bg-orange-50 font-black text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all hover:scale-105 text-center flex items-center justify-center gap-2 cursor-pointer"
               >
-                {newsletterSubmitted ? (
-                  <>
-                    <Check className="w-4 h-4 text-white" />
-                    <span>Connected!</span>
-                  </>
-                ) : (
-                  <span>Connect with us</span>
-                )}
-              </button>
-            </form>
+                <span>📝</span>
+                <span>Đăng tin ngay — Miễn phí</span>
+              </Link>
+              <Link
+                href="/pricing"
+                className="w-full sm:w-auto px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl border-2 border-white text-white hover:bg-white/15 font-bold text-sm sm:text-base transition-all hover:scale-105 text-center flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>💎</span>
+                <span>Xem các gói Pro</span>
+              </Link>
+            </div>
 
           </div>
         </div>
