@@ -807,10 +807,10 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Chạy ngang liên tục)
+          📌 SECTION 2 — DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="categories" className="bg-[#0a1128] py-10 sm:py-12 border-b border-slate-800/80 overflow-hidden relative">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
+      <section id="categories" className="bg-[#0a1128] py-10 sm:py-12 border-b border-slate-800/80 relative">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
@@ -836,22 +836,22 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Dải Danh mục chạy ngang liên tục (Infinite Smooth Marquee) */}
-        <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)] py-2">
-          <div className="flex gap-3 sm:gap-4 w-max animate-[marquee_30s_linear_infinite] hover:[animation-play-state:paused] items-center px-4">
-            {[...propertyCategories, ...propertyCategories].map((cat, idx) => (
+        {/* Lưới Danh mục ô vuông nền trắng cố định (Bỏ hiệu ứng chạy ngang) */}
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            {propertyCategories.map((cat) => (
               <Link
-                key={`${cat.name}-${idx}`}
+                key={cat.name}
                 href={cat.href}
-                className="w-[140px] sm:w-[160px] md:w-[170px] h-[115px] sm:h-[130px] shrink-0 flex flex-col items-center justify-center text-center p-3 sm:p-4 rounded-2xl bg-[#131d3b]/90 border border-slate-700/60 shadow-lg hover:border-orange-500 hover:bg-[#1b274e] hover:shadow-xl hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-1 select-none backdrop-blur-sm"
+                className="h-[115px] sm:h-[125px] flex flex-col items-center justify-center text-center p-3 sm:p-4 rounded-2xl bg-white border border-slate-100 shadow-md hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-1 select-none"
               >
-                <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-120 group-hover:-translate-y-0.5 transition-transform duration-300 inline-block">
+                <span className="text-2xl sm:text-3xl mb-1.5 group-hover:scale-115 transition-transform duration-300 inline-block">
                   {cat.icon}
                 </span>
-                <span className="font-bold text-xs sm:text-sm text-white group-hover:text-orange-400 transition-colors whitespace-nowrap">
+                <span className="font-bold text-xs sm:text-sm text-[#0a1128] group-hover:text-orange-500 transition-colors whitespace-nowrap">
                   {cat.name}
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-slate-400 mt-1 group-hover:text-orange-300 font-medium transition-colors whitespace-nowrap">
+                <span className="text-[10px] sm:text-[11px] text-slate-500 mt-1 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap">
                   {cat.count}
                 </span>
               </Link>
