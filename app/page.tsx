@@ -87,27 +87,29 @@ function FadeInSection({ children, delay = 0, className = '' }: { children: Reac
 function CodiStatCounter({
   value,
   label,
+  suffix = '',
   highlight = false,
   isFixed = false,
   fixedText = '',
 }: {
   value?: number;
   label: string;
+  suffix?: string;
   highlight?: boolean;
   isFixed?: boolean;
   fixedText?: string;
 }) {
   const { count, ref } = useCountUp(value || 0, 1600);
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-5 md:py-2">
+    <div ref={ref} className="flex flex-col items-center justify-center text-center px-3 sm:px-5 py-4 md:py-2">
       <span
-        className={`text-4xl sm:text-5xl lg:text-[56px] font-black tracking-tight leading-none ${
+        className={`text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-black tracking-tight leading-none ${
           highlight ? 'text-[#0066ff]' : 'text-[#1e293b]'
         }`}
       >
-        {isFixed ? fixedText : count.toLocaleString('de-DE')}
+        {isFixed ? fixedText : `${count.toLocaleString('de-DE')}${suffix}`}
       </span>
-      <span className="text-xs sm:text-[13px] text-slate-500 font-medium mt-2.5 lowercase">
+      <span className="text-xs sm:text-[13px] text-slate-500 font-semibold mt-2.5">
         {label}
       </span>
     </div>
@@ -788,12 +790,13 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* 4. DẢI THỐNG KÊ CHUẨN HÌNH 1 (3 Cột lớn, số giữa xanh #0066ff, nền sáng, vạch chia dọc) */}
-          <div className="w-full max-w-4xl lg:max-w-5xl mx-auto mt-8 sm:mt-10 mb-2">
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-4">
-              <CodiStatCounter value={728000} label="hours saved for teams" />
-              <CodiStatCounter isFixed={true} fixedText="$1.3M" highlight={true} label="saved" />
-              <CodiStatCounter value={15695} label="office tasks resolved" />
+          {/* 4. DẢI THỐNG KÊ CHUẨN HÌNH 1 (4 Cột, số lớn, vạch chia dọc, nền sáng thanh lịch) */}
+          <div className="w-full max-w-5xl lg:max-w-6xl mx-auto mt-8 sm:mt-10 mb-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200/90 py-4">
+              <CodiStatCounter value={10247} suffix="+" label="Tin đăng đang hoạt động" />
+              <CodiStatCounter value={5832} suffix="+" highlight={true} label="Người dùng tháng này" />
+              <CodiStatCounter value={98} suffix="%" label="Tỷ lệ hài lòng" />
+              <CodiStatCounter value={29} suffix="" label="Quận/huyện có dữ liệu" />
             </div>
           </div>
 
