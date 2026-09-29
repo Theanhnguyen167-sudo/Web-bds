@@ -960,11 +960,11 @@ export default function HomePage() {
               {featuredListings.map((listing) => (
                 <div
                   key={listing.id}
-                  className="w-[280px] sm:w-[320px] md:w-[340px] lg:w-[355px] shrink-0 snap-start"
+                  className="w-[240px] sm:w-[260px] md:w-[280px] lg:w-[300px] shrink-0 snap-start"
                 >
                   <Link
                     href={`/listings/${listing.id}`}
-                    className="group relative h-[320px] sm:h-[360px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
+                    className="group relative h-[240px] sm:h-[280px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
                   >
                     {/* Background Image */}
                     <img
@@ -975,11 +975,11 @@ export default function HomePage() {
                     />
 
                     {/* Navy Deep Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/60 to-transparent opacity-90" />
 
                     {/* Top Badges (Price & Save) */}
-                    <div className="absolute top-4 inset-x-4 flex items-center justify-between z-10">
-                      <span className="px-3.5 py-1.5 rounded-full bg-orange-500 text-white font-black text-xs sm:text-sm shadow-md shadow-orange-500/30">
+                    <div className="absolute top-3 sm:top-4 inset-x-3 sm:inset-x-4 flex items-center justify-between z-10">
+                      <span className="px-3 py-1 sm:py-1.5 rounded-full bg-orange-500 text-white font-black text-[11px] sm:text-xs shadow-md shadow-orange-500/30">
                         {formatCurrencyVND(listing.price)}
                       </span>
                       <button
@@ -989,7 +989,7 @@ export default function HomePage() {
                           e.stopPropagation();
                           toggleSaveListing(listing.id);
                         }}
-                        className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
                           savedListingIds.includes(listing.id)
                             ? 'bg-rose-500 text-white'
                             : 'bg-white/80 hover:bg-white text-slate-700 hover:text-rose-500'
@@ -997,7 +997,7 @@ export default function HomePage() {
                         title="Lưu tin đăng"
                       >
                         <Heart
-                          className={`w-4 h-4 ${
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
                             savedListingIds.includes(listing.id) ? 'fill-current' : ''
                           }`}
                         />
@@ -1006,39 +1006,39 @@ export default function HomePage() {
 
                     {/* Planning Status Badge (Top-left below price if exists) */}
                     {(listing.planningZone || listing.legalStatus) && (
-                      <div className="absolute top-14 left-4 z-10">
-                        <span className="px-2.5 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-[10px] font-bold text-white/90 border border-white/20">
+                      <div className="absolute top-11 sm:top-12 left-3 sm:left-4 z-10">
+                        <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-white/90 border border-white/20">
                           {listing.planningZone || listing.legalStatus}
                         </span>
                       </div>
                     )}
 
                     {/* Bottom Info Overlay */}
-                    <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10">
+                    <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4 z-10">
                       {/* Title */}
-                      <h3 className="text-base sm:text-lg font-bold text-white line-clamp-2 mb-2 tracking-tight group-hover:text-orange-400 transition-colors">
+                      <h3 className="text-sm sm:text-base font-bold text-white line-clamp-2 mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors leading-tight">
                         {listing.title}
                       </h3>
 
                       {/* Location */}
-                      <div className="flex items-center gap-1.5 text-xs text-white/85 mb-3">
-                        <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                      <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-white/85 mb-2">
+                        <MapPin className="w-3 h-3 text-orange-400 shrink-0" />
                         <span className="truncate">
                           Quận {listing.district}, Hà Nội
                         </span>
                       </div>
 
                       {/* Specs Bar (Area, Bed, Bath) */}
-                      <div className="flex items-center gap-3 pt-2.5 border-t border-white/15 text-[11px] text-white/75">
+                      <div className="flex items-center gap-2 pt-2 border-t border-white/15 text-[9px] sm:text-[10px] text-white/75 font-medium">
                         <span className="font-semibold">{listing.area} m²</span>
-                        <span>•</span>
+                        <span className="opacity-60">•</span>
                         <span>{listing.bedrooms} PN</span>
-                        <span>•</span>
+                        <span className="opacity-60">•</span>
                         <span>{listing.bathrooms} PT</span>
                         {listing.price && listing.area && (
                           <>
-                            <span>•</span>
-                            <span className="text-orange-300 font-bold">
+                            <span className="opacity-60">•</span>
+                            <span className="text-orange-300 font-bold tracking-tight">
                               {formatPricePerM2(listing.price, listing.area)}
                             </span>
                           </>
@@ -1137,21 +1137,21 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-3.5 pt-1">
+              <div className="flex items-center gap-2 sm:gap-3.5 pt-1">
                 <Link
                   href={`/search?district=${encodeURIComponent(hoveredDistrict)}`}
-                  className="px-6 sm:px-7 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-orange-500/25 transition-all"
+                  className="flex-1 px-2 sm:px-5 lg:px-7 py-2.5 sm:py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] sm:text-xs lg:text-sm flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg shadow-orange-500/25 transition-all"
                 >
-                  <MapPin className="h-4 w-4" />
-                  <span>Xem tin quận {hoveredDistrict}</span>
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="whitespace-nowrap">Xem tin quận {hoveredDistrict}</span>
                 </Link>
 
                 <Link
                   href="/planning"
-                  className="px-5 sm:px-6 py-3.5 rounded-xl border border-slate-700 bg-[#131d3b]/80 hover:bg-[#1b274e] text-slate-200 hover:text-white font-bold text-xs sm:text-sm flex items-center gap-2 transition-colors"
+                  className="flex-1 px-2 sm:px-5 lg:px-6 py-2.5 sm:py-3.5 rounded-xl border border-slate-700 bg-[#131d3b]/80 hover:bg-[#1b274e] text-slate-200 hover:text-white font-bold text-[10px] sm:text-xs lg:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-colors"
                 >
-                  <Layers className="h-4 w-4 text-orange-400" />
-                  <span>Xem bản đồ quy hoạch</span>
+                  <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-400 shrink-0" />
+                  <span className="whitespace-nowrap">Xem bản đồ quy hoạch</span>
                 </Link>
               </div>
             </div>
