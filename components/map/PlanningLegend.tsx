@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layers, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { Info, Palette, X } from 'lucide-react';
 
 export const PlanningLegend: React.FC = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
 
   const zones = [
     { name: 'Đất ở đô thị (ODT)', color: '#3b82f6', desc: 'Quy hoạch nhà ở & chỉnh trang' },
@@ -16,51 +16,38 @@ export const PlanningLegend: React.FC = () => {
 
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.95 }}
-      transition={{ duration: 0.25 }}
-      className={`absolute bottom-6 left-6 z-30 rounded-2xl border border-slate-700/60 bg-primary/95 text-white shadow-2xl backdrop-blur-xl max-w-xs transition-all ${
-        isCollapsed ? 'px-3.5 py-2.5' : 'p-3.5'
-      }`}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.2 }}
+      className="absolute bottom-6 left-6 z-30"
     >
-      <div
-        onClick={() => setIsCollapsed((prev) => !prev)}
-        className={`flex items-center justify-between gap-3 cursor-pointer select-none ${
-          isCollapsed ? '' : 'border-b border-slate-700 pb-2 mb-2'
-        }`}
-      >
-        <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-emerald-400 shrink-0" />
-          <span className="text-xs font-bold tracking-tight">Quy hoạch Hà Nội 2030 – 2045</span>
-          <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-        </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsCollapsed((prev) => !prev);
-          }}
-          aria-expanded={!isCollapsed}
-          aria-label={isCollapsed ? 'Mở rộng bảng quy hoạch' : 'Thu gọn bảng quy hoạch'}
-          title={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
-          className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
-        >
-          {isCollapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-        </button>
-      </div>
-
-      <AnimatePresence initial={false}>
-        {!isCollapsed && (
+      <AnimatePresence>
+        {showLegend && (
           <motion.div
-            key="planning-legend-content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="overflow-hidden"
+            key="planning-legend-popover"
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+            className="absolute bottom-12 left-0 mb-1 w-72 rounded-2xl border border-slate-700/60 bg-primary/95 p-3.5 text-white shadow-2xl backdrop-blur-xl"
           >
+            <div className="flex items-center justify-between border-b border-slate-700 pb-2 mb-2.5">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span className="text-xs font-bold tracking-tight">Chú giải màu quy hoạch</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLegend(false)}
+                aria-label="Đóng bảng chú giải"
+                title="Đóng"
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
             <div className="space-y-1.5 text-[11px]">
               {zones.map((zone) => (
                 <div key={zone.name} className="flex items-center justify-between gap-2">
@@ -83,6 +70,28 @@ export const PlanningLegend: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <motion.button
+        type="button"
+        onClick={() => setShowLegend((prev) => !prev)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        aria-expanded={showLegend}
+        aria-label="Chú giải màu sắc quy hoạch"
+        title="Chú giải màu sắc quy hoạch"
+        className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer ${
+          showLegend
+            ? 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400/40'
+            : 'bg-primary/90 text-slate-200 border-slate-700 hover:text-white hover:border-slate-500'
+        }`}
+      >
+        <Palette className="h-4 w-4" />
+        {!showLegend && (
+          <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-slate-900 p-0.5 shadow-xs">
+            <span className="h-full w-full rounded-full bg-gradient-to-tr from-emerald-500 via-blue-500 to-amber-500" />
+          </span>
+        )}
+      </motion.button>
     </motion.div>
   );
 };

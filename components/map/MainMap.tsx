@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HANOI_COORDINATES, MAPBOX_TOKEN, MAP_STYLES, PLANNING_ZONE_COLORS } from '@/lib/mapbox/config';
 import { Listing } from '@/types/listing';
-import { Layers, MapPin, ZoomIn, ZoomOut, Navigation, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
+import { Layers, MapPin, ZoomIn, ZoomOut, Navigation, Eye, EyeOff, Palette, X } from 'lucide-react';
 
 interface MainMapProps {
   listings: Listing[];
@@ -19,7 +19,7 @@ export const MainMap: React.FC<MainMapProps> = ({
   hoveredListingId,
 }) => {
   const [showPlanningOverlay, setShowPlanningOverlay] = useState(true);
-  const [isLegendCollapsed, setIsLegendCollapsed] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
   const [currentStyle, setCurrentStyle] = useState<'light' | 'dark' | 'satellite'>('light');
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -61,50 +61,59 @@ export const MainMap: React.FC<MainMapProps> = ({
             </div>
           </div>
 
-          {/* Planning Zone Overlay Legend */}
+          {/* Planning Zone Overlay Legend (Icon Button + Popover) */}
           {showPlanningOverlay && (
-            <div className="absolute bottom-6 left-6 z-20 rounded-xl border border-border/80 bg-background/95 p-3 shadow-lg backdrop-blur-md max-w-xs text-xs transition-all">
-              <div
-                onClick={() => setIsLegendCollapsed((prev) => !prev)}
-                className="font-bold text-foreground flex items-center justify-between gap-3 cursor-pointer select-none"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span>Quy hoạch Hà Nội 2030 – 2045</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsLegendCollapsed((prev) => !prev);
-                  }}
-                  aria-expanded={!isLegendCollapsed}
-                  title={isLegendCollapsed ? 'Mở rộng' : 'Thu gọn'}
-                  className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                >
-                  {isLegendCollapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                </button>
-              </div>
-              {!isLegendCollapsed && (
-                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-muted-foreground mt-2 pt-2 border-t border-border/60">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-sm bg-[#3b82f6]"></span>
-                    <span>Đất ở đô thị</span>
+            <div className="absolute bottom-6 left-6 z-20">
+              {showLegend && (
+                <div className="absolute bottom-12 left-0 mb-1 w-64 rounded-xl border border-border/80 bg-background/95 p-3 shadow-xl backdrop-blur-md text-xs">
+                  <div className="font-bold text-foreground flex items-center justify-between gap-2 pb-2 mb-2 border-b border-border/60">
+                    <div className="flex items-center gap-1.5">
+                      <Palette className="h-3.5 w-3.5 text-emerald-500" />
+                      <span>Chú giải màu quy hoạch</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowLegend(false)}
+                      title="Đóng"
+                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-sm bg-[#ef4444]"></span>
-                    <span>Thương mại</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-sm bg-[#10b981]"></span>
-                    <span>Công viên / Cây xanh</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-sm bg-[#f59e0b]"></span>
-                    <span>Giao thông / Metro</span>
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-sm bg-[#3b82f6]"></span>
+                      <span>Đất ở đô thị</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-sm bg-[#ef4444]"></span>
+                      <span>Thương mại</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-sm bg-[#10b981]"></span>
+                      <span>Công viên / Cây xanh</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-sm bg-[#f59e0b]"></span>
+                      <span>Giao thông / Metro</span>
+                    </div>
                   </div>
                 </div>
               )}
+
+              <button
+                type="button"
+                onClick={() => setShowLegend((prev) => !prev)}
+                aria-expanded={showLegend}
+                title="Chú giải màu sắc quy hoạch"
+                className={`relative flex h-10 w-10 items-center justify-center rounded-xl border shadow-lg backdrop-blur-md transition-all cursor-pointer ${
+                  showLegend
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background/95 text-foreground border-border/80 hover:bg-muted'
+                }`}
+              >
+                <Palette className="h-4 w-4" />
+              </button>
             </div>
           )}
 

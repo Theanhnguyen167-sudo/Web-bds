@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Layers, ZoomIn, ZoomOut, Locate, 
   X, MapPin, Eye, ExternalLink,
-  Loader2, Navigation, Compass, Crosshair, ChevronDown, ChevronUp
+  Loader2, Navigation, Compass, Crosshair, Palette
 } from 'lucide-react'
 import { HANOI_CENTER, HANOI_PLANNING_ZONES, PLANNING_ZONE_TYPES, HANOI_DISTRICT_CENTERS } from '@/lib/leaflet/hanoi-data'
 import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
@@ -95,7 +95,7 @@ export default function SearchMap({
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
   const [mapLayer, setMapLayer] = useState<'light' | 'satellite'>('light')
   const [showLayerPanel, setShowLayerPanel] = useState(false)
-  const [isLegendCollapsed, setIsLegendCollapsed] = useState(false)
+  const [showLegend, setShowLegend] = useState(false)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [isLocating, setIsLocating] = useState(false)
   const [searchedLocation, setSearchedLocation] = useState<HanoiLocationItem | null>(null)
@@ -792,60 +792,50 @@ export default function SearchMap({
         )}
       </AnimatePresence>
 
-      {/* ── Planning Legend (bottom-left, shows when layer active) ── */}
+      {/* ── Planning Legend (Icon Button + Popover at bottom-left, shows when layer active) ── */}
       <AnimatePresence>
         {showPlanningLayer && isMapReady && (
           <motion.div
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className={`absolute bottom-6 left-4 z-[400] bg-white/95 dark:bg-gray-800/95 
-                       backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 
-                       dark:border-gray-700 max-w-[220px] transition-all ${
-                         isLegendCollapsed ? 'px-3.5 py-2.5' : 'p-4'
-                       }`}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute bottom-6 left-4 z-[400]"
           >
-            <div
-              onClick={() => setIsLegendCollapsed(prev => !prev)}
-              className="flex items-center justify-between gap-3 cursor-pointer select-none"
-            >
-              <p className="text-xs font-bold text-navy dark:text-white 
-                            uppercase tracking-wide flex items-center gap-1.5">
-                <Layers size={13} className="text-orange-500 shrink-0" /> Chú giải
-              </p>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsLegendCollapsed(prev => !prev)
-                }}
-                aria-expanded={!isLegendCollapsed}
-                aria-label={isLegendCollapsed ? 'Mở rộng bảng chú giải' : 'Thu gọn bảng chú giải'}
-                title={isLegendCollapsed ? 'Mở rộng chú giải' : 'Thu gọn chú giải'}
-                className="p-1 rounded-lg text-gray-500 hover:text-navy dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-              >
-                {isLegendCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              </button>
-            </div>
-
-            <AnimatePresence initial={false}>
-              {!isLegendCollapsed && (
+            <AnimatePresence>
+              {showLegend && (
                 <motion.div
-                  key="search-legend-items"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeInOut' }}
-                  className="overflow-hidden"
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                  className="absolute bottom-12 left-0 mb-1 w-56 bg-white/95 dark:bg-gray-800/95 
+                             backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 
+                             dark:border-gray-700 p-3.5"
                 >
-                  <div className="space-y-2 pt-2.5">
+                  <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2 mb-2.5">
+                    <p className="text-xs font-bold text-navy dark:text-white 
+                                  uppercase tracking-wide flex items-center gap-1.5">
+                      <Palette size={13} className="text-orange-500 shrink-0" /> Chú giải màu
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowLegend(false)}
+                      aria-label="Đóng bảng chú giải"
+                      title="Đóng"
+                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
                     {Object.entries(PLANNING_ZONE_TYPES).map(([key, val]) => (
                       <div key={key} className="flex items-center gap-2">
-                        <div className="w-4 h-3 rounded-sm flex-shrink-0"
-                          style={{ backgroundColor: val.color, opacity: 0.7 }} />
-                        <span className="text-xs text-gray-600 dark:text-gray-300 
-                                         leading-tight">
+                        <div
+                          className="w-4 h-3 rounded-sm flex-shrink-0 shadow-2xs"
+                          style={{ backgroundColor: val.color, opacity: 0.8 }}
+                        />
+                        <span className="text-xs text-gray-600 dark:text-gray-300 leading-tight">
                           {val.label}
                         </span>
                       </div>
@@ -854,6 +844,28 @@ export default function SearchMap({
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <motion.button
+              type="button"
+              onClick={() => setShowLegend(prev => !prev)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-expanded={showLegend}
+              aria-label="Chú giải màu sắc quy hoạch"
+              title="Chú giải màu sắc quy hoạch"
+              className={`relative w-10 h-10 rounded-2xl shadow-lg border flex items-center justify-center transition-all cursor-pointer ${
+                showLegend
+                  ? 'bg-orange-500 text-white border-orange-500 shadow-orange-500/25'
+                  : 'bg-white/95 dark:bg-gray-800/95 text-navy dark:text-white border-gray-200 dark:border-gray-700 hover:bg-orange-500 hover:text-white hover:border-orange-500'
+              }`}
+            >
+              <Palette size={17} />
+              {!showLegend && (
+                <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-white dark:bg-gray-900 p-0.5 shadow-xs">
+                  <span className="h-full w-full rounded-full bg-gradient-to-tr from-emerald-500 via-blue-500 to-orange-500" />
+                </span>
+              )}
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>

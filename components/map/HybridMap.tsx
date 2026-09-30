@@ -2,7 +2,7 @@
 import { useState, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Layers, Satellite, Map, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react'
+import { Layers, Satellite, Map, Eye, EyeOff, Palette, X } from 'lucide-react'
 import L from 'leaflet'
 import LassoSearch from './LassoSearch'
 
@@ -170,7 +170,7 @@ export default function HybridMap({
   )
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
   const [opacity, setOpacity] = useState(0.35)
-  const [isLegendCollapsed, setIsLegendCollapsed] = useState(false)
+  const [showLegend, setShowLegend] = useState(false)
 
   const displayedListings = lassoFilteredIds.length > 0
     ? listings.filter(l => lassoFilteredIds.includes(l.id))
@@ -432,52 +432,40 @@ export default function HybridMap({
         </AnimatePresence>
       </div>
 
-      {/* ── PLANNING LEGEND (bottom-left) ── */}
+      {/* ── PLANNING LEGEND (Icon Button + Popover at bottom-left) ── */}
       <AnimatePresence>
         {activeLayers.planning && (
           <motion.div
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className={`absolute bottom-4 left-4 z-[500] bg-white/95 
-                       backdrop-blur-sm shadow-lg rounded-xl 
-                       border border-gray-200 transition-all ${
-                         isLegendCollapsed ? 'px-3 py-2' : 'p-3'
-                       }`}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute bottom-4 left-4 z-[500]"
           >
-            <div
-              onClick={() => setIsLegendCollapsed(prev => !prev)}
-              className="flex items-center justify-between gap-3 cursor-pointer select-none"
-            >
-              <p className="text-xs font-bold text-navy flex items-center gap-1.5">
-                <Layers size={13} className="text-orange-500" /> Chú giải quy hoạch
-              </p>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsLegendCollapsed(prev => !prev)
-                }}
-                aria-expanded={!isLegendCollapsed}
-                aria-label={isLegendCollapsed ? 'Mở rộng chú giải' : 'Thu gọn chú giải'}
-                title={isLegendCollapsed ? 'Mở rộng' : 'Thu gọn'}
-                className="p-1 rounded-lg text-gray-500 hover:text-navy hover:bg-gray-100 transition-colors cursor-pointer"
-              >
-                {isLegendCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              </button>
-            </div>
-            <AnimatePresence initial={false}>
-              {!isLegendCollapsed && (
+            <AnimatePresence>
+              {showLegend && (
                 <motion.div
-                  key="hybrid-legend-items"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeInOut' }}
-                  className="overflow-hidden"
+                  key="hybrid-legend-popover"
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                  className="absolute bottom-12 left-0 mb-1 w-52 bg-white/95 backdrop-blur-sm shadow-xl rounded-xl border border-gray-200 p-3"
                 >
-                  <div className="space-y-1.5 pt-2">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-2">
+                    <p className="text-xs font-bold text-navy flex items-center gap-1.5">
+                      <Palette size={13} className="text-orange-500" /> Chú giải màu
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowLegend(false)}
+                      aria-label="Đóng chú giải"
+                      title="Đóng"
+                      className="p-1 rounded-lg text-gray-400 hover:text-navy hover:bg-gray-100 transition-colors cursor-pointer"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                  <div className="space-y-1.5">
                     {[
                       { color: '#22c55e', label: 'Đất ở đô thị (ODT)' },
                       { color: '#ef4444', label: 'Thương mại (TMD)' },
@@ -485,8 +473,10 @@ export default function HybridMap({
                       { color: '#3b82f6', label: 'Công cộng (CCC)' },
                     ].map(item => (
                       <div key={item.label} className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-sm opacity-80"
-                             style={{ backgroundColor: item.color }} />
+                        <div
+                          className="w-3 h-3 rounded-sm opacity-85"
+                          style={{ backgroundColor: item.color }}
+                        />
                         <span className="text-xs text-gray-600">{item.label}</span>
                       </div>
                     ))}
@@ -494,6 +484,28 @@ export default function HybridMap({
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <motion.button
+              type="button"
+              onClick={() => setShowLegend(prev => !prev)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-expanded={showLegend}
+              aria-label="Chú giải màu sắc quy hoạch"
+              title="Chú giải màu sắc quy hoạch"
+              className={`relative w-10 h-10 rounded-xl shadow-lg border flex items-center justify-center transition-all cursor-pointer ${
+                showLegend
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : 'bg-white/95 text-navy border-gray-200 hover:bg-orange-500 hover:text-white hover:border-orange-500'
+              }`}
+            >
+              <Palette size={17} />
+              {!showLegend && (
+                <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-white p-0.5 shadow-xs">
+                  <span className="h-full w-full rounded-full bg-gradient-to-tr from-emerald-500 via-blue-500 to-orange-500" />
+                </span>
+              )}
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
