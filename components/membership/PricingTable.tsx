@@ -241,7 +241,7 @@ export const PricingTable: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: idx * 0.1 }}
               whileHover={{ y: -6 }}
-              className={`relative flex flex-col rounded-3xl p-5 xl:p-6 transition-all duration-300 min-w-0 ${
+              className={`relative flex flex-col rounded-3xl p-4 sm:p-5 xl:p-5 transition-all duration-300 min-w-0 ${
                 isPro
                   ? 'border-2 border-orange-500 bg-gradient-to-b from-orange-50/50 via-white to-amber-50/20 shadow-xl shadow-orange-500/15 lg:scale-[1.03] ring-4 ring-orange-500/15 z-10'
                   : isAgency
@@ -309,7 +309,7 @@ export const PricingTable: React.FC = () => {
                 {/* Giá gốc gạch ngang */}
                 <div className="min-h-[22px] flex items-center">
                   {anchorPrice ? (
-                    <span className="text-gray-400 line-through text-sm font-semibold">
+                    <span className="text-gray-400 line-through text-sm font-semibold whitespace-nowrap">
                       {anchorPrice}
                     </span>
                   ) : (
@@ -320,23 +320,23 @@ export const PricingTable: React.FC = () => {
                 {/* Giá bán chính thức */}
                 <div className="my-1 flex items-baseline gap-1.5 whitespace-nowrap min-w-0">
                   <span
-                    className={`text-3xl sm:text-[32px] font-black tracking-tight ${
+                    className={`text-2xl sm:text-[28px] xl:text-3xl font-black tracking-tight shrink-0 ${
                       isPro ? 'text-slate-900' : 'text-[#0a1128]'
                     }`}
                   >
                     {calculatedPrice === 0 ? 'Miễn phí' : calculatedPrice.toLocaleString('vi-VN')}
                   </span>
                   {calculatedPrice > 0 && (
-                    <span className="text-xs sm:text-sm font-extrabold text-slate-500">
+                    <span className="text-xs sm:text-sm font-extrabold text-slate-500 shrink-0 whitespace-nowrap">
                       đ/tháng
                     </span>
                   )}
                 </div>
 
-                {/* Dòng phụ cam/đỏ ngay dưới giá */}
-                <div className="min-h-[28px] flex items-center pt-0.5">
+                {/* Dòng phụ cam/đỏ ngay dưới giá: whitespace-nowrap để 'đ/tháng' luôn cùng 1 dòng với giá */}
+                <div className="min-h-[28px] flex items-center pt-0.5 overflow-hidden">
                   <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs ${
+                    className={`whitespace-nowrap text-[10.5px] sm:text-[11px] xl:text-[11.5px] font-bold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs ${
                       isPro
                         ? 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-300'
                         : isAgency || isBasic
