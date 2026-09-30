@@ -75,9 +75,17 @@ export const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#0a1128] shadow-md border-b border-slate-800 text-white`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-[#0a1128]/75 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10 text-white py-0'
+          : 'bg-[#0a1128] shadow-md border-b border-slate-800 text-white'
+      }`}
     >
-      <div className="w-full max-w-[1600px] mx-auto flex h-16 sm:h-20 items-center justify-between px-4 sm:px-8 lg:px-12 xl:px-16">
+      <div
+        className={`w-full max-w-[1600px] mx-auto flex items-center justify-between px-4 sm:px-8 lg:px-12 xl:px-16 transition-all duration-300 ${
+          isScrolled ? 'h-13 sm:h-14' : 'h-16 sm:h-20'
+        }`}
+      >
         
         {/* Left Group: Logo + Nav Links (Bố cục Codi chuẩn) */}
         <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 xl:gap-10 min-w-0">
@@ -86,22 +94,28 @@ export const Navbar: React.FC = () => {
             <motion.div
               whileHover={{ scale: 1.08, rotate: -4 }}
               whileTap={{ scale: 0.95 }}
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20"
+              className={`flex items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20 transition-all duration-300 ${
+                isScrolled ? 'h-8 w-8 sm:h-9 sm:w-9' : 'h-10 w-10'
+              }`}
             >
-              <Home className="h-5 w-5" />
+              <Home className={`transition-all duration-300 ${isScrolled ? 'h-4 w-4 sm:h-4.5 sm:w-4.5' : 'h-5 w-5'}`} />
             </motion.div>
             <div className="flex flex-col">
-              <span className="text-lg font-extrabold tracking-tight flex items-center gap-1 transition-colors text-white">
+              <span className={`font-extrabold tracking-tight flex items-center gap-1 transition-all duration-300 text-white ${
+                isScrolled ? 'text-base sm:text-[17px]' : 'text-lg'
+              }`}>
                 HaNoi <span className="text-accent font-black">Realty</span>
               </span>
-              <span className="text-[10px] font-medium uppercase tracking-widest -mt-1 transition-colors text-slate-200">
+              <span className={`text-[10px] font-medium uppercase tracking-widest -mt-1 transition-all duration-300 text-slate-200 ${
+                isScrolled ? 'hidden sm:inline-block text-[9px]' : ''
+              }`}>
                 PropTech & Quy Hoạch
               </span>
             </div>
           </Link>
 
           {/* Nav Links (Desktop) - Bắt đầu ngay sau Logo từ chữ Trang chủ */}
-          <nav className="hidden md:flex items-center gap-1 sm:gap-2 lg:gap-3.5 xl:gap-5 transition-all duration-300">
+          <nav className="hidden md:flex items-center gap-1 sm:gap-2 lg:gap-3 xl:gap-4 transition-all duration-300">
             {navLinks.map((link) => {
               const isActive =
                 link.href === '/'
@@ -111,7 +125,11 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`relative px-2.5 sm:px-3 lg:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-[13px] font-semibold tracking-wide whitespace-nowrap shrink-0 transition-all ${
+                  className={`relative rounded-xl text-xs sm:text-[13px] font-semibold tracking-wide whitespace-nowrap shrink-0 transition-all ${
+                    isScrolled
+                      ? 'px-2.5 sm:px-3 py-1 sm:py-1.5'
+                      : 'px-2.5 sm:px-3 lg:px-3.5 py-1.5 sm:py-2'
+                  } ${
                     isActive
                       ? 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
                       : 'text-white/90 hover:text-white hover:bg-black/20 backdrop-blur-xs'
