@@ -336,32 +336,58 @@ export default function PlanningMap({
           setHoveredZone(zone.id)
           
           // Show hover tooltip
+          const zoneTypeLabel = PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || 'Quy hoạch phân khu'
           const tooltip = L.tooltip({
             permanent: false,
             direction: 'top',
             className: 'planning-tooltip',
-            offset: [0, -10],
+            offset: [0, -12],
           })
           .setContent(`
             <div style="
               font-family:Inter,sans-serif;
-              padding:6px 10px;
-              background:rgba(26,39,68,0.95);
-              border-radius:8px;
+              padding:14px 16px;
+              background:rgba(15,23,42,0.96);
+              backdrop-filter:blur(8px);
+              border-radius:14px;
               color:white;
-              font-size:11px;
-              font-weight:600;
-              border:1px solid rgba(255,255,255,0.15);
-              white-space:nowrap;
+              min-width:230px;
+              max-width:290px;
+              white-space:normal;
+              border:1px solid rgba(255,255,255,0.14);
+              box-shadow:0 12px 30px rgba(0,0,0,0.38);
+              display:flex;
+              flex-direction:column;
+              gap:6px;
             ">
-              <span style="color:${zone.color}">●</span> ${zone.name}
-              ${zone.pdfUrl ? '<span style="background:#ef4444;color:white;font-size:9px;padding:1px 5px;border-radius:4px;margin-left:5px;font-weight:700">PDF</span>' : ''}
-              <br>
-              <span style="color:rgba(255,255,255,0.6);font-size:10px">
-                ${PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || 'Quy hoạch phân khu'}
-                ${zone.pdfUrl ? '· Có đồ án PDF' : ''}
-                · Click để xem chi tiết
-              </span>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                <div style="display:flex;align-items:flex-start;gap:7px;font-size:13px;font-weight:700;line-height:1.4;color:#ffffff;">
+                  <span style="color:${zone.color};font-size:14px;line-height:1.2;flex-shrink:0;">●</span>
+                  <span>${zone.name}</span>
+                </div>
+                ${zone.pdfUrl ? '<span style="background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:800;flex-shrink:0;letter-spacing:0.3px;">PDF</span>' : ''}
+              </div>
+
+              <div style="color:rgba(226,232,240,0.8);font-size:11px;font-weight:500;line-height:1.4;padding-left:17px;">
+                ${zoneTypeLabel}${zone.pdfUrl ? ' · Có đồ án PDF' : ''}
+              </div>
+
+              <div style="margin-top:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+                <span style="
+                  display:inline-flex;
+                  align-items:center;
+                  gap:5px;
+                  background:rgba(249,115,22,0.18);
+                  border:1px solid rgba(249,115,22,0.5);
+                  color:#fb923c;
+                  font-size:11px;
+                  font-weight:700;
+                  padding:4px 10px;
+                  border-radius:8px;
+                ">
+                  Click để xem chi tiết →
+                </span>
+              </div>
             </div>
           `)
           .setLatLng(e.latlng)
@@ -659,32 +685,32 @@ export default function PlanningMap({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 320 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="absolute top-4 right-16 z-[450] w-[300px] 
+            className="absolute top-4 right-16 z-[450] w-[320px] 
                        bg-white dark:bg-gray-800 rounded-2xl shadow-2xl 
                        border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
             {/* Panel header */}
-            <div className="flex items-center justify-between p-4 border-b 
+            <div className="flex items-start justify-between gap-3 p-5 border-b 
                             border-gray-100 dark:border-gray-700"
               style={{ borderLeft: `4px solid ${selectedZone.color}` }}>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   {PLANNING_ZONE_TYPES[selectedZone.type as keyof typeof PLANNING_ZONE_TYPES]?.label}
                 </p>
-                <p className="text-sm font-bold text-navy dark:text-white leading-tight">
+                <p className="text-sm font-bold text-navy dark:text-white leading-snug">
                   {selectedZone.name}
                 </p>
               </div>
               <motion.button onClick={() => setShowInfoPanel(false)}
                 whileTap={{ scale: 0.9 }}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 shrink-0">
                 <X size={16} />
               </motion.button>
             </div>
 
             {/* Zone details */}
-            <div className="p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
+            <div className="p-5 space-y-3.5">
+              <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { label: 'Năm quy hoạch', value: selectedZone.planYear },
                   { label: 'Quận/Huyện', value: selectedZone.district },
@@ -692,16 +718,16 @@ export default function PlanningMap({
                   { label: 'Chiều cao tối đa', value: selectedZone.maxHeight },
                 ].map(item => (
                   <div key={item.label} 
-                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
-                    <p className="text-xs text-gray-400 mb-1">{item.label}</p>
-                    <p className="text-sm font-bold text-navy dark:text-white">
+                    className="bg-gray-50 dark:bg-gray-700/70 rounded-xl p-3">
+                    <p className="text-[11px] text-gray-400 mb-1">{item.label}</p>
+                    <p className="text-sm font-bold text-navy dark:text-white leading-tight">
                       {item.value}
                     </p>
                   </div>
                 ))}
               </div>
 
-              <div className="rounded-xl p-3 text-sm font-semibold"
+              <div className="rounded-xl p-3 text-xs font-bold"
                 style={{ 
                   background: `${selectedZone.color}20`,
                   color: selectedZone.color 
@@ -717,7 +743,7 @@ export default function PlanningMap({
                   className="flex items-center justify-center gap-2 w-full 
                              bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 
                              border border-red-200 dark:border-red-800
-                             text-red-600 dark:text-red-400 text-xs font-bold py-2.5 px-3 
+                             text-red-600 dark:text-red-400 text-xs font-bold py-2.5 px-3.5 
                              rounded-xl transition-colors shadow-xs"
                 >
                   <FileText size={15} className="text-red-500 shrink-0" />
@@ -729,10 +755,10 @@ export default function PlanningMap({
 
               <a href={`/search?district=${encodeURIComponent(selectedZone.district)}`}
                 className="flex items-center justify-center gap-2 w-full 
-                           bg-navy hover:bg-navy/90 dark:bg-gray-700 
-                           text-white text-sm font-semibold py-2.5 
-                           rounded-xl transition-colors">
-                🔍 Xem BĐS trong khu vực này
+                           bg-orange-500 hover:bg-orange-600 
+                           text-white text-xs font-bold py-3 px-4 
+                           rounded-xl transition-colors shadow-md shadow-orange-500/20">
+                <span>🔍 Xem BĐS trong khu vực này</span>
               </a>
             </div>
           </motion.div>

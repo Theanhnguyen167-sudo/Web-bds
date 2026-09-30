@@ -305,58 +305,122 @@ export default function SearchMap({
           const typeInfo = PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]
           
           const popupContent = `
-            <div style="padding:16px;min-width:240px;font-family:Inter,sans-serif">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                <div style="width:12px;height:12px;border-radius:3px;background:${zone.color}"></div>
+            <div style="padding:20px;min-width:260px;font-family:Inter,sans-serif">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <div style="width:12px;height:12px;border-radius:4px;background:${zone.color};flex-shrink:0"></div>
                 <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">
                   ${typeInfo?.label || zone.type || 'Quy hoạch phân khu'}
                 </span>
               </div>
-              <p style="font-size:15px;font-weight:700;color:#1a2744;margin:0 0 12px 0;line-height:1.3">
+              <p style="font-size:15px;font-weight:700;color:#1a2744;margin:0 0 14px 0;line-height:1.4">
                 ${zone.name}
               </p>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-                <div style="background:#f8fafc;border-radius:8px;padding:8px">
-                  <div style="font-size:9px;color:#94a3b8;margin-bottom:2px">Quy hoạch</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                <div style="background:#f8fafc;border-radius:10px;padding:10px">
+                  <div style="font-size:10px;color:#94a3b8;margin-bottom:3px">Quy hoạch</div>
                   <div style="font-size:13px;font-weight:700;color:#1a2744">${zone.planYear || 2030}</div>
                 </div>
-                <div style="background:#f8fafc;border-radius:8px;padding:8px">
-                  <div style="font-size:9px;color:#94a3b8;margin-bottom:2px">Hệ số SDĐ</div>
+                <div style="background:#f8fafc;border-radius:10px;padding:10px">
+                  <div style="font-size:10px;color:#94a3b8;margin-bottom:3px">Hệ số SDĐ</div>
                   <div style="font-size:13px;font-weight:700;color:#1a2744">${zone.floorAreaRatio || '3.5'}</div>
                 </div>
-                <div style="background:#f8fafc;border-radius:8px;padding:8px">
-                  <div style="font-size:9px;color:#94a3b8;margin-bottom:2px">Chiều cao tối đa</div>
+                <div style="background:#f8fafc;border-radius:10px;padding:10px">
+                  <div style="font-size:10px;color:#94a3b8;margin-bottom:3px">Chiều cao tối đa</div>
                   <div style="font-size:12px;font-weight:600;color:#1a2744">${zone.maxHeight || (zone.maxFloors ? `${zone.maxFloors} tầng` : 'Không áp dụng')}</div>
                 </div>
-                <div style="background:#f8fafc;border-radius:8px;padding:8px">
-                  <div style="font-size:9px;color:#94a3b8;margin-bottom:2px">Quận</div>
+                <div style="background:#f8fafc;border-radius:10px;padding:10px">
+                  <div style="font-size:10px;color:#94a3b8;margin-bottom:3px">Quận</div>
                   <div style="font-size:12px;font-weight:600;color:#1a2744">${zone.district}</div>
                 </div>
               </div>
               <div style="background:${zone.type === 'residential' ? '#dcfce7' : zone.type === 'transport' ? '#fef9c3' : '#dbeafe'};
-                          border-radius:8px;padding:8px;font-size:11px;font-weight:600;
+                          border-radius:10px;padding:9px 12px;font-size:11px;font-weight:700;margin-bottom:12px;
                           color:${zone.type === 'residential' ? '#166534' : zone.type === 'transport' ? '#713f12' : '#1e40af'}">
                 ✅ ${zone.status || 'Đã công bố'}
               </div>
+              <a href="/planning" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f97316;color:#ffffff;font-size:12px;font-weight:700;padding:9px 12px;border-radius:10px;text-decoration:none;box-shadow:0 4px 12px rgba(249,115,22,0.25);">
+                Xem chi tiết trên bản đồ quy hoạch →
+              </a>
             </div>
           `
 
           L.popup({ 
             className: 'planning-popup',
             closeButton: true,
-            maxWidth: 280,
+            maxWidth: 300,
           })
             .setLatLng(center)
             .setContent(popupContent)
             .openOn(map)
         })
 
-        // Hover effects
-        polygon.on('mouseover', function(this: any) {
+        // Hover effects & tooltip
+        polygon.on('mouseover', function(this: any, e: any) {
           this.setStyle({ fillOpacity: (zone.fillOpacity || 0.25) + 0.2, weight: 3 })
+          const typeInfo = PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]
+          const tooltip = L.tooltip({
+            permanent: false,
+            direction: 'top',
+            className: 'planning-tooltip',
+            offset: [0, -12],
+          })
+            .setContent(`
+              <div style="
+                font-family:Inter,sans-serif;
+                padding:14px 16px;
+                background:rgba(15,23,42,0.96);
+                backdrop-filter:blur(8px);
+                border-radius:14px;
+                color:white;
+                min-width:230px;
+                max-width:280px;
+                white-space:normal;
+                border:1px solid rgba(255,255,255,0.14);
+                box-shadow:0 12px 30px rgba(0,0,0,0.38);
+                display:flex;
+                flex-direction:column;
+                gap:6px;
+              ">
+                <div style="display:flex;align-items:flex-start;gap:7px;font-size:13px;font-weight:700;line-height:1.4;color:#ffffff;">
+                  <span style="color:${zone.color};font-size:14px;line-height:1.2;flex-shrink:0;">●</span>
+                  <span>${zone.name}</span>
+                </div>
+                <div style="color:rgba(226,232,240,0.8);font-size:11px;font-weight:500;line-height:1.4;padding-left:17px;">
+                  ${typeInfo?.label || 'Quy hoạch phân khu'}
+                </div>
+                <div style="margin-top:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;">
+                  <span style="
+                    display:inline-flex;
+                    align-items:center;
+                    gap:5px;
+                    background:rgba(249,115,22,0.18);
+                    border:1px solid rgba(249,115,22,0.5);
+                    color:#fb923c;
+                    font-size:11px;
+                    font-weight:700;
+                    padding:4px 10px;
+                    border-radius:8px;
+                  ">
+                    Click để xem chi tiết →
+                  </span>
+                </div>
+              </div>
+            `)
+            .setLatLng(e.latlng)
+            .addTo(map)
+          ;(this as any)._tooltip = tooltip
+        })
+        polygon.on('mousemove', function(this: any, e: any) {
+          if ((this as any)._tooltip) {
+            ;(this as any)._tooltip.setLatLng(e.latlng)
+          }
         })
         polygon.on('mouseout', function(this: any) {
           this.setStyle({ fillOpacity: zone.fillOpacity || 0.25, weight: 2 })
+          if ((this as any)._tooltip) {
+            map.removeLayer((this as any)._tooltip)
+            ;(this as any)._tooltip = null
+          }
         })
 
         polygon.addTo(map)

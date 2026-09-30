@@ -232,17 +232,27 @@ export default function HybridMap({
             }}
           >
             <Popup>
-              <div className="p-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 rounded-full" 
-                       style={{ backgroundColor: zone.color }} />
-                  <span className="font-bold text-sm text-navy">
+              <div className="p-3.5 min-w-[220px] space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <div
+                    className="w-3.5 h-3.5 rounded-full mt-0.5 shrink-0"
+                    style={{ backgroundColor: zone.color }}
+                  />
+                  <span className="font-bold text-sm text-navy leading-snug">
                     {zone.name}
                   </span>
                 </div>
-                <div className="text-xs text-gray-600 space-y-1">
+                <div className="text-xs text-gray-600 space-y-1.5 pl-6">
                   <p>📅 Quy hoạch 2030</p>
                   <p>✅ Cho phép xây dựng</p>
+                </div>
+                <div className="pt-2 border-t border-gray-100">
+                  <a
+                    href="/planning"
+                    className="inline-flex items-center justify-center w-full gap-1.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-600 font-bold text-xs py-1.5 px-3 rounded-lg transition-colors"
+                  >
+                    <span>Click để xem chi tiết →</span>
+                  </a>
                 </div>
               </div>
             </Popup>
