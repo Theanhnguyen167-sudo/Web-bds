@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Layers, ZoomIn, ZoomOut, Locate, 
   X, MapPin, Eye, ExternalLink,
-  Loader2, Navigation, Compass, Crosshair
+  Loader2, Navigation, Compass, Crosshair, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { HANOI_CENTER, HANOI_PLANNING_ZONES, PLANNING_ZONE_TYPES, HANOI_DISTRICT_CENTERS } from '@/lib/leaflet/hanoi-data'
 import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
@@ -95,6 +95,7 @@ export default function SearchMap({
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
   const [mapLayer, setMapLayer] = useState<'light' | 'satellite'>('light')
   const [showLayerPanel, setShowLayerPanel] = useState(false)
+  const [isLegendCollapsed, setIsLegendCollapsed] = useState(false)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [isLocating, setIsLocating] = useState(false)
   const [searchedLocation, setSearchedLocation] = useState<HanoiLocationItem | null>(null)
@@ -795,27 +796,64 @@ export default function SearchMap({
       <AnimatePresence>
         {showPlanningLayer && isMapReady && (
           <motion.div
+            layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-6 left-4 z-[400] bg-white/95 dark:bg-gray-800/95 
+            className={`absolute bottom-6 left-4 z-[400] bg-white/95 dark:bg-gray-800/95 
                        backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 
-                       dark:border-gray-700 p-4 max-w-[200px]"
+                       dark:border-gray-700 max-w-[220px] transition-all ${
+                         isLegendCollapsed ? 'px-3.5 py-2.5' : 'p-4'
+                       }`}
           >
-            <p className="text-xs font-bold text-navy dark:text-white mb-3 
-                          uppercase tracking-wide">Chú giải quy hoạch</p>
-            <div className="space-y-2">
-              {Object.entries(PLANNING_ZONE_TYPES).map(([key, val]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <div className="w-4 h-3 rounded-sm flex-shrink-0"
-                    style={{ backgroundColor: val.color, opacity: 0.7 }} />
-                  <span className="text-xs text-gray-600 dark:text-gray-300 
-                                   leading-tight">
-                    {val.label}
-                  </span>
-                </div>
-              ))}
+            <div
+              onClick={() => setIsLegendCollapsed(prev => !prev)}
+              className="flex items-center justify-between gap-3 cursor-pointer select-none"
+            >
+              <p className="text-xs font-bold text-navy dark:text-white 
+                            uppercase tracking-wide flex items-center gap-1.5">
+                <Layers size={13} className="text-orange-500 shrink-0" /> Chú giải
+              </p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsLegendCollapsed(prev => !prev)
+                }}
+                aria-expanded={!isLegendCollapsed}
+                aria-label={isLegendCollapsed ? 'Mở rộng bảng chú giải' : 'Thu gọn bảng chú giải'}
+                title={isLegendCollapsed ? 'Mở rộng chú giải' : 'Thu gọn chú giải'}
+                className="p-1 rounded-lg text-gray-500 hover:text-navy dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                {isLegendCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
             </div>
+
+            <AnimatePresence initial={false}>
+              {!isLegendCollapsed && (
+                <motion.div
+                  key="search-legend-items"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="space-y-2 pt-2.5">
+                    {Object.entries(PLANNING_ZONE_TYPES).map(([key, val]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <div className="w-4 h-3 rounded-sm flex-shrink-0"
+                          style={{ backgroundColor: val.color, opacity: 0.7 }} />
+                        <span className="text-xs text-gray-600 dark:text-gray-300 
+                                         leading-tight">
+                          {val.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>

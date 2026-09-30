@@ -77,6 +77,7 @@ export default function PlanningMap({
   const [selectedZone, setSelectedZone] = useState<SelectedZoneInfo | null>(null)
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
   const [showInfoPanel, setShowInfoPanel] = useState(false)
+  const [isLegendCollapsed, setIsLegendCollapsed] = useState(false)
   const [mapStyle, setMapStyle] = useState<'light' | 'satellite'>('light')
   const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(13)
@@ -740,27 +741,62 @@ export default function PlanningMap({
 
       {/* ── Planning Legend ── */}
       <motion.div
+        layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: isMapReady ? 1 : 0, y: isMapReady ? 0 : 20 }}
-        className="absolute bottom-6 left-4 z-[400] bg-white/95 dark:bg-gray-800/90 
-                   backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 
-                   dark:border-gray-700 p-4"
+        className={`absolute bottom-6 left-4 z-[400] bg-white/95 dark:bg-gray-800/95 
+                   backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 
+                   dark:border-gray-700 transition-all ${
+                     isLegendCollapsed ? 'px-3.5 py-2.5' : 'p-4'
+                   }`}
       >
-        <p className="text-xs font-bold text-navy dark:text-white mb-2.5 
-                      uppercase tracking-wide flex items-center gap-1.5">
-          <Layers size={12} /> Chú giải
-        </p>
-        <div className="space-y-1.5">
-          {Object.entries(PLANNING_ZONE_TYPES).map(([key, val]) => (
-            <div key={key} className="flex items-center gap-2">
-              <div className="w-4 h-3 rounded flex-shrink-0 border border-white/30"
-                style={{ backgroundColor: val.color, opacity: 0.8 }} />
-              <span className="text-xs text-gray-600 dark:text-gray-300">
-                {val.label}
-              </span>
-            </div>
-          ))}
+        <div
+          onClick={() => setIsLegendCollapsed(prev => !prev)}
+          className="flex items-center justify-between gap-4 cursor-pointer select-none"
+        >
+          <p className="text-xs font-bold text-navy dark:text-white 
+                        uppercase tracking-wide flex items-center gap-1.5">
+            <Layers size={13} className="text-orange-500" /> Chú giải
+          </p>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsLegendCollapsed(prev => !prev)
+            }}
+            aria-expanded={!isLegendCollapsed}
+            aria-label={isLegendCollapsed ? 'Mở rộng bảng chú giải' : 'Thu gọn bảng chú giải'}
+            title={isLegendCollapsed ? 'Mở rộng chú giải' : 'Thu gọn chú giải'}
+            className="p-1 rounded-lg text-gray-500 hover:text-navy dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            {isLegendCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
         </div>
+
+        <AnimatePresence initial={false}>
+          {!isLegendCollapsed && (
+            <motion.div
+              key="legend-items"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <div className="space-y-1.5 pt-2.5">
+                {Object.entries(PLANNING_ZONE_TYPES).map(([key, val]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <div className="w-4 h-3 rounded flex-shrink-0 border border-white/30"
+                      style={{ backgroundColor: val.color, opacity: 0.8 }} />
+                    <span className="text-xs text-gray-600 dark:text-gray-300">
+                      {val.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   )

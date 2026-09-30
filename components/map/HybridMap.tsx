@@ -2,7 +2,7 @@
 import { useState, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Layers, Satellite, Map, Eye, EyeOff } from 'lucide-react'
+import { Layers, Satellite, Map, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react'
 import L from 'leaflet'
 import LassoSearch from './LassoSearch'
 
@@ -170,6 +170,7 @@ export default function HybridMap({
   )
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
   const [opacity, setOpacity] = useState(0.35)
+  const [isLegendCollapsed, setIsLegendCollapsed] = useState(false)
 
   const displayedListings = lassoFilteredIds.length > 0
     ? listings.filter(l => lassoFilteredIds.includes(l.id))
@@ -435,28 +436,64 @@ export default function HybridMap({
       <AnimatePresence>
         {activeLayers.planning && (
           <motion.div
+            layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-4 left-4 z-[500] bg-white/95 
-                       backdrop-blur-sm shadow-lg rounded-xl p-3 
-                       border border-gray-200"
+            className={`absolute bottom-4 left-4 z-[500] bg-white/95 
+                       backdrop-blur-sm shadow-lg rounded-xl 
+                       border border-gray-200 transition-all ${
+                         isLegendCollapsed ? 'px-3 py-2' : 'p-3'
+                       }`}
           >
-            <p className="text-xs font-bold text-navy mb-2">Chú giải quy hoạch</p>
-            <div className="space-y-1.5">
-              {[
-                { color: '#22c55e', label: 'Đất ở đô thị (ODT)' },
-                { color: '#ef4444', label: 'Thương mại (TMD)' },
-                { color: '#f59e0b', label: 'Giao thông (GT)' },
-                { color: '#3b82f6', label: 'Công cộng (CCC)' },
-              ].map(item => (
-                <div key={item.label} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm opacity-80"
-                       style={{ backgroundColor: item.color }} />
-                  <span className="text-xs text-gray-600">{item.label}</span>
-                </div>
-              ))}
+            <div
+              onClick={() => setIsLegendCollapsed(prev => !prev)}
+              className="flex items-center justify-between gap-3 cursor-pointer select-none"
+            >
+              <p className="text-xs font-bold text-navy flex items-center gap-1.5">
+                <Layers size={13} className="text-orange-500" /> Chú giải quy hoạch
+              </p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsLegendCollapsed(prev => !prev)
+                }}
+                aria-expanded={!isLegendCollapsed}
+                aria-label={isLegendCollapsed ? 'Mở rộng chú giải' : 'Thu gọn chú giải'}
+                title={isLegendCollapsed ? 'Mở rộng' : 'Thu gọn'}
+                className="p-1 rounded-lg text-gray-500 hover:text-navy hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                {isLegendCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
             </div>
+            <AnimatePresence initial={false}>
+              {!isLegendCollapsed && (
+                <motion.div
+                  key="hybrid-legend-items"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="space-y-1.5 pt-2">
+                    {[
+                      { color: '#22c55e', label: 'Đất ở đô thị (ODT)' },
+                      { color: '#ef4444', label: 'Thương mại (TMD)' },
+                      { color: '#f59e0b', label: 'Giao thông (GT)' },
+                      { color: '#3b82f6', label: 'Công cộng (CCC)' },
+                    ].map(item => (
+                      <div key={item.label} className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-sm opacity-80"
+                             style={{ backgroundColor: item.color }} />
+                        <span className="text-xs text-gray-600">{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
