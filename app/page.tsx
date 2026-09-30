@@ -464,6 +464,7 @@ export default function HomePage() {
       content: 'Báo cáo AI của HaNoi Realty cực kỳ chi tiết và chuyên nghiệp. Giúp tôi thẩm định tiềm năng và quy hoạch phân khu Đống Đa trong tích tắc, an tâm xuống tiền.',
       rating: 5,
       date: '20/08/2025',
+      avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&auto=format&fit=crop&q=80',
     },
     {
       name: 'Trần Thu Hương',
@@ -471,6 +472,7 @@ export default function HomePage() {
       content: 'Bản đồ quy hoạch chuẩn Sở QHKT cùng tính năng Lasso Search hỗ trợ tìm căn hộ theo tuyến Metro cực chuẩn. Khách hàng của tôi rất ấn tượng với file PDF gửi qua Zalo.',
       rating: 5,
       date: '18/08/2025',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
     },
     {
       name: 'Lê Văn Dũng',
@@ -478,6 +480,7 @@ export default function HomePage() {
       content: 'Đăng tin buổi sáng, buổi chiều đã có 3 môi giới và khách mua liên hệ. Định giá AI gợi ý mức giá sát với giao dịch thực tế thị trường.',
       rating: 5,
       date: '15/08/2025',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
     },
     {
       name: 'Phạm Thị Mai',
@@ -485,6 +488,7 @@ export default function HomePage() {
       content: 'Giao diện mượt mà và dễ dùng giống batdongsan nhưng hiện đại hơn nhiều. Dữ liệu giá đất từng đường phố giúp vợ chồng mình không bị mua hớ.',
       rating: 5,
       date: '12/08/2025',
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80',
     },
     {
       name: 'Hoàng Đức Anh',
@@ -492,6 +496,7 @@ export default function HomePage() {
       content: 'Khả năng xem trực tiếp lộ trình quy hoạch Vành đai 4 và các tuyến Metro 2, 3 là vũ khí đắc lực giúp tôi đón đầu làn sóng tăng giá.',
       rating: 5,
       date: '08/08/2025',
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&auto=format&fit=crop&q=80',
     },
     {
       name: 'Nguyễn Thị Lan',
@@ -499,6 +504,7 @@ export default function HomePage() {
       content: 'Gói thành viên Pro mang lại hiệu quả vượt trội. Báo cáo phân tích AI tự động tạo dựng niềm tin tuyệt đối với khách hàng khó tính.',
       rating: 5,
       date: '05/08/2025',
+      avatar: 'https://images.unsplash.com/photo-1598550874175-4d0ef43ce481?w=100&auto=format&fit=crop&q=80',
     },
   ];
 
@@ -526,7 +532,7 @@ export default function HomePage() {
     const interval = setInterval(() => {
       setReviewDirection(1);
       setActiveReviewIdx((prev) => (prev + 1) % reviews.length);
-    }, 5000);
+    }, 12000);
     return () => clearInterval(interval);
   }, [isReviewPaused, reviews.length]);
 
@@ -1908,8 +1914,12 @@ export default function HomePage() {
 
                 {/* Author Info matching Image 1: [K] Katrina · Chief of Staff */}
                 <div className="flex items-center justify-center gap-2.5 mt-8 sm:mt-10">
-                  <div className="w-8 h-8 rounded-full bg-orange-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-md shadow-orange-500/30">
-                    {reviews[activeReviewIdx].name[0]}
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-md shadow-orange-500/30 overflow-hidden">
+                    {reviews[activeReviewIdx].avatar ? (
+                      <img src={reviews[activeReviewIdx].avatar} alt={reviews[activeReviewIdx].name} className="w-full h-full object-cover" />
+                    ) : (
+                      reviews[activeReviewIdx].name[0]
+                    )}
                   </div>
                   <div className="flex items-center gap-1.5 text-xs sm:text-sm">
                     <span className="text-white font-medium">{reviews[activeReviewIdx].name}</span>
