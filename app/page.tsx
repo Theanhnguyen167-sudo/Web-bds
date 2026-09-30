@@ -1677,7 +1677,7 @@ export default function HomePage() {
                 href="/streets"
                 className="group flex flex-col sm:flex-row bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 transition-all duration-300"
               >
-                <div className="relative w-full sm:w-5/12 h-[130px] sm:h-auto overflow-hidden bg-slate-900 shrink-0">
+                <div className="relative w-full sm:w-5/12 h-[130px] sm:h-[220px] lg:h-[260px] overflow-hidden bg-slate-900 shrink-0">
                   <img
                     src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80"
                     alt="Metro line Hanoi"
