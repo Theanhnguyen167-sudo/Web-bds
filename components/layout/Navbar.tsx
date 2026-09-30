@@ -154,10 +154,10 @@ export const Navbar: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             onClick={handlePostListingClick}
-            className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-bold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-all"
+            className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0"
           >
-            <PlusCircle className="h-4 w-4" />
-            <span>Đăng tin</span>
+            <PlusCircle className="h-4 w-4 shrink-0" />
+            <span className="whitespace-nowrap">Đăng tin</span>
           </motion.button>
 
           {/* Auth State / Dropdown */}
