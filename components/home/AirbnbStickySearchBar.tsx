@@ -503,10 +503,10 @@ export function AirbnbStickySearchBar() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           1. HERO IN-PLACE FLOATING SEARCH WIDGET CHUẨN ẢNH 2 (scrollY <= 50)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div ref={heroSearchRef} className="w-full relative z-30 max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.12)] border border-slate-200/90 text-left">
+      <div ref={heroSearchRef} className="w-full relative z-30 max-w-6xl lg:max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl p-2 sm:p-2.5 sm:py-3 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.18)] border border-slate-200/90 text-left">
           {/* HÀNG TRÊN (TABS FILTER): 3 nút dạng viên thuốc (Pill tabs) */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {[
               { key: 'buy', label: 'Mua bán BĐS', icon: '🏠' },
               { key: 'rent', label: 'Cho thuê BĐS', icon: '🔑' },
@@ -516,7 +516,7 @@ export function AirbnbStickySearchBar() {
                 key={tab.key}
                 type="button"
                 onClick={() => setSearchTab(tab.key as any)}
-                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                   searchTab === tab.key
                     ? 'bg-[#0f172a] text-white shadow-md shadow-slate-900/10'
                     : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 font-semibold'
@@ -529,7 +529,7 @@ export function AirbnbStickySearchBar() {
           </div>
 
           {/* HÀNG DƯỚI (INPUTS BAR): Khung bo tròn chia 3 cột thông tin + Nút Tìm kiếm cam */}
-          <div className="mt-3.5 rounded-xl border border-slate-200/90 hover:border-slate-300 p-2 sm:p-2.5 flex flex-col md:flex-row items-stretch md:items-center bg-white transition-all">
+          <div className="mt-1.5 rounded-xl border border-slate-200 hover:border-slate-300 p-1 sm:p-1.5 flex flex-col md:flex-row items-stretch md:items-center bg-white transition-all">
             
             {/* CỘT 1: ĐỊA ĐIỂM */}
             <div className={`relative flex-1 ${locationDropdownOpen ? 'z-50' : ''}`}>
@@ -768,7 +768,7 @@ export function AirbnbStickySearchBar() {
               type="button"
               onClick={handleExecuteSearch}
               title="Tìm kiếm ngay"
-              className="w-12 h-12 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-orange-500/30 transition-all hover:scale-105 shrink-0 ml-1.5 sm:ml-2.5 cursor-pointer mt-2 md:mt-0"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-orange-500/30 transition-all hover:scale-105 shrink-0 ml-1.5 sm:ml-2.5 cursor-pointer mt-2 md:mt-0"
             >
               <Search className="w-5 h-5 text-white stroke-[2.5]" />
             </motion.button>

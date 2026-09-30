@@ -147,15 +147,26 @@
   border-top-color: #f97316;
 }
 
-/* ── Planning Zone Popup ── */
+/* ── Planning Zone Popup & Tooltip ── */
+.leaflet-tooltip.planning-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.leaflet-tooltip.planning-tooltip::before {
+  display: none !important;
+}
+
 .planning-popup .leaflet-popup-content-wrapper {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-  border: none;
+  border-radius: 18px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.22);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   padding: 0;
   overflow: hidden;
-  min-width: 260px;
+  min-width: 280px;
 }
 
 .planning-popup .leaflet-popup-content {

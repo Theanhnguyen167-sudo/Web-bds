@@ -97,11 +97,14 @@ export default function ListingDetailMap({
         fillOpacity: 0.08,
         weight: 1.5,
         dashArray: '6,6',
-      }).addTo(map).bindTooltip('Bán kính đi bộ 500m', {
-        permanent: false,
-        direction: 'top',
-        className: 'planning-tooltip',
-      })
+      }).addTo(map).bindTooltip(
+        `<div style="font-family:Inter,sans-serif;padding:8px 12px;background:rgba(15,23,42,0.95);color:white;border-radius:10px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,0.14);box-shadow:0 8px 20px rgba(0,0,0,0.3);">🚶 Bán kính đi bộ 500m</div>`,
+        {
+          permanent: false,
+          direction: 'top',
+          className: 'planning-tooltip',
+        }
+      )
 
       // ── Planning Zones for this District ──
       const districtZones = safeDistrict
@@ -115,11 +118,14 @@ export default function ListingDetailMap({
           fillColor: zone.color,
           fillOpacity: 0.18,
           weight: 1.5,
-        }).addTo(map).bindTooltip(`🏛️ ${zone.name} (${zone.planYear})`, {
-          permanent: false,
-          direction: 'center',
-          className: 'planning-tooltip',
-        })
+        }).addTo(map).bindTooltip(
+          `<div style="font-family:Inter,sans-serif;padding:10px 14px;background:rgba(15,23,42,0.95);color:white;border-radius:12px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,0.14);box-shadow:0 8px 20px rgba(0,0,0,0.3);">🏛️ ${zone.name} (${zone.planYear})</div>`,
+          {
+            permanent: false,
+            direction: 'center',
+            className: 'planning-tooltip',
+          }
+        )
       })
 
       // ── Nearby Metro Stations ──
@@ -162,22 +168,22 @@ export default function ListingDetailMap({
 
       // Popup Content
       const popupHtml = `
-        <div style="padding:10px;min-width:200px;font-family:sans-serif">
-          <p style="font-size:13px;font-weight:800;color:#1e293b;margin:0 0 4px 0;line-height:1.3">
+        <div style="padding:14px 16px;min-width:220px;font-family:Inter,sans-serif">
+          <p style="font-size:13px;font-weight:800;color:#1e293b;margin:0 0 6px 0;line-height:1.4">
             ${title || 'Bất động sản Hà Nội'}
           </p>
-          <p style="font-size:11px;color:#64748b;margin:0 0 8px 0;">
+          <p style="font-size:11px;color:#64748b;margin:0 0 12px 0;line-height:1.4">
             📍 ${address || safeDistrict}
           </p>
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:14px;font-weight:900;color:#f97316;">${formatPriceShort(price)}</span>
-            <a href="https://www.google.com/maps/search/?api=1&query=${safeLat},${safeLng}" target="_blank" rel="noopener noreferrer" style="font-size:11px;font-weight:700;color:#2563eb;text-decoration:none;">
-              Google Maps ↗
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:8px;border-top:1px solid #f1f5f9;">
+            <span style="font-size:15px;font-weight:900;color:#f97316;">${formatPriceShort(price)}</span>
+            <a href="https://www.google.com/maps/search/?api=1&query=${safeLat},${safeLng}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);padding:4px 9px;border-radius:8px;font-size:11px;font-weight:700;color:#ea580c;text-decoration:none;">
+              Mở Google Maps ↗
             </a>
           </div>
         </div>
       `
-      marker.bindPopup(popupHtml, { maxWidth: 260 }).openPopup()
+      marker.bindPopup(popupHtml, { maxWidth: 280 }).openPopup()
 
       mapInstanceRef.current = map
       setIsMapReady(true)

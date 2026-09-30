@@ -34,10 +34,14 @@ import {
   Bath,
   Building,
   ArrowRight,
-  Search
+  Search,
+  Bell
 } from 'lucide-react';
+import { NotificationBell } from '@/components/notification/NotificationBell';
 
-type TabType = 'listings' | 'reports' | 'saved' | 'stitch' | 'packages';
+type TabType = 'listings' | 'reports' | 'saved' | 'stitch' | 'packages' | 'notifications';
+
+const VALID_TABS: TabType[] = ['listings', 'reports', 'saved', 'stitch', 'packages', 'notifications'];
 
 interface MenuItem {
   id: TabType;
@@ -59,19 +63,42 @@ function DashboardContent() {
 
   const { user, listings, setListings, savedListingIds, toggleSaveListing, addToast } = useApp();
   const [activeTab, setActiveTab] = useState<TabType>(
-    tabQuery && ['listings', 'reports', 'saved', 'stitch', 'packages'].includes(tabQuery)
+    tabQuery && VALID_TABS.includes(tabQuery)
       ? tabQuery
       : 'listings'
   );
+  const [unreadNotifCount, setUnreadNotifCount] = useState<number>(3);
   const [isSyncingStitch, setIsSyncingStitch] = useState(false);
   const [stitchApiKey, setStitchApiKey] = useState('AQ.Ab8RN6IZHLmSH1J7xdlYndtnZm6fJi2_YExaS4HA6Fqfr7YlTw');
 
   // Sync tab with URL query parameter on load
   useEffect(() => {
-    if (tabQuery && ['listings', 'reports', 'saved', 'stitch', 'packages'].includes(tabQuery)) {
+    if (tabQuery && VALID_TABS.includes(tabQuery)) {
       setActiveTab(tabQuery);
     }
   }, [tabQuery]);
+
+  // Sync unread notification count from localStorage
+  useEffect(() => {
+    const syncUnreadCount = () => {
+      try {
+        const raw = localStorage.getItem('hanoi_realty_notifications');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setUnreadNotifCount(parsed.filter((n: any) => !n.isRead).length);
+          }
+        }
+      } catch {}
+    };
+    syncUnreadCount();
+    window.addEventListener('hanoi_notifications_updated', syncUnreadCount);
+    window.addEventListener('storage', syncUnreadCount);
+    return () => {
+      window.removeEventListener('hanoi_notifications_updated', syncUnreadCount);
+      window.removeEventListener('storage', syncUnreadCount);
+    };
+  }, []);
 
   const handleSelectTab = (tabId: TabType) => {
     setActiveTab(tabId);
@@ -102,7 +129,7 @@ function DashboardContent() {
           const parsed = JSON.parse(raw);
           localStorage.setItem('hanoi_platform_user_listings', JSON.stringify(parsed.filter((item: any) => item.id !== id)));
         }
-      } catch {}
+      } catch { }
     }
     addToast('🗑️ Đã xoá tin đăng thành công', 'info');
   };
@@ -138,6 +165,12 @@ function DashboardContent() {
     {
       title: 'TÀI KHOẢN & DỊCH VỤ',
       items: [
+        {
+          id: 'notifications',
+          label: 'Thông báo',
+          icon: Bell,
+          badge: unreadNotifCount > 0 ? `${unreadNotifCount} MỚI` : undefined,
+        },
         { id: 'packages', label: 'Gói VIP', icon: Tag, badge: user?.package?.toUpperCase() || 'PRO' },
       ],
     },
@@ -157,7 +190,7 @@ function DashboardContent() {
       <Navbar />
 
       <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-        
+
         {/* User Profile Header Banner */}
         <div className="rounded-3xl border border-border bg-white p-6 sm:p-8 shadow-sm mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -203,7 +236,7 @@ function DashboardContent() {
 
         {/* Dashboard Grid: Grouped Sidebar Menu (Left) | Main Panel Content (Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
+
           {/* Left Menu Categorized Tabs */}
           <div className="space-y-5">
             {menuGroups.map((group) => (
@@ -221,26 +254,23 @@ function DashboardContent() {
                       <button
                         key={item.id}
                         onClick={() => handleSelectTab(item.id)}
-                        className={`group relative flex w-full items-center justify-between rounded-2xl p-3.5 text-xs font-bold transition-all ${
-                          isActive
+                        className={`group relative flex w-full items-center justify-between rounded-2xl p-3.5 text-xs font-bold transition-all ${isActive
                             ? 'bg-primary text-white shadow-md'
                             : 'bg-white text-text-secondary hover:bg-slate-50 border border-border'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <Icon
-                            className={`h-4 w-4 transition-colors ${
-                              isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'
-                            }`}
+                            className={`h-4 w-4 transition-colors ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'
+                              }`}
                           />
                           <span>{item.label}</span>
                         </div>
 
                         {item.count !== undefined && (
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-colors ${
-                              isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-text-secondary'
-                            }`}
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-colors ${isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-text-secondary'
+                              }`}
                           >
                             {item.count}
                           </span>
@@ -248,11 +278,10 @@ function DashboardContent() {
 
                         {item.badge && (
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                              item.badge === 'CONNECTED'
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${item.badge === 'CONNECTED'
                                 ? 'bg-emerald-500 text-white'
                                 : 'bg-accent text-white'
-                            }`}
+                              }`}
                           >
                             {item.badge}
                           </span>
@@ -267,7 +296,7 @@ function DashboardContent() {
 
           {/* Right Main Content */}
           <div className="lg:col-span-3 space-y-6">
-            
+
             {/* Quick Metrics Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -755,6 +784,22 @@ function DashboardContent() {
                   </div>
                 </motion.div>
               )}
+
+              {/* TAB 6: NOTIFICATIONS */}
+              {activeTab === 'notifications' && (
+                <motion.div
+                  key="tab-notifications"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <NotificationBell
+                    variant="embedded"
+                    onUnreadCountChange={setUnreadNotifCount}
+                  />
+                </motion.div>
+              )}
             </AnimatePresence>
 
           </div>
@@ -772,3 +817,4 @@ export default function DashboardPage() {
     </Suspense>
   );
 }
+
