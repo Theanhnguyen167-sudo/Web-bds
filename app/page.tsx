@@ -631,7 +631,7 @@ export default function HomePage() {
     const interval = setInterval(() => {
       setReviewDirection(1);
       setActiveReviewIdx((prev) => (prev + 1) % reviews.length);
-    }, 12000);
+    }, 18000);
     return () => clearInterval(interval);
   }, [isReviewPaused, reviews.length]);
 
@@ -1983,7 +1983,7 @@ export default function HomePage() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full flex flex-col items-center text-center"
               >
                 {/* Big Bold White Quote with Smart Quotes */}
