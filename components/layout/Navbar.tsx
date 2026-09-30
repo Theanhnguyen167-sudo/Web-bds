@@ -80,7 +80,7 @@ export const Navbar: React.FC = () => {
       <div className="w-full max-w-[1600px] mx-auto flex h-16 sm:h-20 items-center justify-between px-4 sm:px-8 lg:px-12 xl:px-16">
         
         {/* Left Group: Logo + Nav Links (Bố cục Codi chuẩn) */}
-        <div className="flex items-center gap-6 sm:gap-8 lg:gap-10 xl:gap-12">
+        <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 xl:gap-10 min-w-0">
           {/* Logo Left */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <motion.div
@@ -101,7 +101,7 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Nav Links (Desktop) - Bắt đầu ngay sau Logo từ chữ Trang chủ */}
-          <nav className="hidden md:flex items-center gap-2 sm:gap-3.5 lg:gap-5 xl:gap-7 transition-all duration-300">
+          <nav className="hidden md:flex items-center gap-1 sm:gap-2 lg:gap-3.5 xl:gap-5 transition-all duration-300">
             {navLinks.map((link) => {
               const isActive =
                 link.href === '/'
@@ -111,13 +111,13 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`relative px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-[13px] font-semibold tracking-wide transition-all ${
+                  className={`relative px-2.5 sm:px-3 lg:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-[13px] font-semibold tracking-wide whitespace-nowrap shrink-0 transition-all ${
                     isActive
                       ? 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
                       : 'text-white/90 hover:text-white hover:bg-black/20 backdrop-blur-xs'
                   }`}
                 >
-                  <span>{link.name}</span>
+                  <span className="whitespace-nowrap">{link.name}</span>
                 </Link>
               );
             })}
