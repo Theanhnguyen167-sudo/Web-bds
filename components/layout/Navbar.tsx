@@ -44,6 +44,7 @@ export const Navbar: React.FC = () => {
     { name: 'Trang chủ', href: '/' },
     { name: 'Tìm kiếm', href: '/search' },
     { name: 'Quy hoạch', href: '/planning' },
+    { name: 'Tin tức', href: '/news' },
     { name: 'Báo cáo AI', href: '/reports' },
     { name: 'Bảng giá', href: '/pricing' },
     { name: 'Về chúng tôi', href: '/about' },

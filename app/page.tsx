@@ -1745,7 +1745,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/streets"
+              href="/news"
               className="text-[10px] sm:text-xs font-bold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1.5 transition-colors shrink-0 group"
             >
               <span>Xem tất cả tin tức</span>
@@ -2215,7 +2215,7 @@ export default function HomePage() {
               <li><Link href="/about" className="hover:text-white transition-colors">Về chúng tôi</Link></li>
               <li><Link href="/about#team" className="hover:text-white transition-colors">Đội ngũ</Link></li>
               <li><Link href="/about#careers" className="hover:text-white transition-colors">Tuyển dụng</Link></li>
-              <li><Link href="/streets" className="hover:text-white transition-colors">Blog & Tin tức</Link></li>
+              <li><Link href="/news" className="hover:text-white transition-colors">Blog & Tin tức</Link></li>
               <li><Link href="/dashboard" className="hover:text-white transition-colors">Liên hệ</Link></li>
             </ul>
           </div>
