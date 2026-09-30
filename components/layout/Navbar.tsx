@@ -40,6 +40,10 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const navLinks = [
     { name: 'Trang chủ', href: '/' },
     { name: 'Tìm kiếm', href: '/search' },
@@ -115,7 +119,7 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Nav Links (Desktop) - Bắt đầu ngay sau Logo từ chữ Trang chủ */}
-          <nav className="hidden md:flex items-center gap-1 sm:gap-2 lg:gap-3 xl:gap-4 transition-all duration-300">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2.5 transition-all duration-300">
             {navLinks.map((link) => {
               const isActive =
                 link.href === '/'
@@ -125,10 +129,10 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`relative rounded-xl text-xs sm:text-[13px] font-semibold tracking-wide whitespace-nowrap shrink-0 transition-all ${
+                  className={`relative rounded-xl text-xs xl:text-[13px] font-semibold tracking-wide whitespace-nowrap shrink-0 transition-all ${
                     isScrolled
-                      ? 'px-2.5 sm:px-3 py-1 sm:py-1.5'
-                      : 'px-2.5 sm:px-3 lg:px-3.5 py-1.5 sm:py-2'
+                      ? 'px-2 xl:px-3 py-1 sm:py-1.5'
+                      : 'px-2 xl:px-3.5 py-1.5 sm:py-2'
                   } ${
                     isActive
                       ? 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
@@ -142,8 +146,8 @@ export const Navbar: React.FC = () => {
           </nav>
         </div>
 
-        {/* Right Section Actions */}
-        <div className="hidden md:flex items-center gap-3 sm:gap-4 lg:gap-5">
+        {/* Right Section Actions (Desktop lg+) */}
+        <div className="hidden lg:flex items-center gap-2.5 xl:gap-4 shrink-0">
           {/* Quick Search Shortcut */}
           <Link
             href="/search"
@@ -156,11 +160,11 @@ export const Navbar: React.FC = () => {
           {user?.role === 'admin' && (
             <Link
               href="/admin"
-              className="flex items-center gap-1.5 rounded-lg bg-orange-500/20 border border-orange-500/40 px-3 py-2 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white transition-all shadow-sm"
+              className="flex items-center gap-1.5 rounded-lg bg-orange-500/20 border border-orange-500/40 px-2.5 xl:px-3 py-2 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white transition-all shadow-sm whitespace-nowrap"
               title="Chuyển sang trang Quản trị Admin"
             >
-              <ShieldCheck className="h-4 w-4 text-orange-400" />
-              <span>Admin Portal</span>
+              <ShieldCheck className="h-4 w-4 text-orange-400 shrink-0" />
+              <span className="hidden xl:inline">Admin Portal</span>
             </Link>
           )}
 
@@ -295,36 +299,51 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Hamburger Toggle */}
-        <div className="flex md:hidden items-center gap-2">
-          {/* Chuông thông báo trên mobile */}
+        {/* Hamburger Menu Toggle (Tablet & Mobile < lg) */}
+        <div className="flex lg:hidden items-center gap-2 shrink-0">
+          <Link
+            href="/search"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            title="Tìm kiếm BĐS"
+          >
+            <Search className="h-4 w-4" />
+          </Link>
+          {/* Chuông thông báo trên mobile/tablet */}
           <NotificationBell />
           <button
             onClick={handlePostListingClick}
-            className="rounded-lg bg-accent px-2.5 py-1.5 text-xs font-bold text-white"
+            className="rounded-xl bg-accent hover:bg-accent-hover px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors whitespace-nowrap"
           >
             Đăng tin
           </button>
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-white hover:bg-primary-light"
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
+            title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+            className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-all cursor-pointer ${
+              mobileMenuOpen
+                ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/25'
+                : 'bg-white/5 text-white border-white/15 hover:bg-white/15'
+            }`}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile & Tablet Drawer Menu (< lg) */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
-            className="md:hidden border-t border-primary-light bg-primary px-4 py-4 text-white shadow-xl"
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            className="lg:hidden border-t border-white/10 bg-[#0a1128]/98 backdrop-blur-xl px-4 py-4 text-white shadow-2xl overflow-hidden"
           >
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {navLinks.map((link) => {
                 const isActive =
                   link.href === '/'
@@ -335,18 +354,20 @@ export const Navbar: React.FC = () => {
                     key={link.name}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
                       isActive
-                        ? 'border-2 border-orange-500 bg-orange-500/15 text-white font-bold'
-                        : 'hover:bg-primary-light text-slate-200'
+                        ? 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
+                        : 'hover:bg-white/10 text-slate-200'
                     }`}
                   >
-                    {link.name}
+                    <span>{link.name}</span>
+                    {isActive && <span className="h-2 w-2 rounded-full bg-orange-500" />}
                   </Link>
                 );
               })}
+            </div>
 
-              <div className="border-t border-slate-700 pt-3 mt-1 flex flex-col gap-2">
+              <div className="border-t border-slate-700 pt-3 mt-3 flex flex-col gap-2">
                 {user ? (
                   <>
                     {user.role === 'admin' && (
@@ -404,7 +425,6 @@ export const Navbar: React.FC = () => {
                   </Link>
                 )}
               </div>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
