@@ -55,4 +55,4 @@ Khi nhận task, AI Agent cần tự xác định context và áp dụng đúng 
 3. **Step 3:** Triển khai code theo module độc lập, không tạo monolithic files (>300 lines tách sub-components).
 4. **Step 4:** Kiểm tra Edge Cases: Loading state, Error state, Empty state, Mobile responsiveness.
 5. **Step 5:** Cập nhật tài liệu / checklist trong `docs/`.
-6. **Step 6:** Khởi chạy/kiểm tra localhost (`npm run dev`) để bạn kiểm tra trực quan. **Tuyệt đối KHÔNG tự ý commit hay push lên GitHub** chung của dự án khi chưa có yêu cầu hoặc xác nhận trực tiếp từ bạn.
+6. **Step 6:** Kiểm tra code / localhost (`npm run dev`), sau đó **tự động commit và push trực tiếp lên GitHub (`origin/main`)** (không tạo Pull Request) sau mỗi lần code xong theo yêu cầu của bạn.
