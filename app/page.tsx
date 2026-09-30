@@ -139,7 +139,7 @@ function CodiStatCounter({
   return (
     <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-2.5 sm:py-3 w-full">
       <div
-        className={`text-5xl sm:text-6xl md:text-[80px] lg:text-[96px] font-black tracking-tight leading-none flex items-baseline justify-center ${
+        className={`text-4xl sm:text-5xl md:text-[56px] lg:text-[64px] font-black tracking-tight leading-none flex items-baseline justify-center ${
           highlight ? 'text-[#0066FF]' : 'text-[#212529]'
         }`}
       >
@@ -342,6 +342,60 @@ const heroPricePresets = [
   { label: '10 - 20 tỷ', shortLabel: '10 - 20 tỷ', value: '10-20' },
   { label: 'Trên 20 tỷ', shortLabel: '> 20 tỷ', value: '20-999' },
 ];
+
+function CategoryCarousel() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth * 0.6 : scrollLeft + clientWidth * 0.6;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative group mt-2">
+      <button 
+        onClick={() => scroll('left')}
+        aria-label="Cuộn trái"
+        className="hidden sm:flex absolute -left-3 sm:left-2 lg:left-[160px] xl:left-[200px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+
+      <div 
+        ref={scrollRef}
+        className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-none pb-2 scroll-smooth snap-x snap-mandatory"
+      >
+        {propertyCategories.map((cat) => (
+          <Link
+            key={cat.name}
+            href={cat.href}
+            className="shrink-0 w-[120px] sm:w-[130px] lg:w-[140px] h-[100px] sm:h-[105px] lg:h-[110px] flex flex-col items-center justify-center text-center p-3 rounded-xl sm:rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-md hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group/item cursor-pointer hover:-translate-y-0.5 select-none snap-start"
+          >
+            <span className="text-2xl sm:text-3xl mb-1.5 group-hover/item:scale-110 transition-transform duration-200 inline-block">
+              {cat.icon}
+            </span>
+            <span className="font-bold text-xs sm:text-sm text-[#0a1128] group-hover/item:text-orange-500 transition-colors whitespace-nowrap">
+              {cat.name}
+            </span>
+            <span className="text-[10px] sm:text-[11px] text-slate-500 mt-1 group-hover/item:text-orange-500 font-medium transition-colors whitespace-nowrap">
+              {cat.count}
+            </span>
+          </Link>
+        ))}
+      </div>
+
+      <button 
+        onClick={() => scroll('right')}
+        aria-label="Cuộn phải"
+        className="hidden sm:flex absolute -right-3 sm:right-2 lg:right-[220px] xl:right-[260px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const router = useRouter();
@@ -948,28 +1002,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Lưới Danh mục ô vuông thu nhỏ gọn gàng thành 1 hàng duy nhất - dóng thẳng mép logo */}
-          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px]">
-            <div className="flex lg:grid lg:grid-cols-12 gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none pb-2">
-              {propertyCategories.map((cat) => (
-                <Link
-                  key={cat.name}
-                  href={cat.href}
-                  className="shrink-0 w-[100px] sm:w-[110px] lg:w-auto h-[88px] sm:h-[94px] lg:h-[98px] flex flex-col items-center justify-center text-center p-2 rounded-xl sm:rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-md hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group cursor-pointer hover:-translate-y-0.5 select-none"
-                >
-                  <span className="text-xl sm:text-2xl mb-1 group-hover:scale-110 transition-transform duration-200 inline-block">
-                    {cat.icon}
-                  </span>
-                  <span className="font-bold text-[11px] sm:text-xs text-[#0a1128] group-hover:text-orange-500 transition-colors whitespace-nowrap truncate max-w-full px-0.5">
-                    {cat.name}
-                  </span>
-                  <span className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5 group-hover:text-orange-500 font-medium transition-colors whitespace-nowrap truncate max-w-full">
-                    {cat.count}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
+          {/* Lưới Danh mục ô vuông cuộn ngang có nút điều hướng */}
+          <CategoryCarousel />
         </section>
 
       </div>
