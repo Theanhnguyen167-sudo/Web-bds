@@ -431,8 +431,8 @@ export default function HomePage() {
 
         {/* 3. LƯỚI 4 CỘT HÌNH ẢNH (4-COLUMN CARD GRID) */}
         {/* Nằm phía dưới khung tìm kiếm (đỉnh của 4 thẻ ảnh bị khung tìm kiếm che nhẹ lên, 1/4 nằm trong nền Navy) */}
-        <div ref={heroCardsRef} className="w-full max-w-6xl mx-auto px-4 sm:px-6 relative z-10 -mt-10 sm:-mt-14">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div ref={heroCardsRef} className="w-full max-w-6xl mx-auto px-4 sm:px-6 relative z-10 -mt-10 sm:-mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {heroFeatureCards.map((card, idx) => (
               <motion.div
                 key={card.title}
@@ -442,13 +442,13 @@ export default function HomePage() {
               >
                 <Link
                   href={card.href}
-                  className="group relative h-[360px] sm:h-[390px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/70 block hover:-translate-y-1.5"
+                  className="group relative h-[240px] sm:h-[280px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/70 block hover:-translate-y-1.5"
                 >
                   {/* Full height background image */}
                   <img
                     src={card.image}
                     alt={card.title}
-                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     loading="eager"
                   />
 
@@ -456,9 +456,9 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/50 to-transparent" />
 
                   {/* Text đè lên đáy ảnh (Căn giữa) */}
-                  <div className="absolute inset-x-0 bottom-0 p-5 text-center z-10">
+                  <div className="absolute inset-x-0 bottom-0 p-4 text-center z-10">
                     {/* Dòng 1: Tiêu đề thẻ (Thẻ/Loại hình) - Chữ Trắng, In đậm, Cỡ vừa */}
-                    <h3 className="text-lg font-bold text-white mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors">
+                    <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight group-hover:text-orange-400 transition-colors">
                       {card.title}
                     </h3>
                     {/* Dòng 2: Đoạn mô tả ngắn (2 dòng) - Chữ Trắng/Xám nhạt, Cỡ nhỏ */}
