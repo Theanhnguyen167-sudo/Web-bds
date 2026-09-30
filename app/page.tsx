@@ -82,6 +82,28 @@ function FadeInSection({ children, delay = 0, className = '' }: { children: Reac
   );
 }
 
+// Rolling digit animation for odometer effect
+function RollingDigit({ digit, isInView }: { digit: string; isInView: boolean }) {
+  if (isNaN(parseInt(digit))) return <span className="inline-block">{digit}</span>;
+  
+  return (
+    <div className="relative inline-block h-[1em] overflow-hidden align-bottom leading-none">
+      <motion.div
+        className="flex flex-col leading-none"
+        initial={{ y: '0%' }}
+        animate={{ y: isInView ? `-${parseInt(digit) * 10}%` : '0%' }}
+        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+          <span key={num} className="h-[1em] leading-none flex items-center justify-center">
+            {num}
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
 // Stats Counter item chuẩn Hình 1 (Codi style)
 function CodiStatCounter({
   value,
@@ -98,17 +120,24 @@ function CodiStatCounter({
   isFixed?: boolean;
   fixedText?: string;
 }) {
-  const { count, ref } = useCountUp(value || 0, 1600);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-50px' });
+  
+  const formattedString = isFixed ? fixedText : `${(value || 0).toLocaleString('de-DE')}`;
+  const displayChars = (formattedString + suffix).split('');
+
   return (
     <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-2.5 sm:py-3 w-full">
-      <span
-        className={`text-3xl sm:text-4xl md:text-[42px] font-black tracking-tight leading-none ${
-          highlight ? 'text-[#0066FF]' : 'text-[#0a1128]'
+      <div
+        className={`text-5xl sm:text-6xl md:text-[80px] lg:text-[96px] font-black tracking-tight leading-none flex items-baseline justify-center ${
+          highlight ? 'text-[#0066FF]' : 'text-[#212529]'
         }`}
       >
-        {isFixed ? fixedText : `${count.toLocaleString('de-DE')}${suffix}`}
-      </span>
-      <span className="text-xs sm:text-[13px] text-slate-500 font-medium mt-2 text-center whitespace-nowrap">
+        {displayChars.map((char, idx) => (
+          <RollingDigit key={idx} digit={char} isInView={isInView} />
+        ))}
+      </div>
+      <span className="text-sm sm:text-base text-slate-500 font-medium mt-3 sm:mt-5 text-center whitespace-nowrap">
         {label}
       </span>
     </div>
