@@ -152,9 +152,15 @@ export const PricingTable: React.FC = () => {
           <span>Gói Hội Viên Đăng Tin & Thẩm Định AI</span>
         </motion.div>
 
-        <h1 className="text-[clamp(1.15rem,2.8vw,2.6rem)] font-black text-[#0a1128] tracking-tight leading-tight whitespace-nowrap text-center">
-          Nâng Tầm Hiệu Quả{' '}
-          <span className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-transparent drop-shadow-sm">
+        <h1 
+          style={{ whiteSpace: 'nowrap' }}
+          className="text-xl sm:text-2xl md:text-3xl lg:text-[38px] xl:text-[42px] font-black text-[#0a1128] tracking-tight leading-tight whitespace-nowrap text-center"
+        >
+          <span>Nâng Tầm Hiệu Quả </span>
+          <span 
+            style={{ whiteSpace: 'nowrap' }}
+            className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-transparent drop-shadow-sm"
+          >
             Giao Dịch Bất Động Sản
           </span>
         </h1>
