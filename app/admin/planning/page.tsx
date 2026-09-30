@@ -145,18 +145,20 @@ export default function AdminPlanningPage() {
 
             {/* Map Controls */}
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="flex items-center gap-1.5 text-xs text-slate-600 bg-white border border-slate-200 px-2.5 py-1.5 rounded-xl">
-                <Sliders className="h-3.5 w-3.5 text-slate-400" />
-                <span>Độ trong suốt:</span>
+              <div className="flex items-center gap-2 text-xs text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-xl">
+                <Sliders className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <span className="leading-none">Độ trong suốt:</span>
                 <input
                   type="range"
                   min="15"
                   max="85"
                   value={mapOpacity}
                   onChange={(e) => setMapOpacity(Number(e.target.value))}
-                  className="w-16 accent-orange-500 cursor-pointer h-1.5"
+                  className="w-16 accent-orange-500 cursor-pointer h-1.5 m-0"
                 />
-                <span className="font-mono text-[11px] font-bold">{mapOpacity}%</span>
+                <span className="inline-flex items-center justify-center font-mono text-[11px] font-bold text-orange-600 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded min-w-[36px] leading-none">
+                  {mapOpacity}%
+                </span>
               </div>
 
               <select

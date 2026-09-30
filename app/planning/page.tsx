@@ -201,21 +201,25 @@ export default function PlanningPage() {
                       </div>
 
                       {/* Opacity Slider */}
-                      <div className="space-y-1 pt-1 border-t border-slate-800">
-                        <div className="flex items-center justify-between text-[11px] text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Sliders className="h-3 w-3" /> Độ đậm màu lớp phủ:
+                      <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                        <div className="flex items-center text-[11px] text-slate-400 font-medium">
+                          <span className="flex items-center gap-1.5">
+                            <Sliders className="h-3 w-3 text-orange-400" /> Độ đậm màu lớp phủ:
                           </span>
-                          <span className="font-mono font-bold text-white">{opacityValue}%</span>
                         </div>
-                        <input
-                          type="range"
-                          min={10}
-                          max={80}
-                          value={opacityValue}
-                          onChange={(e) => setOpacityValue(Number(e.target.value))}
-                          className="w-full accent-orange-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg appearance-none"
-                        />
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min={10}
+                            max={80}
+                            value={opacityValue}
+                            onChange={(e) => setOpacityValue(Number(e.target.value))}
+                            className="flex-1 accent-orange-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg appearance-none m-0"
+                          />
+                          <span className="inline-flex items-center justify-center font-mono text-xs font-bold text-orange-400 bg-orange-500/15 border border-orange-500/30 px-2 py-0.5 rounded-md min-w-[42px] leading-none shrink-0">
+                            {opacityValue}%
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
