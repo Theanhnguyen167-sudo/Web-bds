@@ -83,19 +83,29 @@ function FadeInSection({ children, delay = 0, className = '' }: { children: Reac
 }
 
 // Rolling digit animation for odometer effect
-function RollingDigit({ digit, isInView }: { digit: string; isInView: boolean }) {
+function RollingDigit({ digit, isInView, delay }: { digit: string; isInView: boolean; delay: number }) {
   if (isNaN(parseInt(digit))) return <span className="inline-block">{digit}</span>;
+  
+  const target = parseInt(digit);
+  // Tạo mảng dài để tạo hiệu ứng cuộn nhiều vòng (dây cót)
+  const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  // Vị trí dừng là vòng thứ 2 để đảm bảo số nào cũng phải cuộn một đoạn dài
+  const offset = 10 + target; 
   
   return (
     <div className="relative inline-block h-[1em] overflow-hidden align-bottom leading-none">
       <motion.div
         className="flex flex-col leading-none"
         initial={{ y: '0%' }}
-        animate={{ y: isInView ? `-${parseInt(digit) * 10}%` : '0%' }}
-        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+        animate={{ y: isInView ? `-${offset * (100 / numbers.length)}%` : '0%' }}
+        transition={{ 
+          duration: 2.2, 
+          delay: delay,
+          ease: [0.16, 1, 0.3, 1] // Hiệu ứng trượt nhanh lúc đầu và phanh lại từ từ (như dây cót/xe số)
+        }}
       >
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-          <span key={num} className="h-[1em] leading-none flex items-center justify-center">
+        {numbers.map((num, idx) => (
+          <span key={idx} className="h-[1em] leading-none flex items-center justify-center">
             {num}
           </span>
         ))}
@@ -134,7 +144,13 @@ function CodiStatCounter({
         }`}
       >
         {displayChars.map((char, idx) => (
-          <RollingDigit key={idx} digit={char} isInView={isInView} />
+          <RollingDigit 
+            key={idx} 
+            digit={char} 
+            isInView={isInView} 
+            // Tạo độ trễ từ phải qua trái (số hàng đơn vị chạy trước, hàng chục/trăm chạy sau như công tơ mét)
+            delay={(displayChars.length - idx) * 0.15} 
+          />
         ))}
       </div>
       <span className="text-sm sm:text-base text-slate-500 font-medium mt-3 sm:mt-5 text-center whitespace-nowrap">
