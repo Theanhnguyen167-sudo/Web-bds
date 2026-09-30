@@ -139,24 +139,27 @@ export const PricingTable: React.FC = () => {
   return (
     <div className="w-full max-w-7xl mx-auto py-8 space-y-12">
       {/* Header & Toggle */}
-      <div className="text-center space-y-4 max-w-3xl mx-auto">
+      <div className="relative text-center space-y-4 w-full max-w-6xl mx-auto px-4">
+        {/* Ambient Warm Glow */}
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-80 sm:w-[580px] h-32 bg-gradient-to-r from-orange-400/15 via-amber-400/20 to-orange-400/15 blur-3xl rounded-full pointer-events-none -z-10" />
+
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border border-orange-500/25 px-4 py-1.5 text-xs font-black text-orange-600 shadow-xs"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border border-orange-500/25 px-4 py-1.5 text-xs font-black text-orange-600 shadow-xs backdrop-blur-xs"
         >
           <Sparkles className="h-4 w-4 text-orange-500 animate-pulse" />
           <span>Gói Hội Viên Đăng Tin & Thẩm Định AI</span>
         </motion.div>
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0a1128] tracking-tight leading-tight">
+        <h1 className="text-[clamp(1.15rem,2.8vw,2.6rem)] font-black text-[#0a1128] tracking-tight leading-tight whitespace-nowrap text-center">
           Nâng Tầm Hiệu Quả{' '}
-          <span className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-transparent drop-shadow-sm">
             Giao Dịch Bất Động Sản
           </span>
         </h1>
 
-        <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
           Tối ưu chi phí môi giới, tiếp cận hàng ngàn khách mua và sở hữu công cụ phân tích quy hoạch AI độc quyền tại Hà Nội.
         </p>
 
