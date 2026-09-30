@@ -1,10 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { CreateListingWizard } from '@/components/listing/CreateListingWizard';
 
-export default function CreateListingPage() {
+export default function PostPropertyStepPage() {
+  const params = useParams();
+  const stepParam = params?.step as string;
+
   return (
     <div className="min-h-screen bg-page-bg flex flex-col">
       <Navbar />

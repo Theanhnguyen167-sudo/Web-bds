@@ -14,7 +14,7 @@ export interface ListingItem {
   lng: number;
   type: "house" | "apartment" | "land" | "villa";
   images: string[];
-  status: "active" | "pending" | "sold" | "rejected";
+  status: "active" | "pending" | "sold" | "rejected" | "draft";
   isFeatured: boolean;
   views: number;
   createdAt: string;
@@ -28,6 +28,13 @@ export interface ListingItem {
   authorPhone?: string;
   authorEmail?: string;
   authorAvatar?: string;
+  sellerType?: string;
+  companyName?: string;
+  contactAddress?: string;
+  showPhone?: boolean;
+  allowEmailContact?: boolean;
+  showCompany?: boolean;
+  isPhoneVerified?: boolean;
   users?: {
     full_name?: string;
     avatar_url?: string;

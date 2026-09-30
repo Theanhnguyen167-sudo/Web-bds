@@ -4,7 +4,7 @@ import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { CreateListingWizard } from '@/components/listing/CreateListingWizard';
 
-export default function CreateListingPage() {
+export default function PostPropertyPage() {
   return (
     <div className="min-h-screen bg-page-bg flex flex-col">
       <Navbar />
