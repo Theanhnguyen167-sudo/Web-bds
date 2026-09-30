@@ -34,10 +34,14 @@ import {
   Bath,
   Building,
   ArrowRight,
-  Search
+  Search,
+  Bell
 } from 'lucide-react';
+import { NotificationBell } from '@/components/notification/NotificationBell';
 
-type TabType = 'listings' | 'reports' | 'saved' | 'stitch' | 'packages';
+type TabType = 'listings' | 'reports' | 'saved' | 'stitch' | 'packages' | 'notifications';
+
+const VALID_TABS: TabType[] = ['listings', 'reports', 'saved', 'stitch', 'packages', 'notifications'];
 
 interface MenuItem {
   id: TabType;
@@ -59,19 +63,42 @@ function DashboardContent() {
 
   const { user, listings, setListings, savedListingIds, toggleSaveListing, addToast } = useApp();
   const [activeTab, setActiveTab] = useState<TabType>(
-    tabQuery && ['listings', 'reports', 'saved', 'stitch', 'packages'].includes(tabQuery)
+    tabQuery && VALID_TABS.includes(tabQuery)
       ? tabQuery
       : 'listings'
   );
+  const [unreadNotifCount, setUnreadNotifCount] = useState<number>(3);
   const [isSyncingStitch, setIsSyncingStitch] = useState(false);
   const [stitchApiKey, setStitchApiKey] = useState('AQ.Ab8RN6IZHLmSH1J7xdlYndtnZm6fJi2_YExaS4HA6Fqfr7YlTw');
 
   // Sync tab with URL query parameter on load
   useEffect(() => {
-    if (tabQuery && ['listings', 'reports', 'saved', 'stitch', 'packages'].includes(tabQuery)) {
+    if (tabQuery && VALID_TABS.includes(tabQuery)) {
       setActiveTab(tabQuery);
     }
   }, [tabQuery]);
+
+  // Sync unread notification count from localStorage
+  useEffect(() => {
+    const syncUnreadCount = () => {
+      try {
+        const raw = localStorage.getItem('hanoi_realty_notifications');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setUnreadNotifCount(parsed.filter((n: any) => !n.isRead).length);
+          }
+        }
+      } catch {}
+    };
+    syncUnreadCount();
+    window.addEventListener('hanoi_notifications_updated', syncUnreadCount);
+    window.addEventListener('storage', syncUnreadCount);
+    return () => {
+      window.removeEventListener('hanoi_notifications_updated', syncUnreadCount);
+      window.removeEventListener('storage', syncUnreadCount);
+    };
+  }, []);
 
   const handleSelectTab = (tabId: TabType) => {
     setActiveTab(tabId);
@@ -138,6 +165,12 @@ function DashboardContent() {
     {
       title: 'TÀI KHOẢN & DỊCH VỤ',
       items: [
+        {
+          id: 'notifications',
+          label: 'Thông báo',
+          icon: Bell,
+          badge: unreadNotifCount > 0 ? `${unreadNotifCount} MỚI` : undefined,
+        },
         { id: 'packages', label: 'Gói VIP', icon: Tag, badge: user?.package?.toUpperCase() || 'PRO' },
       ],
     },
@@ -749,6 +782,22 @@ function DashboardContent() {
                       Gia hạn hoặc Nâng cấp Agency
                     </Link>
                   </div>
+                </motion.div>
+              )}
+
+              {/* TAB 6: NOTIFICATIONS */}
+              {activeTab === 'notifications' && (
+                <motion.div
+                  key="tab-notifications"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <NotificationBell
+                    variant="embedded"
+                    onUnreadCountChange={setUnreadNotifCount}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

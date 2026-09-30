@@ -109,10 +109,32 @@ const DEFAULT_PREFS: NotificationPreferences = {
   weeklyEmailDigest: true
 };
 
-export const NotificationBell: React.FC = () => {
+export interface NotificationBellProps {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
+  variant?: 'popover' | 'embedded';
+  onUnreadCountChange?: (count: number) => void;
+}
+
+export const NotificationBell: React.FC<NotificationBellProps> = ({
+  isOpen: controlledOpen,
+  onOpenChange,
+  hideTrigger = false,
+  variant = 'popover',
+  onUnreadCountChange,
+}) => {
   const router = useRouter();
   const { addToast } = useApp();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = variant === 'embedded' ? true : (controlledOpen !== undefined ? controlledOpen : internalOpen);
+  const setIsOpen = (val: boolean | ((prev: boolean) => boolean)) => {
+    const nextVal = typeof val === 'function' ? val(isOpen) : val;
+    if (controlledOpen === undefined) {
+      setInternalOpen(nextVal);
+    }
+    onOpenChange?.(nextVal);
+  };
   const [viewMode, setViewMode] = useState<'list' | 'settings'>('list');
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'planning' | 'listings' | 'appointments'>('all');
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentData | null>(null);
@@ -178,12 +200,26 @@ export const NotificationBell: React.FC = () => {
       }
     };
 
+    const handleLocalUpdate = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setNotifications(parsed);
+          }
+        }
+      } catch {}
+    };
+
     window.addEventListener('hanoi_new_notification', handleNewNotification);
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('hanoi_notifications_updated', handleLocalUpdate);
 
     return () => {
       window.removeEventListener('hanoi_new_notification', handleNewNotification);
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('hanoi_notifications_updated', handleLocalUpdate);
     };
   }, []);
 
@@ -193,6 +229,7 @@ export const NotificationBell: React.FC = () => {
     try {
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(newNotifs));
+        window.dispatchEvent(new Event('hanoi_notifications_updated'));
       }
     } catch {
       // Ignore
@@ -210,8 +247,10 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
-  // Close on outside click or ESC
+  // Close on outside click or ESC (only for popover variant)
   useEffect(() => {
+    if (variant === 'embedded') return;
+
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -234,7 +273,7 @@ export const NotificationBell: React.FC = () => {
       document.removeEventListener('touchstart', handleOutsideClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, variant]);
 
   // Audio Chime using Web Audio API
   const playChime = () => {
@@ -259,6 +298,10 @@ export const NotificationBell: React.FC = () => {
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  useEffect(() => {
+    onUnreadCountChange?.(unreadCount);
+  }, [unreadCount, onUnreadCountChange]);
 
   // Filtered Notifications
   const filteredNotifications = notifications.filter((n) => {
@@ -457,47 +500,53 @@ export const NotificationBell: React.FC = () => {
   };
 
   return (
-    <div className="relative inline-block" ref={containerRef}>
+    <div className={variant === 'embedded' ? 'w-full' : 'relative inline-block'} ref={containerRef}>
       {/* ── TRIGGER BELL BUTTON ── */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen((prev) => !prev);
-        }}
-        aria-label="Quản lý và nhận thông báo"
-        className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 border cursor-pointer select-none ${
-          isOpen
-            ? 'bg-accent text-white border-accent shadow-md shadow-accent/25'
-            : 'bg-primary-light/60 border-slate-700 text-slate-200 hover:text-white hover:bg-primary-light hover:border-slate-500'
-        }`}
-        title="Thông báo hệ thống, quy hoạch và BĐS"
-      >
-        <Bell className="h-4 w-4 transition-transform duration-200" />
+      {!hideTrigger && variant === 'popover' && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+          aria-label="Quản lý và nhận thông báo"
+          className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 border cursor-pointer select-none ${
+            isOpen
+              ? 'bg-accent text-white border-accent shadow-md shadow-accent/25'
+              : 'bg-primary-light/60 border-slate-700 text-slate-200 hover:text-white hover:bg-primary-light hover:border-slate-500'
+          }`}
+          title="Thông báo hệ thống, quy hoạch và BĐS"
+        >
+          <Bell className="h-4 w-4 transition-transform duration-200" />
 
-        {/* Unread Counter Badge */}
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-extrabold text-white shadow-md shadow-accent/40 ring-2 ring-primary">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
+          {/* Unread Counter Badge */}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-extrabold text-white shadow-md shadow-accent/40 ring-2 ring-primary">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
 
-        {/* Subtle Pulse Ring when unread exists */}
-        {unreadCount > 0 && !isOpen && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent/40 animate-ping pointer-events-none" />
-        )}
-      </button>
+          {/* Subtle Pulse Ring when unread exists */}
+          {unreadCount > 0 && !isOpen && (
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent/40 animate-ping pointer-events-none" />
+          )}
+        </button>
+      )}
 
-      {/* ── DROPDOWN POPOVER PANEL ── */}
+      {/* ── DROPDOWN POPOVER OR EMBEDDED PANEL ── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.96 }}
+            initial={variant === 'embedded' ? { opacity: 0, y: 10 } : { opacity: 0, y: 8, scale: 0.96 }}
+            animate={variant === 'embedded' ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={variant === 'embedded' ? { opacity: 0, y: -10 } : { opacity: 0, y: 6, scale: 0.96 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-0 top-full mt-2.5 w-[360px] sm:w-[410px] max-w-[calc(100vw-24px)] rounded-2xl border border-slate-700 bg-slate-900 text-slate-100 shadow-2xl z-[9999] overflow-hidden ring-1 ring-white/10"
+            className={
+              variant === 'embedded'
+                ? 'w-full rounded-3xl border border-slate-800 bg-slate-900 text-slate-100 shadow-xl overflow-hidden ring-1 ring-white/10'
+                : 'fixed right-3 top-16 sm:absolute sm:right-0 sm:top-full sm:mt-2.5 w-[360px] sm:w-[410px] max-w-[calc(100vw-24px)] rounded-2xl border border-slate-700 bg-slate-900 text-slate-100 shadow-2xl z-[9999] overflow-hidden ring-1 ring-white/10'
+            }
           >
             {/* Popover Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/70 bg-slate-950/60">
@@ -560,14 +609,16 @@ export const NotificationBell: React.FC = () => {
                   </button>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-1"
-                  aria-label="Đóng"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                {variant !== 'embedded' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-1"
+                    aria-label="Đóng"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
 
@@ -634,7 +685,7 @@ export const NotificationBell: React.FC = () => {
                 </div>
 
                 {/* Notifications Scroll Container */}
-                <div className="max-h-[350px] sm:max-h-[380px] overflow-y-auto divide-y divide-slate-700/50">
+                <div className={`${variant === 'embedded' ? 'max-h-[520px]' : 'max-h-[350px] sm:max-h-[380px]'} overflow-y-auto divide-y divide-slate-700/50`}>
                   {filteredNotifications.length > 0 ? (
                     filteredNotifications.map((item) => {
                       const details = getCategoryDetails(item.category, item.tag);
@@ -793,17 +844,28 @@ export const NotificationBell: React.FC = () => {
 
                 {/* Popover Footer */}
                 <div className="flex items-center justify-between px-3.5 py-2.5 bg-primary/70 border-t border-slate-700/70 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      router.push('/dashboard');
-                    }}
-                    className="flex items-center gap-1 font-semibold text-accent hover:text-accent-hover transition-colors"
-                  >
-                    <span>Xem bảng điều khiển</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </button>
+                  {variant === 'embedded' ? (
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('settings')}
+                      className="flex items-center gap-1 font-semibold text-accent hover:text-accent-hover transition-colors"
+                    >
+                      <Sliders className="h-3 w-3" />
+                      <span>Cài đặt nhận thông báo</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push('/dashboard?tab=notifications');
+                      }}
+                      className="flex items-center gap-1 font-semibold text-accent hover:text-accent-hover transition-colors"
+                    >
+                      <span>Quản lý trong Tài khoản</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </button>
+                  )}
 
                   {notifications.length > 0 && (
                     <button
