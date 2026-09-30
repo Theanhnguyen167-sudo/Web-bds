@@ -547,7 +547,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory bg-page-bg text-text-primary font-sans scroll-smooth">
+    <div className="overflow-x-hidden bg-page-bg text-text-primary font-sans scroll-smooth">
       <Navbar />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
