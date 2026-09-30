@@ -1675,9 +1675,9 @@ export default function HomePage() {
             <div className="w-full flex flex-col">
               <Link
                 href="/streets"
-                className="group flex flex-col sm:flex-row bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 transition-all duration-300"
+                className="group flex flex-col sm:flex-row bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 transition-all duration-300 sm:h-[180px] lg:h-[200px]"
               >
-                <div className="relative w-full sm:w-5/12 h-[130px] sm:h-[220px] lg:h-[260px] overflow-hidden bg-slate-900 shrink-0">
+                <div className="relative w-full sm:w-5/12 h-[140px] sm:h-full overflow-hidden bg-slate-900 shrink-0">
                   <img
                     src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80"
                     alt="Metro line Hanoi"
@@ -1691,9 +1691,9 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="p-4 sm:p-6 lg:p-8 space-y-2 sm:space-y-3 flex-1 flex flex-col justify-center">
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <h3 className="text-sm sm:text-base lg:text-xl font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug">
+                <div className="p-4 sm:p-5 lg:p-6 space-y-1.5 sm:space-y-2 flex-1 flex flex-col justify-center">
+                  <div className="space-y-1 sm:space-y-1.5">
+                    <h3 className="text-sm sm:text-base lg:text-lg font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
                       Thị trường BĐS Hà Nội Q4/2025: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức khởi công
                     </h3>
                     <p className="text-xs sm:text-sm lg:text-base text-slate-600 line-clamp-2 leading-relaxed">
