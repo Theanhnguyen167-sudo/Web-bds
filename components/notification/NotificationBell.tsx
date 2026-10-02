@@ -36,6 +36,7 @@ const STORAGE_KEY_PREFS = 'hanoi_realty_notification_prefs';
 const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'notif-1',
+    recipientUserId: 'all', // Thông báo quy hoạch chung cho toàn bộ người dùng
     title: 'Cập nhật Quy hoạch Phân khu H2-2 Cầu Giấy',
     content: 'Đồ án điều chỉnh quy hoạch chi tiết 1/2000 khu đô thị mới Cầu Giấy vừa được UBND Hà Nội phê duyệt.',
     category: 'planning',
@@ -47,6 +48,8 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-2',
+    recipientUserId: 'u1', // Chỉ thuộc về tài khoản u1
+    type: 'appointment',
     title: 'Khách hẹn xem nhà mới',
     content: 'Khách hàng Hoàng Nam gửi yêu cầu hẹn xem căn "Nhà phố phân lô Dịch Vọng 65m²" vào 14:30 ngày mai.',
     category: 'message',
@@ -55,6 +58,7 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
     isRead: false,
     link: '/listings/1',
     tag: 'Hẹn xem nhà',
+    listingId: '1',
     appointmentData: {
       buyerName: 'Hoàng Nam',
       buyerPhone: '0912 888 999',
@@ -67,6 +71,8 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-3',
+    recipientUserId: 'u1',
+    type: 'ai',
     title: 'Báo cáo AI Thẩm định hoàn tất',
     content: 'Gemini AI 1.5 Pro đã hoàn tất định giá tự động và rà soát pháp lý cho bất động sản tại Nam Từ Liêm.',
     category: 'ai',
@@ -78,6 +84,7 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-4',
+    recipientUserId: 'all', // Biến động giá thị trường chung
     title: 'Biến động giá khu vực quan tâm',
     content: 'Chỉ số giá đất ở tại quận Tây Hồ tăng 2.3% so với quý trước, đạt mức trung bình 285 triệu/m².',
     category: 'listing',
@@ -89,6 +96,8 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-5',
+    recipientUserId: 'u1',
+    type: 'listing_approved',
     title: 'Tin đăng BĐS đã duyệt thành công',
     content: 'Tin đăng "Biệt thự Gamuda Yên Sở 220m²" của bạn đã được kiểm duyệt hợp lệ và hiển thị ưu tiên trên bản đồ.',
     category: 'system',
@@ -125,7 +134,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   onUnreadCountChange,
 }) => {
   const router = useRouter();
-  const { addToast } = useApp();
+  const { user, addToast } = useApp();
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = variant === 'embedded' ? true : (controlledOpen !== undefined ? controlledOpen : internalOpen);
   const setIsOpen = (val: boolean | ((prev: boolean) => boolean)) => {
@@ -297,17 +306,28 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  // CHỈ lấy các thông báo thuộc về tài khoản hiện tại hoặc thông báo chung toàn hệ thống ('all')
+  const currentUserId = user?.id;
+  const userNotifications = notifications.filter((n) => {
+    // Nếu notification cũ không có recipientUserId, tuyệt đối không hiển thị bừa bãi
+    if (!n.recipientUserId) return false;
+    if (!currentUserId) {
+      return n.recipientUserId === 'all';
+    }
+    return n.recipientUserId === currentUserId || n.recipientUserId === 'all';
+  });
+
+  const unreadCount = userNotifications.filter((n) => !n.isRead).length;
 
   useEffect(() => {
     onUnreadCountChange?.(unreadCount);
   }, [unreadCount, onUnreadCountChange]);
 
-  // Filtered Notifications
-  const filteredNotifications = notifications.filter((n) => {
+  // Filtered Notifications dựa trên userNotifications
+  const filteredNotifications = userNotifications.filter((n) => {
     if (activeFilter === 'unread') return !n.isRead;
     if (activeFilter === 'planning') return n.category === 'planning';
-    if (activeFilter === 'listings') return ['listing', 'message', 'ai'].includes(n.category);
+    if (activeFilter === 'listings') return ['listing', 'ai'].includes(n.category) && n.tag !== 'Hẹn xem nhà';
     if (activeFilter === 'appointments') return n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData);
     return true;
   });
@@ -326,11 +346,12 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     saveNotifications(updated);
   };
 
-  // Mark all as read
+  // Mark all as read: CHỈ đánh dấu đã đọc cho thông báo của tài khoản hiện tại
   const handleMarkAllAsRead = () => {
-    const updated = notifications.map((n) => ({ ...n, isRead: true }));
+    const userNotifIds = new Set(userNotifications.map((n) => n.id));
+    const updated = notifications.map((n) => (userNotifIds.has(n.id) ? { ...n, isRead: true } : n));
     saveNotifications(updated);
-    addToast('Đã đánh dấu tất cả thông báo là đã đọc', 'info');
+    addToast('Đã đánh dấu tất cả thông báo của bạn là đã đọc', 'info');
   };
 
   // Delete notification
@@ -341,10 +362,12 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     addToast('Đã xoá thông báo', 'info');
   };
 
-  // Clear all notifications
+  // Clear all notifications: CHỈ xoá các thông báo của chính user hiện tại, không xoá của tài khoản khác
   const handleClearAll = () => {
-    saveNotifications([]);
-    addToast('Đã xoá toàn bộ danh sách thông báo', 'info');
+    const userNotifIds = new Set(userNotifications.map((n) => n.id));
+    const updated = notifications.filter((n) => !userNotifIds.has(n.id));
+    saveNotifications(updated);
+    addToast('Đã xoá danh sách thông báo của bạn', 'info');
   };
 
   // Click on a notification item
@@ -390,7 +413,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   const handleSimulateDemoNotification = () => {
     playChime();
 
-    const sampleNotifications: Omit<NotificationItem, 'id' | 'createdAt' | 'timestamp' | 'isRead'>[] = [
+    const sampleNotifications: Omit<NotificationItem, 'id' | 'createdAt' | 'timestamp' | 'isRead' | 'recipientUserId'>[] = [
       {
         title: 'Tin đăng BĐS đã duyệt thành công',
         content: 'Tin đăng "Bán Biệt thự / Shophouse 75m² tại Cầu Giấy" của bạn đã được Admin kiểm duyệt thành công và chính thức hiển thị trên bản đồ!',
@@ -425,6 +448,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     const newNotif: NotificationItem = {
       ...randomTemplate,
       id: `notif-${Date.now()}`,
+      recipientUserId: user?.id || 'u1', // Gắn cho chính user hiện tại đang bấm thử
       createdAt: 'Vừa xong',
       timestamp: Date.now(),
       isRead: false
@@ -636,7 +660,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                         : 'text-slate-300 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    Tất cả ({notifications.length})
+                    Tất cả ({userNotifications.length})
                   </button>
                   <button
                     type="button"
@@ -658,7 +682,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                         : 'text-slate-300 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    📅 Lịch hẹn ({notifications.filter(n => n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData)).length})
+                    📅 Lịch hẹn ({userNotifications.filter(n => n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData)).length})
                   </button>
                   <button
                     type="button"

@@ -1,6 +1,9 @@
 export interface ListingItem {
   id: string;
   title: string;
+  /** ID tài khoản đã tạo tin đăng (BẮT BUỘC để phân quyền thông báo cho đúng chủ tin) */
+  ownerId?: string;
+  createdBy?: string;
   price: number;
   pricePerM2: number;
   area: number;
@@ -46,6 +49,8 @@ export interface ListingItem {
 export const mockListings: ListingItem[] = [
   {
     id: "1",
+    ownerId: "u1",
+    createdBy: "u1",
     title: "Nhà phố Đống Đa 5 tầng, mặt tiền 6m, gần Văn Miếu",
     price: 8500000000,
     pricePerM2: 85000000,
@@ -76,6 +81,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "2",
+    ownerId: "u2",
+    createdBy: "u2",
     title: "Căn hộ cao cấp Masteri West Heights Tây Mỗ, 2PN view hồ công viên",
     price: 3600000000,
     pricePerM2: 56250000,
@@ -105,6 +112,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "3",
+    ownerId: "u3",
+    createdBy: "u3",
     title: "Biệt thự song lập Tây Hồ view Hồ Tây thoáng mát, 180m2 sân vườn",
     price: 38000000000,
     pricePerM2: 211111111,
@@ -134,6 +143,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "4",
+    ownerId: "u1",
+    createdBy: "u1",
     title: "Nhà mặt phố Cầu Giấy kinh doanh sầm uất, 8 tầng thang máy",
     price: 24500000000,
     pricePerM2: 272222222,
@@ -163,6 +174,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "5",
+    ownerId: "u2",
+    createdBy: "u2",
     title: "Đất thổ cư Hoàn Kiếm phố cổ, mặt tiền 5m kinh doanh khách sạn/homestay",
     price: 16800000000,
     pricePerM2: 240000000,
@@ -192,6 +205,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "6",
+    ownerId: "u3",
+    createdBy: "u3",
     title: "Biệt thự ven sông Vinhomes Riverside Long Biên, 300m2 đơn lập VIP",
     price: 48000000000,
     pricePerM2: 160000000,
@@ -221,6 +236,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "7",
+    ownerId: "u4",
+    createdBy: "u4",
     title: "Căn hộ Vinhomes Metropolis Liễu Giai Ba Đình, 3PN full kính tràn viền",
     price: 9200000000,
     pricePerM2: 83636363,
@@ -250,6 +267,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "8",
+    ownerId: "u1",
+    createdBy: "u1",
     title: "Nhà liền kề Thanh Xuân gần ngã tư sở, ngõ ô tô tránh đỗ ngày đêm",
     price: 7200000000,
     pricePerM2: 96000000,

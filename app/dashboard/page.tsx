@@ -78,7 +78,7 @@ function DashboardContent() {
     }
   }, [tabQuery]);
 
-  // Sync unread notification count from localStorage
+  // Sync unread notification count CHỈ cho tài khoản hiện tại từ localStorage
   useEffect(() => {
     const syncUnreadCount = () => {
       try {
@@ -86,7 +86,14 @@ function DashboardContent() {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            setUnreadNotifCount(parsed.filter((n: any) => !n.isRead).length);
+            if (user) {
+              const count = parsed.filter(
+                (n: any) => (n.recipientUserId === user.id || n.recipientUserId === 'all') && !n.isRead
+              ).length;
+              setUnreadNotifCount(count);
+            } else {
+              setUnreadNotifCount(0);
+            }
           }
         }
       } catch {}
@@ -94,11 +101,13 @@ function DashboardContent() {
     syncUnreadCount();
     window.addEventListener('hanoi_notifications_updated', syncUnreadCount);
     window.addEventListener('storage', syncUnreadCount);
+    window.addEventListener('hanoi_new_notification', syncUnreadCount);
     return () => {
       window.removeEventListener('hanoi_notifications_updated', syncUnreadCount);
       window.removeEventListener('storage', syncUnreadCount);
+      window.removeEventListener('hanoi_new_notification', syncUnreadCount);
     };
-  }, []);
+  }, [user]);
 
   const handleSelectTab = (tabId: TabType) => {
     setActiveTab(tabId);

@@ -16,6 +16,8 @@ export interface AdminUser {
 
 export interface AdminListing {
   id: string;
+  ownerId?: string;
+  createdBy?: string;
   title: string;
   price: number;
   area: number;
@@ -145,6 +147,8 @@ export const mockAdminUsers: AdminUser[] = [
 export const mockAdminListings: AdminListing[] = [
   {
     id: 'l1',
+    ownerId: 'u1',
+    createdBy: 'u1',
     title: 'Nhà phố Đống Đa 5 tầng, mặt tiền 6m, gần Văn Miếu',
     price: 8500000000,
     area: 100,
@@ -164,6 +168,8 @@ export const mockAdminListings: AdminListing[] = [
   },
   {
     id: 'l2',
+    ownerId: 'u2',
+    createdBy: 'u2',
     title: 'Biệt thự Đơn lập Tây Hồ view trực diện mặt nước, full nội thất gỗ óc chó',
     price: 36000000000,
     area: 250,
@@ -183,6 +189,8 @@ export const mockAdminListings: AdminListing[] = [
   },
   {
     id: 'l3',
+    ownerId: 'u4',
+    createdBy: 'u4',
     title: 'Căn hộ Duplex cao cấp 3PN The Matrix One Mễ Trì',
     price: 6800000000,
     area: 120,
@@ -201,6 +209,8 @@ export const mockAdminListings: AdminListing[] = [
   },
   {
     id: 'l4',
+    ownerId: 'u3',
+    createdBy: 'u3',
     title: 'Đất phân lô kinh doanh Cầu Giấy, ngõ 8m ô tô tránh',
     price: 12500000000,
     area: 80,
@@ -219,6 +229,8 @@ export const mockAdminListings: AdminListing[] = [
   },
   {
     id: 'l5',
+    ownerId: 'u1',
+    createdBy: 'u1',
     title: 'Nhà phân lô Ba Đình 4 tầng gần Lotte Center',
     price: 9200000000,
     area: 65,

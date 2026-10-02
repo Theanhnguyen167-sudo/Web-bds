@@ -51,7 +51,7 @@ export default function BookingModal({
   listingId,
   onClose,
 }: BookingModalProps) {
-  const { user, addToast } = useApp();
+  const { user, listings, addToast } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Date/Time, 2: Info, 3: Success
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
@@ -149,11 +149,19 @@ export default function BookingModal({
     try {
       const formattedDateStr = formatFullDateVN(selectedDate);
       const notifId = `notif-visit-${Date.now()}`;
+      const apptId = `appt-${Date.now()}`;
 
-      // 1. Tạo thông báo mới chi tiết cho người bán
+      // Xác định chủ sở hữu bài đăng (ownerId) để CHỈ gửi thông báo cho tài khoản đó
+      const targetListing = listings.find((l) => l.id === listingId);
+      const sellerOwnerId = targetListing?.ownerId || targetListing?.userId || 'u1';
+
+      // 1. Tạo thông báo mới chi tiết cho NGƯỜI BÁN (Chủ tin)
       const newNotif: NotificationItem = {
         id: notifId,
-        title: `Khách hẹn xem nhà mới: ${name.trim()}`,
+        recipientUserId: sellerOwnerId, // CHỈ chủ sở hữu tin đăng mới nhận thông báo
+        type: 'appointment',
+        title: 'Bạn có lịch hẹn xem nhà mới',
+        message: `${name.trim()} đã đặt lịch xem "${listingTitle}" vào lúc ${selectedTime} ngày ${formattedDateStr}.`,
         content: `Khách hàng ${name.trim()} (SĐT: ${phone.trim()}) vừa đặt lịch hẹn xem căn "${listingTitle}" vào lúc ${selectedTime}, ${formattedDateStr}.${note.trim() ? ` Ghi chú: "${note.trim()}"` : ''}`,
         category: 'message',
         createdAt: 'Vừa xong',
@@ -161,6 +169,8 @@ export default function BookingModal({
         isRead: false,
         link: `/listings/${listingId}`,
         tag: 'Hẹn xem nhà',
+        listingId: listingId,
+        appointmentId: apptId,
         appointmentData: {
           buyerName: name.trim(),
           buyerPhone: phone.trim(),
@@ -186,7 +196,7 @@ export default function BookingModal({
         const existingApptsRaw = localStorage.getItem(STORAGE_KEY_APPOINTMENTS);
         const existingAppts = existingApptsRaw ? JSON.parse(existingApptsRaw) : [];
         const newAppt = {
-          id: `appt-${Date.now()}`,
+          id: apptId,
           buyerName: name.trim(),
           buyerPhone: phone.trim(),
           date: formattedDateStr,
@@ -204,6 +214,7 @@ export default function BookingModal({
 
         // 4. Phát sự kiện toàn cục để chuông thông báo (NotificationBell) cập nhật ngay lập tức
         window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
+        window.dispatchEvent(new Event('hanoi_notifications_updated'));
       }
 
       // 5. Hiển thị thông báo Toast thành công

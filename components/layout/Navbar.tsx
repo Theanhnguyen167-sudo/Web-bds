@@ -33,7 +33,38 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [unreadNotifCount, setUnreadNotifCount] = useState(3);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  // Đồng bộ số lượng thông báo chưa đọc của riêng tài khoản đang đăng nhập
+  useEffect(() => {
+    const syncNotifCount = () => {
+      try {
+        const raw = localStorage.getItem('hanoi_realty_notifications');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            if (user) {
+              const count = parsed.filter(
+                (n: any) => (n.recipientUserId === user.id || n.recipientUserId === 'all') && !n.isRead
+              ).length;
+              setUnreadNotifCount(count);
+            } else {
+              setUnreadNotifCount(0);
+            }
+          }
+        }
+      } catch {}
+    };
+    syncNotifCount();
+    window.addEventListener('hanoi_notifications_updated', syncNotifCount);
+    window.addEventListener('storage', syncNotifCount);
+    window.addEventListener('hanoi_new_notification', syncNotifCount);
+    return () => {
+      window.removeEventListener('hanoi_notifications_updated', syncNotifCount);
+      window.removeEventListener('storage', syncNotifCount);
+      window.removeEventListener('hanoi_new_notification', syncNotifCount);
+    };
+  }, [user]);
 
   useEffect(() => {
     const handleScroll = () => {

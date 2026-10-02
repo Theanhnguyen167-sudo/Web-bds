@@ -206,7 +206,7 @@ export default function AdminListingsPage() {
     setReviewListing(null);
     setIsRejecting(false);
 
-    await updateListingStatus(id, 'rejected');
+    await updateListingStatus(id, 'rejected', rejectionReason);
     await refreshListings();
   };
 
