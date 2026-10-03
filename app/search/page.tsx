@@ -176,8 +176,63 @@ function SearchContent() {
     }, 50);
   }, []);
 
+  // ── SEO & SPIDER TRAP PROTECTION (PATENT 84 & 90) ──
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+  const deepFilterKeys = [
+    'minPrice',
+    'maxPrice',
+    'minArea',
+    'maxArea',
+    'beds',
+    'direction',
+    'street',
+    'ward',
+    'purpose',
+    'type',
+    'metro',
+    'featured',
+    'view',
+  ];
+  const activeParamsList = Array.from(searchParams.keys());
+  const hasDeepFilters = activeParamsList.some((k) => deepFilterKeys.includes(k));
+  const districtParam = searchParams.get('district');
+
+  // Patent 84: Canonical URL đại diện sạch
+  // - Nếu chỉ lọc theo 1 quận mà không có lọc sâu: Canonical trỏ về /search?district={district}
+  // - Nếu có tổ hợp bộ lọc đa tầng (faceted search): Canonical luôn trỏ về URL sạch /search
+  const canonicalUrl = districtParam && !hasDeepFilters
+    ? `${baseUrl}/search?district=${encodeURIComponent(districtParam)}`
+    : `${baseUrl}/search`;
+
+  // Patent 90: Chặn Spider Trap bằng rule noindex, follow khi người dùng áp dụng lọc sâu
+  const shouldNoIndex = hasDeepFilters || activeParamsList.length > 2;
+
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-page-bg text-text-primary">
+      {/* ━━ SEO CANONICAL & ROBOTS METADATA (PATENT 84 & 90) ━━ */}
+      <link rel="canonical" href={canonicalUrl} />
+      {shouldNoIndex && <meta name="robots" content="noindex, follow" />}
+
+      {/* Schema.org SearchAction structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SearchResultsPage',
+            name: districtParam
+              ? `Tìm kiếm Bất Động Sản tại ${districtParam}`
+              : 'Tìm kiếm Bất Động Sản Hà Nội',
+            url: canonicalUrl,
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: `${baseUrl}/search?q={search_term_string}`,
+              'query-input': 'required name=search_term_string',
+            },
+          }),
+        }}
+      />
+
       <Navbar />
 
       {/* TOP HEADER CONTROLS (56px) */}
