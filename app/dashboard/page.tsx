@@ -39,9 +39,9 @@ import {
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
-type TabType = 'listings' | 'reports' | 'saved' | 'stitch' | 'packages' | 'notifications';
+type TabType = 'listings' | 'reports' | 'saved' | 'packages' | 'notifications';
 
-const VALID_TABS: TabType[] = ['listings', 'reports', 'saved', 'stitch', 'packages', 'notifications'];
+const VALID_TABS: TabType[] = ['listings', 'reports', 'saved', 'packages', 'notifications'];
 
 interface MenuItem {
   id: TabType;
@@ -68,8 +68,6 @@ function DashboardContent() {
       : 'listings'
   );
   const [unreadNotifCount, setUnreadNotifCount] = useState<number>(3);
-  const [isSyncingStitch, setIsSyncingStitch] = useState(false);
-  const [stitchApiKey, setStitchApiKey] = useState('AQ.Ab8RN6IZHLmSH1J7xdlYndtnZm6fJi2_YExaS4HA6Fqfr7YlTw');
 
   // Sync tab with URL query parameter on load
   useEffect(() => {
@@ -143,19 +141,7 @@ function DashboardContent() {
     addToast('🗑️ Đã xoá tin đăng thành công', 'info');
   };
 
-  const handleSyncStitch = async () => {
-    setIsSyncingStitch(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setIsSyncingStitch(false);
-      addToast('✨ Đã đồng bộ thành công toàn bộ UI Screens & Tokens từ Google Stitch!', 'success');
-    } catch {
-      setIsSyncingStitch(false);
-      addToast('Có lỗi xảy ra khi đồng bộ Stitch', 'error');
-    }
-  };
-
-  // Sidebar Menu categorized into 3 required groups
+  // Sidebar Menu categorized
   const menuGroups: MenuGroup[] = [
     {
       title: 'QUẢN LÝ',
@@ -163,12 +149,6 @@ function DashboardContent() {
         { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
         { id: 'saved', label: 'Tin đã lưu', icon: Heart, count: savedListingIds.length },
         { id: 'reports', label: 'Báo cáo AI', icon: Sparkles, count: user?.aiReportsUsed || 8 },
-      ],
-    },
-    {
-      title: 'KẾT NỐI',
-      items: [
-        { id: 'stitch', label: 'Google Stitch', icon: Cpu, badge: 'CONNECTED' },
       ],
     },
     {
@@ -183,15 +163,6 @@ function DashboardContent() {
         { id: 'packages', label: 'Gói VIP', icon: Tag, badge: user?.package?.toUpperCase() || 'PRO' },
       ],
     },
-  ];
-
-  const stitchScreens = [
-    { id: 's1', name: 'HaNoi Realty - Homepage Split Map', category: 'Main Layout', status: 'Đã đồng bộ', components: 14 },
-    { id: 's2', name: 'Property Detail & AI Scorecard', category: 'Listing', status: 'Đã đồng bộ', components: 9 },
-    { id: 's3', name: '5-Step Create Listing Wizard', category: 'Forms', status: 'Đã đồng bộ', components: 12 },
-    { id: 's4', name: 'AI Valuation & Planning Report', category: 'AI Intelligence', status: 'Đã đồng bộ', components: 8 },
-    { id: 's5', name: 'Membership Pricing & VIP Table', category: 'Monetization', status: 'Đã đồng bộ', components: 6 },
-    { id: 's6', name: 'User Management Dashboard', category: 'Management', status: 'Đã đồng bộ', components: 11 },
   ];
 
   return (
@@ -214,10 +185,6 @@ function DashboardContent() {
                 <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-extrabold text-accent uppercase">
                   Gói {user?.package || 'Pro'} VIP
                 </span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Stitch Connected
-                </span>
               </div>
               <p className="text-xs text-text-secondary mt-0.5">{user?.email || 'an@example.com'}</p>
               <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-09-15'}</p>
@@ -225,14 +192,6 @@ function DashboardContent() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => handleSelectTab('stitch')}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-page-bg px-4 py-3 text-xs font-bold text-text-primary hover:bg-slate-100 transition-all"
-            >
-              <Cpu className="h-4 w-4 text-accent" />
-              <span>Stitch API: AQ.Ab8...</span>
-            </button>
-
             <Link
               href="/listings/create"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-xs font-black text-white shadow-lg shadow-accent/25 hover:bg-accent-hover transition-all"
@@ -664,105 +623,6 @@ function DashboardContent() {
                     >
                       Xem chi tiết
                     </Link>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* TAB 4: GOOGLE STITCH DESIGN SYNC */}
-              {activeTab === 'stitch' && (
-                <motion.div
-                  key="tab-stitch"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-6"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Cpu className="h-5 w-5 text-accent" />
-                        <h3 className="text-base font-extrabold text-text-primary">
-                          Google Stitch AI Design System Sync
-                        </h3>
-                      </div>
-                      <p className="text-xs text-text-secondary mt-1">
-                        Kết nối và đồng bộ tự động thiết kế UI, components và Design Tokens từ Google Stitch
-                      </p>
-                    </div>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={isSyncingStitch}
-                      onClick={handleSyncStitch}
-                      className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-all disabled:opacity-75 shrink-0"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isSyncingStitch ? 'animate-spin' : ''}`} />
-                      <span>{isSyncingStitch ? 'Đang đồng bộ...' : 'Đồng bộ từ Stitch ngay'}</span>
-                    </motion.button>
-                  </div>
-
-                  {/* Active Key Box */}
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-emerald-700" />
-                        <span className="text-xs font-extrabold text-emerald-900">
-                          Khóa Xác Thực Google Stitch Đang Hoạt Động
-                        </span>
-                      </div>
-                      <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                        ACTIVE · CONNECTED
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        readOnly
-                        value={stitchApiKey}
-                        className="w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-mono font-bold text-slate-800 focus:outline-none select-all"
-                      />
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(stitchApiKey);
-                          addToast('Đã sao chép khóa Stitch API Key!', 'success');
-                        }}
-                        className="rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-800 transition-colors shrink-0"
-                      >
-                        Sao chép
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-emerald-700">
-                      Khóa này đã được liên kết với Antigravity MCP Server proxy và hệ thống runtime của website.
-                    </p>
-                  </div>
-
-                  {/* Synchronized Screens List */}
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-                      Màn hình & Components Đã Đồng Bộ
-                    </h4>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {stitchScreens.map((sc) => (
-                        <div
-                          key={sc.id}
-                          className="flex items-center justify-between rounded-2xl bg-page-bg p-3.5 border border-border"
-                        >
-                          <div className="space-y-0.5">
-                            <h5 className="text-xs font-bold text-text-primary">{sc.name}</h5>
-                            <span className="text-[10px] text-text-muted">{sc.category} · {sc.components} UI widgets</span>
-                          </div>
-
-                          <span className="rounded-md bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold flex items-center gap-1">
-                            <Check className="h-3 w-3" />
-                            {sc.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 </motion.div>
               )}
