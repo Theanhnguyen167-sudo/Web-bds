@@ -74,6 +74,8 @@ function DashboardContent() {
   );
   const [unreadNotifCount, setUnreadNotifCount] = useState<number>(3);
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [appointmentFilter, setAppointmentFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
+  const [appointmentSearch, setAppointmentSearch] = useState<string>('');
 
   // Sync tab with URL query parameter on load
   useEffect(() => {
@@ -178,7 +180,7 @@ function DashboardContent() {
   };
 
   // Lọc danh sách lịch hẹn thuộc về các bài đăng hoặc tài khoản của người dùng hiện tại
-  const userAppointments = appointments.filter((appt) => {
+  const rawUserAppointments = appointments.filter((appt) => {
     if (!user) return false;
     const userEmail = user.email?.toLowerCase();
     if (appt.sellerId && appt.sellerId === user.id) return true;
@@ -188,11 +190,50 @@ function DashboardContent() {
     return false;
   });
 
+  const userAppointments = rawUserAppointments.filter((appt) => {
+    if (appointmentFilter === 'pending' && appt.status && appt.status !== 'pending') return false;
+    if (appointmentFilter === 'confirmed' && appt.status !== 'confirmed') return false;
+    if (appointmentFilter === 'cancelled' && appt.status !== 'cancelled') return false;
+    if (appointmentSearch.trim()) {
+      const q = appointmentSearch.toLowerCase().trim();
+      const matchName = appt.buyerName?.toLowerCase().includes(q);
+      const matchPhone = appt.buyerPhone?.includes(q);
+      const matchTitle = appt.listingTitle?.toLowerCase().includes(q);
+      if (!matchName && !matchPhone && !matchTitle) return false;
+    }
+    return true;
+  });
+
   const handleUpdateAppointmentStatus = (apptId: string, newStatus: 'confirmed' | 'cancelled') => {
     const updated = appointments.map((a) => (a.id === apptId ? { ...a, status: newStatus } : a));
     setAppointments(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem('hanoi_realty_appointments', JSON.stringify(updated));
+
+      // Đồng bộ cập nhật trạng thái trong danh sách thông báo
+      try {
+        const notifsRaw = localStorage.getItem('hanoi_realty_notifications');
+        if (notifsRaw) {
+          const notifs = JSON.parse(notifsRaw);
+          if (Array.isArray(notifs)) {
+            const updatedNotifs = notifs.map((n: any) => {
+              if (n.appointmentId === apptId || n.appointmentData?.id === apptId) {
+                return {
+                  ...n,
+                  appointmentData: {
+                    ...n.appointmentData,
+                    status: newStatus
+                  }
+                };
+              }
+              return n;
+            });
+            localStorage.setItem('hanoi_realty_notifications', JSON.stringify(updatedNotifs));
+            window.dispatchEvent(new Event('hanoi_notifications_updated'));
+          }
+        }
+      } catch {}
+
       window.dispatchEvent(new Event('hanoi_appointments_updated'));
     }
     addToast(
@@ -495,13 +536,84 @@ function DashboardContent() {
                           Khách đăng ký lịch hẹn xem nhà
                         </h3>
                         <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-black text-accent">
-                          {userAppointments.length} lịch hẹn
+                          {rawUserAppointments.length} lịch hẹn
                         </span>
                       </div>
                       <p className="text-xs text-text-secondary mt-1">
                         Danh sách các khách hàng đã đặt lịch xem trực tiếp các bất động sản do bạn đăng bán.
                       </p>
                     </div>
+
+                    {/* Tìm kiếm & Lọc nhanh */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <div className="relative">
+                        <Search className="h-3.5 w-3.5 text-slate-400 absolute left-3 top-3" />
+                        <input
+                          type="text"
+                          placeholder="Tìm theo tên, SĐT, BĐS..."
+                          value={appointmentSearch}
+                          onChange={(e) => setAppointmentSearch(e.target.value)}
+                          className="pl-8 pr-3 py-1.5 rounded-xl border border-border text-xs bg-page-bg focus:border-accent focus:outline-none w-full sm:w-56 font-medium shadow-2xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filter Status Pills */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentFilter('all')}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                        appointmentFilter === 'all'
+                          ? 'bg-primary text-white shadow-xs'
+                          : 'bg-slate-100 text-text-secondary hover:bg-slate-200'
+                      }`}
+                    >
+                      Tất cả ({rawUserAppointments.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentFilter('pending')}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                        appointmentFilter === 'pending'
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                      }`}
+                    >
+                      <span>⏳ Chờ xác nhận</span>
+                      <span className="rounded-full bg-black/10 px-1.5 py-0.2 text-[10px]">
+                        {rawUserAppointments.filter((a) => !a.status || a.status === 'pending').length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentFilter('confirmed')}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                        appointmentFilter === 'confirmed'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                      }`}
+                    >
+                      <span>✓ Đã xác nhận</span>
+                      <span className="rounded-full bg-black/10 px-1.5 py-0.2 text-[10px]">
+                        {rawUserAppointments.filter((a) => a.status === 'confirmed').length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentFilter('cancelled')}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                        appointmentFilter === 'cancelled'
+                          ? 'bg-slate-700 text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      <span>✕ Đã huỷ</span>
+                      <span className="rounded-full bg-black/10 px-1.5 py-0.2 text-[10px]">
+                        {rawUserAppointments.filter((a) => a.status === 'cancelled').length}
+                      </span>
+                    </button>
                   </div>
 
                   {userAppointments.length === 0 ? (

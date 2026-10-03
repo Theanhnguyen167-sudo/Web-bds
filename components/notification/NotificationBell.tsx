@@ -403,11 +403,62 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     addToast('Đã xoá danh sách thông báo của bạn', 'info');
   };
 
+  // Update status for an appointment from notification card
+  const handleUpdateAppointmentStatus = (
+    apptId: string,
+    newStatus: 'confirmed' | 'cancelled',
+    e?: React.MouseEvent
+  ) => {
+    e?.stopPropagation();
+    try {
+      // 1. Update in notifications
+      const updatedNotifs = notifications.map((n) => {
+        if (n.appointmentId === apptId || (n.appointmentData && n.appointmentId === apptId)) {
+          return {
+            ...n,
+            appointmentData: n.appointmentData ? { ...n.appointmentData, status: newStatus } : undefined
+          };
+        }
+        return n;
+      });
+      saveNotifications(updatedNotifs);
+
+      // 2. Update in appointments storage
+      if (typeof window !== 'undefined') {
+        const rawAppts = localStorage.getItem('hanoi_realty_appointments');
+        if (rawAppts) {
+          const appts = JSON.parse(rawAppts);
+          if (Array.isArray(appts)) {
+            const updatedAppts = appts.map((a: any) =>
+              a.id === apptId ? { ...a, status: newStatus } : a
+            );
+            localStorage.setItem('hanoi_realty_appointments', JSON.stringify(updatedAppts));
+            window.dispatchEvent(new Event('hanoi_appointments_updated'));
+          }
+        }
+      }
+
+      if (selectedAppointment && (selectedAppointment as any).id === apptId) {
+        setSelectedAppointment((prev) => (prev ? { ...prev, status: newStatus } : null));
+      }
+
+      addToast(
+        newStatus === 'confirmed'
+          ? '✅ Đã xác nhận đón khách xem nhà thành công'
+          : '❌ Đã huỷ lịch hẹn xem nhà',
+        newStatus === 'confirmed' ? 'success' : 'info'
+      );
+    } catch {}
+  };
+
   // Click on a notification item
   const handleItemClick = (notif: NotificationItem) => {
     handleMarkAsRead(notif.id);
     if (notif.appointmentData) {
-      setSelectedAppointment(notif.appointmentData);
+      setSelectedAppointment({
+        ...notif.appointmentData,
+        id: notif.appointmentId || (notif.appointmentData as any).id
+      } as any);
       return;
     }
     setIsOpen(false);
@@ -803,9 +854,19 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                                     <Calendar className="h-3.5 w-3.5 text-orange-400" />
                                     <span>{item.appointmentData.time} • {item.appointmentData.date}</span>
                                   </span>
-                                  <span className="rounded-full bg-orange-500/20 text-orange-300 text-[10px] font-bold px-1.5 py-0.2 border border-orange-500/30">
-                                    Lịch hẹn mới
-                                  </span>
+                                  {item.appointmentData.status === 'confirmed' ? (
+                                    <span className="rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.2 border border-emerald-500/30">
+                                      ✓ Đã xác nhận
+                                    </span>
+                                  ) : item.appointmentData.status === 'cancelled' ? (
+                                    <span className="rounded-full bg-slate-700/60 text-slate-400 text-[10px] font-bold px-2 py-0.2 border border-slate-600">
+                                      ✕ Đã huỷ
+                                    </span>
+                                  ) : (
+                                    <span className="rounded-full bg-orange-500/20 text-orange-300 text-[10px] font-bold px-2 py-0.2 border border-orange-500/30">
+                                      ⏳ Chờ xác nhận
+                                    </span>
+                                  )}
                                 </div>
 
                                 <div className="flex items-center gap-1.5 text-slate-300 text-[11px]">
@@ -821,11 +882,11 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                                   </p>
                                 )}
 
-                                <div className="pt-1.5 flex items-center gap-2 border-t border-slate-800">
+                                <div className="pt-1.5 flex flex-wrap items-center gap-1.5 border-t border-slate-800">
                                   <a
                                     href={`tel:${item.appointmentData.buyerPhone.replace(/\s+/g, '')}`}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition-colors shadow-xs"
+                                    className="flex-1 min-w-[70px] flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition-colors shadow-xs"
                                   >
                                     <Phone className="h-3 w-3" />
                                     <span>Gọi ngay</span>
@@ -835,11 +896,30 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#0068FF] hover:bg-[#0055d4] text-white font-bold text-[10px] transition-colors shadow-xs"
+                                    className="flex-1 min-w-[70px] flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#0068FF] hover:bg-[#0055d4] text-white font-bold text-[10px] transition-colors shadow-xs"
                                   >
                                     <MessageSquare className="h-3 w-3" />
-                                    <span>Chat Zalo</span>
+                                    <span>Zalo</span>
                                   </a>
+
+                                  {(!item.appointmentData.status || item.appointmentData.status === 'pending') && item.appointmentId && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => handleUpdateAppointmentStatus(item.appointmentId!, 'confirmed', e)}
+                                        className="py-1.5 px-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] transition-colors shadow-xs"
+                                      >
+                                        Xác nhận
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => handleUpdateAppointmentStatus(item.appointmentId!, 'cancelled', e)}
+                                        className="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-red-950 hover:text-red-400 text-slate-400 text-[10px] font-semibold transition-colors"
+                                      >
+                                        Huỷ
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             )}
@@ -1190,23 +1270,46 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
               </div>
 
               {/* Action buttons */}
-              <div className="pt-2 flex items-center gap-2.5">
-                <a
-                  href={`tel:${selectedAppointment.buyerPhone.replace(/\s+/g, '')}`}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition-colors"
-                >
-                  <Phone className="h-4 w-4" />
-                  <span>Gọi điện ngay</span>
-                </a>
-                <a
-                  href={`https://zalo.me/${selectedAppointment.buyerPhone.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white font-extrabold text-xs shadow-md transition-colors"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Nhắn Zalo</span>
-                </a>
+              <div className="pt-2 flex flex-col gap-2">
+                <div className="flex items-center gap-2.5">
+                  <a
+                    href={`tel:${selectedAppointment.buyerPhone.replace(/\s+/g, '')}`}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition-colors"
+                  >
+                    <Phone className="h-4 w-4" />
+                    <span>Gọi điện ngay</span>
+                  </a>
+                  <a
+                    href={`https://zalo.me/${selectedAppointment.buyerPhone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white font-extrabold text-xs shadow-md transition-colors"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Nhắn Zalo</span>
+                  </a>
+                </div>
+
+                {/* Confirm or Cancel buttons */}
+                {(!selectedAppointment.status || selectedAppointment.status === 'pending') && (selectedAppointment as any).id && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateAppointmentStatus((selectedAppointment as any).id, 'confirmed')}
+                      className="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span>Xác nhận đón khách</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateAppointmentStatus((selectedAppointment as any).id, 'cancelled')}
+                      className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-red-950 hover:text-red-400 text-slate-300 font-bold text-xs transition-colors"
+                    >
+                      Huỷ hẹn
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button
