@@ -71,15 +71,30 @@ export async function GET(req: NextRequest) {
         })
         .eq('order_id', orderId);
 
-      // Kích hoạt VIP cho người dùng nếu thành công
-      if (isPaymentSuccess && order.user_id) {
-        await supabase
-          .from('users')
-          .update({
-            membership_tier: order.package_id || 'vip1',
-            membership_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          })
-          .eq('id', order.user_id);
+      // Kích hoạt VIP cho người dùng nếu thành công & tự động gửi email hóa đơn
+      if (isPaymentSuccess) {
+        if (order.user_id) {
+          await supabase
+            .from('users')
+            .update({
+              membership_tier: order.package_id || 'vip1_diamond',
+              membership_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            })
+            .eq('id', order.user_id);
+        }
+
+        // 4.2. Tự động gửi Email hóa đơn & thông báo
+        const { sendInvoiceEmail } = await import('@/lib/payment/invoice-service');
+        await sendInvoiceEmail({
+          toEmail: order.user_email || 'khachhang@hanoirealty.vn',
+          customerName: order.user_name || 'Quý khách',
+          orderId: order.order_id || orderId,
+          packageName: order.package_name || 'Gói VIP 1 (Kim Cương)',
+          amount: rawAmount,
+          paymentMethod: 'vnpay',
+          transactionNo: vnpTransactionNo,
+          paidAt: new Date().toISOString(),
+        });
       }
     }
 

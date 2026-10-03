@@ -934,7 +934,7 @@ export default function SearchMap({
         )}
       </AnimatePresence>
 
-      {/* ── Hover Popup Card (custom, not Leaflet popup) ── */}
+      {/* ── DESKTOP: Hover/Click Popup Card (custom Leaflet overlay) ── */}
       <AnimatePresence>
         {popupListing && activePopupId && (
           <motion.div
@@ -948,7 +948,7 @@ export default function SearchMap({
               top: Math.max(popupPosition.y - 220, 10),
               zIndex: 450,
             }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl 
+            className="hidden sm:block bg-white dark:bg-gray-800 rounded-2xl shadow-2xl 
                        border border-gray-200 dark:border-gray-700 
                        overflow-hidden w-[300px]"
           >
@@ -959,7 +959,7 @@ export default function SearchMap({
               className="absolute top-2 right-2 z-10 w-7 h-7 bg-white/80 
                          dark:bg-gray-700/80 backdrop-blur-sm rounded-full 
                          flex items-center justify-center text-gray-500 
-                         hover:text-red-500 transition-colors shadow-sm"
+                         hover:text-red-500 transition-colors shadow-sm cursor-pointer"
             >
               <X size={13} />
             </motion.button>
@@ -1033,6 +1033,113 @@ export default function SearchMap({
               </Link>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MOBILE: 3.1. BOTTOM SHEET DRAWER (Mobile-Touch-First 100dvh & Spring Animation) ── */}
+      <AnimatePresence>
+        {popupListing && activePopupId && (
+          <div className="sm:hidden fixed inset-x-0 bottom-0 z-[600] flex flex-col justify-end pointer-events-none">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => closePopup()}
+              className="fixed inset-0 bg-black/40 backdrop-blur-xs pointer-events-auto"
+            />
+
+            {/* Bottom Sheet Card */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="relative w-full bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl border-t border-slate-200 dark:border-slate-800 p-4 pb-6 pointer-events-auto max-h-[75dvh] overflow-y-auto touch-manipulation"
+            >
+              {/* Drag Handle Bar */}
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-3" />
+
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
+                  <MapPin size={14} />
+                  <span>Bất động sản được chọn</span>
+                </span>
+                <button
+                  onClick={() => closePopup()}
+                  className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800"
+                  aria-label="Đóng"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Content Grid */}
+              <div className="flex gap-3 pt-3">
+                {/* Thumbnail */}
+                <div className="relative w-28 h-24 rounded-2xl overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800 shadow-sm">
+                  {popupListing.images && popupListing.images[0] ? (
+                    <img
+                      src={popupListing.images[0]}
+                      alt={popupListing.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl">
+                      {TYPE_ICONS[popupListing.type]}
+                    </div>
+                  )}
+                  <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                    {popupListing.type === 'house' ? 'Nhà' : popupListing.type === 'apartment' ? 'Chung cư' : 'Đất'}
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="text-lg font-black text-rose-600 tracking-tight">
+                    {formatPriceShort(popupPrice)} VNĐ
+                    <span className="text-xs font-semibold text-slate-400 ml-1.5">
+                      · {formatPriceShort(popupPrice / (popupListing.area || 1))}/m²
+                    </span>
+                  </div>
+
+                  <h4 className="text-xs font-extrabold text-slate-900 dark:text-white line-clamp-2 leading-snug">
+                    {popupListing.title}
+                  </h4>
+
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 truncate">
+                    <MapPin size={12} className="text-orange-500 shrink-0" />
+                    <span className="truncate">{popupListing.address}</span>
+                  </p>
+
+                  <div className="flex items-center gap-2 pt-0.5 text-[11px] text-slate-600 dark:text-slate-300 font-medium">
+                    <span>📐 {popupListing.area}m²</span>
+                    <span>·</span>
+                    <span>📍 {popupListing.district}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-2 mt-4 pt-2">
+                <button
+                  type="button"
+                  onClick={() => closePopup()}
+                  className="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs text-center active:scale-95 transition-transform"
+                >
+                  Đóng
+                </button>
+                <Link
+                  href={`/listings/${popupListing.id}`}
+                  className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs text-center shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+                >
+                  <Eye size={14} />
+                  <span>Xem chi tiết</span>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

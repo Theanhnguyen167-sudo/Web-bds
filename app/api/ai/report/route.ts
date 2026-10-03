@@ -2,11 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiModel } from '@/lib/ai/gemini';
 import { buildRealEstateAnalysisPrompt } from '@/lib/ai/prompts';
 import { ApiResponse, AIReportData } from '@/types';
+import { checkRateLimit } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    // 3.3. Rate Limiting: 10 requests / 60s
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'anonymous';
+    const rateCheck = checkRateLimit(`ai-report:${clientIp}`, 10, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: {
+            message: `Bạn đã thực hiện quá nhiều yêu cầu phân tích AI. Vui lòng thử lại sau ${rateCheck.retryAfterSec} giây.`,
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateCheck.retryAfterSec) },
+        }
+      );
+    }
+
     const body = await req.json();
     const { address, district, property_type, price, area, direction, legal_status } = body;
 
