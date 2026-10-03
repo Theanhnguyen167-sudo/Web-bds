@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { mockListings } from '@/lib/mock-data';
+import { HANOI_DISTRICTS_HUB_DATA } from '@/lib/data/hanoi-districts-hub';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
@@ -56,6 +57,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    // Topic Hubs theo Quận/Huyện Hà Nội (Patent 46, 54)
+    ...Object.keys(HANOI_DISTRICTS_HUB_DATA).map((slug) => ({
+      url: `${baseUrl}/khu-vuc/${slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+    })),
   ];
 
   // 2. Thu thập danh sách tin đăng động từ Supabase + Mock fallback

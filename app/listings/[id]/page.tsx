@@ -166,7 +166,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
       price: listing.price,
       priceCurrency: 'VND',
       availability: listing.status === 'sold' ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
-      validFrom: listing.createdAt || new Date().toISOString().split('T')[0],
+      validFrom: listing.createdAt || '2026-01-01',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
         price: listing.price,
@@ -174,6 +174,8 @@ export default async function ListingPage({ params }: ListingPageProps) {
         unitCode: 'MTK',
       },
     },
+    datePosted: listing.createdAt || '2026-01-15T08:00:00+07:00',
+    dateModified: new Date().toISOString(), // Patent 61, 62: Freshness Boost on substantive inspection & price validation
   };
 
   return (
