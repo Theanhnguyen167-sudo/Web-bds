@@ -151,12 +151,33 @@ export const HANOI_PLANNING_ZONES = [
 ]
 
 export const HANOI_METRO_STATIONS = [
-  { name: 'Ga Nhổn', lat: 21.0451, lng: 105.7614, line: 'Line 3' },
-  { name: 'Ga Cầu Giấy', lat: 21.0330, lng: 105.7968, line: 'Line 3' },
-  { name: 'Ga Kim Mã', lat: 21.0312, lng: 105.8136, line: 'Line 3' },
-  { name: 'Ga Cát Linh', lat: 21.0280, lng: 105.8383, line: 'Line 2A' },
-  { name: 'Ga Văn Miếu', lat: 21.0277, lng: 105.8350, line: 'Line 2A' },
-  { name: 'Ga La Khê', lat: 20.9812, lng: 105.7818, line: 'Line 2A' },
+  // ── Tuyến 3 (Nhổn - Ga Hà Nội) ──
+  { name: 'Ga Nhổn', lat: 21.0538, lng: 105.7351, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Minh Khai', lat: 21.0489, lng: 105.7443, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Phú Diễn', lat: 21.0441, lng: 105.7562, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Cầu Diễn', lat: 21.0402, lng: 105.7675, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Lê Đức Thọ', lat: 21.0378, lng: 105.7761, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Đại học Quốc Gia', lat: 21.0366, lng: 105.7820, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Chùa Hà', lat: 21.0348, lng: 105.7925, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Cầu Giấy', lat: 21.0315, lng: 105.8032, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Kim Mã', lat: 21.0312, lng: 105.8136, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Cát Linh (Tuyến 3)', lat: 21.0280, lng: 105.8320, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Văn Miếu', lat: 21.0277, lng: 105.8350, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+  { name: 'Ga Hà Nội', lat: 21.0245, lng: 105.8415, line: 'Tuyến 3 (Nhổn - Ga Hà Nội)' },
+
+  // ── Tuyến 2A (Cát Linh - Hà Đông) ──
+  { name: 'Ga Cát Linh (2A)', lat: 21.0280, lng: 105.8383, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga La Thành', lat: 21.0205, lng: 105.8270, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Thái Hà', lat: 21.0145, lng: 105.8212, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Láng', lat: 21.0082, lng: 105.8152, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Thượng Đình', lat: 20.9995, lng: 105.8105, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Vành Đai 3', lat: 20.9912, lng: 105.8035, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Phùng Khoang', lat: 20.9855, lng: 105.7958, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Văn Quán', lat: 20.9798, lng: 105.7872, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Hà Đông', lat: 20.9742, lng: 105.7795, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga La Khê', lat: 20.9688, lng: 105.7705, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Văn Khê', lat: 20.9625, lng: 105.7622, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
+  { name: 'Ga Yên Nghĩa', lat: 20.9548, lng: 105.7538, line: 'Tuyến 2A (Cát Linh - Hà Đông)' },
 ]
 
 export const PLANNING_ZONE_TYPES = {
