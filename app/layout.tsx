@@ -3,6 +3,7 @@ import './globals.css';
 import { AppProvider } from '@/lib/context/AppContext';
 import { ToastContainer } from '@/components/ui/Toast';
 import { AdminFloatingSwitch } from '@/components/admin/AdminFloatingSwitch';
+import { ChatWidget } from '@/components/chat/ChatWidget';
 
 export const metadata: Metadata = {
   title: 'HaNoi Realty - Nền tảng BĐS & Tra cứu Quy hoạch Hà Nội',
@@ -43,6 +44,7 @@ export default function RootLayout({
           {children}
           <ToastContainer />
           <AdminFloatingSwitch />
+          <ChatWidget />
         </AppProvider>
       </body>
     </html>

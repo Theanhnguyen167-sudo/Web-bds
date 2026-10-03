@@ -44,7 +44,7 @@ export const Navbar: React.FC = () => {
     { name: 'Trang chủ', href: '/' },
     { name: 'Tìm kiếm', href: '/search' },
     { name: 'Quy hoạch', href: '/planning' },
-    { name: 'Báo cáo AI', href: '/reports' },
+    { name: 'Báo cáo AI', href: '/listings/1' },
     { name: 'Bảng giá', href: '/pricing' },
     { name: 'Về chúng tôi', href: '/about' },
   ];
@@ -99,18 +99,14 @@ export const Navbar: React.FC = () => {
           </div>
         </Link>
 
-        {/* Center Nav Links (Desktop) - Ẩn mượt khi cuộn trang chủ để nhường chỗ cho Airbnb Compact Search Bar */}
-        <nav
-          className={`hidden md:flex items-center gap-1 lg:gap-2 transition-all duration-300 ${
-            pathname === '/' && isScrolled
-              ? 'opacity-0 pointer-events-none scale-95'
-              : 'opacity-100 pointer-events-auto scale-100'
-          }`}
-        >
+        {/* Center Nav Links (Desktop) */}
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           {navLinks.map((link) => {
             const isActive =
               link.href === '/'
                 ? pathname === '/'
+                : link.name === 'Báo cáo AI'
+                ? pathname === '/listings/1' || pathname.startsWith('/reports')
                 : pathname === link.href || pathname.startsWith(link.href + '/');
             return (
               <Link

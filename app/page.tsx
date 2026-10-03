@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
-import { QuickNav } from '@/components/layout/QuickNav';
 import { AirbnbStickySearchBar } from '@/components/home/AirbnbStickySearchBar';
 import { DistrictPropertyExplorer } from '@/components/home/DistrictPropertyExplorer';
 import { ListingCard } from '@/components/listing/ListingCard';
@@ -331,7 +330,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-page-bg text-text-primary overflow-x-hidden font-sans">
       <Navbar />
-      <QuickNav />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1 — HERO SEARCH & 4-CARD GRID (Chuẩn bố cục Ảnh 2)
@@ -1198,7 +1196,7 @@ export default function HomePage() {
             <ul className="space-y-2 text-slate-400">
               <li><Link href="/search" className="hover:text-white transition-colors">Tìm kiếm BĐS</Link></li>
               <li><Link href="/planning" className="hover:text-white transition-colors">Bản đồ quy hoạch</Link></li>
-              <li><Link href="/reports" className="hover:text-white transition-colors">Báo cáo AI</Link></li>
+              <li><Link href="/listings/1" className="hover:text-white transition-colors">Báo cáo AI</Link></li>
               <li><Link href="/listings/create" className="hover:text-white transition-colors">Đăng tin BĐS</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Gói thành viên</Link></li>
               <li><Link href="/admin" className="text-orange-400 hover:text-white transition-colors font-bold flex items-center gap-1">🛡️ Admin Portal</Link></li>

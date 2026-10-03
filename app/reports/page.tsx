@@ -1,14 +1,30 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { ReportViewer } from '@/components/ai-report/ReportViewer';
 import { Loader2 } from 'lucide-react';
 
 function ReportsContent() {
   const searchParams = useSearchParams();
-  const listingId = searchParams?.get('id') || '1';
+  const router = useRouter();
+  const listingId = searchParams?.get('id');
+
+  React.useEffect(() => {
+    if (!listingId) {
+      router.replace('/listings/1');
+    }
+  }, [listingId, router]);
+
+  if (!listingId) {
+    return (
+      <div className="py-24 flex items-center justify-center gap-2 text-text-secondary text-sm">
+        <Loader2 className="h-5 w-5 animate-spin text-accent" />
+        <span>Đang chuyển đến chi tiết bất động sản...</span>
+      </div>
+    );
+  }
 
   return <ReportViewer listingId={listingId} />;
 }
