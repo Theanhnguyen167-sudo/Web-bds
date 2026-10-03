@@ -73,6 +73,22 @@ export default function BookingModal({
   const [phone, setPhone] = useState<string>(user?.phone || '');
   const [note, setNote] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [existingAppointments, setExistingAppointments] = useState<any[]>([]);
+
+  // Load existing appointments for slot concurrency check
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem(STORAGE_KEY_APPOINTMENTS);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setExistingAppointments(parsed);
+          }
+        }
+      }
+    } catch {}
+  }, []);
 
   // Sync user info when available
   useEffect(() => {
@@ -142,16 +158,53 @@ export default function BookingModal({
   const canProceedStep1 = Boolean(selectedDate && selectedTime);
   const canProceedStep2 = name.trim().length >= 2 && phone.trim().length >= 9;
 
+  // Slot Concurrency Check: Kiểm tra xem khung giờ này trên BĐS này đã bị người khác đặt chưa
+  const formattedSelectedDate = formatFullDateVN(selectedDate);
+  const isSlotBooked = (timeSlot: string) => {
+    return existingAppointments.some(
+      (a) =>
+        a.listingId === listingId &&
+        a.date === formattedSelectedDate &&
+        a.time === timeSlot &&
+        a.status !== 'cancelled'
+    );
+  };
+
   const handleSubmit = async () => {
     if (!name.trim() || !phone.trim() || !selectedDate || !selectedTime) {
       addToast('Vui lòng điền đầy đủ họ tên và số điện thoại liên hệ.', 'warning');
       return;
     }
 
+    // 1. Concurrency Guard (Optimistic Locking): Ngăn chặn Double-Booking
+    if (isSlotBooked(selectedTime)) {
+      addToast(
+        `⚠️ Khung giờ ${selectedTime} ngày ${formattedSelectedDate} vừa có khách đặt trước. Vui lòng chọn khung giờ khác!`,
+        'warning'
+      );
+      return;
+    }
+
+    // 2. Idempotency Check: Ngăn chặn gửi đúp cùng 1 yêu cầu liên tục
+    const idempotencyKey = `${listingId}-${toISODateInput(selectedDate)}-${selectedTime}-${phone.trim()}`;
+    const recentDuplicate = existingAppointments.find(
+      (a) =>
+        a.listingId === listingId &&
+        a.date === formattedSelectedDate &&
+        a.time === selectedTime &&
+        a.buyerPhone === phone.trim() &&
+        a.status !== 'cancelled'
+    );
+    if (recentDuplicate) {
+      addToast('Thông tin hẹn xem nhà của bạn đã được ghi nhận trước đó!', 'info');
+      setStep(3);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const formattedDateStr = formatFullDateVN(selectedDate);
+      const formattedDateStr = formattedSelectedDate;
       const notifId = `notif-visit-${Date.now()}`;
       const apptId = `appt-${Date.now()}`;
 
@@ -427,21 +480,31 @@ export default function BookingModal({
                     <div className="grid grid-cols-4 gap-1.5">
                       {MORNING_SLOTS.map((t) => {
                         const isSelected = selectedTime === t && !isCustomTime;
+                        const booked = isSlotBooked(t);
+
                         return (
                           <button
                             key={t}
                             type="button"
+                            disabled={booked}
                             onClick={() => {
+                              if (booked) return;
                               setSelectedTime(t);
                               setIsCustomTime(false);
                             }}
-                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                              isSelected
+                            className={`py-2 rounded-xl text-xs font-bold border transition-all relative ${
+                              booked
+                                ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed line-through opacity-60'
+                                : isSelected
                                 ? 'border-orange-500 bg-orange-500 text-white shadow-sm ring-2 ring-orange-400/30'
                                 : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
                             }`}
+                            title={booked ? 'Khung giờ này đã có khách hẹn' : undefined}
                           >
-                            {t}
+                            <span>{t}</span>
+                            {booked && (
+                              <span className="block text-[8px] no-underline font-normal text-rose-500">Đã kín</span>
+                            )}
                           </button>
                         );
                       })}
@@ -456,21 +519,31 @@ export default function BookingModal({
                     <div className="grid grid-cols-4 gap-1.5">
                       {AFTERNOON_SLOTS.map((t) => {
                         const isSelected = selectedTime === t && !isCustomTime;
+                        const booked = isSlotBooked(t);
+
                         return (
                           <button
                             key={t}
                             type="button"
+                            disabled={booked}
                             onClick={() => {
+                              if (booked) return;
                               setSelectedTime(t);
                               setIsCustomTime(false);
                             }}
-                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                              isSelected
+                            className={`py-2 rounded-xl text-xs font-bold border transition-all relative ${
+                              booked
+                                ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed line-through opacity-60'
+                                : isSelected
                                 ? 'border-orange-500 bg-orange-500 text-white shadow-sm ring-2 ring-orange-400/30'
                                 : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
                             }`}
+                            title={booked ? 'Khung giờ này đã có khách hẹn' : undefined}
                           >
-                            {t}
+                            <span>{t}</span>
+                            {booked && (
+                              <span className="block text-[8px] no-underline font-normal text-rose-500">Đã kín</span>
+                            )}
                           </button>
                         );
                       })}
@@ -485,21 +558,31 @@ export default function BookingModal({
                     <div className="grid grid-cols-3 gap-1.5">
                       {EVENING_SLOTS.map((t) => {
                         const isSelected = selectedTime === t && !isCustomTime;
+                        const booked = isSlotBooked(t);
+
                         return (
                           <button
                             key={t}
                             type="button"
+                            disabled={booked}
                             onClick={() => {
+                              if (booked) return;
                               setSelectedTime(t);
                               setIsCustomTime(false);
                             }}
-                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                              isSelected
+                            className={`py-2 rounded-xl text-xs font-bold border transition-all relative ${
+                              booked
+                                ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed line-through opacity-60'
+                                : isSelected
                                 ? 'border-orange-500 bg-orange-500 text-white shadow-sm ring-2 ring-orange-400/30'
                                 : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
                             }`}
+                            title={booked ? 'Khung giờ này đã có khách hẹn' : undefined}
                           >
-                            {t}
+                            <span>{t}</span>
+                            {booked && (
+                              <span className="block text-[8px] no-underline font-normal text-rose-500">Đã kín</span>
+                            )}
                           </button>
                         );
                       })}
