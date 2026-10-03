@@ -1009,6 +1009,8 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             agentAvatar={sellerAvatar}
             listingTitle={listing.title}
             listingId={listing.id}
+            sellerId={listing.ownerId || listing.userId || (listing as any).createdBy}
+            sellerEmail={listing.authorEmail}
             onClose={() => setIsBookingModalOpen(false)}
           />
         )}
@@ -1021,6 +1023,8 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
         agentZalo={sellerPhone}
         listingTitle={listing.title}
         listingId={listing.id}
+        sellerId={listing.ownerId || listing.userId || (listing as any).createdBy}
+        sellerEmail={listing.authorEmail}
       />
     </div>
   );

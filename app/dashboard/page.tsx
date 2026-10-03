@@ -35,13 +35,18 @@ import {
   Building,
   ArrowRight,
   Search,
-  Bell
+  Bell,
+  Calendar,
+  Phone,
+  MessageSquare,
+  User,
+  CalendarDays
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
-type TabType = 'listings' | 'reports' | 'saved' | 'packages' | 'notifications';
+type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications';
 
-const VALID_TABS: TabType[] = ['listings', 'reports', 'saved', 'packages', 'notifications'];
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications'];
 
 interface MenuItem {
   id: TabType;
@@ -68,6 +73,7 @@ function DashboardContent() {
       : 'listings'
   );
   const [unreadNotifCount, setUnreadNotifCount] = useState<number>(3);
+  const [appointments, setAppointments] = useState<any[]>([]);
 
   // Sync tab with URL query parameter on load
   useEffect(() => {
@@ -75,6 +81,29 @@ function DashboardContent() {
       setActiveTab(tabQuery);
     }
   }, [tabQuery]);
+
+  // Load and sync appointments for the current user
+  useEffect(() => {
+    const syncAppointments = () => {
+      try {
+        const raw = localStorage.getItem('hanoi_realty_appointments');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setAppointments(parsed);
+          }
+        }
+      } catch {}
+    };
+
+    syncAppointments();
+    window.addEventListener('hanoi_appointments_updated', syncAppointments);
+    window.addEventListener('storage', syncAppointments);
+    return () => {
+      window.removeEventListener('hanoi_appointments_updated', syncAppointments);
+      window.removeEventListener('storage', syncAppointments);
+    };
+  }, []);
 
   // Sync unread notification count CHỈ cho tài khoản hiện tại từ localStorage
   useEffect(() => {
@@ -85,8 +114,15 @@ function DashboardContent() {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
             if (user) {
+              const userEmail = user.email?.toLowerCase();
+              const myIds = new Set(listings.filter(l => l.ownerId === user.id || l.userId === user.id || (userEmail && l.authorEmail?.toLowerCase() === userEmail)).map(l => l.id));
               const count = parsed.filter(
-                (n: any) => (n.recipientUserId === user.id || n.recipientUserId === 'all') && !n.isRead
+                (n: any) =>
+                  !n.isRead &&
+                  (n.recipientUserId === user.id ||
+                   (userEmail && n.recipientUserId?.toLowerCase() === userEmail) ||
+                   (n.listingId && myIds.has(n.listingId)) ||
+                   n.recipientUserId === 'all')
               ).length;
               setUnreadNotifCount(count);
             } else {
@@ -105,7 +141,7 @@ function DashboardContent() {
       window.removeEventListener('storage', syncUnreadCount);
       window.removeEventListener('hanoi_new_notification', syncUnreadCount);
     };
-  }, [user]);
+  }, [user, listings]);
 
   const handleSelectTab = (tabId: TabType) => {
     setActiveTab(tabId);
@@ -141,12 +177,47 @@ function DashboardContent() {
     addToast('🗑️ Đã xoá tin đăng thành công', 'info');
   };
 
+  // Lọc danh sách lịch hẹn thuộc về các bài đăng hoặc tài khoản của người dùng hiện tại
+  const userAppointments = appointments.filter((appt) => {
+    if (!user) return false;
+    const userEmail = user.email?.toLowerCase();
+    if (appt.sellerId && appt.sellerId === user.id) return true;
+    if (appt.sellerEmail && userEmail && appt.sellerEmail.toLowerCase() === userEmail) return true;
+    // Kiểm tra theo ID bài đăng người dùng sở hữu
+    if (appt.listingId && userListings.some((l) => l.id === appt.listingId)) return true;
+    return false;
+  });
+
+  const handleUpdateAppointmentStatus = (apptId: string, newStatus: 'confirmed' | 'cancelled') => {
+    const updated = appointments.map((a) => (a.id === apptId ? { ...a, status: newStatus } : a));
+    setAppointments(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hanoi_realty_appointments', JSON.stringify(updated));
+      window.dispatchEvent(new Event('hanoi_appointments_updated'));
+    }
+    addToast(
+      newStatus === 'confirmed'
+        ? '✅ Đã xác nhận lịch hẹn xem nhà thành công'
+        : '❌ Đã cập nhật huỷ lịch hẹn',
+      newStatus === 'confirmed' ? 'success' : 'info'
+    );
+  };
+
   // Sidebar Menu categorized
   const menuGroups: MenuGroup[] = [
     {
       title: 'QUẢN LÝ',
       items: [
         { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
+        {
+          id: 'appointments',
+          label: 'Lịch hẹn xem nhà',
+          icon: CalendarDays,
+          count: userAppointments.length,
+          badge: userAppointments.filter((a) => a.status === 'pending').length > 0
+            ? `${userAppointments.filter((a) => a.status === 'pending').length} MỚI`
+            : undefined,
+        },
         { id: 'saved', label: 'Tin đã lưu', icon: Heart, count: savedListingIds.length },
         { id: 'reports', label: 'Báo cáo AI', icon: Sparkles, count: user?.aiReportsUsed || 8 },
       ],
@@ -403,6 +474,179 @@ function DashboardContent() {
                       </div>
                     ))}
                   </div>
+                </motion.div>
+              )}
+
+              {/* TAB: LỊCH HẸN XEM NHÀ (DÀNH CHO CHỦ TIN ĐĂNG) */}
+              {activeTab === 'appointments' && (
+                <motion.div
+                  key="tab-appointments"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-6"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-5 w-5 text-accent" />
+                        <h3 className="text-base font-extrabold text-text-primary">
+                          Khách đăng ký lịch hẹn xem nhà
+                        </h3>
+                        <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-black text-accent">
+                          {userAppointments.length} lịch hẹn
+                        </span>
+                      </div>
+                      <p className="text-xs text-text-secondary mt-1">
+                        Danh sách các khách hàng đã đặt lịch xem trực tiếp các bất động sản do bạn đăng bán.
+                      </p>
+                    </div>
+                  </div>
+
+                  {userAppointments.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border bg-slate-50/60 p-10 text-center space-y-3">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm border border-border text-slate-400">
+                        <Calendar className="h-7 w-7 text-slate-300" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-bold text-text-primary">Chưa có lịch hẹn xem nhà nào</h4>
+                        <p className="text-xs text-text-muted max-w-sm mx-auto">
+                          Khi có khách hàng bấm "Đặt lịch xem nhà" trên bài đăng BĐS của bạn, thông tin liên hệ và thời gian hẹn sẽ xuất hiện tại đây ngay lập tức.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3.5">
+                      {userAppointments.map((appt) => {
+                        const isPending = !appt.status || appt.status === 'pending';
+                        const isConfirmed = appt.status === 'confirmed';
+                        const isCancelled = appt.status === 'cancelled';
+                        const cleanPhone = (appt.buyerPhone || '').replace(/\D/g, '');
+
+                        return (
+                          <div
+                            key={appt.id}
+                            className={`rounded-2xl border p-4 sm:p-5 transition-all ${
+                              isPending
+                                ? 'border-orange-200 bg-orange-50/20 shadow-xs'
+                                : isConfirmed
+                                ? 'border-emerald-200 bg-emerald-50/15'
+                                : 'border-slate-200 bg-slate-50/50 opacity-75'
+                            }`}
+                          >
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                              <div className="space-y-2 flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-orange-500/10 text-orange-700 px-2.5 py-1 text-xs font-black">
+                                    <Clock className="h-3.5 w-3.5 text-orange-600" />
+                                    <span>{appt.time} • {appt.date}</span>
+                                  </span>
+
+                                  {isPending && (
+                                    <span className="rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1 animate-pulse">
+                                      ⏳ Chờ xác nhận
+                                    </span>
+                                  )}
+                                  {isConfirmed && (
+                                    <span className="rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1">
+                                      ✓ Đã xác nhận đón khách
+                                    </span>
+                                  )}
+                                  {isCancelled && (
+                                    <span className="rounded-full bg-slate-200 text-slate-700 px-2.5 py-0.5 text-[10px] font-extrabold">
+                                      ✕ Đã huỷ
+                                    </span>
+                                  )}
+
+                                  {appt.purpose && (
+                                    <span className="rounded-md bg-slate-100 text-slate-600 text-[10px] font-semibold px-2 py-0.5">
+                                      Mục đích: {appt.purpose}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <h4 className="text-sm font-extrabold text-text-primary line-clamp-1">
+                                  {appt.listingTitle}
+                                </h4>
+
+                                <div className="flex items-center gap-3 text-xs text-text-secondary flex-wrap">
+                                  <span className="flex items-center gap-1 font-bold text-text-primary">
+                                    <User className="h-3.5 w-3.5 text-slate-400" />
+                                    <span>{appt.buyerName}</span>
+                                  </span>
+                                  <span>•</span>
+                                  <span className="font-mono font-bold text-emerald-600">
+                                    {appt.buyerPhone}
+                                  </span>
+                                </div>
+
+                                {appt.note && (
+                                  <p className="text-xs text-text-muted italic bg-white/80 p-2.5 rounded-xl border border-slate-200/80">
+                                    "{appt.note}"
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Action buttons */}
+                              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                                {cleanPhone && (
+                                  <>
+                                    <a
+                                      href={`tel:${cleanPhone}`}
+                                      className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-2 text-xs font-bold text-white transition-colors shadow-xs"
+                                    >
+                                      <Phone className="h-3.5 w-3.5" />
+                                      <span>Gọi ngay</span>
+                                    </a>
+                                    <a
+                                      href={`https://zalo.me/${cleanPhone}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] px-3 py-2 text-xs font-bold text-white transition-colors shadow-xs"
+                                    >
+                                      <MessageSquare className="h-3.5 w-3.5" />
+                                      <span>Zalo</span>
+                                    </a>
+                                  </>
+                                )}
+
+                                {isPending && (
+                                  <button
+                                    onClick={() => handleUpdateAppointmentStatus(appt.id, 'confirmed')}
+                                    className="inline-flex items-center gap-1 rounded-xl bg-accent hover:bg-accent-hover px-3 py-2 text-xs font-bold text-white transition-colors shadow-xs"
+                                  >
+                                    <Check className="h-3.5 w-3.5" />
+                                    <span>Xác nhận</span>
+                                  </button>
+                                )}
+
+                                {!isCancelled && (
+                                  <button
+                                    onClick={() => handleUpdateAppointmentStatus(appt.id, 'cancelled')}
+                                    className="rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:text-danger px-2.5 py-2 text-xs font-bold text-text-muted transition-colors"
+                                    title="Huỷ lịch hẹn này"
+                                  >
+                                    Huỷ
+                                  </button>
+                                )}
+
+                                {appt.listingId && (
+                                  <Link
+                                    href={`/listings/${appt.listingId}`}
+                                    className="rounded-xl border border-slate-200 bg-white hover:border-accent hover:text-accent p-2 text-text-muted transition-colors"
+                                    title="Xem tin đăng BĐS"
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </motion.div>
               )}
 

@@ -26,6 +26,8 @@ export interface BookingModalProps {
   agentAvatar?: string;
   listingTitle: string;
   listingId: string;
+  sellerId?: string;
+  sellerEmail?: string;
   onClose: () => void;
 }
 
@@ -49,6 +51,8 @@ export default function BookingModal({
   agentAvatar,
   listingTitle,
   listingId,
+  sellerId,
+  sellerEmail,
   onClose,
 }: BookingModalProps) {
   const { user, listings, addToast } = useApp();
@@ -153,7 +157,16 @@ export default function BookingModal({
 
       // Xác định chủ sở hữu bài đăng (ownerId) để CHỈ gửi thông báo cho tài khoản đó
       const targetListing = listings.find((l) => l.id === listingId);
-      const sellerOwnerId = targetListing?.ownerId || targetListing?.userId || 'u1';
+      const sellerOwnerId =
+        sellerId ||
+        targetListing?.ownerId ||
+        targetListing?.userId ||
+        targetListing?.createdBy ||
+        (targetListing?.authorEmail ? targetListing.authorEmail : undefined) ||
+        sellerEmail ||
+        'u1';
+
+      const finalSellerEmail = sellerEmail || targetListing?.authorEmail;
 
       // 1. Tạo thông báo mới chi tiết cho NGƯỜI BÁN (Chủ tin)
       const newNotif: NotificationItem = {
@@ -178,6 +191,8 @@ export default function BookingModal({
           time: selectedTime,
           listingId: listingId,
           listingTitle: listingTitle,
+          sellerId: sellerOwnerId,
+          sellerEmail: finalSellerEmail,
           note: note.trim() || undefined,
           purpose: VISIT_PURPOSES.find(p => p.id === purpose)?.label,
           createdAt: new Date().toISOString(),
@@ -197,6 +212,8 @@ export default function BookingModal({
         const existingAppts = existingApptsRaw ? JSON.parse(existingApptsRaw) : [];
         const newAppt = {
           id: apptId,
+          sellerId: sellerOwnerId,
+          sellerEmail: finalSellerEmail,
           buyerName: name.trim(),
           buyerPhone: phone.trim(),
           date: formattedDateStr,
@@ -212,8 +229,9 @@ export default function BookingModal({
         };
         localStorage.setItem(STORAGE_KEY_APPOINTMENTS, JSON.stringify([newAppt, ...existingAppts]));
 
-        // 4. Phát sự kiện toàn cục để chuông thông báo (NotificationBell) cập nhật ngay lập tức
+        // 4. Phát sự kiện toàn cục để chuông thông báo (NotificationBell) và Dashboard cập nhật ngay lập tức
         window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
+        window.dispatchEvent(new CustomEvent('hanoi_appointments_updated', { detail: newAppt }));
         window.dispatchEvent(new Event('hanoi_notifications_updated'));
       }
 

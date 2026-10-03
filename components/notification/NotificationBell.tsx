@@ -134,7 +134,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   onUnreadCountChange,
 }) => {
   const router = useRouter();
-  const { user, addToast } = useApp();
+  const { user, listings, addToast } = useApp();
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = variant === 'embedded' ? true : (controlledOpen !== undefined ? controlledOpen : internalOpen);
   const setIsOpen = (val: boolean | ((prev: boolean) => boolean)) => {
@@ -308,13 +308,46 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
   // CHỈ lấy các thông báo thuộc về tài khoản hiện tại hoặc thông báo chung toàn hệ thống ('all')
   const currentUserId = user?.id;
+  const currentUserEmail = user?.email?.toLowerCase();
+
+  // Danh sách ID các bài đăng thuộc sở hữu của người dùng hiện tại
+  const myListingIds = new Set(
+    listings
+      .filter((l) => {
+        if (!user) return false;
+        if (l.ownerId && l.ownerId === user.id) return true;
+        if (l.userId && l.userId === user.id) return true;
+        if (l.createdBy && l.createdBy === user.id) return true;
+        if (currentUserEmail && l.authorEmail && l.authorEmail.toLowerCase() === currentUserEmail) return true;
+        return false;
+      })
+      .map((l) => l.id)
+  );
+
   const userNotifications = notifications.filter((n) => {
     // Nếu notification cũ không có recipientUserId, tuyệt đối không hiển thị bừa bãi
     if (!n.recipientUserId) return false;
-    if (!currentUserId) {
-      return n.recipientUserId === 'all';
-    }
-    return n.recipientUserId === currentUserId || n.recipientUserId === 'all';
+
+    // Thông báo chung toàn hệ thống
+    if (n.recipientUserId === 'all') return true;
+
+    // Nếu chưa đăng nhập, chỉ nhận thông báo hệ thống chung 'all'
+    if (!currentUserId && !currentUserEmail) return false;
+
+    // 1. Trùng ID người dùng
+    if (currentUserId && n.recipientUserId === currentUserId) return true;
+
+    // 2. Trùng Email tác giả
+    if (currentUserEmail && n.recipientUserId.toLowerCase() === currentUserEmail) return true;
+
+    // 3. Trong trường hợp có appointmentData nhưng recipientUserId được lưu dưới dạng email hoặc id
+    if (n.appointmentData?.sellerId && currentUserId && n.appointmentData.sellerId === currentUserId) return true;
+    if (n.appointmentData?.sellerEmail && currentUserEmail && n.appointmentData.sellerEmail.toLowerCase() === currentUserEmail) return true;
+
+    // 4. Khớp với ID tin đăng mà người dùng này sở hữu
+    if (n.listingId && myListingIds.has(n.listingId)) return true;
+
+    return false;
   });
 
   const unreadCount = userNotifications.filter((n) => !n.isRead).length;
