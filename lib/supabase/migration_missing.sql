@@ -1,18 +1,36 @@
 -- ==============================================================================
--- BẢN MIGRATION BỔ SUNG CHO SUPABASE (CHỈ CHỨA CÁC PHẦN CÒN THIẾU)
+-- BẢN MIGRATION BỔ SUNG CHO SUPABASE (CHUẨN HÓA ĐÚNG SCHEMA CỦA BẢNG CŨ)
 -- Dự án: Nền tảng Bất Động Sản Hà Nội (HaNoi Realty)
 -- Hướng dẫn: Dán toàn bộ script này vào Supabase SQL Editor và bấm RUN.
 -- ==============================================================================
 
--- 1. KÍCH HOẠT EXTENSION POSTGIS & UUID NẾU CHƯA CÓ
+-- 1. KÍCH HOẠT EXTENSION POSTGIS & UUID
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ==============================================================================
--- 2. BỔ SUNG CÁC CỘT CÒN THIẾU VÀO CÁC BẢNG ĐÃ TỒN TẠI (users, listings)
+-- 2. ĐỒNG BỘ CỘT CHO BẢNG CŨ: planning_zones
+-- Đảm bảo tương thích cả 2 chuẩn: zone_type / zone_code và boundary / geom
+-- ==============================================================================
+ALTER TABLE public.planning_zones 
+  ADD COLUMN IF NOT EXISTS zone_code TEXT,
+  ADD COLUMN IF NOT EXISTS zone_name TEXT,
+  ADD COLUMN IF NOT EXISTS geom GEOMETRY(Geometry, 4326);
+
+-- Tự động ánh xạ dữ liệu nếu đã có
+UPDATE public.planning_zones 
+SET zone_code = zone_type 
+WHERE zone_code IS NULL AND zone_type IS NOT NULL;
+
+UPDATE public.planning_zones 
+SET zone_name = name 
+WHERE zone_name IS NULL AND name IS NOT NULL;
+
+-- ==============================================================================
+-- 3. BỔ SUNG CÁC CỘT CÒN THIẾU CHO users & listings
 -- ==============================================================================
 
--- Bổ sung trường cho bảng users (cấu hình thông báo, thời hạn VIP)
+-- Bảng users
 ALTER TABLE public.users 
   ADD COLUMN IF NOT EXISTS membership_tier TEXT DEFAULT 'free',
   ADD COLUMN IF NOT EXISTS membership_expires_at TIMESTAMPTZ,
@@ -26,7 +44,7 @@ ALTER TABLE public.users
   }'::jsonb,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
--- Bổ sung trường cho bảng listings (Thông tin chủ tin đăng, số tầng, phòng ngủ, Patent 49,61,62)
+-- Bảng listings
 ALTER TABLE public.listings
   ADD COLUMN IF NOT EXISTS floors INTEGER DEFAULT 1,
   ADD COLUMN IF NOT EXISTS bedrooms INTEGER DEFAULT 1,
@@ -47,11 +65,10 @@ ALTER TABLE public.listings
   ADD COLUMN IF NOT EXISTS views_count INTEGER DEFAULT 0,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
--- Tạo Spatial Index cho geom trên listings
 CREATE INDEX IF NOT EXISTS idx_listings_geom ON public.listings USING GIST (geom);
 
 -- ==============================================================================
--- 3. KHỞI TẠO BẢNG CÒN THIẾU: appointments (LỊCH HẸN XEM NHÀ - SLOT CONCURRENCY)
+-- 4. KHỞI TẠO BẢNG CÒN THIẾU: appointments (LỊCH HẸN XEM NHÀ - SLOT CONCURRENCY)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.appointments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -73,7 +90,6 @@ CREATE TABLE IF NOT EXISTS public.appointments (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Chỉ mục kiểm tra trùng lịch và danh sách của chủ tin/khách mua
 CREATE INDEX IF NOT EXISTS idx_appointments_listing_slot 
   ON public.appointments(listing_id, appointment_date, time_slot, status);
 CREATE INDEX IF NOT EXISTS idx_appointments_seller_id 
@@ -82,7 +98,7 @@ CREATE INDEX IF NOT EXISTS idx_appointments_buyer_id
   ON public.appointments(buyer_id);
 
 -- ==============================================================================
--- 4. KHỞI TẠO BẢNG CÒN THIẾU: notifications (HỆ THỐNG THÔNG BÁO THEO TÀI KHOẢN)
+-- 5. KHỞI TẠO BẢNG CÒN THIẾU: notifications (HỆ THỐNG THÔNG BÁO THEO TÀI KHOẢN)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.notifications (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -105,7 +121,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_appointment
   ON public.notifications(appointment_id);
 
 -- ==============================================================================
--- 5. KHỞI TẠO BẢNG CÒN THIẾU: saved_searches (LƯU BỘ LỌC TÌM KIẾM & BÁO GIÁ)
+-- 6. KHỞI TẠO BẢNG CÒN THIẾU: saved_searches (LƯU BỘ LỌC TÌM KIẾM & BÁO GIÁ)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.saved_searches (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -119,7 +135,7 @@ CREATE TABLE IF NOT EXISTS public.saved_searches (
 CREATE INDEX IF NOT EXISTS idx_saved_searches_user ON public.saved_searches(user_id);
 
 -- ==============================================================================
--- 6. KHỞI TẠO BẢNG CÒN THIẾU: payment_orders (ĐƠN HÀNG VNPAY/MOMO)
+-- 7. KHỞI TẠO BẢNG CÒN THIẾU: payment_orders (ĐƠN HÀNG VNPAY/MOMO)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.payment_orders (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -141,10 +157,10 @@ CREATE INDEX IF NOT EXISTS idx_payment_orders_order_id ON public.payment_orders(
 CREATE INDEX IF NOT EXISTS idx_payment_orders_user ON public.payment_orders(user_id);
 
 -- ==============================================================================
--- 7. CÁC HÀM STORED PROCEDURES (RPC) POSTGIS VÀ KIỂM TRA LỊCH TRÙNG
+-- 8. CÁC HÀM STORED PROCEDURES (RPC)
 -- ==============================================================================
 
--- 7.1 Kiểm tra khung giờ xem nhà có bị trùng hay không (Slot Concurrency)
+-- 8.1 Kiểm tra khung giờ xem nhà có bị trùng hay không (Slot Concurrency)
 CREATE OR REPLACE FUNCTION public.is_appointment_slot_available(
   p_listing_id UUID,
   p_date DATE,
@@ -165,7 +181,7 @@ BEGIN
 END;
 $$;
 
--- 7.2 Tìm kiếm BĐS trong bán kính mét (PostGIS)
+-- 8.2 Tìm kiếm BĐS trong bán kính mét (PostGIS)
 CREATE OR REPLACE FUNCTION public.search_listings_in_radius(
   target_lng DOUBLE PRECISION,
   target_lat DOUBLE PRECISION,
@@ -207,7 +223,7 @@ AS $$
   LIMIT 50;
 $$;
 
--- 7.3 Kiểm tra toạ độ rơi vào vùng quy hoạch nào
+-- 8.3 Kiểm tra toạ độ rơi vào vùng quy hoạch nào (Tương thích cả zone_type và zone_code)
 CREATE OR REPLACE FUNCTION public.check_property_planning_zone(
   target_lng DOUBLE PRECISION,
   target_lat DOUBLE PRECISION
@@ -223,21 +239,21 @@ LANGUAGE sql
 STABLE
 AS $$
   SELECT
-    p.zone_code,
-    p.zone_name,
+    COALESCE(p.zone_code, p.zone_type) AS zone_code,
+    COALESCE(p.zone_name, p.name) AS zone_name,
     p.district,
     p.description,
     p.color_code
   FROM public.planning_zones p
   WHERE ST_Contains(
-    p.geom,
+    COALESCE(p.geom, p.boundary::geometry),
     ST_SetSRID(ST_MakePoint(target_lng, target_lat), 4326)
   )
   LIMIT 1;
 $$;
 
 -- ==============================================================================
--- 8. THIẾT LẬP ROW LEVEL SECURITY (RLS) CHO CÁC BẢNG MỚI
+-- 9. THIẾT LẬP ROW LEVEL SECURITY (RLS) CHO CÁC BẢNG MỚI
 -- ==============================================================================
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
