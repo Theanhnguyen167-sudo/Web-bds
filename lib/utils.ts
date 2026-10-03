@@ -160,3 +160,34 @@ export function parseLocationCoordinates(
 
   return fallback;
 }
+
+/**
+ * Tối ưu hoá URL hình ảnh cho Core Web Vitals (LCP < 2.0s - Patent 86)
+ * Tự động chuyển đổi định dạng WebP/AVIF và điều chỉnh width/quality phù hợp màn hình
+ */
+export function getOptimizedImageUrl(
+  url: string | undefined,
+  width = 800,
+  quality = 80
+): string {
+  if (!url) {
+    return 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80';
+  }
+
+  // Nếu là ảnh từ Unsplash, tối ưu query parameters WebP & width
+  if (url.includes('images.unsplash.com')) {
+    try {
+      const parsedUrl = new URL(url);
+      parsedUrl.searchParams.set('auto', 'format'); // auto chọn webp hoặc avif
+      parsedUrl.searchParams.set('w', width.toString());
+      parsedUrl.searchParams.set('q', quality.toString());
+      parsedUrl.searchParams.set('fit', 'crop');
+      return parsedUrl.toString();
+    } catch {
+      return url;
+    }
+  }
+
+  return url;
+}
+

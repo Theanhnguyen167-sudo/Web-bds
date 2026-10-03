@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ListingItem } from '@/lib/mock-data';
-import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
+import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
 import {
   MapPin,
@@ -83,8 +83,10 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
           className="relative aspect-video w-full overflow-hidden bg-slate-100 cursor-pointer"
         >
           <img
-            src={listing.images[0]}
+            src={getOptimizedImageUrl(listing.images[0], 600, 80)}
             alt={listing.title}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
           />
 
