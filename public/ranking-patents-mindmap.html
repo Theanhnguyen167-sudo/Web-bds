@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bản Đồ Tư Duy Tương Tác: 100+ Patents Google & Chiến Lược Semantic SEO</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- D3.js for Mindmap Nodes & Connections -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b1120;
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f97316;
+    }
+    /* Glow Effects */
+    .glow-orange {
+      box-shadow: 0 0 25px -5px rgba(249, 115, 22, 0.4);
+    }
+    .glow-blue {
+      box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    .glow-purple {
+      box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.4);
+    }
+    /* Mindmap SVG lines */
+    .link-line {
+      fill: none;
+      stroke-width: 2px;
+      transition: all 0.3s ease;
+    }
+    /* Glassmorphism */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .glass-panel {
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    /* Active Node Pulsing */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .node-pulse {
+      animation: pulse-ring 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#0b1120] text-slate-100">
+
+  <!-- TOP HEADER & CONTROLS -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-slate-800 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 font-black text-xl shadow-lg shadow-orange-500/20">
+        <i data-lucide="cpu" class="h-5 w-5 text-orange-400"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-extrabold text-base sm:text-lg tracking-tight text-white">Google & Yandex Leaks · 100+ Patents Mindmap</h1>
+          <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Interactive Mode</span>
+        </div>
+        <p class="text-xs text-slate-400 hidden sm:block">Đối chiếu hệ thống bằng sáng chế, rò rỉ thuật toán và chiến lược Semantic SEO PropTech</p>
+      </div>
+    </div>
+
+    <!-- Quick Filters & Action Toolbar -->
+    <div class="flex items-center flex-wrap gap-2">
+      <div class="inline-flex rounded-xl bg-slate-900 p-1 border border-slate-800 text-xs">
+        <button id="btn-view-mindmap" class="px-3 py-1.5 rounded-lg font-semibold bg-orange-500 text-white shadow-sm transition-all flex items-center gap-1.5" onclick="switchView('mindmap')">
+          <i data-lucide="network" class="h-3.5 w-3.5"></i>
+          <span>Mindmap Vector</span>
+        </button>
+        <button id="btn-view-matrix" class="px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5" onclick="switchView('matrix')">
+          <i data-lucide="layout-grid" class="h-3.5 w-3.5"></i>
+          <span>Ma Trận 8 Phân Hệ</span>
+        </button>
+        <button id="btn-view-roadmap" class="px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5" onclick="switchView('roadmap')">
+          <i data-lucide="rocket" class="h-3.5 w-3.5"></i>
+          <span>Kế Hoạch Thực Thi (P0-P2)</span>
+        </button>
+      </div>
+
+      <button onclick="resetZoom()" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 transition-all" title="Căn giữa sơ đồ">
+        <i data-lucide="scan" class="h-4 w-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN INTERACTIVE CANVAS WRAPPER -->
+  <main class="flex-1 relative flex overflow-hidden h-[calc(100vh-69px)]">
+
+    <!-- LEFT SIDE: MINDMAP SVG CANVAS -->
+    <div id="mindmap-container" class="flex-1 relative w-full h-full bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] cursor-grab active:cursor-grabbing">
+      
+      <!-- Floating Instructions Badge -->
+      <div class="absolute top-4 left-4 z-20 glass-card px-3.5 py-2 rounded-xl text-xs text-slate-300 flex items-center gap-2 border border-slate-700/60 shadow-lg pointer-events-none">
+        <i data-lucide="mouse-pointer-click" class="h-4 w-4 text-orange-400"></i>
+        <span>Nhấp vào từng nhánh để xem <b>bằng sáng chế (patents)</b> & cơ chế vận hành chi tiết. Có thể <b>kéo / cuộn chuột</b> để zoom.</span>
+      </div>
+
+      <!-- SVG D3 Render Layer -->
+      <svg id="mindmap-svg" class="w-full h-full"></svg>
+    </div>
+
+    <!-- ALTERNATIVE VIEW: 8 MODULES GRID MATRIX (HIDDEN BY DEFAULT) -->
+    <div id="matrix-container" class="flex-1 overflow-y-auto p-6 hidden">
+      <div class="max-w-7xl mx-auto space-y-6">
+        <div class="text-center space-y-2 mb-8">
+          <h2 class="text-2xl sm:text-3xl font-black text-white">Ma Trận 8 Phân Hệ Ranking Cốt Lõi (100+ Patents)</h2>
+          <p class="text-sm text-slate-400 max-w-2xl mx-auto">Phân bổ trọng số từ sự đồng thuận giữa Google Internal API & Yandex Source Code Leak</p>
+        </div>
+        <div id="matrix-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Dynamic JS will populate cards -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ALTERNATIVE VIEW: ACTION ROADMAP (P0, P1, P2) (HIDDEN BY DEFAULT) -->
+    <div id="roadmap-container" class="flex-1 overflow-y-auto p-6 hidden">
+      <div class="max-w-5xl mx-auto space-y-8">
+        <div class="text-center space-y-2">
+          <span class="px-3 py-1 text-xs font-extrabold rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/30">Actionable Plan</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-white">Lộ Trình Cải Tiến & Bổ Sung Cho HaNoi Realty</h2>
+          <p class="text-sm text-slate-400">Chuyển hóa 100 patents thành giải pháp cụ thể trong mã nguồn Next.js 14</p>
+        </div>
+
+        <div class="space-y-6" id="roadmap-steps">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE: DETAIL SLIDE-OVER DRAWER -->
+    <aside id="detail-drawer" class="w-[420px] max-w-[92vw] h-full glass-panel border-l border-slate-800 flex flex-col transition-all duration-300 z-30 shadow-2xl overflow-hidden shrink-0">
+      
+      <!-- Drawer Header -->
+      <div class="p-5 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60">
+        <div class="flex items-center gap-2.5">
+          <div id="drawer-icon-box" class="h-8 w-8 rounded-lg bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 font-bold">
+            <i data-lucide="layers" class="h-4 w-4"></i>
+          </div>
+          <div>
+            <h3 id="drawer-title" class="font-bold text-sm text-white truncate max-w-[260px]">Tổng Quan Kiến Trúc</h3>
+            <span id="drawer-badge" class="text-[10px] font-semibold text-slate-400">Chọn 1 node trên sơ đồ để xem</span>
+          </div>
+        </div>
+        <button onclick="closeDrawer()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all">
+          <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+      </div>
+
+      <!-- Drawer Body Content -->
+      <div id="drawer-content" class="flex-1 overflow-y-auto p-5 space-y-5 text-sm">
+        <div class="text-center py-12 text-slate-500 space-y-3">
+          <i data-lucide="sparkles" class="h-10 w-10 mx-auto text-slate-600 animate-pulse"></i>
+          <p class="text-xs">Nhấp vào bất kỳ nhánh nào trong mindmap để xem danh sách các bằng sáng chế (patents), tác giả, công thức toán học và cách thức vận hành.</p>
+        </div>
+      </div>
+
+      <!-- Drawer Footer Action -->
+      <div class="p-4 border-t border-slate-800/80 bg-slate-950/60 flex items-center justify-between text-xs text-slate-400">
+        <span>Nguồn: USPTO & Google Search Leaks</span>
+        <button onclick="copyCurrentPatentData()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all flex items-center gap-1">
+          <i data-lucide="copy" class="h-3 w-3"></i>
+          <span>Copy tóm tắt</span>
+        </button>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- JAVASCRIPT DATA & LOGIC -->
+  <script>
+    // ═════════════════════════════════════════════════════════════════
+    // 1. DATA MODEL: 8 PILLARS & 100 PATENTS STRUCTURE
+    // ═════════════════════════════════════════════════════════════════
+    const mindmapData = {
+      name: "GOOGLE RANKING ENGINE",
+      subTitle: "Hệ Thống 100+ Patents & Leaks",
+      color: "#f97316",
+      children: [
+        {
+          id: "p1",
+          name: "1. User Dynamics & NavBoost",
+          weight: "30% (Top 1)",
+          color: "#f97316",
+          icon: "mouse-pointer-click",
+          summary: "Cơ chế đánh giá sự hài lòng thực tế qua lượt nhấp chuột và thời gian ở lại trang trong cửa sổ trượt 13 tháng.",
+          patentsCount: "15 Patents",
+          patents: [
+            { id: "US8595225B1", title: "Modifying ranking based on implicit user feedback", author: "Marissa Mayer, Jeff Dean", mechanism: "Theo dõi tỷ lệ nhấp chuột thực tế so với kỳ vọng (Position Bias / ECTR) để thăng hạng qua NavBoost." },
+            { id: "US8938463B1", title: "Dwell Time / Long Clicks vs Bad Clicks", author: "Paul Haahr, Matt Cutts", mechanism: "Phân biệt goodClicks (>120s hoặc không quay lại SERP) và badClicks (pogo-sticking < 15s)." },
+            { id: "US8661029B1", title: "User Interaction in Session Sequences", author: "Steve Baker, Ross Koningstein", mechanism: "Đo lường độ sâu cuộn trang, copy text, tương tác form trong toàn bộ chuỗi phiên tìm kiếm." },
+            { id: "US9009144B1", title: "Device-Specific Ranking (Mobile vs Desktop)", author: "Shumeet Baluja", mechanism: "Tách biệt hoàn toàn điểm click giữa điện thoại và máy tính để giáng hạng các trang mobile UX kém." },
+            { id: "US8626759B1", title: "13-Month Rolling Click History", author: "Ramanathan Guha", mechanism: "Lưu trữ tín hiệu click theo cửa sổ trượt 13 tháng với hệ số suy giảm thời gian (Exponential Decay)." }
+          ],
+          actions: "Tối ưu trang chi tiết BĐS để tải ngay trong 1.5s, đặt bảng giá và bản đồ ngay đầu trang để triệt tiêu tỷ lệ thoát nhanh."
+        },
+        {
+          id: "p2",
+          name: "2. Link & Reasonable Surfer",
+          weight: "15%",
+          color: "#3b82f6",
+          icon: "link-2",
+          summary: "Thời đại đếm số lượng backlink đã hết, Google chuyển sang mô hình xác suất click thực tế qua liên kết.",
+          patentsCount: "15 Patents",
+          patents: [
+            { id: "US6285999B1", title: "Original PageRank Algorithm", author: "Larry Page", mechanism: "Mô hình người lướt ngẫu nhiên (Random Surfer) truyền giá trị theo cấu trúc ma trận đồ thị liên kết." },
+            { id: "US7058628B1", title: "Reasonable Surfer Model", author: "Jeffrey Dean, Sanjay Ghemawat", mechanism: "Liên kết trong bài viết có xác suất click cao gấp 100 lần so với link ở footer hay sidebar." },
+            { id: "US7720846B1", title: "TrustRank & Seed Sites Distance", author: "Zoltan Gyongyi, Hector Garcia-Molina", mechanism: "Tính khoảng cách bước nhảy (hops) từ các trang hạt giống uy tín (.gov, .edu, báo chí lớn)." },
+            { id: "US8244722B1", title: "Link Quality via Traffic Passing", author: "Jeffrey Dean", mechanism: "Chỉ các liên kết có lưu lượng người dùng thực click qua mới được xếp vào High-tier Index." },
+            { id: "US7904449B2", title: "Implied Links (Unlinked Brand Mentions)", author: "Paul Haahr", mechanism: "Nhắc tên thương hiệu kèm số điện thoại/địa chỉ trên báo chí vẫn được tính điểm uy tín mà không cần gắn thẻ <a>." }
+          ],
+          actions: "Ngừng mua link PBN/diễn đàn rác, tập trung PR báo chí có người đọc thực sự và xây dựng cấu trúc internal link tầng nông (<= 2 clicks)."
+        },
+        {
+          id: "p3",
+          name: "3. Knowledge Graph & Entities",
+          weight: "20%",
+          color: "#a855f7",
+          icon: "network",
+          summary: "Tìm kiếm dựa trên Thực thể (Things, not Strings), mã hóa thế giới thực thành các vector nơ-ron đa chiều.",
+          patentsCount: "15 Patents",
+          patents: [
+            { id: "US8682892B1", title: "Question Answering using Entity Extraction", author: "John Giannandrea", mechanism: "Chuyển văn bản thành bộ ba Subject-Predicate-Object và đối chiếu với Knowledge Graph." },
+            { id: "US9384258B1", title: "Entity Association Strength & Co-occurrence", author: "Michael Bendersky", mechanism: "Đo lường độ gắn kết giữa tên dự án BĐS với địa danh quận huyện và đơn giá thị trường." },
+            { id: "US9652538B1", title: "Neural Embeddings for Entities (Word2Vec)", author: "Tomas Mikolov, Greg Corrado", mechanism: "Ánh xạ các khái niệm vào không gian vector để hiểu độ tương đồng ngữ nghĩa dù khác chính tả." },
+            { id: "US10402458B2", title: "Schema Markup Validation & Enrichment", author: "Peter Mika", mechanism: "Xác thực dữ liệu cấu trúc JSON-LD để nạp thẳng vào kho tri thức thương mại của Google." },
+            { id: "US10726057B2", title: "Deep Contextualized Representations (BERT)", author: "Jacob Devlin", mechanism: "Transformer hai chiều hiểu trọn vẹn văn phong tự nhiên, triệt tiêu nạn nhồi nhét từ khóa." }
+          ],
+          actions: "Bổ sung ngay Schema JSON-LD RealEstateListing, PostalAddress và GeoCoordinates cho toàn bộ tin đăng và trang quận huyện."
+        },
+        {
+          id: "p4",
+          name: "4. Topic Authority & Information Gain",
+          weight: "20%",
+          color: "#10b981",
+          icon: "award",
+          summary: "Đo lường mức độ chuyên gia của domain và ưu tiên các nội dung cung cấp thêm giá trị độc quyền mới.",
+          patentsCount: "15 Patents",
+          patents: [
+            { id: "US10055497B1", title: "Website Topical Authority based on Focus", author: "Navneet Panda", mechanism: "Đánh giá mức độ tập trung chuyên môn (siteAuthority), phạt các trang đăng bài ngoài ngành làm loãng chủ đề." },
+            { id: "US8583648B1", title: "Site Embeddings & Semantic Radius", author: "Jeffrey Dean", mechanism: "Tính khoảng cách ngữ nghĩa (siteRadius) giữa bài viết mới và vector trung tâm của website." },
+            { id: "US9405828B1", title: "Information Gain Score", author: "Alistair Moffat", mechanism: "Ưu tiên trang có thông tin độc quyền (ảnh gốc, dữ liệu khảo sát, bản đồ mới) thay vì trang xào xáo lại." },
+            { id: "US9953088B2", title: "Topic Silos & Logical Hierarchies", author: "Amit Singhal", mechanism: "Đánh giá cấu trúc phân tầng: Trang trụ cột (Pillar) liên kết chặt chẽ với các bài vệ tinh hỗ trợ." },
+            { id: "US10657187B2", title: "High-value Supplementary Content", author: "David Gibson", mechanism: "Các tiện ích bổ trợ như máy tính vay mua nhà, bản đồ quy hoạch tương tác được chấm điểm chất lượng rất cao." }
+          ],
+          actions: "Tập trung 100% nội dung về BĐS & Quy hoạch Hà Nội, hiển thị nổi bật điểm thẩm định AI và tiện ích xung quanh làm dữ liệu độc quyền."
+        },
+        {
+          id: "p5",
+          name: "5. Freshness & Temporal Signals",
+          weight: "10%",
+          color: "#eab308",
+          icon: "clock",
+          summary: "Kích hoạt bộ lọc QDF (Query Deserves Freshness) khi có biến động thị trường và phạt việc fake ngày cập nhật.",
+          patentsCount: "10 Patents",
+          patents: [
+            { id: "US7346599B2", title: "Query Deserves Freshness (QDF Core)", author: "Amit Singhal, Jeff Dean", mechanism: "Phát hiện từ khóa đang sốt trên tin tức để tạm thời đẩy các bài mới xuất bản lên kiểm chứng CTR." },
+            { id: "US8051070B1", title: "Substantive Change vs Superficial Update", author: "Anurag Acharya", mechanism: "Chỉ bài viết có sự thay đổi thực chất về số liệu, bảng giá, văn bản (diff_text) mới được Freshness Boost." },
+            { id: "US8495059B1", title: "Temporal Decay Functions", author: "David Minogue", mechanism: "Thứ hạng suy giảm theo hàm mũ thời gian nếu chủ đề có tính thời sự cao." },
+            { id: "US9208226B2", title: "Extracting Multi-source Publication Dates", author: "Paul Haahr", mechanism: "Đối chiếu ngày HTML bylineDate với ngày Googlebot crawl đầu tiên semanticDate để ngăn gian lận ngày." }
+          ],
+          actions: "Xây dựng cơ chế cập nhật giá thị trường định kỳ theo quý kèm cập nhật dateModified trong Schema."
+        },
+        {
+          id: "p6",
+          name: "6. Local Search & Geo-Spatial GIS",
+          weight: "15%",
+          color: "#06b6d4",
+          icon: "map-pin",
+          summary: "Tích hợp công nghệ không gian địa lý (GIS/WGS84) xác thực vị trí và khoảng cách tiếp cận tiện ích.",
+          patentsCount: "10 Patents",
+          patents: [
+            { id: "US7630986B1", title: "Geographic Relevance for Queries (Venice)", author: "Shumeet Baluja", mechanism: "Tự động gắn thẻ địa lý cho bài viết dựa trên địa danh, mã vùng điện thoại và toạ độ GPS." },
+            { id: "US8429158B1", title: "Local 3-Factor: Relevance, Distance, Prominence", author: "Brian McClendon (Google Maps)", mechanism: "Công thức chấm điểm địa phương dựa trên độ khớp, cự ly thực tế và danh tiếng của địa điểm." },
+            { id: "US10204128B2", title: "Spatial Clustering for Real Estate Listings", author: "Luc Vincent", mechanism: "Gom cụm toạ độ hiển thị dự án theo từng quận huyện để tăng trải nghiệm mobile." },
+            { id: "US10496677B1", title: "POI Amenities Proximity Score", author: "Shumeet Baluja", mechanism: "Đánh giá giá trị BĐS dựa trên cự ly đến ga Metro, trường học, bệnh viện, công viên." },
+            { id: "US11270081B1", title: "Geo-polygon Indexing for Zoning Boundaries", author: "Chade-Meng Tan", mechanism: "Lập chỉ mục đa giác GeoJSON ranh giới phân khu quy hoạch đô thị." }
+          ],
+          actions: "Tối ưu trang /planning và bản đồ toạ độ PostGIS, khai báo đầy đủ kinh độ/vĩ độ chuẩn WGS84 cho từng bất động sản."
+        },
+        {
+          id: "p7",
+          name: "7. Crawl Budget, SSR & Web Vitals",
+          weight: "Nền tảng kỹ thuật",
+          color: "#ec4899",
+          icon: "zap",
+          summary: "Hạ tầng kỹ thuật đảm bảo Googlebot thu thập dữ liệu trong làn sóng đầu tiên (Wave 1) mà không bị nghẽn.",
+          patentsCount: "10 Patents",
+          patents: [
+            { id: "US7472113B1", title: "Crawl Scheduling based on Change Frequency", author: "Jeffrey Dean", mechanism: "Tần suất Googlebot ghé thăm tỷ lệ thuận với tần suất web cập nhật nội dung mới." },
+            { id: "US8805819B1", title: "Web Rendering Service (WRS) with Headless Chrome", author: "Eric B. Brewer", mechanism: "Next.js Server-Side Rendering (SSR) giúp bot đọc nội dung ngay lập tức mà không phải chờ hàng đợi Render đợt 2." },
+            { id: "US9959359B2", title: "Core Web Vitals Scoring (LCP, INP, CLS)", author: "Ilya Grigorik", mechanism: "Dữ liệu đo từ người dùng thực tế qua Chrome (CrUX) ảnh hưởng trực tiếp tới điểm xếp hạng." },
+            { id: "US9063942B2", title: "Canonicalization & Faceted Navigation Control", author: "Matt Cutts", mechanism: "Loại bỏ URL lọc trùng lặp để ngăn Googlebot rơi vào bẫy crawl vô tận (Spider Trap)." }
+          ],
+          actions: "Tạo app/sitemap.ts và app/robots.ts tự động; giữ các trang danh mục ở dạng Server Component để Googlebot lập chỉ mục ngay."
+        },
+        {
+          id: "p8",
+          name: "8. SpamBrain & Machine Learning Re-ranking",
+          weight: "Hệ thống bảo vệ",
+          color: "#ef4444",
+          icon: "shield-alert",
+          summary: "Mô hình học máy và chuỗi bộ lọc Twiddlers điều chỉnh vị trí cuối cùng và trừng phạt các hành vi thao túng.",
+          patentsCount: "10 Patents",
+          patents: [
+            { id: "US8918440B1", title: "Machine-Learned Ranking Functions (RankBrain)", author: "Christopher Burges, Jeff Dean", mechanism: "Sử dụng mô hình tăng cường gradient tự động điều chỉnh trọng số của từng tín hiệu theo bối cảnh truy vấn." },
+            { id: "US8682897B1", title: "Twiddlers: Post-ranking Re-ranking Filters", author: "Jeff Dean, Amit Singhal", mechanism: "Bộ lọc hậu xếp hạng điều chỉnh tính đa dạng domain, vị trí địa phương trước khi trả về kết quả." },
+            { id: "US9183282B1", title: "Doorway Pages Identification", author: "Matt Cutts", mechanism: "Triệt tiêu các trang nhân bản hàng loạt chỉ thay thế tên 30 quận huyện vào cùng 1 bài viết rỗng." },
+            { id: "US10929505B1", title: "Site-wide Demotion Multiplier (Panda Penalty)", author: "Navneet Panda", mechanism: "Nếu > 40% số trang trên web là nội dung mỏng, toàn bộ các trang còn lại đều bị hạ hạng theo hệ số nhân." },
+            { id: "US11270087B1", title: "Real-time SpamBrain Behavioral Detection", author: "Paul Haahr", mechanism: "AI tự động phát hiện văn bản do máy sinh rác và phân phối link dị thường theo thời gian thực." }
+          ],
+          actions: "Mỗi trang quận huyện phải có bản đồ riêng, biểu đồ giá riêng và dữ liệu thực tế riêng biệt để chống dính thuật toán Doorway Pages."
+        }
+      ]
+    };
+
+    // ═════════════════════════════════════════════════════════════════
+    // 2. ROADMAP ACTION ITEMS (P0, P1, P2)
+    // ═════════════════════════════════════════════════════════════════
+    const roadmapItems = [
+      {
+        priority: "P0",
+        label: "Khẩn cấp - Cần làm ngay",
+        badgeColor: "bg-rose-500/20 text-rose-400 border-rose-500/30",
+        title: "Tạo app/sitemap.ts, app/robots.ts & Schema RealEstateListing",
+        description: "Googlebot hiện tại đang crawl mù quáng vì thiếu sitemap XML động kết nối database Supabase. Đồng thời các trang chi tiết tin đăng thiếu Schema JSON-LD cấu trúc thực thể.",
+        patents: ["US7472113B1 (Crawl Scheduler)", "US10402458B2 (Schema Validation)", "US10922378B1 (XML Sitemap Ingestion)"],
+        solution: "Viết sitemap.ts truy vấn toàn bộ ID tin đăng và phân khu quy hoạch tự động cập nhật lastmod; bổ sung Schema JSON-LD SingleFamilyResidence vào listings/[id]/page.tsx."
+      },
+      {
+        priority: "P1",
+        label: "Trọng tâm - Tối ưu trong tuần",
+        badgeColor: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+        title: "Xây dựng Entity Hub cho 30 Quận/Huyện & Chống Spider Trap",
+        description: "Bộ lọc tìm kiếm tạo ra hàng loạt tham số lọc URL không có thẻ canonical. Ngoài ra, việc thiếu trang chuyên mục quận huyện khiến Google không đánh giá cao Topic Authority.",
+        patents: ["US10055497B1 (Topic Authority)", "US9063942B2 (Canonicalization)", "US9953088B2 (Topic Silos)"],
+        solution: "Thêm canonical trỏ về URL sạch; xây dựng cấu trúc trang Hub /khu-vuc/[district] chứa tổng hợp bản đồ quy hoạch, biểu đồ giá và danh sách BĐS của riêng quận đó."
+      },
+      {
+        priority: "P2",
+        label: "Đột phá - Dẫn đầu thị trường",
+        badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+        title: "Khai thác triệt để 'Information Gain Score' & Tối ưu NavBoost",
+        description: "Google ngày càng phạt nặng các nội dung sao chép từ Batdongsan hay Chotot. Cần biến HaNoi Realty thành nguồn thông tin độc bản duy nhất với dữ liệu AI và quy hoạch.",
+        patents: ["US9405828B1 (Information Gain Score)", "US8595225B1 (NavBoost Feedback)", "US10496677B1 (POI Amenities Score)"],
+        solution: "Đưa khối 'Thẩm định AI', 'Lớp phủ quy hoạch 2030' và 'Khoảng cách đến trạm Metro' lên màn hình đầu tiên (Above the fold) để giữ chân người đọc > 120s (Good Clicks)."
+      }
+    ];
+
+    // ═════════════════════════════════════════════════════════════════
+    // 3. D3.JS INTERACTIVE MINDMAP RENDERER
+    // ═════════════════════════════════════════════════════════════════
+    let svg, g, zoom, root;
+    let selectedNodeId = null;
+
+    function initMindmap() {
+      const container = document.getElementById("mindmap-container");
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      svg = d3.select("#mindmap-svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Clear previous
+      svg.selectAll("*").remove();
+
+      // Zoom Behavior
+      zoom = d3.zoom()
+        .scaleExtent([0.4, 2.5])
+        .on("zoom", (event) => {
+          g.attr("transform", event.transform);
+        });
+
+      svg.call(zoom);
+
+      g = svg.append("g")
+        .attr("transform", `translate(${width / 4}, ${height / 2})`);
+
+      // Tree Layout (Radial / Horizontal Tree)
+      const treeLayout = d3.tree()
+        .size([height * 1.3, width * 0.75])
+        .separation((a, b) => (a.parent == b.parent ? 1.4 : 2));
+
+      root = d3.hierarchy(mindmapData);
+      treeLayout(root);
+
+      // Render Links (Curves)
+      const links = g.selectAll(".link")
+        .data(root.links())
+        .enter()
+        .append("path")
+        .attr("class", "link-line")
+        .attr("stroke", d => d.target.data.color || "#475569")
+        .attr("stroke-opacity", 0.45)
+        .attr("d", d3.linkHorizontal()
+          .x(d => d.y)
+          .y(d => d.x)
+        );
+
+      // Render Nodes
+      const nodes = g.selectAll(".node")
+        .data(root.descendants())
+        .enter()
+        .append("g")
+        .attr("class", "node cursor-pointer")
+        .attr("transform", d => `translate(${d.y},${d.x})`)
+        .on("click", (event, d) => {
+          event.stopPropagation();
+          onNodeClick(d);
+        });
+
+      // Node Circles / Rectangles
+      nodes.each(function(d) {
+        const el = d3.select(this);
+        const isRoot = !d.parent;
+
+        if (isRoot) {
+          // Center Core Node
+          el.append("rect")
+            .attr("x", -100)
+            .attr("y", -30)
+            .attr("width", 200)
+            .attr("height", 60)
+            .attr("rx", 16)
+            .attr("fill", "#0f172a")
+            .attr("stroke", "#f97316")
+            .attr("stroke-width", 3)
+            .attr("class", "glow-orange node-pulse");
+
+          el.append("text")
+            .attr("dy", -4)
+            .attr("text-anchor", "middle")
+            .attr("fill", "#ffffff")
+            .attr("font-size", "13px")
+            .attr("font-weight", "900")
+            .text(d.data.name);
+
+          el.append("text")
+            .attr("dy", 16)
+            .attr("text-anchor", "middle")
+            .attr("fill", "#f97316")
+            .attr("font-size", "10px")
+            .attr("font-weight", "700")
+            .text(d.data.subTitle);
+        } else {
+          // Branch Pillar Nodes
+          el.append("circle")
+            .attr("r", 20)
+            .attr("fill", "#0f172a")
+            .attr("stroke", d.data.color)
+            .attr("stroke-width", 2.5)
+            .attr("class", "transition-all duration-300 hover:scale-125");
+
+          // Weight Pill Badge
+          el.append("rect")
+            .attr("x", 26)
+            .attr("y", -18)
+            .attr("width", 85)
+            .attr("height", 18)
+            .attr("rx", 9)
+            .attr("fill", `${d.data.color}25`)
+            .attr("stroke", `${d.data.color}50`);
+
+          el.append("text")
+            .attr("x", 68)
+            .attr("y", -5)
+            .attr("text-anchor", "middle")
+            .attr("fill", d.data.color)
+            .attr("font-size", "9px")
+            .attr("font-weight", "800")
+            .text(d.data.weight);
+
+          // Node Title
+          el.append("text")
+            .attr("x", 26)
+            .attr("y", 12)
+            .attr("fill", "#f8fafc")
+            .attr("font-size", "12px")
+            .attr("font-weight", "700")
+            .text(d.data.name);
+
+          // Small count subtitle
+          el.append("text")
+            .attr("x", 26)
+            .attr("y", 26)
+            .attr("fill", "#94a3b8")
+            .attr("font-size", "10px")
+            .text(d.data.patentsCount);
+        }
+      });
+
+      // Default Open First Pillar in Drawer
+      if (mindmapData.children.length > 0) {
+        showPillarDetails(mindmapData.children[0]);
+      }
+    }
+
+    function resetZoom() {
+      const container = document.getElementById("mindmap-container");
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      svg.transition().duration(750).call(
+        zoom.transform,
+        d3.zoomIdentity.translate(width / 4, height / 2).scale(1)
+      );
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    // 4. INTERACTION & DRAWER DETAILS
+    // ═════════════════════════════════════════════════════════════════
+    let currentSelectedData = null;
+
+    function onNodeClick(d) {
+      if (!d.parent) {
+        // Root Clicked
+        showRootDetails();
+      } else {
+        // Pillar Branch Clicked
+        showPillarDetails(d.data);
+      }
+    }
+
+    function showRootDetails() {
+      currentSelectedData = {
+        title: "Google Ranking Engine Architecture",
+        summary: "Tổng quan cấu trúc phối hợp giữa 100+ bằng sáng chế thuật toán cốt lõi."
+      };
+      document.getElementById("drawer-title").innerText = "Tổng Quan Hệ Thống";
+      document.getElementById("drawer-badge").innerText = "8 Phân Hệ Cốt Lõi";
+      document.getElementById("drawer-badge").className = "text-[10px] font-semibold text-orange-400";
+      document.getElementById("drawer-icon-box").innerHTML = '<i data-lucide="cpu" class="h-4 w-4 text-orange-400"></i>';
+
+      const content = `
+        <div class="space-y-4">
+          <div class="p-3.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-xs leading-relaxed text-orange-200">
+            Hệ thống tìm kiếm hiện đại của Google không còn vận hành bằng một công thức toán học đơn lẻ, mà là một đường ống (pipeline) đa tầng kết hợp:
+            <b>PageRank đồ thị liên kết</b> ➔ <b>Thực thể vector ngữ nghĩa</b> ➔ <b>Hành vi người dùng thực (NavBoost)</b> ➔ <b>Bộ lọc sau xếp hạng (Twiddlers)</b>.
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">3 Trụ Cột Chi Phối Thứ Hạng 2026:</h4>
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-200">
+                <span>1. Lịch sử Click & Trải nghiệm (NavBoost)</span>
+                <span class="text-orange-400 font-extrabold">30%</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Đo lường goodClicks, badClicks và lastClicks trong 13 tháng.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-200">
+                <span>2. Tín hiệu Thương hiệu (Brand Queries)</span>
+                <span class="text-blue-400 font-extrabold">25%</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Lưu lượng truy cập trực tiếp và dữ liệu người dùng thật từ trình duyệt Chrome.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-200">
+                <span>3. Thẩm quyền chủ đề (Topic Authority)</span>
+                <span class="text-emerald-400 font-extrabold">20%</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Khoảng cách vector ngữ nghĩa giữa các bài viết trong ngách BĐS Hà Nội.</p>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById("drawer-content").innerHTML = content;
+      openDrawer();
+      lucide.createIcons();
+    }
+
+    function showPillarDetails(pillar) {
+      currentSelectedData = pillar;
+      document.getElementById("drawer-title").innerText = pillar.name;
+      document.getElementById("drawer-badge").innerText = `Trọng số: ${pillar.weight} · ${pillar.patentsCount}`;
+      document.getElementById("drawer-badge").className = "text-[10px] font-semibold text-emerald-400";
+      document.getElementById("drawer-icon-box").innerHTML = `<i data-lucide="${pillar.icon}" class="h-4 w-4" style="color: ${pillar.color}"></i>`;
+
+      let patentsHtml = pillar.patents.map(p => `
+        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-all space-y-1.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-extrabold text-orange-400 font-mono">${p.id}</span>
+            <span class="text-[10px] text-slate-400 italic">${p.author}</span>
+          </div>
+          <div class="text-xs font-bold text-white">${p.title}</div>
+          <p class="text-[11px] text-slate-300 leading-relaxed">${p.mechanism}</p>
+        </div>
+      `).join('');
+
+      const content = `
+        <div class="space-y-4">
+          <!-- Summary Box -->
+          <div class="p-3.5 rounded-xl border text-xs leading-relaxed" style="background-color: ${pillar.color}15; border-color: ${pillar.color}35; color: ${pillar.color}">
+            <b>Nguyên lý cốt lõi:</b> ${pillar.summary}
+          </div>
+
+          <!-- Action for Project -->
+          <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 space-y-1">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+              <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i>
+              <span>Hành động áp dụng cho HaNoi Realty:</span>
+            </div>
+            <p class="text-xs text-slate-200 leading-relaxed">${pillar.actions}</p>
+          </div>
+
+          <!-- Patents List -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+              <span>Các Bằng Sáng Chế Tiêu Biểu</span>
+              <span class="text-[10px] text-slate-400">USPTO Database</span>
+            </h4>
+            <div class="space-y-2.5">
+              ${patentsHtml}
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById("drawer-content").innerHTML = content;
+      openDrawer();
+      lucide.createIcons();
+    }
+
+    function openDrawer() {
+      document.getElementById("detail-drawer").classList.remove("translate-x-full");
+    }
+
+    function closeDrawer() {
+      // Collapse drawer width on mobile / desktop
+      document.getElementById("detail-drawer").classList.add("translate-x-full");
+    }
+
+    function copyCurrentPatentData() {
+      if (!currentSelectedData) return;
+      const text = `${currentSelectedData.name || currentSelectedData.title}\n${currentSelectedData.summary || ''}\n${currentSelectedData.actions || ''}`;
+      navigator.clipboard.writeText(text);
+      alert("Đã sao chép tóm tắt phân hệ vào clipboard!");
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    // 5. VIEW SWITCHER (MINDMAP vs MATRIX vs ROADMAP)
+    // ═════════════════════════════════════════════════════════════════
+    function switchView(view) {
+      const mindmapCont = document.getElementById("mindmap-container");
+      const matrixCont = document.getElementById("matrix-container");
+      const roadmapCont = document.getElementById("roadmap-container");
+
+      const btnMindmap = document.getElementById("btn-view-mindmap");
+      const btnMatrix = document.getElementById("btn-view-matrix");
+      const btnRoadmap = document.getElementById("btn-view-roadmap");
+
+      // Reset classes
+      [btnMindmap, btnMatrix, btnRoadmap].forEach(b => {
+        b.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5";
+      });
+
+      mindmapCont.classList.add("hidden");
+      matrixCont.classList.add("hidden");
+      roadmapCont.classList.add("hidden");
+
+      if (view === 'mindmap') {
+        mindmapCont.classList.remove("hidden");
+        btnMindmap.className = "px-3 py-1.5 rounded-lg font-semibold bg-orange-500 text-white shadow-sm transition-all flex items-center gap-1.5";
+        initMindmap();
+      } else if (view === 'matrix') {
+        matrixCont.classList.remove("hidden");
+        btnMatrix.className = "px-3 py-1.5 rounded-lg font-semibold bg-orange-500 text-white shadow-sm transition-all flex items-center gap-1.5";
+        renderMatrixView();
+      } else if (view === 'roadmap') {
+        roadmapCont.classList.remove("hidden");
+        btnRoadmap.className = "px-3 py-1.5 rounded-lg font-semibold bg-orange-500 text-white shadow-sm transition-all flex items-center gap-1.5";
+        renderRoadmapView();
+      }
+      lucide.createIcons();
+    }
+
+    function renderMatrixView() {
+      const container = document.getElementById("matrix-grid");
+      container.innerHTML = mindmapData.children.map(p => `
+        <div onclick="selectMatrixCard('${p.id}')" class="glass-card p-5 rounded-2xl border border-slate-800 hover:border-orange-500/50 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between group">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold" style="background-color: ${p.color}20; color: ${p.color}; border: 1px solid ${p.color}40">
+                ${p.weight}
+              </span>
+              <span class="text-xs text-slate-400 font-mono">${p.patentsCount}</span>
+            </div>
+            <h3 class="font-extrabold text-base text-white group-hover:text-orange-400 transition-colors">${p.name}</h3>
+            <p class="text-xs text-slate-300 leading-relaxed line-clamp-3">${p.summary}</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+            <span>Xem chi tiết</span>
+            <i data-lucide="arrow-right" class="h-4 w-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function selectMatrixCard(pillarId) {
+      const pillar = mindmapData.children.find(c => c.id === pillarId);
+      if (pillar) {
+        showPillarDetails(pillar);
+      }
+    }
+
+    function renderRoadmapView() {
+      const container = document.getElementById("roadmap-steps");
+      container.innerHTML = roadmapItems.map(item => `
+        <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="px-3 py-1 text-xs font-black rounded-lg border ${item.badgeColor}">
+                ${item.priority}
+              </span>
+              <h3 class="font-bold text-lg text-white">${item.title}</h3>
+            </div>
+            <span class="text-xs text-slate-400 font-semibold">${item.label}</span>
+          </div>
+
+          <p class="text-sm text-slate-300 leading-relaxed">${item.description}</p>
+
+          <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
+            <span class="font-bold text-orange-400">Cơ sở lý thuyết bằng sáng chế:</span>
+            <div class="text-slate-300 flex flex-wrap gap-2 pt-1 font-mono text-[11px]">
+              ${item.patents.map(p => `<span class="bg-slate-800 px-2 py-0.5 rounded border border-slate-700">${p}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-200">
+            <b>Giải pháp kỹ thuật:</b> ${item.solution}
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    // 6. INITIALIZATION ON LOAD & RESIZE
+    // ═════════════════════════════════════════════════════════════════
+    window.addEventListener("DOMContentLoaded", () => {
+      initMindmap();
+      lucide.createIcons();
+    });
+
+    window.addEventListener("resize", () => {
+      if (!document.getElementById("mindmap-container").classList.contains("hidden")) {
+        initMindmap();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -103,13 +103,18 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   const listing = (await getListingById(params.id)) || mockListings[0];
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
   const formattedPrice = ((listing.price || 0) / 1e9).toFixed(1);
+  const pageUrl = `${baseUrl}/listings/${params.id}`;
 
   return {
     title: `${listing.title} - HaNoi Realty`,
-    description: `${listing.area}m² · ${listing.district} · ${formattedPrice} tỷ VNĐ`,
+    description: `${listing.area}m² · ${listing.district} · ${formattedPrice} tỷ VNĐ · ${listing.legalStatus || 'Sổ đỏ chính chủ'}`,
+    alternates: {
+      canonical: pageUrl,
+    },
     openGraph: {
       title: listing.title,
-      description: `Giá: ${formattedPrice} tỷ · ${listing.area}m² · ${listing.district}`,
+      description: `Giá: ${formattedPrice} tỷ · ${listing.area}m² · ${listing.district} · Pháp lý: ${listing.legalStatus || 'Sổ đỏ chính chủ'}`,
+      url: pageUrl,
       images: [
         {
           url: listing.images?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
@@ -125,5 +130,60 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 
 export default async function ListingPage({ params }: ListingPageProps) {
   const initialListing = await getListingById(params.id);
-  return <ListingDetailClient listingId={params.id} initialListing={initialListing || undefined} />;
+  const listing = initialListing || mockListings[0];
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+
+  // Schema.org RealEstateListing & SingleFamilyResidence JSON-LD
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': listing.type === 'apartment' ? 'Apartment' : 'SingleFamilyResidence',
+    name: listing.title,
+    description: listing.description || `${listing.title} tại ${listing.address || listing.district}, Hà Nội.`,
+    url: `${baseUrl}/listings/${listing.id}`,
+    image: listing.images && listing.images.length > 0 ? listing.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+    numberOfRooms: listing.bedrooms || 3,
+    numberOfBedrooms: listing.bedrooms || 3,
+    numberOfBathroomsTotal: listing.bathrooms || 2,
+    floorSize: {
+      '@type': 'QuantitativeValue',
+      value: listing.area || 75,
+      unitCode: 'MTK',
+    },
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: listing.address || `Quận ${listing.district}`,
+      addressLocality: listing.district || 'Hà Nội',
+      addressRegion: 'Hà Nội',
+      addressCountry: 'VN',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: listing.lat,
+      longitude: listing.lng,
+    },
+    offers: {
+      '@type': 'Offer',
+      price: listing.price,
+      priceCurrency: 'VND',
+      availability: listing.status === 'sold' ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+      validFrom: listing.createdAt || new Date().toISOString().split('T')[0],
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: listing.price,
+        priceCurrency: 'VND',
+        unitCode: 'MTK',
+      },
+    },
+  };
+
+  return (
+    <>
+      {/* Schema.org Structured Data for Googlebot (Patent 41, 71, 74) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
+      <ListingDetailClient listingId={params.id} initialListing={initialListing || undefined} />
+    </>
+  );
 }
