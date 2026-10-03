@@ -30,79 +30,78 @@ interface PackageFeatureConfig {
 
 const PACKAGE_FEATURE_CONFIGS: Record<string, PackageFeatureConfig> = {
   free: {
-    serviceLimitsTitle: 'Hạn mức cơ bản',
+    serviceLimitsTitle: 'Hạn mức dịch vụ',
     serviceLimits: [
-      { label: 'Đăng tối đa tin BĐS cơ bản', badge: 'x 3' },
+      { label: 'Đăng tối đa tin BĐS (Thời hạn 7 ngày)', badge: 'x 3' },
     ],
-    privilegesTitle: 'Đặc quyền trải nghiệm',
+    privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
     privileges: [
       'Xem bản đồ quy hoạch cơ bản',
       'Hỗ trợ cộng đồng trực tuyến',
     ],
   },
-  planning_unlimited: {
-    serviceLimitsTitle: 'Hạn mức tra cứu quy hoạch',
+  basic: {
+    serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
     serviceLimits: [
-      { label: 'Tra cứu thửa đất quy hoạch phân khu', badge: 'Vô hạn' },
-      { label: 'Báo cáo AI thẩm định quy hoạch', badge: 'x 10' },
-      { label: 'Đăng tin BĐS cơ bản', badge: 'x 5' },
+      { label: 'Tin nổi bật / tháng', badge: 'x 2' },
+      { label: 'Báo cáo AI chuyên sâu & định giá', badge: 'x 5' },
+      { label: 'Đăng tối đa tin BĐS (Thời hạn 30 ngày)', badge: 'x 20' },
     ],
-    privilegesTitle: 'Đặc quyền dữ liệu & Bản đồ',
+    privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
     privileges: [
-      'Lớp phủ bản đồ vệ tinh & ranh giới địa chính 2030-2045',
-      'Cảnh báo mở đường & hành lang giao thông',
-      'Xuất file PDF trích lục quy hoạch',
+      'Tra cứu bản đồ quy hoạch chi tiết',
+      'Xuất file báo cáo PDF',
+      'Hỗ trợ qua Ticket & Email',
     ],
   },
-  vip1_diamond: {
-    serviceLimitsTitle: 'Hạn mức tin VIP Kim Cương',
+  pro: {
+    serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
     serviceLimits: [
-      { label: 'Ghim TOP 1 toàn quận (Độc quyền)', badge: 'Ghim TOP 1' },
-      { label: 'Báo cáo AI định giá & phân tích đầu tư', badge: 'x 50' },
-      { label: 'Đăng tối đa tin BĐS chuyên nghiệp', badge: 'x 50' },
+      { label: 'Tin nổi bật / tháng', badge: 'x 10' },
+      { label: 'Báo cáo AI chuyên sâu & định giá', badge: 'x 30' },
+      { label: 'Đăng tối đa tin BĐS (Thời hạn 60 ngày)', badge: 'x 50' },
     ],
-    privilegesTitle: 'Đặc quyền Môi giới Kim Cương',
+    privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
     privileges: [
-      'Huy hiệu AI Verified & Môi giới Kim Cương',
-      'Ưu tiên hiển thị nổi bật trên bản đồ số',
-      'Tự động đẩy tin hàng ngày lên trang chủ',
-      'Hỗ trợ ưu tiên 24/7 từ chuyên viên HaNoi Realty',
+      'Tra cứu bản đồ quy hoạch 2030 & giá đất',
+      'Xuất file báo cáo PDF chuẩn chuyên nghiệp',
+      'Hỗ trợ ưu tiên 24/7',
     ],
   },
   agency: {
-    serviceLimitsTitle: 'Hạn mức doanh nghiệp & Sàn',
+    serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
     serviceLimits: [
-      { label: 'Tin nổi bật TOP 1 toàn thành phố', badge: 'x 40' },
-      { label: 'Báo cáo AI chuyên sâu & thẩm định giá', badge: 'x 200' },
+      { label: 'Tin nổi bật / tháng', badge: 'x 40' },
+      { label: 'Báo cáo AI chuyên sâu & thẩm định giá', badge: 'x 150' },
       { label: 'Đăng tối đa tin BĐS (Thời hạn 90 ngày)', badge: 'x 250' },
     ],
-    privilegesTitle: 'Đặc quyền doanh nghiệp',
+    privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
     privileges: [
-      'Toàn bộ đặc quyền VIP 1 Kim Cương',
       'Quản trị phân quyền đội ngũ môi giới',
-      'Dedicated Account Manager riêng',
+      'Dedicated Account Manager',
+      'Hỗ trợ ưu tiên 24/7',
     ],
   },
 };
 
 const ANCHOR_PRICES: Record<string, string> = {
-  planning_unlimited: '299.000 đ',
-  vip1_diamond: '799.000 đ',
-  agency: '2.999.000 đ',
+  basic: '469.000 đ',
+  pro: '1.159.000 đ',
+  agency: '3.199.000 đ',
 };
 
 const getSavingsText = (pkgId: string, isYearly: boolean): string => {
   if (pkgId === 'free') {
-    return 'Trải nghiệm cá nhân • Miễn phí 100%';
+    return 'Trải nghiệm cá nhân • Không mất phí';
   }
   if (isYearly) {
-    if (pkgId === 'planning_unlimited') return 'Giảm đến 33% · Tiết kiệm 70.000 đ/tháng';
-    if (pkgId === 'vip1_diamond') return 'Giảm đến 40% · Tiết kiệm 200.000 đ/tháng';
-    if (pkgId === 'agency') return 'Giảm đến 50% · Tiết kiệm 1.000.000 đ/tháng';
+    if (pkgId === 'basic') return 'Giảm đến 32% · Tiết kiệm 150.000 đ/tháng';
+    if (pkgId === 'pro') return 'Giảm đến 45% · Tiết kiệm 520.000 đ/tháng';
+    if (pkgId === 'agency') return 'Giảm đến 50% · Tiết kiệm 1.600.000 đ/tháng';
   } else {
-    if (pkgId === 'planning_unlimited') return 'Chỉ 6.600 đ/ngày tra cứu';
-    if (pkgId === 'vip1_diamond') return 'Tiết kiệm 300.000 đ so với giá niêm yết';
-    if (pkgId === 'agency') return 'Ưu đãi cho sàn giao dịch';
+    if (pkgId === 'basic') return 'Giảm 15% · Tiết kiệm 70.000 đ/tháng';
+    if (pkgId === 'pro') return 'Giảm 31% · Tiết kiệm 360.000 đ/tháng';
+    if (pkgId === 'agency') return 'Giảm 38% · Tiết kiệm 1.200.000 đ/tháng';
   }
   return '';
 };
