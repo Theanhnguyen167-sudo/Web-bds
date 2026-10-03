@@ -1,6 +1,4 @@
-'use client';
-
-import React from 'react';
+import { Metadata } from 'next';
 import { Navbar } from '@/components/layout/Navbar';
 import { AboutHero } from '@/components/about/AboutHero';
 import { AboutWhatIs } from '@/components/about/AboutWhatIs';
@@ -12,10 +10,50 @@ import { AboutCommitments } from '@/components/about/AboutCommitments';
 import { AboutCta } from '@/components/about/AboutCta';
 import { AboutFooter } from '@/components/about/AboutFooter';
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+
+export const metadata: Metadata = {
+  title: 'Về Chúng Tôi - Đội Ngũ Sáng Lập & Sứ Mệnh | HaNoi Realty',
+  description: 'Khám phá tầm nhìn, sứ mệnh và công nghệ tiên phong của HaNoi Realty trong việc minh bạch hóa thị trường bất động sản và bản đồ quy hoạch Thủ đô Hà Nội.',
+  alternates: {
+    canonical: `${baseUrl}/about`,
+  },
+  openGraph: {
+    title: 'Về Chúng Tôi - Nền Tảng BĐS & Quy Hoạch HaNoi Realty',
+    description: 'Minh bạch hóa thị trường bất động sản và dữ liệu quy hoạch Thủ đô bằng công nghệ AI và GIS.',
+    url: `${baseUrl}/about`,
+    type: 'website',
+  },
+};
+
 export default function AboutPage() {
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateAgent',
+    name: 'HaNoi Realty PropTech',
+    url: baseUrl,
+    logo: `${baseUrl}/favicon.ico`,
+    description: 'Nền tảng công nghệ bất động sản và tra cứu quy hoạch thông minh Hà Nội',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Hà Nội',
+      addressRegion: 'Hà Nội',
+      addressCountry: 'VN',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 21.0285,
+      longitude: 105.8542,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 overflow-x-hidden font-sans flex flex-col justify-between">
-      {/* 1. Global Navigation (Giữ nguyên) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      {/* 1. Global Navigation */}
       <Navbar />
 
       <main className="flex-1">
@@ -44,7 +82,7 @@ export default function AboutPage() {
         <AboutCta />
       </main>
 
-      {/* Global / About Footer (Giữ nguyên) */}
+      {/* Global / About Footer */}
       <AboutFooter />
     </div>
   );

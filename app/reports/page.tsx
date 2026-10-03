@@ -1,17 +1,22 @@
-'use client';
-
-import React, { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Metadata } from 'next';
 import { Navbar } from '@/components/layout/Navbar';
-import { ReportViewer } from '@/components/ai-report/ReportViewer';
-import { Loader2 } from 'lucide-react';
+import { ReportsClient } from '@/components/ai-report/ReportsClient';
 
-function ReportsContent() {
-  const searchParams = useSearchParams();
-  const listingId = searchParams?.get('id') || '1';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
 
-  return <ReportViewer listingId={listingId} />;
-}
+export const metadata: Metadata = {
+  title: 'Báo Cáo Thẩm Định & Định Giá BĐS AI Hà Nội | HaNoi Realty',
+  description: 'Báo cáo phân tích chuyên sâu tiềm năng bất động sản bằng trí tuệ nhân tạo: Định giá thị trường, kiểm tra quy hoạch phân khu, phân tích thanh khoản và dòng tiền đầu tư.',
+  alternates: {
+    canonical: `${baseUrl}/reports`,
+  },
+  openGraph: {
+    title: 'Báo Cáo Thẩm Định & Định Giá Bất Động Sản AI',
+    description: 'Hệ thống định giá tự động và thẩm định tiềm năng đầu tư BĐS Hà Nội bằng mô hình AI chuyên sâu.',
+    url: `${baseUrl}/reports`,
+    type: 'website',
+  },
+};
 
 export default function ReportsIndexPage() {
   return (
@@ -19,16 +24,7 @@ export default function ReportsIndexPage() {
       <Navbar />
 
       <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-        <Suspense
-          fallback={
-            <div className="py-24 flex items-center justify-center gap-2 text-text-secondary text-sm">
-              <Loader2 className="h-5 w-5 animate-spin text-accent" />
-              <span>Đang tải báo cáo thẩm định AI...</span>
-            </div>
-          }
-        >
-          <ReportsContent />
-        </Suspense>
+        <ReportsClient />
       </main>
     </div>
   );
