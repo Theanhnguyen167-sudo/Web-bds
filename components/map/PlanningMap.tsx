@@ -17,6 +17,8 @@ import {
   HANOI_SUBDIVISION_GROUPS, 
   PLANNING_STANDARD_SYMBOLS 
 } from '@/lib/planning/hanoi-planning-db'
+import { inspectPointPlanning, PlanningInspectionResult } from '@/lib/gis/planning-inspector'
+import { CadastralParcelResult } from '@/lib/gis/cadastral-db'
 import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
 import { useApp } from '@/lib/context/AppContext'
 import { MapLocationSearch } from './MapLocationSearch'
@@ -55,6 +57,9 @@ interface PlanningMapProps {
   planYear: 2025 | 2030 | 2045
   opacity: number
   onZoneClick?: (zone: SelectedZoneInfo) => void
+  onInspectPoint?: (result: PlanningInspectionResult) => void
+  inspectionPoint?: [number, number] | null
+  cadastralParcel?: CadastralParcelResult | null
   zones?: any[]
   focusZoneId?: string | null
   isSwipeMode?: boolean
@@ -70,6 +75,9 @@ export default function PlanningMap({
   planYear,
   opacity,
   onZoneClick,
+  onInspectPoint,
+  inspectionPoint,
+  cadastralParcel,
   zones,
   focusZoneId,
   isSwipeMode: propIsSwipeMode,
@@ -93,6 +101,11 @@ export default function PlanningMap({
   const userLocationCircleRef = useRef<any>(null)
   const searchedLocationMarkerRef = useRef<any>(null)
 
+  // Inspection marker refs
+  const inspectionMarkerRef = useRef<any>(null)
+  const inspectionCircleRef = useRef<any>(null)
+  const cadastralPolygonRef = useRef<any>(null)
+
   const [isMapReady, setIsMapReady] = useState(false)
   const [selectedZone, setSelectedZone] = useState<SelectedZoneInfo | null>(null)
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
@@ -104,6 +117,7 @@ export default function PlanningMap({
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [isLocating, setIsLocating] = useState(false)
   const [searchedLocation, setSearchedLocation] = useState<HanoiLocationItem | null>(null)
+  const [isInspectMode, setIsInspectMode] = useState<boolean>(true)
 
   // ── SWIPE COMPARISON STATE & DRAG LOGIC ──
   const [internalSwipeMode, setInternalSwipeMode] = useState(false)
@@ -169,6 +183,120 @@ export default function PlanningMap({
     },
   }
 
+  // ── PLACE INSPECTION PIN ON MAP ──
+  const placeInspectionPin = useCallback(async (inspection: PlanningInspectionResult) => {
+    if (!mapInstanceRef.current) return
+    const L = (await import('leaflet')).default
+    const map = mapInstanceRef.current
+
+    if (inspectionMarkerRef.current) {
+      map.removeLayer(inspectionMarkerRef.current)
+      inspectionMarkerRef.current = null
+    }
+    if (inspectionCircleRef.current) {
+      map.removeLayer(inspectionCircleRef.current)
+      inspectionCircleRef.current = null
+    }
+
+    const [lat, lng] = inspection.point
+
+    const pinHtml = `
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%);">
+        <div style="
+          background:rgba(15,23,42,0.96);
+          color:#fbbf24;
+          font-family:monospace;
+          font-size:10px;
+          font-weight:900;
+          padding:3px 8px;
+          border-radius:8px;
+          border:1px solid rgba(251,191,36,0.6);
+          white-space:nowrap;
+          box-shadow:0 6px 16px rgba(0,0,0,0.5);
+          display:flex;
+          align-items:center;
+          gap:4px;
+          margin-bottom:3px;
+        ">
+          <span style="color:#f97316;">📍</span>
+          <span>${inspection.zone.code}</span>
+          <span style="color:rgba(255,255,255,0.4);">|</span>
+          <span style="color:#38bdf8;">X:${inspection.vn2000.x.toFixed(0)}</span>
+        </div>
+        <div style="
+          width:18px;
+          height:18px;
+          border-radius:50%;
+          background-color:${inspection.zone.color};
+          border:2.5px solid #ffffff;
+          box-shadow:0 0 12px rgba(0,0,0,0.6);
+          position:relative;
+          z-index:2;
+        "></div>
+        <div style="
+          position:absolute;
+          bottom:0;
+          width:36px;
+          height:36px;
+          border-radius:50%;
+          background:rgba(249,115,22,0.35);
+          animation:ping 1.6s cubic-bezier(0,0,0.2,1) infinite;
+          z-index:1;
+        "></div>
+      </div>
+    `
+
+    const icon = L.divIcon({
+      html: pinHtml,
+      className: 'planning-inspection-pin',
+      iconSize: [160, 52],
+      iconAnchor: [80, 50],
+    })
+
+    const marker = L.marker([lat, lng], { icon, zIndexOffset: 3000 })
+    marker.addTo(map)
+    inspectionMarkerRef.current = marker
+
+    const circle = L.circle([lat, lng], {
+      radius: 120,
+      color: '#f97316',
+      weight: 1.5,
+      opacity: 0.85,
+      fillColor: inspection.zone.color,
+      fillOpacity: 0.15,
+      dashArray: '4,4',
+    }).addTo(map)
+    inspectionCircleRef.current = circle
+  }, [])
+
+  // ── HANDLE POINT INSPECTION ──
+  const handleMapInspect = useCallback((lat: number, lng: number, specificZone?: any) => {
+    const baseZones = zones && zones.length > 0
+      ? zones
+      : (appContext?.planningZones && appContext.planningZones.length > 0
+          ? appContext.planningZones
+          : getAllHanoiPlanningZones())
+
+    const inspection = inspectPointPlanning([lat, lng], baseZones)
+    if (specificZone) {
+      inspection.zone = {
+        ...inspection.zone,
+        id: specificZone.id,
+        code: specificZone.code || inspection.zone.code,
+        name: specificZone.name,
+        district: specificZone.district,
+        color: specificZone.color,
+        type: specificZone.type,
+        planYear: specificZone.planYear || 2030,
+        status: specificZone.status || 'Đã phê duyệt chính thức',
+        pdfUrl: specificZone.pdfUrl,
+      }
+    }
+
+    placeInspectionPin(inspection)
+    onInspectPoint?.(inspection)
+  }, [zones, appContext?.planningZones, onInspectPoint, placeInspectionPin])
+
   // ── INIT MAP ──
   useEffect(() => {
     if (typeof window === 'undefined' || mapInstanceRef.current) return
@@ -186,11 +314,9 @@ export default function PlanningMap({
         minZoom: 10,
       })
 
-      // Tạo riêng pane cho quy hoạch để điều khiển Clip-Path cho chế độ Soi rèm (Curtain Swipe)
       const planningPane = map.createPane('planningPane')
       planningPane.style.zIndex = '450'
 
-      // Base tile
       const initialConfig = TILE_CONFIGS[mapStyle]
       tileLayerRef.current = L.tileLayer(
         initialConfig.base,
@@ -198,6 +324,12 @@ export default function PlanningMap({
       ).addTo(map)
 
       map.on('zoomend', () => setZoomLevel(map.getZoom()))
+
+      // Map Click Event -> Inspect Point
+      map.on('click', (e: any) => {
+        handleMapInspect(e.latlng.lat, e.latlng.lng)
+      })
+
       mapInstanceRef.current = map
       setIsMapReady(true)
     }
@@ -207,7 +339,70 @@ export default function PlanningMap({
       mapInstanceRef.current?.remove()
       mapInstanceRef.current = null
     }
-  }, [])
+  }, [handleMapInspect])
+
+  // ── EXTERNAL INSPECTION POINT TRIGGER ──
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return
+    if (!inspectionPoint) {
+      if (inspectionMarkerRef.current) {
+        mapInstanceRef.current.removeLayer(inspectionMarkerRef.current)
+        inspectionMarkerRef.current = null
+      }
+      if (inspectionCircleRef.current) {
+        mapInstanceRef.current.removeLayer(inspectionCircleRef.current)
+        inspectionCircleRef.current = null
+      }
+      return
+    }
+
+    handleMapInspect(inspectionPoint[0], inspectionPoint[1])
+    mapInstanceRef.current.flyTo(inspectionPoint, 16, { duration: 0.8 })
+  }, [inspectionPoint, isMapReady, handleMapInspect])
+
+  // ── RENDER CADASTRAL PARCEL (SỔ ĐỎ / THỬA ĐẤT) ──
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return
+
+    const renderParcel = async () => {
+      const L = (await import('leaflet')).default
+      const map = mapInstanceRef.current
+
+      if (cadastralPolygonRef.current) {
+        map.removeLayer(cadastralPolygonRef.current)
+        cadastralPolygonRef.current = null
+      }
+
+      if (!cadastralParcel) return
+
+      const polygon = L.polygon(cadastralParcel.boundaryCoordinates, {
+        color: '#f59e0b',
+        fillColor: '#fbbf24',
+        fillOpacity: 0.45,
+        weight: 3.5,
+        dashArray: '5,5',
+      })
+
+      polygon.bindTooltip(`
+        <div style="font-family:Inter,sans-serif;padding:6px 10px;background:#0f172a;color:#fff;border-radius:10px;border:1px solid #f59e0b;box-shadow:0 8px 20px rgba(0,0,0,0.5);">
+          <div style="color:#fbbf24;font-weight:800;font-size:12px;">📜 Thửa ${cadastralParcel.parcelNo}, Tờ ${cadastralParcel.sheetNo}</div>
+          <div style="font-size:11px;color:#cbd5e1;">Diện tích: <strong>${cadastralParcel.areaM2} m²</strong></div>
+          <div style="font-size:10px;color:#94a3b8;">${cadastralParcel.ward}</div>
+        </div>
+      `, { permanent: true, direction: 'top', offset: [0, -10] })
+
+      polygon.addTo(map)
+      cadastralPolygonRef.current = polygon
+
+      // Fly to parcel center
+      map.flyTo(cadastralParcel.centerPoint, 17.5, { duration: 1.2 })
+
+      // Auto inspect point
+      handleMapInspect(cadastralParcel.centerPoint[0], cadastralParcel.centerPoint[1])
+    }
+
+    renderParcel()
+  }, [cadastralParcel, isMapReady, handleMapInspect])
 
   // ── CHANGE MAP STYLE ──
   useEffect(() => {
@@ -300,6 +495,9 @@ export default function PlanningMap({
         userLocationCircleRef.current = circle
 
         map.flyTo([lat, lng], 15, { duration: 1.2 })
+
+        // Tra cứu luôn vị trí hiện tại của người dùng
+        handleMapInspect(lat, lng)
       },
       (err) => {
         setIsLocating(false)
@@ -308,7 +506,7 @@ export default function PlanningMap({
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     )
-  }, [])
+  }, [handleMapInspect])
 
   // ── SELECT LOCATION FROM SEARCH BAR ──
   const handleSelectLocation = useCallback(
@@ -342,8 +540,11 @@ export default function PlanningMap({
       searchedLocationMarkerRef.current = marker
 
       map.flyTo([loc.lat, loc.lng], loc.zoom || 15.5, { duration: 1.2 })
+
+      // Tự động kích hoạt tra cứu quy hoạch tại vị trí tìm kiếm
+      handleMapInspect(loc.lat, loc.lng)
     },
-    []
+    [handleMapInspect]
   )
 
   const handleClearSearched = useCallback(() => {
@@ -399,6 +600,7 @@ export default function PlanningMap({
 
         polygon.on('click', (e: any) => {
           L.DomEvent.stopPropagation(e)
+
           const info: SelectedZoneInfo = {
             id: zone.id,
             name: zone.name,
@@ -417,11 +619,10 @@ export default function PlanningMap({
             fileName: zone.fileName,
           }
           setSelectedZone(info)
-          setShowInfoPanel(true)
           onZoneClick?.(info)
 
-          const bounds = polygon.getBounds()
-          map.flyToBounds(bounds, { padding: [80, 80], maxZoom: 16, duration: 0.8 })
+          // Kích hoạt đồng thời tra cứu điểm toạ độ VN-2000
+          handleMapInspect(e.latlng.lat, e.latlng.lng, zone)
         })
 
         polygon.on('mouseover', function(this: any, e: any) {
@@ -490,7 +691,7 @@ export default function PlanningMap({
                   padding:4px 10px;
                   border-radius:8px;
                 ">
-                  Click để xem thông số chi tiết →
+                  Click để tra cứu toạ độ & chỉ tiêu →
                 </span>
               </div>
             </div>
@@ -538,7 +739,9 @@ export default function PlanningMap({
     zones, 
     focusZoneId, 
     appContext?.planningZones, 
-    appContext?.selectedPlanningZoneId
+    appContext?.selectedPlanningZoneId,
+    onZoneClick,
+    handleMapInspect
   ])
 
   // Fly to focusZoneId when changed
@@ -653,7 +856,7 @@ export default function PlanningMap({
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none">
+    <div className={`relative w-full h-full overflow-hidden select-none ${isInspectMode ? 'cursor-crosshair' : ''}`}>
       {/* ── Map Container ── */}
       <div ref={mapRef} className="w-full h-full z-0" />
 
@@ -683,7 +886,6 @@ export default function PlanningMap({
       {/* ── SWIPE COMPARISON OVERLAY (SOI RÈM HIỆN TRẠNG) ── */}
       {effectiveSwipeMode && isMapReady && (
         <>
-          {/* Top Comparison Floating Badges */}
           <div className="absolute top-20 left-4 sm:left-6 z-[420] pointer-events-none">
             <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-white text-xs font-bold shadow-xl flex items-center gap-1.5">
               <span className="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
@@ -703,10 +905,8 @@ export default function PlanningMap({
             className="absolute top-0 bottom-0 z-[460] select-none transition-none pointer-events-none"
             style={{ left: `${swipePos}%` }}
           >
-            {/* Laser Line */}
             <div className="absolute inset-y-0 w-0.5 -translate-x-1/2 bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.95)]" />
 
-            {/* Draggable Handle */}
             <div
               onMouseDown={handleSwipeStart}
               onTouchStart={handleSwipeStart}
@@ -724,7 +924,6 @@ export default function PlanningMap({
               </div>
             </div>
 
-            {/* Bottom percentage tag */}
             <div className="absolute bottom-6 -translate-x-1/2 bg-slate-950/90 text-amber-400 border border-amber-400/60 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold shadow-lg pointer-events-none whitespace-nowrap">
               {Math.round(swipePos)}%
             </div>
@@ -769,7 +968,7 @@ export default function PlanningMap({
           <RotateCcw size={15} />
         </motion.button>
 
-        {/* Locate Me */}
+        {/* Locate Me (GPS) */}
         <motion.button
           onClick={handleLocateMe}
           disabled={isLocating}
@@ -780,7 +979,7 @@ export default function PlanningMap({
               ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/20'
               : 'bg-white dark:bg-gray-800 text-navy dark:text-white border-gray-200 dark:border-gray-700 hover:bg-orange-500 hover:text-white hover:border-orange-500'
           }`}
-          title="Vị trí của tôi (Định vị GPS)"
+          title="Vị trí của tôi (Định vị GPS & Tra cứu quy hoạch)"
         >
           {isLocating ? (
             <Loader2 size={16} className="animate-spin text-orange-500" />
@@ -789,6 +988,21 @@ export default function PlanningMap({
           ) : (
             <Locate size={16} />
           )}
+        </motion.button>
+
+        {/* Inspect Mode Toggle (Tra cứu toạ độ) */}
+        <motion.button
+          onClick={() => setIsInspectMode(!isInspectMode)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`w-10 h-10 rounded-2xl shadow-lg border flex items-center justify-center transition-all ${
+            isInspectMode
+              ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 text-white border-blue-400 shadow-blue-500/30 ring-2 ring-blue-400/40'
+              : 'bg-white dark:bg-gray-800 text-navy dark:text-white border-gray-200 dark:border-gray-700 hover:bg-blue-600 hover:text-white'
+          }`}
+          title={isInspectMode ? 'Chế độ tra cứu toạ độ đang BẬT (Click vào bản đồ để tra cứu)' : 'Bật chế độ Tra cứu toạ độ thửa đất'}
+        >
+          <Compass size={17} className={isInspectMode ? 'text-white animate-spin-slow' : ''} />
         </motion.button>
 
         {/* Mode Switcher: Soi rèm hiện trạng (Curtain Swipe) */}
@@ -879,103 +1093,6 @@ export default function PlanningMap({
                       rounded-lg font-mono border border-white/10">
         Z{zoomLevel}
       </div>
-
-      {/* ── Zone Info Side Panel ── */}
-      <AnimatePresence>
-        {showInfoPanel && selectedZone && (
-          <motion.div
-            initial={{ opacity: 0, x: 320 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 320 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="absolute top-4 right-16 z-[450] w-[330px] max-w-[calc(100vw-32px)]
-                       bg-white dark:bg-slate-900 rounded-2xl shadow-2xl 
-                       border border-gray-200 dark:border-slate-800 overflow-hidden"
-          >
-            {/* Panel header */}
-            <div className="flex items-start justify-between gap-3 p-5 border-b 
-                            border-gray-100 dark:border-slate-800"
-              style={{ borderLeft: `5px solid ${selectedZone.color}` }}>
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {selectedZone.code && (
-                    <span className="font-mono text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-800 text-amber-400">
-                      {selectedZone.code}
-                    </span>
-                  )}
-                  <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {PLANNING_ZONE_TYPES[selectedZone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || selectedZone.type}
-                  </p>
-                </div>
-                <p className="text-sm font-bold text-navy dark:text-white leading-snug">
-                  {selectedZone.name}
-                </p>
-              </div>
-              <motion.button onClick={() => setShowInfoPanel(false)}
-                whileTap={{ scale: 0.9 }}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 shrink-0">
-                <X size={16} />
-              </motion.button>
-            </div>
-
-            {/* Zone details */}
-            <div className="p-5 space-y-3.5 max-h-[75vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { label: 'Năm quy hoạch', value: selectedZone.planYear },
-                  { label: 'Quận/Huyện', value: selectedZone.district },
-                  { label: 'Diện tích phân khu', value: selectedZone.areaHa ? `${selectedZone.areaHa} ha` : 'Đang cập nhật' },
-                  { label: 'Mật độ xây dựng', value: selectedZone.density || '60%' },
-                  { label: 'Hệ số SDĐ (FAR)', value: selectedZone.floorAreaRatio ? `${selectedZone.floorAreaRatio}x` : 'N/A' },
-                  { label: 'Chiều cao tối đa', value: selectedZone.maxHeight },
-                ].map(item => (
-                  <div key={item.label} 
-                    className="bg-gray-50 dark:bg-slate-800/80 rounded-xl p-2.5">
-                    <p className="text-[10px] text-gray-400 mb-0.5">{item.label}</p>
-                    <p className="text-xs font-bold text-navy dark:text-white leading-tight">
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-xl p-3 text-xs font-bold"
-                style={{ 
-                  background: `${selectedZone.color}20`,
-                  color: selectedZone.color 
-                }}>
-                ✅ {selectedZone.status}
-              </div>
-
-              {selectedZone.pdfUrl && (
-                <a
-                  href={selectedZone.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full 
-                             bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 
-                             border border-red-200 dark:border-red-800
-                             text-red-600 dark:text-red-400 text-xs font-bold py-2.5 px-3.5 
-                             rounded-xl transition-colors shadow-xs"
-                >
-                  <FileText size={15} className="text-red-500 shrink-0" />
-                  <span className="truncate">
-                    📄 Mở tài liệu đồ án PDF {selectedZone.fileName ? `(${selectedZone.fileName})` : ''}
-                  </span>
-                </a>
-              )}
-
-              <a href={`/search?district=${encodeURIComponent(selectedZone.district)}`}
-                className="flex items-center justify-center gap-2 w-full 
-                           bg-orange-500 hover:bg-orange-600 
-                           text-white text-xs font-bold py-3 px-4 
-                           rounded-xl transition-colors shadow-md shadow-orange-500/20">
-                <span>🔍 Xem BĐS trong khu vực này</span>
-              </a>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Planning Legend (QCVN 01:2021 Standard Symbols Popover at bottom-left) ── */}
       {isMapReady && (

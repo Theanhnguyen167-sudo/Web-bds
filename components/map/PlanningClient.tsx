@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Layers, ShieldCheck, MapPin, Compass, Info, 
   Train, Building, Trees, Sliders, Calendar, ChevronRight, 
-  ChevronUp, ChevronDown, X, Scissors, FileText, Sparkles, Filter
+  ChevronUp, ChevronDown, X, Scissors, FileText, Sparkles, Filter,
+  MousePointerClick
 } from 'lucide-react';
 import type { SelectedZoneInfo } from '@/components/map/PlanningMap';
 import { 
@@ -15,6 +16,11 @@ import {
   PLANNING_STANDARD_SYMBOLS,
   HANOI_DISTRICTS_PLANNING_PROFILES 
 } from '@/lib/planning/hanoi-planning-db';
+import { PlanningInspectionResult } from '@/lib/gis/planning-inspector';
+import { PlanningInspectorDrawer } from '@/components/map/PlanningInspectorDrawer';
+import { PlanningReportModal } from '@/components/map/PlanningReportModal';
+import { CadastralSearchModal } from '@/components/map/CadastralSearchModal';
+import { CadastralParcelResult } from '@/lib/gis/cadastral-db';
 
 const PlanningMap = dynamic(
   () => import('@/components/map/PlanningMap'),
@@ -56,7 +62,12 @@ export function PlanningClient() {
   const [opacityValue, setOpacityValue] = useState<number>(45);
   const [isSwipeMode, setIsSwipeMode] = useState<boolean>(false);
   const [selectedZoneInfo, setSelectedZoneInfo] = useState<SelectedZoneInfo | null>(null);
+  const [activeInspection, setActiveInspection] = useState<PlanningInspectionResult | null>(null);
+  const [reportInspection, setReportInspection] = useState<PlanningInspectionResult | null>(null);
+  const [selectedCadastralParcel, setSelectedCadastralParcel] = useState<CadastralParcelResult | null>(null);
+  const [isCadastralModalOpen, setIsCadastralModalOpen] = useState<boolean>(false);
   const [isControlPanelCollapsed, setIsControlPanelCollapsed] = useState<boolean>(false);
+  const [showGuidePill, setShowGuidePill] = useState<boolean>(true);
 
   const [activeLayers, setActiveLayers] = useState({
     planning: true,
@@ -73,7 +84,6 @@ export function PlanningClient() {
     }));
   };
 
-  // Lọc danh sách quận theo nhóm đồ án phân khu được chọn
   const currentGroup = HANOI_SUBDIVISION_GROUPS.find(g => g.id === selectedGroup);
   const availableDistricts = selectedGroup === 'ALL'
     ? ALL_DISTRICTS
@@ -98,16 +108,24 @@ export function PlanningClient() {
           planYear={selectedYear}
           opacity={opacityValue}
           activeLayers={activeLayers}
-          onZoneClick={setSelectedZoneInfo}
+          onZoneClick={(zone) => {
+            setSelectedZoneInfo(zone);
+          }}
+          onInspectPoint={(res) => {
+            setActiveInspection(res);
+            setSelectedZoneInfo(null);
+          }}
+          inspectionPoint={activeInspection?.point}
+          cadastralParcel={selectedCadastralParcel}
           isSwipeMode={isSwipeMode}
           onToggleSwipeMode={setIsSwipeMode}
         />
       </div>
 
       {/* TOP FLOATING CONTROLS: NHÓM PHÂN KHU + QUẬN + NĂM + SOI RÈM */}
-      <div className="absolute top-4 left-4 right-4 sm:left-6 sm:right-auto z-10 flex flex-col gap-2 max-w-full">
+      <div className="absolute top-4 left-4 right-4 sm:left-6 sm:right-auto z-10 flex flex-col gap-2 max-w-full pointer-events-none [&>*]:pointer-events-auto">
         {/* Hàng 1: Tabs Nhóm Phân Khu Quy Hoạch (H1, H2, N, S, Sông Hồng...) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-[calc(100vw-32px)] sm:max-w-4xl">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-[calc(100vw-32px)] sm:max-w-5xl">
           <div className="flex items-center gap-1 bg-[#0a1128]/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1 shadow-2xl shrink-0">
             {HANOI_SUBDIVISION_GROUPS.map((group) => {
               const isActive = selectedGroup === group.id;
@@ -134,6 +152,16 @@ export function PlanningClient() {
               );
             })}
           </div>
+
+          {/* Nút Tra cứu Sổ đỏ (Số tờ, số thửa & toạ độ VN-2000) */}
+          <button
+            onClick={() => setIsCadastralModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shadow-xl shrink-0 border bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-blue-400/80 shadow-blue-500/25 cursor-pointer"
+            title="Tra cứu thửa đất theo Số Tờ, Số Thửa hoặc Toạ độ VN-2000 in trên Sổ đỏ"
+          >
+            <Compass className="h-3.5 w-3.5 text-amber-300" />
+            <span>Tra cứu Sổ đỏ (Số tờ / VN-2000)</span>
+          </button>
 
           {/* Nút bật/tắt Soi Rèm Hiện Trạng */}
           <button
@@ -232,14 +260,29 @@ export function PlanningClient() {
           </div>
         </div>
 
-        {/* Căn cứ pháp lý đồ án phân khu */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-[#0a1128]/80 backdrop-blur-md border border-slate-800/80 rounded-xl text-[11px] text-slate-300 shadow-md max-w-2xl">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-          <span className="font-semibold text-slate-200 truncate">
-            {selectedDistrict !== 'all' && HANOI_DISTRICTS_PLANNING_PROFILES[selectedDistrict]
-              ? HANOI_DISTRICTS_PLANNING_PROFILES[selectedDistrict].legalBasis
-              : currentGroup?.legalBasis}
-          </span>
+        {/* Hàng 4: Hướng dẫn tra cứu toạ độ thửa đất & Căn cứ pháp lý */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {showGuidePill && (
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-blue-950/90 to-indigo-950/90 backdrop-blur-md border border-blue-500/40 rounded-xl text-[11px] text-blue-200 shadow-lg">
+              <MousePointerClick className="h-3.5 w-3.5 text-blue-400 animate-bounce" />
+              <span>Click bất kỳ điểm nào trên bản đồ để tra cứu toạ độ <strong>VN-2000 & chỉ tiêu quy hoạch</strong></span>
+              <button
+                onClick={() => setShowGuidePill(false)}
+                className="ml-1 p-0.5 text-blue-400 hover:text-white rounded"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-[#0a1128]/80 backdrop-blur-md border border-slate-800/80 rounded-xl text-[11px] text-slate-300 shadow-md max-w-xl">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+            <span className="font-semibold text-slate-200 truncate">
+              {selectedDistrict !== 'all' && HANOI_DISTRICTS_PLANNING_PROFILES[selectedDistrict]
+                ? HANOI_DISTRICTS_PLANNING_PROFILES[selectedDistrict].legalBasis
+                : currentGroup?.legalBasis}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -342,9 +385,22 @@ export function PlanningClient() {
         </div>
       </div>
 
-      {/* ZONE DETAIL DRAWER / POPUP KHI BẤM VÀO PHÂN KHU */}
+      {/* PLANNING INSPECTOR DRAWER (BẢNG TRA CỨU TOẠ ĐỘ VN-2000 & CHỈ TIÊU QUY HOẠCH) */}
+      <PlanningInspectorDrawer
+        inspection={activeInspection}
+        onClose={() => setActiveInspection(null)}
+        onOpenReport={(ins) => setReportInspection(ins)}
+      />
+
+      {/* PLANNING REPORT MODAL (PHIẾU TRÍCH LỤC QUY HOẠCH IN/XUẤT PDF) */}
+      <PlanningReportModal
+        inspection={reportInspection}
+        onClose={() => setReportInspection(null)}
+      />
+
+      {/* ZONE DETAIL DRAWER (FALLBACK KHI CLICK ĐA GIÁC ĐỘC LẬP) */}
       <AnimatePresence>
-        {selectedZoneInfo && (
+        {selectedZoneInfo && !activeInspection && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -434,6 +490,15 @@ export function PlanningClient() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* CADASTRAL SEARCH MODAL (SỔ ĐỎ / SỐ TỜ SỐ THỬA / VN-2000) */}
+      <CadastralSearchModal
+        isOpen={isCadastralModalOpen}
+        onClose={() => setIsCadastralModalOpen(false)}
+        onLocateParcel={(parcel) => {
+          setSelectedCadastralParcel(parcel);
+        }}
+      />
     </div>
   );
 }
