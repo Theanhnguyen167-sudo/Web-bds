@@ -5,6 +5,11 @@ import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import { createClient } from '@/lib/supabase/client';
 import { toggleSavedListing, getSavedListings } from '@/lib/supabase/queries/saved';
 import { PlanningZoneItem, DEFAULT_PLANNING_ZONES } from '@/lib/planning/planning-utils';
+import {
+  getPlanningZonesFromSupabase,
+  savePlanningZoneToSupabase,
+  deletePlanningZoneFromSupabase,
+} from '@/lib/supabase/queries/planning';
 import { auth as firebaseAuth } from '@/lib/firebase/config';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { parseLocationCoordinates } from '@/lib/utils';
@@ -658,21 +663,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Load planning zones from localStorage
+  // Load planning zones from Supabase (fallback to localStorage / DEFAULT_PLANNING_ZONES)
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('hanoi_planning_zones');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setPlanningZones(parsed);
+    let isMounted = true;
+    async function loadPlanning() {
+      try {
+        const dbZones = await getPlanningZonesFromSupabase();
+        if (isMounted && dbZones && dbZones.length > 0) {
+          setPlanningZones(dbZones);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('hanoi_planning_zones', JSON.stringify(dbZones));
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn('Lỗi lấy quy hoạch từ Supabase, fallback về localStorage:', err);
+      }
+
+      // Fallback nếu Supabase trống hoặc chưa có mạng
+      try {
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('hanoi_planning_zones');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0 && isMounted) {
+              setPlanningZones(parsed);
+            }
           }
         }
+      } catch (e) {
+        console.warn('Failed to parse planning zones from localStorage', e);
       }
-    } catch (e) {
-      console.warn('Failed to parse planning zones from localStorage', e);
     }
+
+    loadPlanning();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const savePlanningZonesToStorage = (zones: PlanningZoneItem[]) => {
@@ -687,7 +714,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addPlanningZone = (zone: Partial<PlanningZoneItem>): string => {
-    const id = 'zone_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+    const id = zone.id || 'zone_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
     const newZone: PlanningZoneItem = {
       id,
       code: zone.code || 'ODT-NEW',
@@ -713,6 +740,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = [newZone, ...planningZones];
     savePlanningZonesToStorage(updated);
     setSelectedPlanningZoneId(id);
+
+    // Đồng bộ lên Supabase PostGIS nền
+    savePlanningZoneToSupabase(newZone).then((res) => {
+      if (res.success) {
+        console.log('[Supabase] Đã đồng bộ phân khu quy hoạch:', newZone.name);
+      } else {
+        console.warn('[Supabase] Lưu quy hoạch thất bại (sẽ lưu offline):', res.error);
+      }
+    });
+
     addToast(`🎉 Đã thêm phân khu "${newZone.name}" vào bản đồ quy hoạch!`, 'success');
     return id;
   };
@@ -724,6 +761,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (newZones[0]?.id) {
       setSelectedPlanningZoneId(newZones[0].id);
     }
+
+    // Đồng bộ hàng loạt lên Supabase
+    Promise.all(newZones.map((z) => savePlanningZoneToSupabase(z))).then(() => {
+      console.log(`[Supabase] Đã đồng bộ ${newZones.length} phân khu lên Database.`);
+    });
+
     addToast(`🎉 Đã nhập thành công ${newZones.length} phân khu quy hoạch vào bản đồ!`, 'success');
     return newZones.length;
   };
@@ -734,6 +777,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (selectedPlanningZoneId === id) {
       setSelectedPlanningZoneId(null);
     }
+
+    // Xóa trên Supabase
+    deletePlanningZoneFromSupabase(id).then((ok) => {
+      if (ok) console.log('[Supabase] Đã xóa phân khu ID:', id);
+    });
+
     addToast('Đã xóa phân khu khỏi bản đồ', 'info');
   };
 

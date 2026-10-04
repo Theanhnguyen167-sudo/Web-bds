@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { useApp } from '@/lib/context/AppContext';
 import { UploadPlanningModal } from '@/components/admin/UploadPlanningModal';
+import { AIGeneratePlanningModal } from '@/components/admin/AIGeneratePlanningModal';
 import { PlanningZoneItem } from '@/lib/planning/planning-utils';
 import {
   Compass,
@@ -48,6 +49,7 @@ export default function AdminPlanningPage() {
   } = useApp();
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [mapOpacity, setMapOpacity] = useState<number>(45);
   const [activeTab, setActiveTab] = useState<'both' | 'map' | 'table'>('both');
@@ -88,17 +90,25 @@ export default function AdminPlanningPage() {
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Quản lý dữ liệu địa không gian, tải file quy hoạch GeoJSON/KML và cập nhật tự động lên bản đồ
+              Quản lý dữ liệu địa không gian, tự động số hóa phân khu AI Gemini và cập nhật trực tiếp lên bản đồ
             </p>
           </div>
 
           <div className="flex items-center gap-2.5">
             <button
-              onClick={() => setIsUploadModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-md shadow-orange-500/20 transition-all cursor-pointer"
+              onClick={() => setIsAiModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs font-extrabold shadow-md shadow-orange-500/25 transition-all cursor-pointer"
             >
-              <Plus className="h-4 w-4" />
-              <span>+ Thêm phân khu</span>
+              <Sparkles className="h-4 w-4 animate-pulse" />
+              <span>✨ AI Gemini Quét & Số Hóa Quận</span>
+            </button>
+
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+            >
+              <Plus className="h-4 w-4 text-orange-500" />
+              <span>+ Thêm thủ công / PDF</span>
             </button>
           </div>
         </div>
@@ -362,6 +372,23 @@ export default function AdminPlanningPage() {
         }}
         onBatchImport={(newZones) => {
           importPlanningZones(newZones);
+        }}
+      />
+
+      {/* ── MODAL AI GEMINI QUÉT & SỐ HÓA QUY HOẠCH PHÂN KHU HÀ NỘI ── */}
+      <AIGeneratePlanningModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        onApplyZones={(newZones) => {
+          const count = importPlanningZones(newZones);
+          if (newZones[0]?.id) {
+            setSelectedPlanningZoneId(newZones[0].id);
+          }
+          if (newZones[0]?.district) {
+            setSelectedDistrict(newZones[0].district);
+          }
+          addToast(`🎉 AI Gemini đã số hóa thành công ${count} phân khu và lưu vào Supabase!`, 'success');
+          mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }}
       />
     </div>

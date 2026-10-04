@@ -4,12 +4,19 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Layers, X, Info, ZoomIn, ZoomOut, 
   RotateCcw, Sliders, ChevronDown, ChevronUp, FileText,
-  Locate, Crosshair, Loader2, Navigation, Compass, MapPin, Palette
+  Locate, Crosshair, Loader2, Navigation, Compass, MapPin, Palette,
+  Scissors
 } from 'lucide-react'
 import { 
   HANOI_CENTER, HANOI_PLANNING_ZONES, PLANNING_ZONE_TYPES,
   HANOI_METRO_STATIONS 
 } from '@/lib/leaflet/hanoi-data'
+import { 
+  getAllHanoiPlanningZones, 
+  filterHanoiPlanningZones, 
+  HANOI_SUBDIVISION_GROUPS, 
+  PLANNING_STANDARD_SYMBOLS 
+} from '@/lib/planning/hanoi-planning-db'
 import { fixLeafletIcons } from '@/lib/leaflet/fix-icons'
 import { useApp } from '@/lib/context/AppContext'
 import { MapLocationSearch } from './MapLocationSearch'
@@ -18,12 +25,15 @@ import { HanoiLocationItem } from '@/lib/data/hanoi-locations'
 export interface SelectedZoneInfo {
   id: string
   name: string
+  code?: string
   type: string
   district: string
   planYear: number
   status: string
   floorAreaRatio: number
   maxHeight: string
+  density?: string
+  areaHa?: number
   color: string
   pdfUrl?: string
   fileType?: string
@@ -32,6 +42,9 @@ export interface SelectedZoneInfo {
 
 interface PlanningMapProps {
   activeDistrict?: string
+  subdivisionGroup?: string // 'ALL' | 'H1' | 'H2' | 'N' | 'S' | 'SONG_HONG' | 'TAY_HO'
+  zoneTypeCode?: string     // 'ODT' | 'TMD' | 'HH' | 'CX' | 'GT' | 'CQ' | 'GD' | 'YT' | 'QSQP' | 'CN' | 'all'
+  searchQuery?: string
   activeLayers: {
     planning: boolean
     metro: boolean
@@ -44,16 +57,23 @@ interface PlanningMapProps {
   onZoneClick?: (zone: SelectedZoneInfo) => void
   zones?: any[]
   focusZoneId?: string | null
+  isSwipeMode?: boolean
+  onToggleSwipeMode?: (enabled: boolean) => void
 }
 
 export default function PlanningMap({
   activeDistrict,
+  subdivisionGroup,
+  zoneTypeCode,
+  searchQuery,
   activeLayers,
   planYear,
   opacity,
   onZoneClick,
   zones,
   focusZoneId,
+  isSwipeMode: propIsSwipeMode,
+  onToggleSwipeMode,
 }: PlanningMapProps) {
   let appContext: any = null
   try {
@@ -78,23 +98,73 @@ export default function PlanningMap({
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
   const [showInfoPanel, setShowInfoPanel] = useState(false)
   const [showLegend, setShowLegend] = useState(false)
-  const [mapStyle, setMapStyle] = useState<'light' | 'satellite'>('light')
+  const [mapStyle, setMapStyle] = useState<'light' | 'satellite'>('satellite')
   const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(13)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [isLocating, setIsLocating] = useState(false)
   const [searchedLocation, setSearchedLocation] = useState<HanoiLocationItem | null>(null)
 
+  // ── SWIPE COMPARISON STATE & DRAG LOGIC ──
+  const [internalSwipeMode, setInternalSwipeMode] = useState(false)
+  const effectiveSwipeMode = propIsSwipeMode !== undefined ? propIsSwipeMode : internalSwipeMode
+  const [swipePos, setSwipePos] = useState(50)
+  const [isDraggingSwipe, setIsDraggingSwipe] = useState(false)
+
+  const toggleSwipeMode = useCallback((val?: boolean) => {
+    const next = val !== undefined ? val : !effectiveSwipeMode
+    setInternalSwipeMode(next)
+    onToggleSwipeMode?.(next)
+    if (next && mapStyle !== 'satellite') {
+      setMapStyle('satellite')
+    }
+  }, [effectiveSwipeMode, onToggleSwipeMode, mapStyle])
+
+  const handleSwipeStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDraggingSwipe(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isDraggingSwipe) return
+
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!mapRef.current) return
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX
+      const rect = mapRef.current.getBoundingClientRect()
+      const x = clientX - rect.left
+      const percent = Math.min(95, Math.max(5, (x / rect.width) * 100))
+      setSwipePos(Math.round(percent * 10) / 10)
+    }
+
+    const handleEnd = () => {
+      setIsDraggingSwipe(false)
+    }
+
+    window.addEventListener('mousemove', handleMove, { passive: false })
+    window.addEventListener('mouseup', handleEnd)
+    window.addEventListener('touchmove', handleMove, { passive: false })
+    window.addEventListener('touchend', handleEnd)
+
+    return () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleEnd)
+      window.removeEventListener('touchmove', handleMove)
+      window.removeEventListener('touchend', handleEnd)
+    }
+  }, [isDraggingSwipe])
+
   // ── TILE CONFIGS (2 lớp: Đường phố & Vệ tinh Google Maps) ──
   const TILE_CONFIGS = {
-    light: {
-      label: '☀️ Đường phố',
-      base: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    satellite: {
+      label: '🛰️ Vệ tinh Google',
+      base: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
       attribution: '©Google Maps',
     },
-    satellite: {
-      label: '🛰️ Vệ tinh',
-      base: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    light: {
+      label: '☀️ Bản đồ Giao thông',
+      base: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
       attribution: '©Google Maps',
     },
   }
@@ -116,8 +186,12 @@ export default function PlanningMap({
         minZoom: 10,
       })
 
+      // Tạo riêng pane cho quy hoạch để điều khiển Clip-Path cho chế độ Soi rèm (Curtain Swipe)
+      const planningPane = map.createPane('planningPane')
+      planningPane.style.zIndex = '450'
+
       // Base tile
-      const initialConfig = TILE_CONFIGS.light
+      const initialConfig = TILE_CONFIGS[mapStyle]
       tileLayerRef.current = L.tileLayer(
         initialConfig.base,
         { attribution: initialConfig.attribution, maxZoom: 19 }
@@ -153,6 +227,21 @@ export default function PlanningMap({
     updateStyle()
   }, [mapStyle, isMapReady])
 
+  // ── UPDATE SWIPE CLIP-PATH ON PLANNING PANE (60fps GPU acceleration) ──
+  useEffect(() => {
+    if (!mapInstanceRef.current) return
+    const pane = mapInstanceRef.current.getPane('planningPane')
+    if (!pane) return
+
+    if (effectiveSwipeMode) {
+      pane.style.clipPath = `inset(0 0 0 ${swipePos}%)`
+      pane.style.WebkitClipPath = `inset(0 0 0 ${swipePos}%)`
+    } else {
+      pane.style.clipPath = 'none'
+      pane.style.WebkitClipPath = 'none'
+    }
+  }, [effectiveSwipeMode, swipePos, isMapReady])
+
   // ── GET USER LOCATION (HIGH ACCURACY & PULSING RADAR) ──
   const handleLocateMe = useCallback(async () => {
     if (!mapInstanceRef.current) return
@@ -171,7 +260,6 @@ export default function PlanningMap({
         setUserLocation([lat, lng])
         setIsLocating(false)
 
-        // Clear existing user marker & circle if any
         if (userLocationMarkerRef.current) {
           map.removeLayer(userLocationMarkerRef.current)
           userLocationMarkerRef.current = null
@@ -181,7 +269,6 @@ export default function PlanningMap({
           userLocationCircleRef.current = null
         }
 
-        // Create animated sonar GPS marker
         const gpsHtml = `
           <div class="user-gps-container">
             <div class="user-gps-pulse"></div>
@@ -201,7 +288,6 @@ export default function PlanningMap({
         marker.addTo(map)
         userLocationMarkerRef.current = marker
 
-        // Create 2km translucent radius circle
         const circle = L.circle([lat, lng], {
           radius: 2000,
           color: '#2563eb',
@@ -213,7 +299,6 @@ export default function PlanningMap({
         }).addTo(map)
         userLocationCircleRef.current = circle
 
-        // Smooth fly to current position
         map.flyTo([lat, lng], 15, { duration: 1.2 })
       },
       (err) => {
@@ -234,13 +319,11 @@ export default function PlanningMap({
 
       setSearchedLocation(loc)
 
-      // Clear previous searched marker
       if (searchedLocationMarkerRef.current) {
         map.removeLayer(searchedLocationMarkerRef.current)
         searchedLocationMarkerRef.current = null
       }
 
-      // Add high-contrast drop pin
       const pinHtml = `
         <div class="searched-pin-container">
           <div class="searched-pin-badge">📍 ${loc.name}</div>
@@ -258,13 +341,11 @@ export default function PlanningMap({
       marker.addTo(map)
       searchedLocationMarkerRef.current = marker
 
-      // Fly to location
       map.flyTo([loc.lat, loc.lng], loc.zoom || 15.5, { duration: 1.2 })
     },
     []
   )
 
-  // ── CLEAR SEARCHED LOCATION ──
   const handleClearSearched = useCallback(() => {
     if (searchedLocationMarkerRef.current && mapInstanceRef.current) {
       mapInstanceRef.current.removeLayer(searchedLocationMarkerRef.current)
@@ -286,20 +367,30 @@ export default function PlanningMap({
 
       if (!activeLayers.planning) return
 
-      const sourceZones = zones || (appContext?.planningZones && appContext.planningZones.length > 0 ? appContext.planningZones : HANOI_PLANNING_ZONES)
+      const baseZones = zones && zones.length > 0
+        ? zones
+        : (appContext?.planningZones && appContext.planningZones.length > 0
+            ? appContext.planningZones
+            : getAllHanoiPlanningZones())
 
-      const filteredZones = activeDistrict && activeDistrict !== 'all'
-        ? sourceZones.filter((z: any) => z.district?.toLowerCase().includes(activeDistrict.toLowerCase()))
-        : sourceZones
+      const filteredZones = filterHanoiPlanningZones(baseZones, {
+        subdivisionGroup,
+        district: activeDistrict,
+        zoneTypeCode,
+        searchQuery,
+      })
+
+      const normOpacity = opacity > 1 ? opacity / 100 : opacity
 
       filteredZones.forEach((zone: any) => {
         const isSelected = selectedZone?.id === zone.id || focusZoneId === zone.id || appContext?.selectedPlanningZoneId === zone.id
         const isHovered = hoveredZone === zone.id
 
         const polygon = L.polygon(zone.coordinates, {
+          pane: 'planningPane',
           color: zone.color,
           fillColor: zone.color,
-          fillOpacity: isSelected ? opacity + 0.25 : isHovered ? opacity + 0.1 : opacity,
+          fillOpacity: isSelected ? Math.min(1, normOpacity + 0.3) : isHovered ? Math.min(1, normOpacity + 0.15) : normOpacity,
           weight: isSelected ? 3.5 : isHovered ? 2.5 : 1.5,
           opacity: 0.9,
           dashArray: zone.type === 'transport' ? '10,6' : undefined,
@@ -311,12 +402,15 @@ export default function PlanningMap({
           const info: SelectedZoneInfo = {
             id: zone.id,
             name: zone.name,
+            code: zone.code,
             type: zone.type || 'residential',
             district: zone.district,
             planYear: zone.planYear || 2030,
             status: zone.status || 'Đã công bố',
             floorAreaRatio: zone.floorAreaRatio || 3.5,
             maxHeight: zone.maxHeight || (zone.maxFloors ? `${zone.maxFloors} tầng` : 'Không áp dụng'),
+            density: zone.density,
+            areaHa: zone.areaHa,
             color: zone.color,
             pdfUrl: zone.pdfUrl,
             fileType: zone.fileType,
@@ -326,17 +420,18 @@ export default function PlanningMap({
           setShowInfoPanel(true)
           onZoneClick?.(info)
 
-          // Fly to polygon center
           const bounds = polygon.getBounds()
           map.flyToBounds(bounds, { padding: [80, 80], maxZoom: 16, duration: 0.8 })
         })
 
         polygon.on('mouseover', function(this: any, e: any) {
-          this.setStyle({ fillOpacity: opacity + 0.15, weight: 2.5 })
+          this.setStyle({ fillOpacity: Math.min(1, normOpacity + 0.2), weight: 2.5 })
           setHoveredZone(zone.id)
           
-          // Show hover tooltip
-          const zoneTypeLabel = PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || 'Quy hoạch phân khu'
+          const symbolPrefix = zone.code ? zone.code.split('-')[0] : null
+          const symbolInfo = symbolPrefix ? (PLANNING_STANDARD_SYMBOLS as any)[symbolPrefix] : null
+          const zoneTypeLabel = symbolInfo?.name || PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || 'Quy hoạch phân khu'
+
           const tooltip = L.tooltip({
             permanent: false,
             direction: 'top',
@@ -351,11 +446,11 @@ export default function PlanningMap({
               backdrop-filter:blur(8px);
               border-radius:14px;
               color:white;
-              min-width:230px;
-              max-width:290px;
+              min-width:240px;
+              max-width:300px;
               white-space:normal;
               border:1px solid rgba(255,255,255,0.14);
-              box-shadow:0 12px 30px rgba(0,0,0,0.38);
+              box-shadow:0 12px 30px rgba(0,0,0,0.45);
               display:flex;
               flex-direction:column;
               gap:6px;
@@ -365,12 +460,22 @@ export default function PlanningMap({
                   <span style="color:${zone.color};font-size:14px;line-height:1.2;flex-shrink:0;">●</span>
                   <span>${zone.name}</span>
                 </div>
-                ${zone.pdfUrl ? '<span style="background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:800;flex-shrink:0;letter-spacing:0.3px;">PDF</span>' : ''}
+                <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                  ${zone.code ? `<span style="background:rgba(255,255,255,0.15);color:#fbbf24;font-size:10px;padding:2px 5px;border-radius:4px;font-weight:900;font-family:monospace;">${zone.code}</span>` : ''}
+                  ${zone.pdfUrl ? '<span style="background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:800;letter-spacing:0.3px;">PDF</span>' : ''}
+                </div>
               </div>
 
               <div style="color:rgba(226,232,240,0.8);font-size:11px;font-weight:500;line-height:1.4;padding-left:17px;">
-                ${zoneTypeLabel}${zone.pdfUrl ? ' · Có đồ án PDF' : ''}
+                ${zoneTypeLabel}${zone.district ? ` · ${zone.district}` : ''}
               </div>
+
+              ${zone.areaHa ? `
+              <div style="display:flex;gap:12px;font-size:11px;color:#94a3b8;padding-left:17px;padding-top:2px;">
+                <span>Quy mô: <strong style="color:#f8fafc;">${zone.areaHa} ha</strong></span>
+                ${zone.density ? `<span>Mật độ: <strong style="color:#f8fafc;">${zone.density}</strong></span>` : ''}
+              </div>
+              ` : ''}
 
               <div style="margin-top:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
                 <span style="
@@ -385,7 +490,7 @@ export default function PlanningMap({
                   padding:4px 10px;
                   border-radius:8px;
                 ">
-                  Click để xem chi tiết →
+                  Click để xem thông số chi tiết →
                 </span>
               </div>
             </div>
@@ -393,7 +498,6 @@ export default function PlanningMap({
           .setLatLng(e.latlng)
           .addTo(map)
           
-          // Store tooltip ref for removal
           ;(this as any)._tooltip = tooltip
         })
 
@@ -405,7 +509,7 @@ export default function PlanningMap({
 
         polygon.on('mouseout', function(this: any) {
           this.setStyle({ 
-            fillOpacity: selectedZone?.id === zone.id ? opacity + 0.25 : opacity, 
+            fillOpacity: selectedZone?.id === zone.id ? Math.min(1, normOpacity + 0.3) : normOpacity, 
             weight: selectedZone?.id === zone.id ? 3.5 : 1.5 
           })
           setHoveredZone(null)
@@ -421,7 +525,21 @@ export default function PlanningMap({
     }
 
     renderZones()
-  }, [activeLayers.planning, activeDistrict, opacity, isMapReady, selectedZone, hoveredZone, zones, focusZoneId, appContext?.planningZones, appContext?.selectedPlanningZoneId])
+  }, [
+    activeLayers.planning, 
+    activeDistrict, 
+    subdivisionGroup, 
+    zoneTypeCode, 
+    searchQuery, 
+    opacity, 
+    isMapReady, 
+    selectedZone, 
+    hoveredZone, 
+    zones, 
+    focusZoneId, 
+    appContext?.planningZones, 
+    appContext?.selectedPlanningZoneId
+  ])
 
   // Fly to focusZoneId when changed
   useEffect(() => {
@@ -433,6 +551,42 @@ export default function PlanningMap({
       mapInstanceRef.current.flyToBounds(bounds, { padding: [80, 80], maxZoom: 15, duration: 0.8 })
     }
   }, [focusZoneId, appContext?.selectedPlanningZoneId, isMapReady, zones, appContext?.planningZones])
+
+  // ── AUTO FLY TO FILTERED DISTRICT OR SUBDIVISION BOUNDS ──
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return
+    if ((!subdivisionGroup || subdivisionGroup === 'ALL') && (!activeDistrict || activeDistrict === 'all')) return
+
+    const baseZones = zones && zones.length > 0
+      ? zones
+      : (appContext?.planningZones && appContext.planningZones.length > 0 
+          ? appContext.planningZones 
+          : getAllHanoiPlanningZones())
+
+    const matched = filterHanoiPlanningZones(baseZones, {
+      subdivisionGroup,
+      district: activeDistrict,
+    })
+
+    if (matched.length > 0) {
+      import('leaflet').then(({ default: L }) => {
+        const allCoords: [number, number][] = []
+        matched.forEach((z: any) => {
+          if (Array.isArray(z.coordinates)) {
+            z.coordinates.forEach((c: any) => {
+              if (Array.isArray(c) && c.length >= 2 && typeof c[0] === 'number') {
+                allCoords.push([c[0], c[1]])
+              }
+            })
+          }
+        })
+        if (allCoords.length > 0) {
+          const bounds = L.latLngBounds(allCoords)
+          mapInstanceRef.current?.flyToBounds(bounds, { padding: [70, 70], maxZoom: 15, duration: 1.0 })
+        }
+      })
+    }
+  }, [subdivisionGroup, activeDistrict, isMapReady])
 
   // ── RENDER METRO STATIONS ──
   useEffect(() => {
@@ -448,7 +602,6 @@ export default function PlanningMap({
       if (!activeLayers.metro) return
 
       HANOI_METRO_STATIONS.forEach(station => {
-        // Metro line indicator
         const lineColors: Record<string, string> = {
           'Line 2A': '#ef4444',
           'Line 3': '#3b82f6',
@@ -491,23 +644,6 @@ export default function PlanningMap({
     renderMetro()
   }, [activeLayers.metro, isMapReady])
 
-  // ── FLY TO DISTRICT ──
-  useEffect(() => {
-    if (!isMapReady || !mapInstanceRef.current || !activeDistrict || activeDistrict === 'all') return
-
-    const districtZone = HANOI_PLANNING_ZONES.find(z => z.district.toLowerCase().includes(activeDistrict.toLowerCase()))
-    if (districtZone) {
-      import('leaflet').then(({ default: L }) => {
-        const polygon = L.polygon(districtZone.coordinates)
-        mapInstanceRef.current?.flyToBounds(polygon.getBounds(), {
-          padding: [60, 60],
-          maxZoom: 15,
-          duration: 1,
-        })
-      })
-    }
-  }, [activeDistrict, isMapReady])
-
   const handleZoomIn = () => mapInstanceRef.current?.zoomIn()
   const handleZoomOut = () => mapInstanceRef.current?.zoomOut()
   const handleReset = () => {
@@ -517,11 +653,11 @@ export default function PlanningMap({
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full overflow-hidden select-none">
       {/* ── Map Container ── */}
-      <div ref={mapRef} className="w-full h-full" />
+      <div ref={mapRef} className="w-full h-full z-0" />
 
-      {/* ── Loading ── */}
+      {/* ── Loading Screen ── */}
       <AnimatePresence>
         {!isMapReady && (
           <motion.div
@@ -538,11 +674,63 @@ export default function PlanningMap({
               >
                 🗺️
               </motion.div>
-              <p className="text-white/60 text-sm">Đang tải dữ liệu quy hoạch...</p>
+              <p className="text-white/60 text-sm">Đang tải bản đồ quy hoạch Thủ đô Hà Nội...</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── SWIPE COMPARISON OVERLAY (SOI RÈM HIỆN TRẠNG) ── */}
+      {effectiveSwipeMode && isMapReady && (
+        <>
+          {/* Top Comparison Floating Badges */}
+          <div className="absolute top-20 left-4 sm:left-6 z-[420] pointer-events-none">
+            <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-white text-xs font-bold shadow-xl flex items-center gap-1.5">
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+              🛰️ Hiện trạng {mapStyle === 'satellite' ? 'Vệ tinh' : 'Giao thông'}
+            </span>
+          </div>
+
+          <div className="absolute top-20 right-4 sm:right-20 z-[420] pointer-events-none">
+            <span className="px-3 py-1.5 rounded-xl bg-orange-950/90 backdrop-blur-md border border-orange-500/80 text-orange-200 text-xs font-bold shadow-xl flex items-center gap-1.5">
+              <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              📐 Đồ án Quy hoạch 2030 (QCVN 01)
+            </span>
+          </div>
+
+          {/* Vertical Draggable Laser Divider */}
+          <div
+            className="absolute top-0 bottom-0 z-[460] select-none transition-none pointer-events-none"
+            style={{ left: `${swipePos}%` }}
+          >
+            {/* Laser Line */}
+            <div className="absolute inset-y-0 w-0.5 -translate-x-1/2 bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.95)]" />
+
+            {/* Draggable Handle */}
+            <div
+              onMouseDown={handleSwipeStart}
+              onTouchStart={handleSwipeStart}
+              className="pointer-events-auto absolute inset-y-0 -left-6 w-12 cursor-ew-resize flex items-center justify-center group"
+            >
+              <div className="w-11 h-11 rounded-full bg-slate-950/95 border-2 border-amber-400 text-amber-400 flex flex-col items-center justify-center shadow-2xl transition-transform group-hover:scale-110 active:scale-95">
+                <div className="flex items-center gap-0.5 text-[10px] font-black">
+                  <span>◀</span>
+                  <span className="text-[12px] leading-none">❙❙</span>
+                  <span>▶</span>
+                </div>
+                <span className="text-[7px] font-extrabold uppercase tracking-tighter text-amber-300 -mt-0.5">
+                  Soi rèm
+                </span>
+              </div>
+            </div>
+
+            {/* Bottom percentage tag */}
+            <div className="absolute bottom-6 -translate-x-1/2 bg-slate-950/90 text-amber-400 border border-amber-400/60 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold shadow-lg pointer-events-none whitespace-nowrap">
+              {Math.round(swipePos)}%
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Zoom + Controls (top-right) ── */}
       <div className="absolute top-4 right-4 z-[400] flex flex-col gap-2">
@@ -603,7 +791,22 @@ export default function PlanningMap({
           )}
         </motion.button>
 
-        {/* Layer Switcher (Giống phần Tìm kiếm) */}
+        {/* Mode Switcher: Soi rèm hiện trạng (Curtain Swipe) */}
+        <motion.button
+          onClick={() => toggleSwipeMode()}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`w-10 h-10 rounded-2xl shadow-lg border flex items-center justify-center transition-all ${
+            effectiveSwipeMode
+              ? 'bg-gradient-to-tr from-amber-500 to-orange-500 text-white border-amber-400 shadow-orange-500/30'
+              : 'bg-white dark:bg-gray-800 text-navy dark:text-white border-gray-200 dark:border-gray-700 hover:bg-orange-500 hover:text-white'
+          }`}
+          title={effectiveSwipeMode ? 'Đang bật Soi rèm hiện trạng (Click để tắt)' : 'Bật chế độ Soi rèm hiện trạng (Curtain Swipe)'}
+        >
+          <Scissors size={16} className={effectiveSwipeMode ? 'rotate-90' : ''} />
+        </motion.button>
+
+        {/* Layer Switcher */}
         <div className="relative">
           <motion.button
             onClick={() => setShowLayerPanel(!showLayerPanel)}
@@ -613,7 +816,7 @@ export default function PlanningMap({
                        shadow-lg border border-gray-200 dark:border-gray-700
                        flex items-center justify-center text-navy dark:text-white
                        hover:bg-orange-500 hover:text-white transition-all"
-            title="Chọn lớp bản đồ"
+            title="Chọn lớp nền bản đồ"
           >
             <Layers size={16} />
           </motion.button>
@@ -627,10 +830,10 @@ export default function PlanningMap({
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 className="absolute right-12 top-0 bg-white dark:bg-gray-800 
                            rounded-2xl shadow-xl border border-gray-200 
-                           dark:border-gray-700 p-3 min-w-[160px]"
+                           dark:border-gray-700 p-3 min-w-[170px]"
               >
                 <p className="text-xs font-semibold text-gray-500 mb-2 
-                              uppercase tracking-wide">Lớp bản đồ</p>
+                              uppercase tracking-wide">Lớp nền bản đồ</p>
                 {Object.entries(TILE_CONFIGS).map(([key, tile]) => (
                   <motion.button
                     key={key}
@@ -642,7 +845,7 @@ export default function PlanningMap({
                     className={`w-full flex items-center gap-2 px-3 py-2 
                                rounded-xl text-sm font-medium transition-all ${
                       mapStyle === key
-                        ? 'bg-orange-500 text-white'
+                        ? 'bg-orange-500 text-white font-bold'
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
@@ -671,9 +874,9 @@ export default function PlanningMap({
       </motion.div>
 
       {/* ── Zoom Level Badge ── */}
-      <div className="absolute bottom-6 right-4 z-[400] bg-black/50 
-                      backdrop-blur-sm text-white/60 text-xs px-2.5 py-1.5 
-                      rounded-lg font-mono">
+      <div className="absolute bottom-6 right-4 z-[400] bg-black/60 
+                      backdrop-blur-md text-white/80 text-xs px-2.5 py-1.5 
+                      rounded-lg font-mono border border-white/10">
         Z{zoomLevel}
       </div>
 
@@ -685,42 +888,51 @@ export default function PlanningMap({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 320 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="absolute top-4 right-16 z-[450] w-[320px] 
-                       bg-white dark:bg-gray-800 rounded-2xl shadow-2xl 
-                       border border-gray-200 dark:border-gray-700 overflow-hidden"
+            className="absolute top-4 right-16 z-[450] w-[330px] max-w-[calc(100vw-32px)]
+                       bg-white dark:bg-slate-900 rounded-2xl shadow-2xl 
+                       border border-gray-200 dark:border-slate-800 overflow-hidden"
           >
             {/* Panel header */}
             <div className="flex items-start justify-between gap-3 p-5 border-b 
-                            border-gray-100 dark:border-gray-700"
-              style={{ borderLeft: `4px solid ${selectedZone.color}` }}>
+                            border-gray-100 dark:border-slate-800"
+              style={{ borderLeft: `5px solid ${selectedZone.color}` }}>
               <div className="space-y-1">
-                <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {PLANNING_ZONE_TYPES[selectedZone.type as keyof typeof PLANNING_ZONE_TYPES]?.label}
-                </p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {selectedZone.code && (
+                    <span className="font-mono text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-800 text-amber-400">
+                      {selectedZone.code}
+                    </span>
+                  )}
+                  <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {PLANNING_ZONE_TYPES[selectedZone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || selectedZone.type}
+                  </p>
+                </div>
                 <p className="text-sm font-bold text-navy dark:text-white leading-snug">
                   {selectedZone.name}
                 </p>
               </div>
               <motion.button onClick={() => setShowInfoPanel(false)}
                 whileTap={{ scale: 0.9 }}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 shrink-0">
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 shrink-0">
                 <X size={16} />
               </motion.button>
             </div>
 
             {/* Zone details */}
-            <div className="p-5 space-y-3.5">
+            <div className="p-5 space-y-3.5 max-h-[75vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { label: 'Năm quy hoạch', value: selectedZone.planYear },
                   { label: 'Quận/Huyện', value: selectedZone.district },
-                  { label: 'Hệ số SDĐ', value: selectedZone.floorAreaRatio || 'N/A' },
+                  { label: 'Diện tích phân khu', value: selectedZone.areaHa ? `${selectedZone.areaHa} ha` : 'Đang cập nhật' },
+                  { label: 'Mật độ xây dựng', value: selectedZone.density || '60%' },
+                  { label: 'Hệ số SDĐ (FAR)', value: selectedZone.floorAreaRatio ? `${selectedZone.floorAreaRatio}x` : 'N/A' },
                   { label: 'Chiều cao tối đa', value: selectedZone.maxHeight },
                 ].map(item => (
                   <div key={item.label} 
-                    className="bg-gray-50 dark:bg-gray-700/70 rounded-xl p-3">
-                    <p className="text-[11px] text-gray-400 mb-1">{item.label}</p>
-                    <p className="text-sm font-bold text-navy dark:text-white leading-tight">
+                    className="bg-gray-50 dark:bg-slate-800/80 rounded-xl p-2.5">
+                    <p className="text-[10px] text-gray-400 mb-0.5">{item.label}</p>
+                    <p className="text-xs font-bold text-navy dark:text-white leading-tight">
                       {item.value}
                     </p>
                   </div>
@@ -765,7 +977,7 @@ export default function PlanningMap({
         )}
       </AnimatePresence>
 
-      {/* ── Planning Legend (Icon Button + Popover at bottom-left) ── */}
+      {/* ── Planning Legend (QCVN 01:2021 Standard Symbols Popover at bottom-left) ── */}
       {isMapReady && (
         <div className="absolute bottom-6 left-4 z-[400]">
           <AnimatePresence>
@@ -775,38 +987,53 @@ export default function PlanningMap({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-                className="absolute bottom-12 left-0 mb-1 w-56 bg-white/95 dark:bg-gray-800/95 
-                           backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 
-                           dark:border-gray-700 p-3.5"
+                className="absolute bottom-12 left-0 mb-1 w-80 max-h-[70vh] flex flex-col bg-white/95 dark:bg-slate-900/95 
+                           backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 
+                           dark:border-slate-800 p-3.5"
               >
-                <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2 mb-2.5">
-                  <p className="text-xs font-bold text-navy dark:text-white 
+                <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-2 mb-2.5">
+                  <p className="text-xs font-extrabold text-navy dark:text-white 
                                 uppercase tracking-wide flex items-center gap-1.5">
-                    <Palette size={13} className="text-orange-500" /> Chú giải màu
+                    <Palette size={14} className="text-orange-500" /> Ký hiệu màu QCVN 01:2021
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowLegend(false)}
                     aria-label="Đóng bảng chú giải"
                     title="Đóng"
-                    className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
                     <X size={14} />
                   </button>
                 </div>
 
-                <div className="space-y-1.5">
-                  {Object.entries(PLANNING_ZONE_TYPES).map(([key, val]) => (
-                    <div key={key} className="flex items-center gap-2">
+                <div className="space-y-1.5 overflow-y-auto pr-1 max-h-[50vh]">
+                  {Object.values(PLANNING_STANDARD_SYMBOLS).map((sym) => (
+                    <div key={sym.code} className="flex items-start gap-2 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors">
                       <div
-                        className="w-4 h-3 rounded flex-shrink-0 border border-white/30 shadow-2xs"
-                        style={{ backgroundColor: val.color, opacity: 0.85 }}
+                        className="w-4 h-3.5 rounded flex-shrink-0 mt-0.5 border border-white/30 shadow-xs"
+                        style={{ backgroundColor: sym.color }}
                       />
-                      <span className="text-xs text-gray-600 dark:text-gray-300">
-                        {val.label}
-                      </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-black text-amber-500 text-[10px]">
+                            {sym.code}
+                          </span>
+                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                            {sym.name}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-gray-500 dark:text-slate-400 line-clamp-1">{sym.desc}</p>
+                      </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-500">
+                  <span className="flex items-center gap-1 font-semibold">
+                    <Info size={11} className="text-orange-500" /> Viện QHXD Hà Nội
+                  </span>
+                  <span className="font-mono text-[9px]">WGS84 EPSG:4326</span>
                 </div>
               </motion.div>
             )}
@@ -819,11 +1046,11 @@ export default function PlanningMap({
             whileTap={{ scale: 0.95 }}
             aria-expanded={showLegend}
             aria-label="Chú giải màu sắc quy hoạch"
-            title="Chú giải màu sắc quy hoạch"
+            title="Bảng ký hiệu màu sắc quy hoạch QCVN 01:2021"
             className={`relative w-10 h-10 rounded-2xl shadow-lg border flex items-center justify-center transition-all cursor-pointer ${
               showLegend
                 ? 'bg-orange-500 text-white border-orange-500 shadow-orange-500/25'
-                : 'bg-white/95 dark:bg-gray-800/95 text-navy dark:text-white border-gray-200 dark:border-gray-700 hover:bg-orange-500 hover:text-white hover:border-orange-500'
+                : 'bg-white/95 dark:bg-slate-900/95 text-navy dark:text-white border-gray-200 dark:border-slate-800 hover:bg-orange-500 hover:text-white hover:border-orange-500'
             }`}
           >
             <Palette size={17} />
