@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useApp } from '@/lib/context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -92,10 +92,19 @@ export function PlanningClient() {
         ...ALL_DISTRICTS.filter(d => currentGroup?.districts.includes(d.id))
       ];
 
-  const handleGroupSelect = (groupId: string) => {
+  const handleGroupSelect = useCallback((groupId: string) => {
     setSelectedGroup(groupId);
     setSelectedDistrict('all');
-  };
+  }, []);
+
+  const handleZoneClick = useCallback((zone: SelectedZoneInfo) => {
+    setSelectedZoneInfo(zone);
+  }, []);
+
+  const handleInspectPoint = useCallback((res: PlanningInspectionResult) => {
+    setActiveInspection(res);
+    setSelectedZoneInfo(null);
+  }, []);
 
   return (
     <div className="relative w-full h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] overflow-hidden bg-[#070d1e]">
@@ -108,13 +117,8 @@ export function PlanningClient() {
           planYear={selectedYear}
           opacity={opacityValue}
           activeLayers={activeLayers}
-          onZoneClick={(zone) => {
-            setSelectedZoneInfo(zone);
-          }}
-          onInspectPoint={(res) => {
-            setActiveInspection(res);
-            setSelectedZoneInfo(null);
-          }}
+          onZoneClick={handleZoneClick}
+          onInspectPoint={handleInspectPoint}
           inspectionPoint={activeInspection?.point}
           cadastralParcel={selectedCadastralParcel}
           isSwipeMode={isSwipeMode}
@@ -124,7 +128,52 @@ export function PlanningClient() {
 
       {/* TOP FLOATING CONTROLS: NHÓM PHÂN KHU + QUẬN + NĂM + SOI RÈM */}
       <div className="absolute top-4 left-4 right-4 sm:left-6 sm:right-auto z-10 flex flex-col gap-2 max-w-full pointer-events-none [&>*]:pointer-events-auto">
-        {/* Hàng 1: Tabs Nhóm Phân Khu Quy Hoạch (H1, H2, N, S, Sông Hồng...) */}
+        {/* HÀNG 1: THANH CÔNG CỤ TÁC VỤ CHÍNH (Tra cứu Sổ đỏ + Soi rèm hiện trạng + Tầm nhìn năm) */}
+        <div className="flex items-center gap-2 flex-wrap max-w-[calc(100vw-32px)] sm:max-w-4xl">
+          {/* Nút Tra cứu Sổ đỏ (Số tờ, số thửa & toạ độ VN-2000) */}
+          <button
+            onClick={() => setIsCadastralModalOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shadow-xl shrink-0 border bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-600 text-white border-blue-400/80 shadow-blue-500/30 cursor-pointer ring-1 ring-blue-400/40 active:scale-95"
+            title="Tra cứu thửa đất theo Số Tờ, Số Thửa hoặc Toạ độ VN-2000 in trên Sổ đỏ"
+          >
+            <Compass className="h-4 w-4 text-amber-300 animate-spin-slow" />
+            <span className="tracking-wide">📜 Tra cứu Sổ đỏ (Số tờ / VN-2000)</span>
+          </button>
+
+          {/* Nút bật/tắt Soi Rèm Hiện Trạng */}
+          <button
+            onClick={() => setIsSwipeMode(!isSwipeMode)}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shadow-xl shrink-0 border cursor-pointer active:scale-95 ${
+              isSwipeMode
+                ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white border-amber-400 ring-2 ring-amber-400/50 shadow-orange-500/40'
+                : 'bg-[#0a1128]/95 backdrop-blur-md text-slate-200 border-slate-700 hover:text-white hover:border-slate-500 shadow-slate-900/40'
+            }`}
+            title="Kéo trượt để so sánh hiện trạng vệ tinh với quy hoạch 2030"
+          >
+            <Scissors className={`h-4 w-4 ${isSwipeMode ? 'rotate-90 text-white' : 'text-amber-400'}`} />
+            <span>{isSwipeMode ? '✂️ Đang Soi rèm (Bấm để tắt)' : '✂️ Soi rèm hiện trạng'}</span>
+          </button>
+
+          {/* Horizon Year Selector */}
+          <div className="flex items-center gap-1 bg-[#0a1128]/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1 shadow-xl shrink-0">
+            <Calendar className="h-3.5 w-3.5 text-slate-400 ml-2" />
+            {[2025, 2030, 2045].map((year) => (
+              <button
+                key={year}
+                onClick={() => setSelectedYear(year as 2025 | 2030 | 2045)}
+                className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
+                  selectedYear === year
+                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* HÀNG 2: Tabs Nhóm Phân Khu Quy Hoạch (H1, H2, N, S, Sông Hồng...) */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-[calc(100vw-32px)] sm:max-w-5xl">
           <div className="flex items-center gap-1 bg-[#0a1128]/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1 shadow-2xl shrink-0">
             {HANOI_SUBDIVISION_GROUPS.map((group) => {
@@ -152,35 +201,10 @@ export function PlanningClient() {
               );
             })}
           </div>
-
-          {/* Nút Tra cứu Sổ đỏ (Số tờ, số thửa & toạ độ VN-2000) */}
-          <button
-            onClick={() => setIsCadastralModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shadow-xl shrink-0 border bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-blue-400/80 shadow-blue-500/25 cursor-pointer"
-            title="Tra cứu thửa đất theo Số Tờ, Số Thửa hoặc Toạ độ VN-2000 in trên Sổ đỏ"
-          >
-            <Compass className="h-3.5 w-3.5 text-amber-300" />
-            <span>Tra cứu Sổ đỏ (Số tờ / VN-2000)</span>
-          </button>
-
-          {/* Nút bật/tắt Soi Rèm Hiện Trạng */}
-          <button
-            onClick={() => setIsSwipeMode(!isSwipeMode)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shadow-xl shrink-0 border ${
-              isSwipeMode
-                ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white border-amber-400 ring-2 ring-amber-400/40 shadow-orange-500/40'
-                : 'bg-[#0a1128]/90 backdrop-blur-md text-slate-200 border-slate-700 hover:text-white hover:border-slate-500'
-            }`}
-            title="Kéo trượt để so sánh hiện trạng vệ tinh với quy hoạch 2030"
-          >
-            <Scissors className={`h-3.5 w-3.5 ${isSwipeMode ? 'rotate-90 text-white' : 'text-amber-400'}`} />
-            <span>{isSwipeMode ? 'Đang Soi rèm' : 'Soi rèm hiện trạng'}</span>
-          </button>
         </div>
 
-        {/* Hàng 2: Bộ lọc Quận cụ thể + Tầm nhìn Năm */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-[calc(100vw-32px)] sm:max-w-3xl">
-          {/* Pills Quận */}
+        {/* HÀNG 3: Bộ lọc Quận cụ thể */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-[calc(100vw-32px)] sm:max-w-4xl">
           <div className="flex items-center gap-1 bg-[#0a1128]/85 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1 shadow-xl shrink-0">
             {availableDistricts.map((d) => (
               <button
@@ -193,24 +217,6 @@ export function PlanningClient() {
                 }`}
               >
                 {d.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Horizon Year */}
-          <div className="flex items-center gap-1 bg-[#0a1128]/85 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1 shadow-xl shrink-0">
-            <Calendar className="h-3.5 w-3.5 text-slate-400 ml-2" />
-            {[2025, 2030, 2045].map((year) => (
-              <button
-                key={year}
-                onClick={() => setSelectedYear(year as 2025 | 2030 | 2045)}
-                className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
-                  selectedYear === year
-                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                }`}
-              >
-                {year}
               </button>
             ))}
           </div>

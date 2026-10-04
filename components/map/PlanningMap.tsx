@@ -105,6 +105,8 @@ export default function PlanningMap({
   const inspectionMarkerRef = useRef<any>(null)
   const inspectionCircleRef = useRef<any>(null)
   const cadastralPolygonRef = useRef<any>(null)
+  const planningRendererRef = useRef<any>(null)
+  const lastInspectedPointRef = useRef<[number, number] | null>(null)
 
   const [isMapReady, setIsMapReady] = useState(false)
   const [selectedZone, setSelectedZone] = useState<SelectedZoneInfo | null>(null)
@@ -188,13 +190,14 @@ export default function PlanningMap({
     if (!mapInstanceRef.current) return
     const L = (await import('leaflet')).default
     const map = mapInstanceRef.current
+    if (!map) return
 
     if (inspectionMarkerRef.current) {
-      map.removeLayer(inspectionMarkerRef.current)
+      try { map.removeLayer(inspectionMarkerRef.current) } catch {}
       inspectionMarkerRef.current = null
     }
     if (inspectionCircleRef.current) {
-      map.removeLayer(inspectionCircleRef.current)
+      try { map.removeLayer(inspectionCircleRef.current) } catch {}
       inspectionCircleRef.current = null
     }
 
@@ -254,8 +257,10 @@ export default function PlanningMap({
     })
 
     const marker = L.marker([lat, lng], { icon, zIndexOffset: 3000 })
-    marker.addTo(map)
-    inspectionMarkerRef.current = marker
+    if (mapInstanceRef.current) {
+      marker.addTo(mapInstanceRef.current)
+      inspectionMarkerRef.current = marker
+    }
 
     const circle = L.circle([lat, lng], {
       radius: 120,
@@ -265,17 +270,20 @@ export default function PlanningMap({
       fillColor: inspection.zone.color,
       fillOpacity: 0.15,
       dashArray: '4,4',
-    }).addTo(map)
-    inspectionCircleRef.current = circle
+    })
+    if (mapInstanceRef.current) {
+      circle.addTo(mapInstanceRef.current)
+      inspectionCircleRef.current = circle
+    }
   }, [])
 
   // ── HANDLE POINT INSPECTION ──
   const handleMapInspect = useCallback((lat: number, lng: number, specificZone?: any) => {
+    lastInspectedPointRef.current = [lat, lng]
+    const allProfiles = getAllHanoiPlanningZones()
     const baseZones = zones && zones.length > 0
       ? zones
-      : (appContext?.planningZones && appContext.planningZones.length > 0
-          ? appContext.planningZones
-          : getAllHanoiPlanningZones())
+      : (allProfiles.length > 0 ? allProfiles : (appContext?.planningZones || []))
 
     const inspection = inspectPointPlanning([lat, lng], baseZones)
     if (specificZone) {
@@ -297,14 +305,20 @@ export default function PlanningMap({
     onInspectPoint?.(inspection)
   }, [zones, appContext?.planningZones, onInspectPoint, placeInspectionPin])
 
-  // ── INIT MAP ──
+  const handleMapInspectRef = useRef(handleMapInspect)
+  useEffect(() => {
+    handleMapInspectRef.current = handleMapInspect
+  }, [handleMapInspect])
+
+  // ── INIT MAP (RUNS ONCE ON MOUNT) ──
   useEffect(() => {
     if (typeof window === 'undefined' || mapInstanceRef.current) return
+    let isMounted = true
 
     const initMap = async () => {
       const L = (await import('leaflet')).default
       fixLeafletIcons()
-      if (!mapRef.current || mapInstanceRef.current) return
+      if (!mapRef.current || !isMounted) return
 
       const map = L.map(mapRef.current, {
         center: HANOI_CENTER,
@@ -314,8 +328,12 @@ export default function PlanningMap({
         minZoom: 10,
       })
 
-      const planningPane = map.createPane('planningPane')
-      planningPane.style.zIndex = '450'
+      let planningPane = map.getPane('planningPane')
+      if (!planningPane) {
+        planningPane = map.createPane('planningPane')
+        planningPane.style.zIndex = '450'
+      }
+      planningRendererRef.current = L.svg({ pane: 'planningPane' })
 
       const initialConfig = TILE_CONFIGS[mapStyle]
       tileLayerRef.current = L.tileLayer(
@@ -327,7 +345,7 @@ export default function PlanningMap({
 
       // Map Click Event -> Inspect Point
       map.on('click', (e: any) => {
-        handleMapInspect(e.latlng.lat, e.latlng.lng)
+        handleMapInspectRef.current?.(e.latlng.lat, e.latlng.lng)
       })
 
       mapInstanceRef.current = map
@@ -336,28 +354,42 @@ export default function PlanningMap({
 
     initMap()
     return () => {
-      mapInstanceRef.current?.remove()
-      mapInstanceRef.current = null
+      isMounted = false
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+      setIsMapReady(false)
     }
-  }, [handleMapInspect])
+  }, [])
 
   // ── EXTERNAL INSPECTION POINT TRIGGER ──
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return
     if (!inspectionPoint) {
       if (inspectionMarkerRef.current) {
-        mapInstanceRef.current.removeLayer(inspectionMarkerRef.current)
+        try { mapInstanceRef.current.removeLayer(inspectionMarkerRef.current) } catch {}
         inspectionMarkerRef.current = null
       }
       if (inspectionCircleRef.current) {
-        mapInstanceRef.current.removeLayer(inspectionCircleRef.current)
+        try { mapInstanceRef.current.removeLayer(inspectionCircleRef.current) } catch {}
         inspectionCircleRef.current = null
       }
       return
     }
 
+    // Skip re-inspect if this exact point was just inspected by user click
+    if (
+      lastInspectedPointRef.current &&
+      Math.abs(lastInspectedPointRef.current[0] - inspectionPoint[0]) < 0.000001 &&
+      Math.abs(lastInspectedPointRef.current[1] - inspectionPoint[1]) < 0.000001
+    ) {
+      return
+    }
+
+    lastInspectedPointRef.current = inspectionPoint
     handleMapInspect(inspectionPoint[0], inspectionPoint[1])
-    mapInstanceRef.current.flyTo(inspectionPoint, 16, { duration: 0.8 })
+    mapInstanceRef.current?.flyTo(inspectionPoint, 16, { duration: 0.8 })
   }, [inspectionPoint, isMapReady, handleMapInspect])
 
   // ── RENDER CADASTRAL PARCEL (SỔ ĐỎ / THỬA ĐẤT) ──
@@ -367,9 +399,10 @@ export default function PlanningMap({
     const renderParcel = async () => {
       const L = (await import('leaflet')).default
       const map = mapInstanceRef.current
+      if (!map) return
 
       if (cadastralPolygonRef.current) {
-        map.removeLayer(cadastralPolygonRef.current)
+        try { map.removeLayer(cadastralPolygonRef.current) } catch {}
         cadastralPolygonRef.current = null
       }
 
@@ -391,14 +424,16 @@ export default function PlanningMap({
         </div>
       `, { permanent: true, direction: 'top', offset: [0, -10] })
 
-      polygon.addTo(map)
-      cadastralPolygonRef.current = polygon
+      if (mapInstanceRef.current) {
+        polygon.addTo(mapInstanceRef.current)
+        cadastralPolygonRef.current = polygon
 
-      // Fly to parcel center
-      map.flyTo(cadastralParcel.centerPoint, 17.5, { duration: 1.2 })
+        // Fly to parcel center
+        mapInstanceRef.current.flyTo(cadastralParcel.centerPoint, 17.5, { duration: 1.2 })
 
-      // Auto inspect point
-      handleMapInspect(cadastralParcel.centerPoint[0], cadastralParcel.centerPoint[1])
+        // Auto inspect point
+        handleMapInspect(cadastralParcel.centerPoint[0], cadastralParcel.centerPoint[1])
+      }
     }
 
     renderParcel()
@@ -562,17 +597,21 @@ export default function PlanningMap({
     const renderZones = async () => {
       const L = (await import('leaflet')).default
       const map = mapInstanceRef.current
+      if (!map) return
 
-      polygonsRef.current.forEach(p => map.removeLayer(p))
+      polygonsRef.current.forEach(p => {
+        try {
+          if (mapInstanceRef.current) mapInstanceRef.current.removeLayer(p)
+        } catch {}
+      })
       polygonsRef.current = []
 
       if (!activeLayers.planning) return
 
+      const allProfiles = getAllHanoiPlanningZones()
       const baseZones = zones && zones.length > 0
         ? zones
-        : (appContext?.planningZones && appContext.planningZones.length > 0
-            ? appContext.planningZones
-            : getAllHanoiPlanningZones())
+        : (allProfiles.length > 0 ? allProfiles : (appContext?.planningZones || []))
 
       const filteredZones = filterHanoiPlanningZones(baseZones, {
         subdivisionGroup,
@@ -589,6 +628,7 @@ export default function PlanningMap({
 
         const polygon = L.polygon(zone.coordinates, {
           pane: 'planningPane',
+          renderer: planningRendererRef.current || undefined,
           color: zone.color,
           fillColor: zone.color,
           fillOpacity: isSelected ? Math.min(1, normOpacity + 0.3) : isHovered ? Math.min(1, normOpacity + 0.15) : normOpacity,
@@ -625,87 +665,73 @@ export default function PlanningMap({
           handleMapInspect(e.latlng.lat, e.latlng.lng, zone)
         })
 
-        polygon.on('mouseover', function(this: any, e: any) {
-          this.setStyle({ fillOpacity: Math.min(1, normOpacity + 0.2), weight: 2.5 })
-          setHoveredZone(zone.id)
-          
-          const symbolPrefix = zone.code ? zone.code.split('-')[0] : null
-          const symbolInfo = symbolPrefix ? (PLANNING_STANDARD_SYMBOLS as any)[symbolPrefix] : null
-          const zoneTypeLabel = symbolInfo?.name || PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || 'Quy hoạch phân khu'
+        const symbolPrefix = zone.code ? zone.code.split('-')[0] : null
+        const symbolInfo = symbolPrefix ? (PLANNING_STANDARD_SYMBOLS as any)[symbolPrefix] : null
+        const zoneTypeLabel = symbolInfo?.name || PLANNING_ZONE_TYPES[zone.type as keyof typeof PLANNING_ZONE_TYPES]?.label || 'Quy hoạch phân khu'
 
-          const tooltip = L.tooltip({
-            permanent: false,
-            direction: 'top',
-            className: 'planning-tooltip',
-            offset: [0, -12],
-          })
-          .setContent(`
-            <div style="
-              font-family:Inter,sans-serif;
-              padding:14px 16px;
-              background:rgba(15,23,42,0.96);
-              backdrop-filter:blur(8px);
-              border-radius:14px;
-              color:white;
-              min-width:240px;
-              max-width:300px;
-              white-space:normal;
-              border:1px solid rgba(255,255,255,0.14);
-              box-shadow:0 12px 30px rgba(0,0,0,0.45);
-              display:flex;
-              flex-direction:column;
-              gap:6px;
-            ">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
-                <div style="display:flex;align-items:flex-start;gap:7px;font-size:13px;font-weight:700;line-height:1.4;color:#ffffff;">
-                  <span style="color:${zone.color};font-size:14px;line-height:1.2;flex-shrink:0;">●</span>
-                  <span>${zone.name}</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-                  ${zone.code ? `<span style="background:rgba(255,255,255,0.15);color:#fbbf24;font-size:10px;padding:2px 5px;border-radius:4px;font-weight:900;font-family:monospace;">${zone.code}</span>` : ''}
-                  ${zone.pdfUrl ? '<span style="background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:800;letter-spacing:0.3px;">PDF</span>' : ''}
-                </div>
+        polygon.bindTooltip(`
+          <div style="
+            font-family:Inter,sans-serif;
+            padding:12px 14px;
+            background:rgba(15,23,42,0.96);
+            backdrop-filter:blur(8px);
+            border-radius:14px;
+            color:white;
+            min-width:220px;
+            max-width:300px;
+            white-space:normal;
+            border:1px solid rgba(255,255,255,0.15);
+            box-shadow:0 12px 28px rgba(0,0,0,0.6);
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+          ">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px;">
+              <div style="display:flex;align-items:flex-start;gap:7px;font-size:13px;font-weight:700;line-height:1.4;color:#ffffff;">
+                <span style="color:${zone.color};font-size:14px;line-height:1.2;flex-shrink:0;">●</span>
+                <span>${zone.name}</span>
               </div>
-
-              <div style="color:rgba(226,232,240,0.8);font-size:11px;font-weight:500;line-height:1.4;padding-left:17px;">
-                ${zoneTypeLabel}${zone.district ? ` · ${zone.district}` : ''}
-              </div>
-
-              ${zone.areaHa ? `
-              <div style="display:flex;gap:12px;font-size:11px;color:#94a3b8;padding-left:17px;padding-top:2px;">
-                <span>Quy mô: <strong style="color:#f8fafc;">${zone.areaHa} ha</strong></span>
-                ${zone.density ? `<span>Mật độ: <strong style="color:#f8fafc;">${zone.density}</strong></span>` : ''}
-              </div>
-              ` : ''}
-
-              <div style="margin-top:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
-                <span style="
-                  display:inline-flex;
-                  align-items:center;
-                  gap:5px;
-                  background:rgba(249,115,22,0.18);
-                  border:1px solid rgba(249,115,22,0.5);
-                  color:#fb923c;
-                  font-size:11px;
-                  font-weight:700;
-                  padding:4px 10px;
-                  border-radius:8px;
-                ">
-                  Click để tra cứu toạ độ & chỉ tiêu →
-                </span>
+              <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                ${zone.code ? `<span style="background:rgba(255,255,255,0.15);color:#fbbf24;font-size:10px;padding:2px 5px;border-radius:4px;font-weight:900;font-family:monospace;">${zone.code}</span>` : ''}
+                ${zone.pdfUrl ? '<span style="background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:800;letter-spacing:0.3px;">PDF</span>' : ''}
               </div>
             </div>
-          `)
-          .setLatLng(e.latlng)
-          .addTo(map)
-          
-          ;(this as any)._tooltip = tooltip
+
+            <div style="color:rgba(226,232,240,0.85);font-size:11px;font-weight:500;padding-left:14px;">
+              ${zoneTypeLabel}${zone.district ? ` · ${zone.district}` : ''}
+            </div>
+
+            ${zone.areaHa ? `
+            <div style="display:flex;gap:12px;font-size:11px;color:#94a3b8;padding-left:14px;">
+              <span>Quy mô: <strong style="color:#f8fafc;">${zone.areaHa} ha</strong></span>
+              ${zone.density ? `<span>Mật độ: <strong style="color:#f8fafc;">${zone.density}</strong></span>` : ''}
+            </div>
+            ` : ''}
+
+            <div style="margin-top:2px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;">
+              <span style="
+                background:rgba(249,115,22,0.18);
+                border:1px solid rgba(249,115,22,0.5);
+                color:#fb923c;
+                font-size:10px;
+                font-weight:700;
+                padding:3px 8px;
+                border-radius:6px;
+              ">
+                Click để tra cứu toạ độ & chỉ tiêu →
+              </span>
+            </div>
+          </div>
+        `, {
+          sticky: true,
+          direction: 'top',
+          className: 'planning-tooltip',
+          offset: [0, -12],
         })
 
-        polygon.on('mousemove', function(this: any, e: any) {
-          if ((this as any)._tooltip) {
-            ;(this as any)._tooltip.setLatLng(e.latlng)
-          }
+        polygon.on('mouseover', function(this: any) {
+          this.setStyle({ fillOpacity: Math.min(1, normOpacity + 0.25), weight: 2.5 })
+          setHoveredZone(zone.id)
         })
 
         polygon.on('mouseout', function(this: any) {
@@ -714,14 +740,12 @@ export default function PlanningMap({
             weight: selectedZone?.id === zone.id ? 3.5 : 1.5 
           })
           setHoveredZone(null)
-          if ((this as any)._tooltip) {
-            map.removeLayer((this as any)._tooltip)
-            ;(this as any)._tooltip = null
-          }
         })
 
-        polygon.addTo(map)
-        polygonsRef.current.push(polygon)
+        if (mapInstanceRef.current) {
+          polygon.addTo(mapInstanceRef.current)
+          polygonsRef.current.push(polygon)
+        }
       })
     }
 
@@ -760,11 +784,10 @@ export default function PlanningMap({
     if (!isMapReady || !mapInstanceRef.current) return
     if ((!subdivisionGroup || subdivisionGroup === 'ALL') && (!activeDistrict || activeDistrict === 'all')) return
 
+    const allProfiles = getAllHanoiPlanningZones()
     const baseZones = zones && zones.length > 0
       ? zones
-      : (appContext?.planningZones && appContext.planningZones.length > 0 
-          ? appContext.planningZones 
-          : getAllHanoiPlanningZones())
+      : (allProfiles.length > 0 ? allProfiles : (appContext?.planningZones || []))
 
     const matched = filterHanoiPlanningZones(baseZones, {
       subdivisionGroup,
@@ -798,8 +821,13 @@ export default function PlanningMap({
     const renderMetro = async () => {
       const L = (await import('leaflet')).default
       const map = mapInstanceRef.current
+      if (!map) return
 
-      metroMarkersRef.current.forEach(m => map.removeLayer(m))
+      metroMarkersRef.current.forEach(m => {
+        try {
+          if (mapInstanceRef.current) mapInstanceRef.current.removeLayer(m)
+        } catch {}
+      })
       metroMarkersRef.current = []
 
       if (!activeLayers.metro) return
@@ -839,8 +867,10 @@ export default function PlanningMap({
           </div>
         `, { direction: 'top', offset: [0, -14] })
 
-        marker.addTo(map)
-        metroMarkersRef.current.push(marker)
+        if (mapInstanceRef.current) {
+          marker.addTo(mapInstanceRef.current)
+          metroMarkersRef.current.push(marker)
+        }
       })
     }
 

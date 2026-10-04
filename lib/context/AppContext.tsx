@@ -5,6 +5,7 @@ import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import { createClient } from '@/lib/supabase/client';
 import { toggleSavedListing, getSavedListings } from '@/lib/supabase/queries/saved';
 import { PlanningZoneItem, DEFAULT_PLANNING_ZONES } from '@/lib/planning/planning-utils';
+import { getAllHanoiPlanningZones } from '@/lib/planning/hanoi-planning-db';
 import {
   getPlanningZonesFromSupabase,
   savePlanningZoneToSupabase,
@@ -94,7 +95,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [showPlanningOverlay, setShowPlanningOverlay] = useState<boolean>(true);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [planningZones, setPlanningZones] = useState<PlanningZoneItem[]>(DEFAULT_PLANNING_ZONES);
+  const [planningZones, setPlanningZones] = useState<PlanningZoneItem[]>(() => {
+    try {
+      const all = getAllHanoiPlanningZones();
+      return all.length > 0 ? all : DEFAULT_PLANNING_ZONES;
+    } catch {
+      return DEFAULT_PLANNING_ZONES;
+    }
+  });
   const [selectedPlanningZoneId, setSelectedPlanningZoneId] = useState<string | null>(null);
 
   // Helper function to sync user profile from Supabase
