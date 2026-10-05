@@ -69,32 +69,147 @@ export function getDistrictSlug(district?: string): string {
 }
 
 /**
- * Tự động tạo slug cho listing từ tiêu đề và dữ liệu listing:
- * - Viết thường, không dấu, dùng dấu '-'
- * - Loại bỏ từ lặp địa phương (quận/huyện) nếu trong tiêu đề đã xuất hiện, vì quận đã có trong path /khu-vuc/
- * - Giữ lại đầy đủ thông số quan trọng: loại nhà, số tầng, mặt tiền, vị trí trọng điểm
- * - Không nhồi nhét từ khóa
+ * Tự động tạo slug base từ tiêu đề tin đăng (viết thường, không dấu, ngăn cách bằng '-')
+ * - Tự động lược bỏ tên quận nếu tiêu đề chứa tên quận để tránh lặp từ thừa thãi trong URL
  */
-export function generateListingSlug(listing: {
+export function generateBaseSlug(listing: {
   title: string;
   district?: string;
-  type?: string;
 }): string {
   if (!listing || !listing.title) return '';
 
   const unaccentTitle = removeVietnameseAccents(listing.title);
 
-  // Nếu tiêu đề có chứa tên quận, lược bỏ tên quận khỏi tiêu đề để tránh lặp từ trong URL
-  // Ví dụ: "Nhà phố Đống Đa 5 tầng..." trong path "/dong-da/" -> "Nhà phố 5 tầng..."
   if (listing.district) {
     const rawDistrict = listing.district.replace(/^(Quận|Huyện|Thị xã)\s+/i, '').trim();
     const unaccentDistrict = removeVietnameseAccents(rawDistrict);
     const regex = new RegExp('(\\b|\\s)' + unaccentDistrict + '(\\b|\\s)', 'gi');
     const cleaned = unaccentTitle.replace(regex, ' ');
-    return toSlug(cleaned);
+    const result = toSlug(cleaned);
+    if (result) return result;
   }
 
   return toSlug(unaccentTitle);
+}
+
+/**
+ * Tạo UNIQUE SLUG cho listing:
+ * 1. QUY TẮC IMMUTABILITY: Nếu listing đã có slug (đã public/lưu trước đó), giữ nguyên 100%,
+ *    không thay đổi ngay cả khi tiêu đề (title) bị sửa đổi sau này, chống gãy liên kết (broken URL).
+ * 2. QUY TẮC UNIQUE: Nếu 2 listing có cùng tiêu đề hoặc cùng sinh ra 1 base slug:
+ *    - Listing đầu tiên nhận: baseSlug
+ *    - Listing thứ hai nhận: baseSlug-2
+ *    - Listing thứ ba nhận: baseSlug-3
+ *    - ...
+ * 3. TIÊU CHÍ: Dễ đọc, ngắn gọn, không nhồi nhét ID khi không cần thiết, không ký tự đặc biệt.
+ */
+export function generateUniqueSlug(
+  listing: {
+    id?: string;
+    title: string;
+    slug?: string;
+    district?: string;
+    type?: string;
+  },
+  existingListings?: Array<{
+    id: string;
+    title: string;
+    slug?: string;
+    district?: string;
+    type?: string;
+  }>
+): string {
+  // 1. IMMUTABILITY: Nếu đã có slug cố định thì giữ nguyên tuyệt đối, không sinh lại
+  if (listing.slug && listing.slug.trim()) {
+    return listing.slug.trim();
+  }
+
+  // 2. Tạo base slug từ tiêu đề
+  const baseSlug = generateBaseSlug(listing);
+  if (!baseSlug) {
+    return 'bds-' + (listing.id || 'chi-tiet');
+  }
+
+  const pool = existingListings || mockListings;
+  const currentTypeSlug = getPropertyTypeSlug(listing.type);
+  const currentDistrictSlug = getDistrictSlug(listing.district);
+
+  // Xác định vị trí của listing trong danh sách (nếu đã nằm trong pool)
+  const currentIndex = listing.id ? pool.findIndex((item) => item.id === listing.id) : -1;
+
+  // 3. Thu thập các slug đã bị chiếm dụng trong cùng phân cấp URL
+  const usedSlugs = new Set<string>();
+
+  pool.forEach((item, index) => {
+    // Không so sánh với chính bản thân listing đang xét
+    if (listing.id && item.id === listing.id) {
+      return;
+    }
+
+    const itemTypeSlug = getPropertyTypeSlug(item.type);
+    const itemDistrictSlug = getDistrictSlug(item.district);
+
+    // Chỉ kiểm tra xung đột trong cùng phân cấp URL (loại BĐS và quận/huyện)
+    if (itemTypeSlug === currentTypeSlug && itemDistrictSlug === currentDistrictSlug) {
+      // Trường hợp A: Item đã có slug cố định đã lưu -> chắc chắn đã chiếm slug đó
+      if (item.slug && item.slug.trim()) {
+        usedSlugs.add(item.slug.trim());
+        return;
+      }
+
+      // Trường hợp B: Item chưa có slug cố định:
+      // Chỉ ưu tiên nhường base slug cho item nếu item được tạo trước (index < currentIndex)
+      // hoặc nếu listing đang xét là tin mới hoàn toàn chưa nằm trong pool (currentIndex === -1)
+      const shouldReserve = currentIndex === -1 || index < currentIndex;
+      if (shouldReserve) {
+        const otherBase = generateBaseSlug(item);
+        if (!usedSlugs.has(otherBase)) {
+          usedSlugs.add(otherBase);
+        } else {
+          let count = 2;
+          while (usedSlugs.has(`${otherBase}-${count}`)) {
+            count++;
+          }
+          usedSlugs.add(`${otherBase}-${count}`);
+        }
+      }
+    }
+  });
+
+  // 4. Nếu baseSlug chưa ai dùng -> Sử dụng ngay baseSlug
+  if (!usedSlugs.has(baseSlug)) {
+    return baseSlug;
+  }
+
+  // 5. Nếu bị trùng -> Thêm hậu tố thứ tự -2, -3,...
+  let suffix = 2;
+  while (usedSlugs.has(`${baseSlug}-${suffix}`)) {
+    suffix++;
+  }
+
+  return `${baseSlug}-${suffix}`;
+}
+
+/**
+ * Tương thích ngược: generateListingSlug gọi generateUniqueSlug
+ */
+export function generateListingSlug(
+  listing: {
+    id?: string;
+    title: string;
+    slug?: string;
+    district?: string;
+    type?: string;
+  },
+  existingListings?: Array<{
+    id: string;
+    title: string;
+    slug?: string;
+    district?: string;
+    type?: string;
+  }>
+): string {
+  return generateUniqueSlug(listing, existingListings);
 }
 
 /**
@@ -103,15 +218,25 @@ export function generateListingSlug(listing: {
  * Ví dụ:
  * /mua-ban/nha-pho/dong-da/nha-pho-5-tang-mat-tien-6m-gan-van-mieu
  */
-export function getListingUrl(listing: {
-  id: string;
-  title: string;
-  type?: string;
-  district?: string;
-}): string {
+export function getListingUrl(
+  listing: {
+    id: string;
+    title: string;
+    slug?: string;
+    type?: string;
+    district?: string;
+  },
+  existingListings?: Array<{
+    id: string;
+    title: string;
+    slug?: string;
+    district?: string;
+    type?: string;
+  }>
+): string {
   const typeSlug = getPropertyTypeSlug(listing.type);
   const districtSlug = getDistrictSlug(listing.district);
-  const itemSlug = generateListingSlug(listing);
+  const itemSlug = generateUniqueSlug(listing, existingListings);
 
   return `/mua-ban/${typeSlug}/${districtSlug}/${itemSlug}`;
 }
@@ -131,26 +256,38 @@ export function findListingBySlug(
 
   const targetSlug = slug.toLowerCase();
 
-  // 1. Khớp chính xác slug + loại BĐS + quận
-  const exactMatch = pool.find((item) => {
-    const itemSlug = generateListingSlug(item);
+  // 1. Khớp chính xác trường slug đã lưu trữ
+  const directSlugMatch = pool.find((item) => {
+    if (!item.slug) return false;
+    const matchesSlug = item.slug.toLowerCase() === targetSlug;
+    const matchesType = !propertyTypeSlug || getPropertyTypeSlug(item.type) === propertyTypeSlug;
+    const matchesDistrict = !districtSlug || getDistrictSlug(item.district) === districtSlug;
+    return matchesSlug && matchesType && matchesDistrict;
+  });
+  if (directSlugMatch) return directSlugMatch;
+
+  // 2. Khớp theo unique slug tính toán từ pool
+  const computedMatch = pool.find((item) => {
+    const itemUniqueSlug = generateUniqueSlug(item, pool);
     const itemTypeSlug = getPropertyTypeSlug(item.type);
     const itemDistrictSlug = getDistrictSlug(item.district);
 
-    const matchesSlug = itemSlug === targetSlug;
+    const matchesSlug = itemUniqueSlug === targetSlug;
     const matchesType = !propertyTypeSlug || itemTypeSlug === propertyTypeSlug;
     const matchesDistrict = !districtSlug || itemDistrictSlug === districtSlug;
 
     return matchesSlug && matchesType && matchesDistrict;
   });
+  if (computedMatch) return computedMatch;
 
-  if (exactMatch) return exactMatch;
+  // 3. Khớp theo base slug (nếu không có hậu tố)
+  const baseMatch = pool.find((item) => {
+    const itemBase = generateBaseSlug(item);
+    return itemBase === targetSlug;
+  });
+  if (baseMatch) return baseMatch;
 
-  // 2. Khớp theo slug tiêu đề tổng quát
-  const slugOnlyMatch = pool.find((item) => generateListingSlug(item) === targetSlug);
-  if (slugOnlyMatch) return slugOnlyMatch;
-
-  // 3. Fallback: Nếu slug trùng với ID nguyên bản (backward compatibility)
+  // 4. Fallback: Nếu slug trùng với ID nguyên bản (backward compatibility)
   const idMatch = pool.find((item) => item.id === slug);
   if (idMatch) return idMatch;
 

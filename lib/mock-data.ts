@@ -1,6 +1,7 @@
 export interface ListingItem {
   id: string;
   title: string;
+  slug?: string;
   /** ID tài khoản đã tạo tin đăng (BẮT BUỘC để phân quyền thông báo cho đúng chủ tin) */
   ownerId?: string;
   createdBy?: string;
