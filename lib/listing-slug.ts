@@ -27,6 +27,80 @@ export const SLUG_TO_PROPERTY_TYPE_MAP: Record<string, string> = {
 };
 
 /**
+ * Cấu hình danh mục chuẩn SEO cho các Category Bất Động Sản
+ */
+export interface CategoryRouteConfig {
+  slug: string;
+  name: string;
+  type: string;
+  purpose: 'sale' | 'rent';
+  keyword?: string;
+  description: string;
+}
+
+export const CATEGORY_MAP: Record<string, CategoryRouteConfig> = {
+  'nha-pho': {
+    slug: 'nha-pho',
+    name: 'Mua bán Nhà phố',
+    type: 'house',
+    purpose: 'sale',
+    description: 'Mua bán nhà phố, nhà riêng chính chủ, vị trí đẹp tại Hà Nội',
+  },
+  'chung-cu': {
+    slug: 'chung-cu',
+    name: 'Mua bán Chung cư',
+    type: 'apartment',
+    purpose: 'sale',
+    description: 'Mua bán căn hộ chung cư cao cấp, dự án mới nhất tại Hà Nội',
+  },
+  'can-ho-chung-cu': {
+    slug: 'chung-cu',
+    name: 'Mua bán Chung cư',
+    type: 'apartment',
+    purpose: 'sale',
+    description: 'Mua bán căn hộ chung cư cao cấp, dự án mới nhất tại Hà Nội',
+  },
+  'dat-nen': {
+    slug: 'dat-nen',
+    name: 'Mua bán Đất nền',
+    type: 'land',
+    purpose: 'sale',
+    description: 'Mua bán đất nền dự án, đất thổ cư pháp lý minh bạch tại Hà Nội',
+  },
+  'biet-thu': {
+    slug: 'biet-thu',
+    name: 'Mua bán Biệt thự',
+    type: 'villa',
+    purpose: 'sale',
+    description: 'Mua bán biệt thự đơn lập, song lập sang trọng tại Hà Nội',
+  },
+  'nha-mat-pho': {
+    slug: 'nha-mat-pho',
+    name: 'Mua bán Nhà mặt phố',
+    type: 'house',
+    purpose: 'sale',
+    keyword: 'mặt phố',
+    description: 'Mua bán nhà mặt phố kinh doanh đắc địa tại Hà Nội',
+  },
+  'penthouse': {
+    slug: 'penthouse',
+    name: 'Mua bán Penthouse',
+    type: 'apartment',
+    purpose: 'sale',
+    keyword: 'penthouse',
+    description: 'Mua bán penthouse cao cấp view panorama tại Hà Nội',
+  },
+};
+
+export const RENT_CATEGORY_CONFIG: CategoryRouteConfig = {
+  slug: 'cho-thue',
+  name: 'Bất động sản Cho thuê',
+  type: 'all',
+  purpose: 'rent',
+  description: 'Cho thuê nhà đất, căn hộ chung cư, văn phòng tại Hà Nội',
+};
+
+/**
  * Xóa dấu tiếng Việt chuẩn W3C / Unicode Normalization
  */
 export function removeVietnameseAccents(str: string): string {
