@@ -664,11 +664,11 @@ export default function HomePage() {
       >
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 relative z-10 flex-1 flex flex-col justify-between">
 
-          {/* Main Visual Composition: Khung Thẻ Trắng Nổi + Khối Ảnh Căn Giữa Đối Xứng */}
-          <div className="relative flex flex-col lg:block min-h-[350px] sm:min-h-[380px] lg:min-h-[410px] xl:min-h-[430px] pt-1 sm:pt-2">
+          {/* Main Visual Composition: Dóng trên cùng 1 Grid 12 cột, Cân bằng giữa Search & Lifestyle Visual */}
+          <div className="relative grid grid-cols-1 lg:grid-cols-12 items-center min-h-[360px] sm:min-h-[400px] lg:min-h-[450px] xl:min-h-[480px] pt-1 sm:pt-2">
 
-            {/* 1. KHỐI ẢNH: ĐỐI XỨNG CÂN ĐỐI VỚI CONTAINER */}
-            <div className="w-full lg:w-[calc(100%-160px)] xl:w-[calc(100%-180px)] lg:ml-auto relative h-[280px] sm:h-[330px] lg:h-[390px] xl:h-[420px] rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] overflow-hidden shadow-xl border border-slate-100 bg-slate-100 group">
+            {/* 1. KHỐI ẢNH: CHIẾM VISUAL WEIGHT LỚN HƠN (Cột 4 -> 12, tăng chiều cao & diện tích hiển thị) */}
+            <div className="w-full lg:col-start-4 lg:col-end-13 lg:row-start-1 relative h-[300px] sm:h-[360px] lg:h-[430px] xl:h-[460px] rounded-2xl sm:rounded-[28px] lg:rounded-[32px] overflow-hidden shadow-2xl border border-slate-200/80 bg-slate-100 group z-10">
               <img
                 src="/images/hanoi-luxury-home-hero.jpg"
                 alt="Bất động sản nhà ở cao cấp tại Hà Nội - Không gian sống tinh hoa"
@@ -678,18 +678,18 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Thu gọn 10-15%, thiết kế Compact Modern & Tinh tế */}
-            <div className="w-full md:w-[350px] lg:w-[365px] xl:w-[380px] md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 z-20 mt-4 md:mt-0">
+            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Dóng cột 1 -> 5, thu gọn 5-10% chiều rộng để không che ảnh */}
+            <div className="w-full md:w-[330px] lg:w-[340px] xl:w-[355px] lg:col-start-1 lg:col-end-5 lg:row-start-1 z-20 mt-4 lg:mt-0">
               <motion.div
                 initial={{ opacity: 0, x: -25 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full"
               >
-                <div className="bg-white/98 backdrop-blur-md rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 shadow-[0_16px_40px_rgba(10,17,40,0.08)] border border-slate-200/90 flex flex-col justify-between">
+                <div className="bg-white/98 backdrop-blur-md rounded-2xl sm:rounded-[24px] p-4 sm:p-4.5 shadow-[0_16px_40px_rgba(10,17,40,0.10)] border border-slate-200/90 flex flex-col justify-between">
 
                   {/* H1 Title: Tìm ngôi nhà mơ ước tại Hà Nội */}
-                  <h1 className="text-lg sm:text-[21px] lg:text-[22px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-2.5">
+                  <h1 className="text-base sm:text-lg lg:text-[20px] font-black text-[#0a1128] leading-[1.25] tracking-tight mb-2 sm:mb-2.5">
                     Tìm ngôi nhà mơ ước <br className="hidden sm:inline" />
                     <span className="text-orange-500">tại Hà Nội</span>
                   </h1>
