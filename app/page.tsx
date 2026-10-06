@@ -358,28 +358,28 @@ function CategoryCarousel() {
       <button
         onClick={() => scroll('left')}
         aria-label="Cuộn trái"
-        className="hidden sm:flex absolute -left-2 sm:-left-3 lg:-left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
+        className="hidden sm:flex absolute -left-2 sm:-left-3 lg:-left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-slate-800 shadow-xl border border-slate-200/80 items-center justify-center opacity-85 group-hover:opacity-100 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
 
       <div
         ref={scrollRef}
-        className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-none pb-2 scroll-smooth snap-x snap-mandatory"
+        className="flex gap-3 sm:gap-3.5 lg:gap-4 overflow-x-auto scrollbar-none py-3 px-1 scroll-smooth snap-x snap-mandatory"
       >
         {propertyCategories.map((cat) => (
           <Link
             key={cat.name}
             href={cat.href}
-            className="shrink-0 w-[120px] sm:w-[130px] lg:w-[140px] h-[100px] sm:h-[105px] lg:h-[110px] flex flex-col items-center justify-center text-center p-3 rounded-xl sm:rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-md hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group/item cursor-pointer hover:-translate-y-0.5 select-none snap-start"
+            className="shrink-0 w-[136px] sm:w-[148px] lg:w-[156px] xl:w-[162px] h-[120px] sm:h-[128px] lg:h-[134px] xl:h-[138px] flex flex-col items-center justify-center text-center p-3 sm:p-3.5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group/item cursor-pointer hover:-translate-y-1 active:scale-98 select-none snap-start"
           >
-            <span className="text-2xl sm:text-3xl mb-1.5 group-hover/item:scale-110 transition-transform duration-200 inline-block">
+            <span className="text-2xl sm:text-3xl mb-2.5 sm:mb-3 group-hover/item:scale-115 group-hover/item:-translate-y-0.5 transition-transform duration-300 inline-block leading-none">
               {cat.icon}
             </span>
-            <span className="font-bold text-xs sm:text-sm text-[#0a1128] group-hover/item:text-orange-500 transition-colors whitespace-nowrap">
+            <span className="font-bold text-xs sm:text-[13px] lg:text-sm text-[#0a1128] group-hover/item:text-orange-500 transition-colors whitespace-nowrap leading-tight tracking-tight">
               {cat.name}
             </span>
-            <span className="text-[10px] sm:text-[11px] text-slate-500 mt-1 group-hover/item:text-orange-500 font-medium transition-colors whitespace-nowrap">
+            <span className="text-[10px] sm:text-[11px] text-slate-500 mt-1.5 group-hover/item:text-orange-500 font-medium transition-colors whitespace-nowrap leading-none">
               {cat.count}
             </span>
           </Link>
@@ -389,7 +389,7 @@ function CategoryCarousel() {
       <button
         onClick={() => scroll('right')}
         aria-label="Cuộn phải"
-        className="hidden sm:flex absolute -right-2 sm:-right-3 lg:-right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
+        className="hidden sm:flex absolute -right-2 sm:-right-3 lg:-right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-slate-800 shadow-xl border border-slate-200/80 items-center justify-center opacity-85 group-hover:opacity-100 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
