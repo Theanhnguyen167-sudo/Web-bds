@@ -953,9 +953,9 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ (THU NHỎ, TẬP TRUNG Ở GIỮA, GIÃN CÁCH ĐỀU) + DANH MỤC BĐS
+          📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ + DANH MỤC BĐS (Chuyển tiếp êm dịu, không giật cục)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div id="stats-and-categories" className="flex flex-col border-b border-slate-800/80">
+      <div id="stats-and-categories" className="flex flex-col border-b border-slate-200/80">
 
         {/* 1. DẢI THỐNG KÊ (Social proof nối tiếp Hero: Gọn gàng, giảm khoảng trắng thừa, căn theo Grid chuẩn max-w-7xl) */}
         <section id="hero-stats" className="bg-white py-6 sm:py-7 lg:py-8 border-b border-slate-200/80">
@@ -968,18 +968,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Chiếm nửa dưới màn hình, nền navy, 1 hàng) */}
-        <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 lg:py-12 relative text-white flex flex-col justify-center">
+        {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Nền trung tính nhẹ #F8FAFC, liền mạch với Hero & Stats) */}
+        <section id="categories" className="bg-slate-50/70 py-8 sm:py-10 lg:py-12 relative text-slate-900 flex flex-col justify-center">
           <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
-                <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
+                <span className="text-orange-600 font-extrabold text-xs tracking-wider uppercase block mb-1">
                   KHÁM PHÁ THEO NHU CẦU
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                <h2 className="text-2xl sm:text-3xl font-black text-[#0a1128] leading-tight tracking-tight">
                   Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
                 </h2>
-                <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl">
+                <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
                   Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
                 </p>
               </div>
@@ -987,7 +987,7 @@ export default function HomePage() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/search"
-                  className="text-xs sm:text-sm font-bold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1 group"
+                  className="text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 group"
                 >
                   <span>Xem tất cả loại BĐS</span>
                   <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -1003,26 +1003,26 @@ export default function HomePage() {
       </div>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Bố cục chuẩn Hình 2: Tiêu đề ở giữa, thẻ ở dưới dóng thẳng Logo)
+          📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Nền trắng tinh sạch, tôn vinh hình ảnh BĐS)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="featured" className="bg-slate-50/70 py-10 sm:py-12 lg:py-14 overflow-hidden relative border-b border-slate-200/80">
+      <section id="featured" className="bg-white py-10 sm:py-12 lg:py-14 overflow-hidden relative border-b border-slate-200/80">
 
         {/* ── PHẦN CHỮ Ở TRÊN (CĂN THEO GRID CHUẨN MAX-W-7XL + NÚT ĐIỀU HƯỚNG HEADER) ── */}
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              {/* Top Badge */}
+              {/* Top Badge — Primary Highlight */}
               <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-2.5 shadow-xs">
                 <Flame className="h-3.5 w-3.5 fill-orange-500" />
                 <span>HOT · ĐƯỢC XEM NHIỀU NHẤT</span>
               </div>
 
-              {/* Heading */}
+              {/* Heading — Primary Information */}
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] tracking-tight leading-tight">
                 Bất động sản, <span className="text-orange-500">nổi bật nhất tuần</span>
               </h2>
 
-              {/* Subtitle */}
+              {/* Subtitle — Supporting Text */}
               <p className="text-slate-600 text-xs sm:text-sm mt-1.5 max-w-2xl leading-relaxed">
                 Cho dù bạn đang tìm kiếm không gian để <strong>an cư dài lâu</strong>, <strong>nghỉ dưỡng tinh hoa</strong> hay <strong>đầu tư sinh lời vượt trội</strong>, luôn có một bất động sản hoàn hảo dành riêng cho bạn tại Hà Nội.
               </p>
@@ -1116,7 +1116,7 @@ export default function HomePage() {
                           />
                         </button>
 
-                        {/* Price Tag Overlay (Bottom-left) */}
+                        {/* Price Tag Overlay — Primary Information (Giá độ tương phản cao nhất) */}
                         <div className="absolute bottom-2.5 left-2.5 z-20 rounded-xl bg-slate-900/90 backdrop-blur-md px-2.5 py-1 text-xs font-black text-white shadow-md border border-white/15">
                           <span className="text-white font-black text-xs tracking-tight">
                             {formattedPrice}
@@ -1137,7 +1137,7 @@ export default function HomePage() {
 
                       {/* Content Details */}
                       <div className="flex flex-1 flex-col p-3.5 justify-between bg-white">
-                        {/* Title: Cố định 2 dòng, line-clamp-2, không làm xô lệch chiều cao */}
+                        {/* Title — Secondary Information (text-slate-800, hover orange) */}
                         <div className="h-10 sm:h-11 flex items-start mb-1.5">
                           <Link
                             href={`/listings/${listing.id}`}
@@ -1149,31 +1149,31 @@ export default function HomePage() {
                           </Link>
                         </div>
 
-                        {/* Location */}
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2.5 h-4 truncate">
+                        {/* Location — Secondary Information (text-slate-600) */}
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-2.5 h-4 truncate">
                           <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
-                          <span className="truncate font-semibold">
+                          <span className="truncate font-medium">
                             {listing.ward ? `${listing.ward}, ` : ''}Quận {listing.district}, Hà Nội
                           </span>
                         </div>
 
-                        {/* Specs Row */}
-                        <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-600 mb-2.5 h-7">
+                        {/* Specs Row — Metadata (text-slate-500 / 600, nhẹ hơn Title & Location) */}
+                        <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500 mb-2.5 h-7">
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Maximize2 className="h-3 w-3 text-slate-400" />
-                            <span className="font-bold text-slate-800 text-[11px]">{listing.area} m²</span>
+                            <span className="font-semibold text-slate-600 text-[11px]">{listing.area} m²</span>
                           </div>
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Building className="h-3 w-3 text-slate-400" />
-                            <span className="font-bold text-slate-700 text-[11px]">{listing.floors > 0 ? `${listing.floors} tầng` : 'Nhà đẹp'}</span>
+                            <span className="font-medium text-slate-500 text-[11px]">{listing.floors > 0 ? `${listing.floors} tầng` : 'Nhà đẹp'}</span>
                           </div>
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Bed className="h-3 w-3 text-slate-400" />
-                            <span className="font-bold text-slate-700 text-[11px]">{listing.bedrooms || 2} PN</span>
+                            <span className="font-medium text-slate-500 text-[11px]">{listing.bedrooms || 2} PN</span>
                           </div>
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Bath className="h-3 w-3 text-slate-400" />
-                            <span className="font-bold text-slate-700 text-[11px]">{listing.bathrooms || 1} PT</span>
+                            <span className="font-medium text-slate-500 text-[11px]">{listing.bathrooms || 1} PT</span>
                           </div>
                         </div>
 
@@ -1185,7 +1185,7 @@ export default function HomePage() {
                               e.stopPropagation();
                               handleOpenDetailModal(listing);
                             }}
-                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
+                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             <span>Xem chi tiết</span>
@@ -1379,10 +1379,10 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 5 — BĐS DÀNH CHO BẠN (Gợi ý cá nhân hoá)
+          📌 SECTION 5 — BĐS DÀNH CHO BẠN (Nền trung tính dịu mắt #F8FAFC, chuyển tiếp mượt mà từ Map Navy)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="roadmap" className="bg-white min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+      <section id="roadmap" className="bg-slate-50/70 py-10 sm:py-12 lg:py-14 border-b border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 gap-3">
             <div>
@@ -1541,31 +1541,31 @@ export default function HomePage() {
                           </Link>
                         </div>
 
-                        {/* Address */}
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2.5 h-4 truncate">
+                        {/* Location — Secondary Information (text-slate-600) */}
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-2.5 h-4 truncate">
                           <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
-                          <span className="truncate font-semibold">
+                          <span className="truncate font-medium">
                             {listing.ward ? `${listing.ward}, ` : ''}Quận {listing.district}, Hà Nội
                           </span>
                         </div>
 
-                        {/* Specs Row */}
-                        <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-600 mb-2.5 h-7">
+                        {/* Specs Row — Metadata (text-slate-500 / 600, nhẹ hơn Title & Location) */}
+                        <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500 mb-2.5 h-7">
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Maximize2 className="h-3 w-3 text-slate-400" />
-                            <span className="font-bold text-slate-800 text-[11px]">{listing.area} m²</span>
+                            <span className="font-semibold text-slate-600 text-[11px]">{listing.area} m²</span>
                           </div>
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Building className="h-3 w-3 text-slate-400" />
-                            <span className="font-bold text-slate-700 text-[11px]">{listing.floors > 0 ? `${listing.floors} tầng` : 'Nhà đẹp'}</span>
+                            <span className="font-medium text-slate-500 text-[11px]">{listing.floors > 0 ? `${listing.floors} tầng` : 'Nhà đẹp'}</span>
                           </div>
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Bed className="h-3 w-3 text-slate-400" />
-                            <span className="font-bold text-slate-700 text-[11px]">{listing.bedrooms || 2} PN</span>
+                            <span className="font-medium text-slate-500 text-[11px]">{listing.bedrooms || 2} PN</span>
                           </div>
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Bath className="h-3 w-3 text-slate-400" />
-                            <span className="font-bold text-slate-700 text-[11px]">{listing.bathrooms || 1} PT</span>
+                            <span className="font-medium text-slate-500 text-[11px]">{listing.bathrooms || 1} PT</span>
                           </div>
                         </div>
 
@@ -1577,7 +1577,7 @@ export default function HomePage() {
                               e.stopPropagation();
                               handleOpenDetailModal(listing);
                             }}
-                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
+                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             <span>Xem chi tiết</span>
@@ -1866,29 +1866,29 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 6 — TIN TỨC & PHÂN TÍCH THỊ TRƯỜNG
+          📌 SECTION 6 — TIN TỨC & PHÂN TÍCH THỊ TRƯỜNG (Nền trắng thanh lịch, trải nghiệm đọc tin chuyên nghiệp)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="market-updates" className="bg-[#0a1128] min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+      <section id="market-updates" className="bg-white py-12 sm:py-16 lg:py-20 border-b border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-3 gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
             <div>
-              <span className="text-orange-500 font-extrabold text-[10px] sm:text-xs tracking-wider uppercase">
+              <span className="text-orange-600 font-extrabold text-[11px] sm:text-xs tracking-wider uppercase block mb-1">
                 TIN TỨC & KIẾN THỨC
               </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-3xl font-black text-white mt-1 leading-tight tracking-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] leading-tight tracking-tight">
                 Cập nhật thị trường BĐS Hà Nội
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1">
+              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
                 Phân tích chuyên sâu từ đội ngũ chuyên gia quy hoạch và định giá
               </p>
             </div>
             <Link
               href="/news"
-              className="text-[10px] sm:text-xs font-bold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1.5 transition-colors shrink-0 group"
+              className="text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1.5 transition-colors shrink-0 group"
             >
               <span>Xem tất cả tin tức</span>
-              <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
 
@@ -2023,13 +2023,13 @@ export default function HomePage() {
 
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 8 — ĐÁNH GIÁ KHÁCH HÀNG (BỐ CỤC CHUẨN ẢNH 1 - CODI TESTIMONIAL SLIDER)
+          📌 SECTION 8 — ĐÁNH GIÁ KHÁCH HÀNG (Điểm nhấn Navy Social Proof ấm áp)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="reviews"
         onMouseEnter={() => setIsReviewPaused(true)}
         onMouseLeave={() => setIsReviewPaused(false)}
-        className="relative bg-gradient-to-r from-[#060a22] via-[#0d1645] to-[#121c5b] text-white py-16 sm:py-20 lg:py-24 overflow-hidden flex flex-col justify-center items-center select-none min-h-screen snap-start"
+        className="relative bg-gradient-to-r from-[#060a22] via-[#0d1645] to-[#121c5b] text-white py-14 sm:py-18 lg:py-22 overflow-hidden flex flex-col justify-center items-center select-none border-b border-slate-800"
       >
         {/* Subtle Ambient Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[850px] h-[350px] bg-blue-500/12 rounded-full blur-[140px] pointer-events-none" />
@@ -2187,11 +2187,11 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 9 — ĐỐI TÁC & THƯƠNG HIỆU (Marquee)
+          📌 SECTION 9 — ĐỐI TÁC & THƯƠNG HIỆU (Marquee — Nền trung tính dịu mắt)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-white py-14 overflow-hidden border-b border-slate-100">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
-          <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+      <section className="bg-slate-50/70 py-12 sm:py-14 overflow-hidden border-b border-slate-200/80">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-7 text-center">
+          <span className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-slate-500">
             ĐỐI TÁC CHIẾN LƯỢC & THƯƠNG HIỆU ĐỒNG HÀNH
           </span>
         </div>
@@ -2205,7 +2205,7 @@ export default function HomePage() {
           ].map((brand, idx) => (
             <div
               key={idx}
-              className="w-40 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-bold text-xs text-slate-500 hover:text-navy hover:bg-orange-50/40 hover:border-orange-200 transition-all shadow-sm cursor-pointer"
+              className="w-40 h-14 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center font-bold text-xs text-slate-600 hover:text-orange-600 hover:bg-orange-50/40 hover:border-orange-300 transition-all shadow-xs cursor-pointer"
             >
               {brand}
             </div>
@@ -2221,7 +2221,7 @@ export default function HomePage() {
           ].map((brand, idx) => (
             <div
               key={idx}
-              className="w-40 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-bold text-xs text-slate-500 hover:text-navy hover:bg-blue-50/40 hover:border-blue-200 transition-all shadow-sm cursor-pointer"
+              className="w-40 h-14 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center font-bold text-xs text-slate-600 hover:text-orange-600 hover:bg-orange-50/40 hover:border-orange-300 transition-all shadow-xs cursor-pointer"
             >
               {brand}
             </div>
@@ -2229,7 +2229,7 @@ export default function HomePage() {
         </div>
 
         {/* Trust Badges */}
-        <div className="container max-w-5xl mx-auto px-4 mt-10 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-bold text-slate-600">
+        <div className="container max-w-5xl mx-auto px-4 mt-8 pt-6 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-semibold text-slate-600">
           <span className="flex items-center gap-2">
             <Award className="h-4 w-4 text-orange-500" />
             Top 10 Startup VN 2024
