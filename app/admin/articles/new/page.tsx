@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { ArticleEditorForm } from '@/components/admin/article/ArticleEditorForm';
 
-export default function NewArticlePage() {
+function NewArticleContent() {
   const searchParams = useSearchParams();
   const editId = searchParams.get('id') || undefined;
 
@@ -29,5 +29,19 @@ export default function NewArticlePage() {
         <ArticleEditorForm initialArticleId={editId} />
       </main>
     </div>
+  );
+}
+
+export default function NewArticlePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-1 flex items-center justify-center p-12 text-slate-400 text-xs">
+          Đang nạp trình soạn thảo bài viết...
+        </div>
+      }
+    >
+      <NewArticleContent />
+    </Suspense>
   );
 }
