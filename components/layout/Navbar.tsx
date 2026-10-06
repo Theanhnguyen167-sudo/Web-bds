@@ -115,45 +115,39 @@ export const Navbar: React.FC = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-[#0a1128]/75 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10 text-white py-0'
-          : 'bg-[#0a1128] shadow-md border-b border-slate-800 text-white'
+          ? 'bg-[#0a1128]/90 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10 text-white'
+          : 'bg-[#0a1128]/95 backdrop-blur-sm shadow-sm border-b border-slate-800/80 text-white'
       }`}
     >
       <div
-        className={`w-full max-w-[1600px] mx-auto flex items-center justify-between px-4 sm:px-8 lg:px-12 xl:px-16 transition-all duration-300 ${
-          isScrolled ? 'h-13 sm:h-14' : 'h-16 sm:h-20'
+        className={`w-full max-w-[1600px] mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 transition-all duration-300 ${
+          isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
         }`}
       >
         
-        {/* Left Group: Logo + Nav Links (Bố cục Codi chuẩn) */}
-        <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 xl:gap-10 min-w-0">
+        {/* Left Group: Logo + Nav Links */}
+        <div className="flex items-center gap-5 lg:gap-7 xl:gap-9 min-w-0">
           {/* Logo Left */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <motion.div
-              whileHover={{ scale: 1.08, rotate: -4 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`flex items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20 transition-all duration-300 ${
-                isScrolled ? 'h-8 w-8 sm:h-9 sm:w-9' : 'h-10 w-10'
-              }`}
+              className="flex items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20 h-9 w-9 shrink-0 transition-all duration-300"
             >
-              <Home className={`transition-all duration-300 ${isScrolled ? 'h-4 w-4 sm:h-4.5 sm:w-4.5' : 'h-5 w-5'}`} />
+              <Home className="h-4.5 w-4.5" />
             </motion.div>
             <div className="flex flex-col">
-              <span className={`font-extrabold tracking-tight flex items-center gap-1 transition-all duration-300 text-white ${
-                isScrolled ? 'text-base sm:text-[17px]' : 'text-lg'
-              }`}>
+              <span className="font-extrabold tracking-tight flex items-center gap-1 text-white text-base lg:text-[17px] leading-tight transition-colors group-hover:text-white">
                 HaNoi <span className="text-accent font-black">Realty</span>
               </span>
-              <span className={`text-[10px] font-medium uppercase tracking-widest -mt-1 transition-all duration-300 text-slate-200 ${
-                isScrolled ? 'hidden sm:inline-block text-[9px]' : ''
-              }`}>
+              <span className="text-[10px] font-medium uppercase tracking-widest text-slate-300 -mt-0.5 leading-none">
                 PropTech & Quy Hoạch
               </span>
             </div>
           </Link>
 
-          {/* Nav Links (Desktop) - Bắt đầu ngay sau Logo từ chữ Trang chủ */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2.5 transition-all duration-300">
+          {/* Nav Links (Desktop) */}
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 transition-all duration-300">
             {navLinks.map((link) => {
               const isActive =
                 link.href === '/'
@@ -163,14 +157,10 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`relative rounded-xl text-xs xl:text-[13px] font-semibold tracking-wide whitespace-nowrap shrink-0 transition-all ${
-                    isScrolled
-                      ? 'px-2 xl:px-3 py-1 sm:py-1.5'
-                      : 'px-2 xl:px-3.5 py-1.5 sm:py-2'
-                  } ${
+                  className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2.5 xl:px-3 py-1.5 ${
                     isActive
-                      ? 'text-white font-black border-2 border-orange-500 bg-orange-500/20 backdrop-blur-md shadow-md shadow-orange-500/30'
-                      : 'text-white/90 hover:text-white hover:bg-black/20 backdrop-blur-xs'
+                      ? 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   <span className="whitespace-nowrap">{link.name}</span>
@@ -181,11 +171,11 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Right Section Actions (Desktop lg+) */}
-        <div className="hidden lg:flex items-center gap-2.5 xl:gap-4 shrink-0">
+        <div className="hidden lg:flex items-center gap-2.5 xl:gap-3 shrink-0">
           {/* Quick Search Shortcut */}
           <Link
             href="/search"
-            className="p-2 rounded-xl transition-all text-slate-300 hover:text-white hover:bg-white/10"
+            className="h-9 w-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200 border border-transparent hover:border-white/10"
             title="Tìm kiếm BĐS"
           >
             <Search className="h-4 w-4" />
@@ -194,7 +184,7 @@ export const Navbar: React.FC = () => {
           {user?.role === 'admin' && (
             <Link
               href="/admin"
-              className="flex items-center gap-1.5 rounded-lg bg-orange-500/20 border border-orange-500/40 px-2.5 xl:px-3 py-2 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white transition-all shadow-sm whitespace-nowrap"
+              className="h-9 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white transition-all shadow-xs whitespace-nowrap"
               title="Chuyển sang trang Quản trị Admin"
             >
               <ShieldCheck className="h-4 w-4 text-orange-400 shrink-0" />
@@ -207,13 +197,13 @@ export const Navbar: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             onClick={handlePostListingClick}
-            className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0"
+            className="h-9 flex items-center gap-1.5 rounded-xl bg-accent px-3.5 text-xs font-bold text-white shadow-sm shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             <PlusCircle className="h-4 w-4 shrink-0" />
             <span className="whitespace-nowrap">Đăng tin</span>
           </motion.button>
 
-          {/* Auth State / Account Dropdown (Tích hợp Thông báo vào chỗ Tài khoản) */}
+          {/* Auth State / Account Dropdown */}
           <div className="relative">
             <button
               type="button"
@@ -221,30 +211,30 @@ export const Navbar: React.FC = () => {
                 setNotifOpen(false);
                 setUserDropdownOpen(!userDropdownOpen);
               }}
-              className="relative flex items-center gap-2 rounded-xl bg-primary-light/60 p-1.5 pr-2.5 text-white hover:bg-primary-light transition-all border border-slate-700 cursor-pointer"
+              className="h-9 relative flex items-center gap-2 rounded-xl bg-white/5 hover:bg-white/10 px-2 text-white transition-all border border-white/10 hover:border-white/20 cursor-pointer"
             >
-              <div className="relative">
+              <div className="relative shrink-0">
                 {user ? (
                   <img
                     src={user.avatar}
                     alt={user.name}
-                    className="h-7 w-7 rounded-lg object-cover ring-1 ring-accent"
+                    className="h-6 w-6 rounded-lg object-cover ring-1 ring-accent"
                   />
                 ) : (
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/20 text-accent ring-1 ring-accent/50">
-                    <User className="h-4 w-4" />
+                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/20 text-accent ring-1 ring-accent/40">
+                    <User className="h-3.5 w-3.5" />
                   </div>
                 )}
                 {unreadNotifCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-extrabold text-white shadow-md ring-2 ring-[#0a1128]">
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-accent px-0.5 text-[8px] font-extrabold text-white shadow-md ring-2 ring-[#0a1128]">
                     {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
                   </span>
                 )}
               </div>
-              <span className="text-xs font-semibold max-w-[100px] truncate">
+              <span className="text-xs font-semibold max-w-[100px] truncate text-slate-200">
                 {user ? user.name : 'Tài khoản'}
               </span>
-              <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+              <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
             </button>
 
             {/* User Account Dropdown Menu */}
@@ -389,7 +379,7 @@ export const Navbar: React.FC = () => {
           </Link>
           <button
             onClick={handlePostListingClick}
-            className="rounded-xl bg-accent hover:bg-accent-hover px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors whitespace-nowrap"
+            className="h-9 flex items-center justify-center rounded-xl bg-accent hover:bg-accent-hover px-3 text-xs font-bold text-white shadow-sm transition-colors whitespace-nowrap cursor-pointer"
           >
             Đăng tin
           </button>
@@ -416,7 +406,7 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* Popover Trung tâm Thông báo (Hiển thị trên cả Desktop & Mobile khi mở từ mục Tài khoản) */}
-      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative flex justify-end">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 relative flex justify-end">
         <NotificationBell
           isOpen={notifOpen}
           onOpenChange={setNotifOpen}
