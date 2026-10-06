@@ -18,7 +18,8 @@ import {
   ArrowLeft,
   LogOut,
   ShieldCheck,
-  Compass
+  Compass,
+  Newspaper
 } from 'lucide-react';
 
 export const AdminSidebar: React.FC = () => {
@@ -44,20 +45,27 @@ export const AdminSidebar: React.FC = () => {
       title: 'Nội dung',
       items: [
         {
-          name: 'Người dùng',
-          href: '/admin/users',
-          icon: Users,
-          badge: '5 mới',
-          badgeColor: 'bg-blue-500/20 text-blue-400',
-        },
-        {
           name: 'Tin đăng',
           href: '/admin/listings',
           icon: Building2,
           badge: '23',
           badgeColor: 'bg-orange-500 text-white animate-pulse',
         },
+        {
+          name: 'Bài viết',
+          href: '/admin/articles',
+          icon: Newspaper,
+          badge: 'Mới',
+          badgeColor: 'bg-emerald-500/20 text-emerald-400',
+        },
         { name: 'Báo cáo AI', href: '/admin/reports', icon: FileText },
+        {
+          name: 'Người dùng',
+          href: '/admin/users',
+          icon: Users,
+          badge: '5 mới',
+          badgeColor: 'bg-blue-500/20 text-blue-400',
+        },
       ],
     },
     {

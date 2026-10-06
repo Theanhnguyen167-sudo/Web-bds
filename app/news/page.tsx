@@ -167,13 +167,49 @@ const DISTRICT_PRICE_STATS = [
   { name: 'Thanh Xuân', price: '88 tr/m²', change: '+7.4%', trend: 'up' },
 ];
 
+import { getStoredArticles } from '@/lib/article-data';
+
 export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
+  const [allNews, setAllNews] = useState<NewsArticle[]>(NEWS_ARTICLES);
+
+  React.useEffect(() => {
+    try {
+      const stored = getStoredArticles();
+      if (stored && stored.length > 0) {
+        const publishedStored = stored.filter((a) => a.status === 'published');
+        const mapped: NewsArticle[] = publishedStored.map((a) => ({
+          id: a.id,
+          title: a.title,
+          summary: a.excerpt || a.seoDescription || '',
+          category: (['planning', 'pricing', 'policy', 'project', 'investment'].includes(a.category)
+            ? a.category
+            : 'planning') as any,
+          categoryLabel: a.categoryLabel || 'Tin tức',
+          categoryColor: a.categoryColor || 'bg-blue-500 text-white',
+          image: a.featuredImage || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80',
+          date: a.createdAt ? new Date(a.createdAt).toLocaleDateString('vi-VN') : 'Mới cập nhật',
+          author: a.authorName || 'Ban biên tập HaNoi Realty',
+          readTime: a.readTime || '5 phút đọc',
+          views: a.views || 250,
+          content: [a.content || a.excerpt || ''],
+          tags: a.tags && a.tags.length > 0 ? a.tags : ['Bất động sản', 'Quy hoạch Hà Nội'],
+        }));
+
+        // Merge mapped with standard mock if not duplicated
+        const existingIds = new Set(mapped.map((m) => m.id));
+        const combined = [...mapped, ...NEWS_ARTICLES.filter((na) => !existingIds.has(na.id))];
+        setAllNews(combined);
+      }
+    } catch (e) {
+      console.warn('Lỗi đồng bộ tin tức:', e);
+    }
+  }, []);
 
   const filteredArticles = useMemo(() => {
-    return NEWS_ARTICLES.filter((article) => {
+    return allNews.filter((article) => {
       const matchCategory = selectedCategory === 'all' || article.category === selectedCategory;
       const matchSearch =
         searchQuery.trim() === '' ||
@@ -182,9 +218,9 @@ export default function NewsPage() {
         article.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchCategory && matchSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [allNews, selectedCategory, searchQuery]);
 
-  const featuredArticle = NEWS_ARTICLES.find((a) => a.featured) || NEWS_ARTICLES[0];
+  const featuredArticle = allNews.find((a) => a.featured) || allNews[0];
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans">
