@@ -120,7 +120,7 @@ export const Navbar: React.FC = () => {
       }`}
     >
       <div
-        className={`w-full max-w-[1600px] mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 transition-all duration-300 ${
+        className={`w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
           isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
         }`}
       >
@@ -406,7 +406,7 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* Popover Trung tâm Thông báo (Hiển thị trên cả Desktop & Mobile khi mở từ mục Tài khoản) */}
-      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 relative flex justify-end">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative flex justify-end">
         <NotificationBell
           isOpen={notifOpen}
           onOpenChange={setNotifOpen}

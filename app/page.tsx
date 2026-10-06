@@ -354,11 +354,11 @@ function CategoryCarousel() {
   };
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative group mt-2">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative group mt-2">
       <button
         onClick={() => scroll('left')}
         aria-label="Cuộn trái"
-        className="hidden sm:flex absolute -left-3 sm:left-2 lg:left-[160px] xl:left-[200px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
+        className="hidden sm:flex absolute -left-2 sm:-left-3 lg:-left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
@@ -389,7 +389,7 @@ function CategoryCarousel() {
       <button
         onClick={() => scroll('right')}
         aria-label="Cuộn phải"
-        className="hidden sm:flex absolute -right-3 sm:right-2 lg:right-[220px] xl:right-[260px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
+        className="hidden sm:flex absolute -right-2 sm:-right-3 lg:-right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
@@ -662,7 +662,7 @@ export default function HomePage() {
         id="hero"
         className="relative flex flex-col justify-between overflow-hidden bg-slate-50 text-slate-900 pt-[78px] sm:pt-[82px] lg:pt-[86px] pb-3 sm:pb-4 border-b border-slate-200/80"
       >
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 relative z-10 flex-1 flex flex-col justify-between">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex-1 flex flex-col justify-between">
 
           {/* Main Visual Composition: Dóng trên cùng 1 Grid 12 cột, Cân bằng giữa Search & Lifestyle Visual */}
           <div className="relative grid grid-cols-1 lg:grid-cols-12 items-center min-h-[360px] sm:min-h-[400px] lg:min-h-[450px] xl:min-h-[480px] pt-1 sm:pt-2">
@@ -969,7 +969,7 @@ export default function HomePage() {
 
         {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Chiếm nửa dưới màn hình, nền navy, 1 hàng) */}
         <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 lg:py-12 relative text-white flex-1 flex flex-col justify-center">
-          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] mb-5 sm:mb-6">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
                 <span className="text-orange-500 font-extrabold text-xs tracking-wider uppercase block mb-1">
@@ -1006,8 +1006,8 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="featured" className="bg-slate-50/70 py-10 sm:py-12 lg:py-14 overflow-hidden relative border-b border-slate-200/80">
 
-        {/* ── PHẦN CHỮ Ở TRÊN (CĂN GIỮA, RỘNG SANG 2 BÊN) ── */}
-        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 text-center mb-5 sm:mb-6">
+        {/* ── PHẦN CHỮ Ở TRÊN (CĂN THEO GRID CHUẨN MAX-W-7XL) ── */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-5 sm:mb-6">
           {/* Top Badge */}
           <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3 shadow-xs">
             <Flame className="h-3.5 w-3.5 fill-orange-500" />
@@ -1025,8 +1025,8 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* ── DẢI CÁC THẺ BÀI VIẾT Ở DƯỚI (PHÓNG TO & TRẢI RỘNG SANG 2 BÊN) ── */}
-        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 relative">
+        {/* ── DẢI CÁC THẺ BÀI VIẾT Ở DƯỚI (CĂN THEO GRID CHUẨN MAX-W-7XL) ── */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="relative group/carousel">
 
             {/* Carousel Track */}
@@ -1167,7 +1167,7 @@ export default function HomePage() {
           📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="map-search" className="bg-[#0a1128] z-10 min-h-screen snap-start flex items-center py-6 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-4 lg:py-6">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-10 items-center lg:items-stretch">
 
             {/* Left 45%: District List */}
@@ -1250,7 +1250,7 @@ export default function HomePage() {
           📌 SECTION 5 — BĐS DÀNH CHO BẠN (Gợi ý cá nhân hoá)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="roadmap" className="bg-white min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-4 lg:py-6">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
 
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 gap-2">
             <div>
@@ -1716,7 +1716,7 @@ export default function HomePage() {
           📌 SECTION 6 — TIN TỨC & PHÂN TÍCH THỊ TRƯỜNG
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="market-updates" className="bg-[#0a1128] min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-0">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-3 lg:py-4">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-3 gap-2">
             <div>
@@ -1881,7 +1881,7 @@ export default function HomePage() {
         {/* Subtle Ambient Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[850px] h-[350px] bg-blue-500/12 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
 
           {/* Header chuẩn Hình 1 */}
           <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
@@ -2106,7 +2106,7 @@ export default function HomePage() {
         id="cta-dang-tin"
         className="bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white py-10 sm:py-12 lg:py-14 relative overflow-hidden flex flex-col justify-center"
       >
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative z-10">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8">
 
             {/* Left info chuẩn Hình 2 */}
