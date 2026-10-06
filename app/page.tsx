@@ -660,15 +660,15 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="hero"
-        className="relative flex flex-col justify-between overflow-hidden bg-slate-50 text-slate-900 min-h-screen lg:h-screen lg:max-h-[1080px] pt-20 sm:pt-22 lg:pt-24 pb-3 sm:pb-4 border-b border-slate-200/80 snap-start"
+        className="relative flex flex-col justify-between overflow-hidden bg-slate-50 text-slate-900 pt-[78px] sm:pt-[82px] lg:pt-[86px] pb-3 sm:pb-4 border-b border-slate-200/80"
       >
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative z-10 flex-1 flex flex-col justify-between my-auto">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 relative z-10 flex-1 flex flex-col justify-between">
           
-          {/* Main Visual Composition: Khung Thẻ Trắng Nổi + Khối Ảnh Thu Hẹp Vừa Mắt Chuẩn Hình 2 */}
-          <div className="relative flex flex-col lg:block min-h-[350px] sm:min-h-[380px] lg:min-h-[410px] xl:min-h-[430px] my-auto">
+          {/* Main Visual Composition: Khung Thẻ Trắng Nổi + Khối Ảnh Căn Giữa Đối Xứng */}
+          <div className="relative flex flex-col lg:block min-h-[350px] sm:min-h-[380px] lg:min-h-[410px] xl:min-h-[430px] pt-1 sm:pt-2">
             
-            {/* 1. KHỐI ẢNH: THU HẸP CHIỀU DÀI & CHIỀU CAO VỪA MẮT CHUẨN HÌNH 2 */}
-            <div className="w-full lg:w-[calc(100%-240px)] xl:w-[calc(100%-270px)] lg:ml-auto relative h-[280px] sm:h-[330px] lg:h-[390px] xl:h-[420px] rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] overflow-hidden shadow-xl border border-slate-100 bg-slate-100 group">
+            {/* 1. KHỐI ẢNH: ĐỐI XỨNG CÂN ĐỐI VỚI CONTAINER */}
+            <div className="w-full lg:w-[calc(100%-200px)] xl:w-[calc(100%-230px)] lg:ml-auto relative h-[280px] sm:h-[330px] lg:h-[390px] xl:h-[420px] rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] overflow-hidden shadow-xl border border-slate-100 bg-slate-100 group">
               <img
                 src="/images/hanoi-luxury-home-hero.jpg"
                 alt="Bất động sản nhà ở cao cấp tại Hà Nội - Không gian sống tinh hoa"
@@ -916,8 +916,8 @@ export default function HomePage() {
 
           </div>
 
-          {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Thu gọn vừa vặn chuẩn Hình 2 để thấy trọn vẹn khi cuộn lên) */}
-          <div className="mt-3 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-100 overflow-hidden bg-white rounded-t-3xl w-[100vw] relative left-1/2 -translate-x-1/2 px-4 sm:px-8 lg:px-[180px] xl:px-[220px] shadow-sm">
+          {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Thu gọn vừa vặn để thấy trọn vẹn trong first viewport) */}
+          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100 overflow-hidden bg-white rounded-t-3xl w-[100vw] relative left-1/2 -translate-x-1/2 px-4 sm:px-6 lg:px-8 xl:px-10 shadow-sm">
             <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)] py-1.5 sm:py-2">
               <div className="flex gap-10 sm:gap-14 md:gap-18 w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] items-center text-slate-400 select-none">
                 {[
