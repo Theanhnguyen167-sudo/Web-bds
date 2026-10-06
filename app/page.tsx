@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
@@ -85,21 +86,21 @@ function FadeInSection({ children, delay = 0, className = '' }: { children: Reac
 // Rolling digit animation for odometer effect
 function RollingDigit({ digit, isInView, delay }: { digit: string; isInView: boolean; delay: number }) {
   if (isNaN(parseInt(digit))) return <span className="inline-block">{digit}</span>;
-  
+
   const target = parseInt(digit);
   // Tạo mảng dài để tạo hiệu ứng cuộn nhiều vòng (dây cót)
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   // Vị trí dừng là vòng thứ 2 để đảm bảo số nào cũng phải cuộn một đoạn dài
-  const offset = 10 + target; 
-  
+  const offset = 10 + target;
+
   return (
     <div className="relative inline-block h-[1em] overflow-hidden align-bottom leading-none">
       <motion.div
         className="flex flex-col leading-none"
         initial={{ y: '0%' }}
         animate={{ y: isInView ? `-${offset * (100 / numbers.length)}%` : '0%' }}
-        transition={{ 
-          duration: 2.2, 
+        transition={{
+          duration: 2.2,
           delay: delay,
           ease: [0.16, 1, 0.3, 1] // Hiệu ứng trượt nhanh lúc đầu và phanh lại từ từ (như dây cót/xe số)
         }}
@@ -132,24 +133,23 @@ function CodiStatCounter({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
-  
+
   const formattedString = isFixed ? fixedText : `${(value || 0).toLocaleString('de-DE')}`;
   const displayChars = (formattedString + suffix).split('');
 
   return (
     <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-2.5 sm:py-3 w-full">
       <div
-        className={`text-4xl sm:text-5xl md:text-[56px] lg:text-[64px] font-black tracking-tight leading-none flex items-baseline justify-center ${
-          highlight ? 'text-[#0066FF]' : 'text-[#212529]'
-        }`}
+        className={`text-4xl sm:text-5xl md:text-[56px] lg:text-[64px] font-black tracking-tight leading-none flex items-baseline justify-center ${highlight ? 'text-[#0066FF]' : 'text-[#212529]'
+          }`}
       >
         {displayChars.map((char, idx) => (
-          <RollingDigit 
-            key={idx} 
-            digit={char} 
-            isInView={isInView} 
+          <RollingDigit
+            key={idx}
+            digit={char}
+            isInView={isInView}
             // Tạo độ trễ từ phải qua trái (số hàng đơn vị chạy trước, hàng chục/trăm chạy sau như công tơ mét)
-            delay={(displayChars.length - idx) * 0.15} 
+            delay={(displayChars.length - idx) * 0.15}
           />
         ))}
       </div>
@@ -355,7 +355,7 @@ function CategoryCarousel() {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative group mt-2">
-      <button 
+      <button
         onClick={() => scroll('left')}
         aria-label="Cuộn trái"
         className="hidden sm:flex absolute -left-3 sm:left-2 lg:left-[160px] xl:left-[200px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
@@ -363,7 +363,7 @@ function CategoryCarousel() {
         <ChevronLeft className="w-5 h-5" />
       </button>
 
-      <div 
+      <div
         ref={scrollRef}
         className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-none pb-2 scroll-smooth snap-x snap-mandatory"
       >
@@ -386,7 +386,7 @@ function CategoryCarousel() {
         ))}
       </div>
 
-      <button 
+      <button
         onClick={() => scroll('right')}
         aria-label="Cuộn phải"
         className="hidden sm:flex absolute -right-3 sm:right-2 lg:right-[220px] xl:right-[260px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white text-slate-800 shadow-md border border-slate-100 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-slate-50 cursor-pointer"
@@ -663,10 +663,10 @@ export default function HomePage() {
         className="relative flex flex-col justify-between overflow-hidden bg-slate-50 text-slate-900 pt-[78px] sm:pt-[82px] lg:pt-[86px] pb-3 sm:pb-4 border-b border-slate-200/80"
       >
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 relative z-10 flex-1 flex flex-col justify-between">
-          
+
           {/* Main Visual Composition: Khung Thẻ Trắng Nổi + Khối Ảnh Căn Giữa Đối Xứng */}
           <div className="relative flex flex-col lg:block min-h-[350px] sm:min-h-[380px] lg:min-h-[410px] xl:min-h-[430px] pt-1 sm:pt-2">
-            
+
             {/* 1. KHỐI ẢNH: ĐỐI XỨNG CÂN ĐỐI VỚI CONTAINER */}
             <div className="w-full lg:w-[calc(100%-160px)] xl:w-[calc(100%-180px)] lg:ml-auto relative h-[280px] sm:h-[330px] lg:h-[390px] xl:h-[420px] rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] overflow-hidden shadow-xl border border-slate-100 bg-slate-100 group">
               <img
@@ -687,232 +687,225 @@ export default function HomePage() {
                 className="w-full"
               >
                 <div className="bg-white/98 backdrop-blur-md rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 shadow-[0_16px_40px_rgba(10,17,40,0.08)] border border-slate-200/90 flex flex-col justify-between">
-                
-                {/* H1 Title: Tìm ngôi nhà mơ ước tại Hà Nội */}
-                <h1 className="text-lg sm:text-[21px] lg:text-[22px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-2.5">
-                  Tìm ngôi nhà mơ ước <br className="hidden sm:inline" />
-                  <span className="text-orange-500">tại Hà Nội</span>
-                </h1>
 
-                {/* THANH TÌM KIẾM ĐẦY ĐỦ TÍNH NĂNG */}
-                <div ref={heroSearchBoxRef} className="space-y-2">
-                  
-                  {/* HÀNG 1: TABS NHU CẦU (Mua bán / Cho thuê / Dự án) */}
-                  <div className="flex items-center gap-1 p-0.5 sm:p-1 bg-slate-100/90 rounded-xl w-fit">
-                    {[
-                      { key: 'buy', label: 'Mua bán', icon: '🏠' },
-                      { key: 'rent', label: 'Cho thuê', icon: '🔑' },
-                      { key: 'project', label: 'Dự án', icon: '🏗️' },
-                    ].map((tab) => (
-                      <button
-                        key={tab.key}
-                        type="button"
-                        onClick={() => setHeroSearchTab(tab.key as any)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                          heroSearchTab === tab.key
-                            ? 'bg-[#0a1128] text-white shadow-xs'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
-                        }`}
-                      >
-                        <span>{tab.icon}</span>
-                        <span>{tab.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {/* H1 Title: Tìm ngôi nhà mơ ước tại Hà Nội */}
+                  <h1 className="text-lg sm:text-[21px] lg:text-[22px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-2.5">
+                    Tìm ngôi nhà mơ ước <br className="hidden sm:inline" />
+                    <span className="text-orange-500">tại Hà Nội</span>
+                  </h1>
 
-                  {/* HÀNG 2: THANH TÌM KIẾM ĐỊA ĐIỂM */}
-                  <div className="relative">
-                    <div className="relative flex items-center">
-                      <MapPin className="absolute left-3 h-4 w-4 text-orange-500 pointer-events-none" />
-                      <input
-                        type="text"
-                        value={heroLocationQuery}
-                        onChange={(e) => {
-                          setHeroLocationQuery(e.target.value);
-                          setHeroLocationDropdownOpen(true);
-                        }}
-                        onFocus={() => {
-                          setHeroLocationDropdownOpen(true);
-                          setHeroTypeDropdownOpen(false);
-                          setHeroPriceDropdownOpen(false);
-                        }}
-                        placeholder="Nhập quận, huyện, tên đường..."
-                        className="w-full h-10 pl-9 pr-8 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-3 focus:ring-orange-500/15 bg-slate-50/60 focus:bg-white text-xs sm:text-[13px] text-slate-800 placeholder-slate-400 outline-none transition-all shadow-xs"
-                      />
-                      {heroLocationQuery && (
+                  {/* THANH TÌM KIẾM ĐẦY ĐỦ TÍNH NĂNG */}
+                  <div ref={heroSearchBoxRef} className="space-y-2">
+
+                    {/* HÀNG 1: TABS NHU CẦU (Mua bán / Cho thuê / Dự án) */}
+                    <div className="flex items-center gap-1 p-0.5 sm:p-1 bg-slate-100/90 rounded-xl w-fit">
+                      {[
+                        { key: 'buy', label: 'Mua bán', icon: '🏠' },
+                        { key: 'rent', label: 'Cho thuê', icon: '🔑' },
+                        { key: 'project', label: 'Dự án', icon: '🏗️' },
+                      ].map((tab) => (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => setHeroSearchTab(tab.key as any)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${heroSearchTab === tab.key
+                              ? 'bg-[#0a1128] text-white shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                            }`}
+                        >
+                          <span>{tab.icon}</span>
+                          <span>{tab.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* HÀNG 2: THANH TÌM KIẾM ĐỊA ĐIỂM */}
+                    <div className="relative">
+                      <div className="relative flex items-center">
+                        <MapPin className="absolute left-3 h-4 w-4 text-orange-500 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={heroLocationQuery}
+                          onChange={(e) => {
+                            setHeroLocationQuery(e.target.value);
+                            setHeroLocationDropdownOpen(true);
+                          }}
+                          onFocus={() => {
+                            setHeroLocationDropdownOpen(true);
+                            setHeroTypeDropdownOpen(false);
+                            setHeroPriceDropdownOpen(false);
+                          }}
+                          placeholder="Nhập quận, huyện, tên đường..."
+                          className="w-full h-10 pl-9 pr-8 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-3 focus:ring-orange-500/15 bg-slate-50/60 focus:bg-white text-xs sm:text-[13px] text-slate-800 placeholder-slate-400 outline-none transition-all shadow-xs"
+                        />
+                        {heroLocationQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setHeroLocationQuery('')}
+                            className="absolute right-2.5 p-1 hover:bg-slate-200/80 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Autocomplete Dropdown */}
+                      <AnimatePresence>
+                        {heroLocationDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute top-full left-0 right-0 mt-1.5 rounded-2xl bg-white p-2.5 shadow-2xl border border-slate-100 z-50 text-left max-h-60 overflow-y-auto"
+                          >
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-2">
+                              Khu vực phổ biến Hà Nội
+                            </p>
+                            <div className="space-y-0.5">
+                              {heroFilteredDistricts.map((district) => (
+                                <button
+                                  key={district.name}
+                                  type="button"
+                                  onClick={() => {
+                                    setHeroLocationQuery(district.name);
+                                    setHeroLocationDropdownOpen(false);
+                                  }}
+                                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-orange-50 text-slate-700 hover:text-orange-600 transition-colors text-xs cursor-pointer"
+                                >
+                                  <span className="font-semibold flex items-center gap-2">
+                                    <span>🏙️</span>
+                                    <span>Quận {district.name}, Hà Nội</span>
+                                  </span>
+                                  <span className="text-[11px] text-slate-400 font-medium">{district.count} tin</span>
+                                </button>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* HÀNG 3: BỘ LỌC LOẠI HÌNH & MỨC GIÁ */}
+                    <div className="grid grid-cols-2 gap-2 relative">
+                      {/* Dropdown 1 */}
+                      <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setHeroLocationQuery('')}
-                          className="absolute right-2.5 p-1 hover:bg-slate-200/80 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                          onClick={() => {
+                            setHeroTypeDropdownOpen(!heroTypeDropdownOpen);
+                            setHeroPriceDropdownOpen(false);
+                            setHeroLocationDropdownOpen(false);
+                          }}
+                          className={`w-full h-10 flex items-center justify-between px-3 rounded-xl border text-xs sm:text-[13px] font-semibold transition-all ${heroTypeDropdownOpen
+                              ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
+                              : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
+                            }`}
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <span className="truncate">
+                            {heroPropertyTypes.find((t) => t.value === heroType)?.label || 'Loại hình BĐS'}
+                          </span>
+                          <ChevronDown
+                            className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-1 transition-transform duration-200 ${heroTypeDropdownOpen ? 'rotate-180 text-orange-500' : ''
+                              }`}
+                          />
                         </button>
-                      )}
-                    </div>
+                        <AnimatePresence>
+                          {heroTypeDropdownOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 6 }}
+                              className="absolute top-full left-0 right-0 w-full mt-1.5 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
+                            >
+                              {heroPropertyTypes.map((t) => (
+                                <button
+                                  key={t.value}
+                                  type="button"
+                                  onClick={() => {
+                                    setHeroType(t.value);
+                                    setHeroTypeDropdownOpen(false);
+                                  }}
+                                  className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${heroType === t.value
+                                      ? 'bg-orange-500 text-white shadow-sm'
+                                      : 'hover:bg-slate-50 text-slate-700'
+                                    }`}
+                                >
+                                  <span className="shrink-0">{t.icon}</span>
+                                  <span className="truncate">{t.label}</span>
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
 
-                    {/* Autocomplete Dropdown */}
-                    <AnimatePresence>
-                      {heroLocationDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                          transition={{ duration: 0.15 }}
-                          className="absolute top-full left-0 right-0 mt-1.5 rounded-2xl bg-white p-2.5 shadow-2xl border border-slate-100 z-50 text-left max-h-60 overflow-y-auto"
+                      {/* Dropdown 2 */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setHeroPriceDropdownOpen(!heroPriceDropdownOpen);
+                            setHeroTypeDropdownOpen(false);
+                            setHeroLocationDropdownOpen(false);
+                          }}
+                          className={`w-full h-10 flex items-center justify-between px-3 rounded-xl border text-xs sm:text-[13px] font-semibold transition-all ${heroPriceDropdownOpen
+                              ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
+                              : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
+                            }`}
                         >
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-2">
-                            Khu vực phổ biến Hà Nội
-                          </p>
-                          <div className="space-y-0.5">
-                            {heroFilteredDistricts.map((district) => (
-                              <button
-                                key={district.name}
-                                type="button"
-                                onClick={() => {
-                                  setHeroLocationQuery(district.name);
-                                  setHeroLocationDropdownOpen(false);
-                                }}
-                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-orange-50 text-slate-700 hover:text-orange-600 transition-colors text-xs cursor-pointer"
-                              >
-                                <span className="font-semibold flex items-center gap-2">
-                                  <span>🏙️</span>
-                                  <span>Quận {district.name}, Hà Nội</span>
-                                </span>
-                                <span className="text-[11px] text-slate-400 font-medium">{district.count} tin</span>
-                              </button>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* HÀNG 3: BỘ LỌC LOẠI HÌNH & MỨC GIÁ */}
-                  <div className="grid grid-cols-2 gap-2 relative">
-                    {/* Dropdown 1 */}
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHeroTypeDropdownOpen(!heroTypeDropdownOpen);
-                          setHeroPriceDropdownOpen(false);
-                          setHeroLocationDropdownOpen(false);
-                        }}
-                        className={`w-full h-10 flex items-center justify-between px-3 rounded-xl border text-xs sm:text-[13px] font-semibold transition-all ${
-                          heroTypeDropdownOpen
-                            ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
-                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
-                        }`}
-                      >
-                        <span className="truncate">
-                          {heroPropertyTypes.find((t) => t.value === heroType)?.label || 'Loại hình BĐS'}
-                        </span>
-                        <ChevronDown
-                          className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-1 transition-transform duration-200 ${
-                            heroTypeDropdownOpen ? 'rotate-180 text-orange-500' : ''
-                          }`}
-                        />
-                      </button>
-                      <AnimatePresence>
-                        {heroTypeDropdownOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 6 }}
-                            className="absolute top-full left-0 right-0 w-full mt-1.5 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
-                          >
-                            {heroPropertyTypes.map((t) => (
-                              <button
-                                key={t.value}
-                                type="button"
-                                onClick={() => {
-                                  setHeroType(t.value);
-                                  setHeroTypeDropdownOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
-                                  heroType === t.value
-                                    ? 'bg-orange-500 text-white shadow-sm'
-                                    : 'hover:bg-slate-50 text-slate-700'
-                                Juice}`}
-                              >
-                                <span className="shrink-0">{t.icon}</span>
-                                <span className="truncate">{t.label}</span>
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                          <span className="truncate">
+                            {heroPricePresets.find((p) => p.value === heroPriceRange)?.label || 'Mức giá'}
+                          </span>
+                          <ChevronDown
+                            className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-1 transition-transform duration-200 ${heroPriceDropdownOpen ? 'rotate-180 text-orange-500' : ''
+                              }`}
+                          />
+                        </button>
+                        <AnimatePresence>
+                          {heroPriceDropdownOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 6 }}
+                              className="absolute top-full left-0 right-0 w-full mt-1.5 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
+                            >
+                              {heroPricePresets.map((p) => (
+                                <button
+                                  key={p.value}
+                                  type="button"
+                                  onClick={() => {
+                                    setHeroPriceRange(p.value);
+                                    setHeroPriceDropdownOpen(false);
+                                  }}
+                                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${heroPriceRange === p.value
+                                      ? 'bg-orange-500 text-white shadow-sm'
+                                      : 'hover:bg-slate-50 text-slate-700'
+                                    }`}
+                                >
+                                  <span className="truncate">{p.label}</span>
+                                  {heroPriceRange === p.value && <span className="shrink-0 font-bold ml-1">✓</span>}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
 
-                    {/* Dropdown 2 */}
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHeroPriceDropdownOpen(!heroPriceDropdownOpen);
-                          setHeroTypeDropdownOpen(false);
-                          setHeroLocationDropdownOpen(false);
-                        }}
-                        className={`w-full h-10 flex items-center justify-between px-3 rounded-xl border text-xs sm:text-[13px] font-semibold transition-all ${
-                          heroPriceDropdownOpen
-                            ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
-                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
-                        }`}
-                      >
-                        <span className="truncate">
-                          {heroPricePresets.find((p) => p.value === heroPriceRange)?.label || 'Mức giá'}
-                        </span>
-                        <ChevronDown
-                          className={`w-3.5 h-3.5 text-slate-400 shrink-0 ml-1 transition-transform duration-200 ${
-                            heroPriceDropdownOpen ? 'rotate-180 text-orange-500' : ''
-                          }`}
-                        />
-                      </button>
-                      <AnimatePresence>
-                        {heroPriceDropdownOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 6 }}
-                            className="absolute top-full left-0 right-0 w-full mt-1.5 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
-                          >
-                            {heroPricePresets.map((p) => (
-                              <button
-                                key={p.value}
-                                type="button"
-                                onClick={() => {
-                                  setHeroPriceRange(p.value);
-                                  setHeroPriceDropdownOpen(false);
-                                }}
-                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
-                                  heroPriceRange === p.value
-                                    ? 'bg-orange-500 text-white shadow-sm'
-                                    : 'hover:bg-slate-50 text-slate-700'
-                                }`}
-                              >
-                                <span className="truncate">{p.label}</span>
-                                {heroPriceRange === p.value && <span className="shrink-0 font-bold ml-1">✓</span>}
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                    {/* HÀNG 4: NÚT TÌM KIẾM TO NỔI BẬT */}
+                    <button
+                      type="button"
+                      onClick={() => handleExecuteHeroSearch()}
+                      className="w-full h-10.5 sm:h-11 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs sm:text-[13px] tracking-wide shadow-md shadow-orange-500/30 hover:shadow-orange-500/45 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-1"
+                    >
+                      <Search className="w-4 h-4" />
+                      <span>Tìm kiếm Bất động sản</span>
+                    </button>
                   </div>
-
-                  {/* HÀNG 4: NÚT TÌM KIẾM TO NỔI BẬT */}
-                  <button
-                    type="button"
-                    onClick={() => handleExecuteHeroSearch()}
-                    className="w-full h-10.5 sm:h-11 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs sm:text-[13px] tracking-wide shadow-md shadow-orange-500/30 hover:shadow-orange-500/45 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-1"
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>Tìm kiếm Bất động sản</span>
-                  </button>
                 </div>
-              </div>
-            </motion.div>
-          </div>
+              </motion.div>
+            </div>
 
           </div>
 
@@ -948,7 +941,7 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            
+
             {/* Dòng mô tả nhỏ căn giữa chuẩn ảnh 2 */}
             <p className="text-xs text-slate-400 font-medium text-center mt-1.5 sm:mt-2">
               Được tin tưởng bởi các đơn vị phát triển BĐS và hơn 10.000+ khách hàng tại 29 quận, huyện Hà Nội
@@ -962,7 +955,7 @@ export default function HomePage() {
           📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ (THU NHỎ, TẬP TRUNG Ở GIỮA, GIÃN CÁCH ĐỀU) + DANH MỤC BĐS
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div id="stats-and-categories" className="min-h-screen snap-start flex flex-col border-b border-slate-800/80">
-        
+
         {/* 1. DẢI THỐNG KÊ (Thu nhỏ, cân bằng chính giữa cả chiều dọc và ngang) */}
         <section id="hero-stats" className="bg-white flex-1 flex flex-col justify-center items-center py-6 sm:py-8 border-b border-slate-200/80">
           <div className="w-full max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -989,7 +982,7 @@ export default function HomePage() {
                   Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
                 </p>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Link
                   href="/search"
@@ -1012,7 +1005,7 @@ export default function HomePage() {
           📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Bố cục chuẩn Hình 2: Tiêu đề ở giữa, thẻ ở dưới dóng thẳng Logo)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="featured" className="bg-slate-50/70 py-10 sm:py-12 lg:py-14 overflow-hidden relative border-b border-slate-200/80">
-        
+
         {/* ── PHẦN CHỮ Ở TRÊN (CĂN GIỮA, RỘNG SANG 2 BÊN) ── */}
         <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 text-center mb-5 sm:mb-6">
           {/* Top Badge */}
@@ -1035,7 +1028,7 @@ export default function HomePage() {
         {/* ── DẢI CÁC THẺ BÀI VIẾT Ở DƯỚI (PHÓNG TO & TRẢI RỘNG SANG 2 BÊN) ── */}
         <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 relative">
           <div className="relative group/carousel">
-            
+
             {/* Carousel Track */}
             <div
               ref={featuredScrollRef}
@@ -1074,17 +1067,15 @@ export default function HomePage() {
                           e.stopPropagation();
                           toggleSaveListing(listing.id);
                         }}
-                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
-                          savedListingIds.includes(listing.id)
+                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${savedListingIds.includes(listing.id)
                             ? 'bg-rose-500 text-white'
                             : 'bg-white/80 hover:bg-white text-slate-700 hover:text-rose-500'
-                        }`}
+                          }`}
                         title="Lưu tin đăng"
                       >
                         <Heart
-                          className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${
-                            savedListingIds.includes(listing.id) ? 'fill-current' : ''
-                          }`}
+                          className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${savedListingIds.includes(listing.id) ? 'fill-current' : ''
+                            }`}
                         />
                       </button>
                     </div>
@@ -1178,7 +1169,7 @@ export default function HomePage() {
       <section id="map-search" className="bg-[#0a1128] z-10 min-h-screen snap-start flex items-center py-6 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-4 lg:py-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-10 items-center lg:items-stretch">
-            
+
             {/* Left 45%: District List */}
             <div className="lg:col-span-5 flex flex-col justify-center space-y-2 sm:space-y-3">
               <div>
@@ -1200,11 +1191,10 @@ export default function HomePage() {
                     key={d.name}
                     onMouseEnter={() => setHoveredDistrict(d.name)}
                     onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
-                    className={`flex items-center justify-between py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-xl cursor-pointer transition-all ${
-                      hoveredDistrict === d.name
+                    className={`flex items-center justify-between py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-xl cursor-pointer transition-all ${hoveredDistrict === d.name
                         ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
                         : 'hover:bg-slate-100 text-slate-700'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <MapPin className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-500'}`} />
@@ -1261,7 +1251,7 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="roadmap" className="bg-white min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-4 lg:py-6">
-          
+
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 gap-2">
             <div>
               <span className="inline-flex items-center gap-1.5 text-orange-600 font-extrabold text-xs tracking-wider uppercase bg-orange-50 px-3.5 py-1.5 rounded-full border border-orange-200/80 shadow-xs">
@@ -1287,11 +1277,10 @@ export default function HomePage() {
                 <button
                   key={pill.id}
                   onClick={() => setPersonalFilter(pill.id)}
-                  className={`px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shrink-0 transition-all cursor-pointer ${
-                    personalFilter === pill.id
+                  className={`px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shrink-0 transition-all cursor-pointer ${personalFilter === pill.id
                       ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   {pill.label}
                 </button>
@@ -1358,9 +1347,8 @@ export default function HomePage() {
                           title={isSaved ? 'Bỏ lưu tin' : 'Lưu tin yêu thích'}
                         >
                           <Heart
-                            className={`h-4 w-4 transition-colors ${
-                              isSaved ? 'fill-red-500 text-red-500' : 'text-slate-600 hover:text-red-500'
-                            }`}
+                            className={`h-4 w-4 transition-colors ${isSaved ? 'fill-red-500 text-red-500' : 'text-slate-600 hover:text-red-500'
+                              }`}
                           />
                         </button>
 
@@ -1571,11 +1559,10 @@ export default function HomePage() {
                               key={idx}
                               type="button"
                               onClick={() => setModalActiveImageIdx(idx)}
-                              className={`relative w-20 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                                modalActiveImageIdx === idx
+                              className={`relative w-20 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${modalActiveImageIdx === idx
                                   ? 'border-orange-500 ring-2 ring-orange-500/30 scale-105'
                                   : 'border-transparent opacity-70 hover:opacity-100'
-                              }`}
+                                }`}
                             >
                               <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
                             </button>
@@ -1654,11 +1641,10 @@ export default function HomePage() {
 
                         <div className="flex items-center gap-2">
                           <a
-                            href={`tel:${
-                              user && (selectedListingDetail.userId === user.id || selectedListingDetail.authorEmail === user.email)
+                            href={`tel:${user && (selectedListingDetail.userId === user.id || selectedListingDetail.authorEmail === user.email)
                                 ? user.phone || '0988123456'
                                 : selectedListingDetail.authorPhone || selectedListingDetail.users?.phone || '0988123456'
-                            }`}
+                              }`}
                             className="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                           >
                             <Phone className="h-3.5 w-3.5" />
@@ -1731,7 +1717,7 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="market-updates" className="bg-[#0a1128] min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-0">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] py-3 lg:py-4">
-          
+
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-3 gap-2">
             <div>
               <span className="text-orange-500 font-extrabold text-[10px] sm:text-xs tracking-wider uppercase">
@@ -1755,7 +1741,7 @@ export default function HomePage() {
 
           {/* News Layout: 1 Big Top + 3 Small Bottom */}
           <div className="flex flex-col gap-3 lg:gap-4">
-            
+
             {/* Big Featured Article (Top 100%) */}
             <div className="w-full flex flex-col">
               <Link
@@ -1785,7 +1771,7 @@ export default function HomePage() {
                       Sự kết nối giữa các trục giao thông hướng tâm và đường vành đai đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố trung tâm và ven đô.
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-100 text-[10px] sm:text-xs text-slate-500 font-medium">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500/20 text-orange-600 font-bold flex items-center justify-center text-[10px] sm:text-xs">
@@ -1896,7 +1882,7 @@ export default function HomePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[850px] h-[350px] bg-blue-500/12 rounded-full blur-[140px] pointer-events-none" />
 
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
-          
+
           {/* Header chuẩn Hình 1 */}
           <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
             <span className="text-orange-400 font-extrabold text-xs uppercase tracking-wider block mb-2">
@@ -2018,11 +2004,10 @@ export default function HomePage() {
                 type="button"
                 onClick={() => goToReview(idx)}
                 aria-label={`Chuyển đến đánh giá ${idx + 1}`}
-                className={`transition-all duration-300 rounded-full cursor-pointer ${
-                  activeReviewIdx === idx
+                className={`transition-all duration-300 rounded-full cursor-pointer ${activeReviewIdx === idx
                     ? 'w-2 h-2 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.9)] ring-2 ring-blue-500/30'
                     : 'w-1.5 h-1.5 bg-slate-600/70 hover:bg-slate-400'
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -2123,7 +2108,7 @@ export default function HomePage() {
       >
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative z-10">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8">
-            
+
             {/* Left info chuẩn Hình 2 */}
             <div className="space-y-2.5 text-left max-w-2xl">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
@@ -2168,7 +2153,7 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <footer className="bg-[#0a0f1e] text-slate-400 text-xs py-16 border-t border-slate-800">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          
+
           {/* Col 1 - Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
