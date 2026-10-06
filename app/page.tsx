@@ -138,9 +138,9 @@ function CodiStatCounter({
   const displayChars = (formattedString + suffix).split('');
 
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-2.5 sm:py-3 w-full">
+    <div ref={ref} className="flex flex-col items-center justify-center text-center px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2 w-full">
       <div
-        className={`text-4xl sm:text-5xl md:text-[56px] lg:text-[64px] font-black tracking-tight leading-none flex items-baseline justify-center ${highlight ? 'text-[#0066FF]' : 'text-[#212529]'
+        className={`text-2xl sm:text-4xl md:text-5xl lg:text-[52px] font-black tracking-tight leading-none flex items-baseline justify-center ${highlight ? 'text-[#0066FF]' : 'text-[#212529]'
           }`}
       >
         {displayChars.map((char, idx) => (
@@ -153,7 +153,7 @@ function CodiStatCounter({
           />
         ))}
       </div>
-      <span className="text-sm sm:text-base text-slate-500 font-medium mt-3 sm:mt-5 text-center whitespace-nowrap">
+      <span className="text-[11px] sm:text-xs md:text-sm text-slate-500 font-medium mt-1.5 sm:mt-2 text-center leading-snug">
         {label}
       </span>
     </div>
@@ -954,12 +954,12 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ (THU NHỎ, TẬP TRUNG Ở GIỮA, GIÃN CÁCH ĐỀU) + DANH MỤC BĐS
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div id="stats-and-categories" className="min-h-screen snap-start flex flex-col border-b border-slate-800/80">
+      <div id="stats-and-categories" className="flex flex-col border-b border-slate-800/80">
 
-        {/* 1. DẢI THỐNG KÊ (Thu nhỏ, cân bằng chính giữa cả chiều dọc và ngang) */}
-        <section id="hero-stats" className="bg-white flex-1 flex flex-col justify-center items-center py-6 sm:py-8 border-b border-slate-200/80">
-          <div className="w-full max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-row justify-center items-center divide-x divide-slate-200/90 py-1">
+        {/* 1. DẢI THỐNG KÊ (Social proof nối tiếp Hero: Gọn gàng, giảm khoảng trắng thừa, căn theo Grid chuẩn max-w-7xl) */}
+        <section id="hero-stats" className="bg-white py-6 sm:py-7 lg:py-8 border-b border-slate-200/80">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-3 divide-x divide-slate-200/80 items-center">
               <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
               <CodiStatCounter value={5832} suffix="+" highlight={true} label="người dùng tháng này" />
               <CodiStatCounter value={98} suffix="%" label="tỷ lệ khách hàng hài lòng" />
@@ -968,7 +968,7 @@ export default function HomePage() {
         </section>
 
         {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Chiếm nửa dưới màn hình, nền navy, 1 hàng) */}
-        <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 lg:py-12 relative text-white flex-1 flex flex-col justify-center">
+        <section id="categories" className="bg-[#0a1128] py-8 sm:py-10 lg:py-12 relative text-white flex flex-col justify-center">
           <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
