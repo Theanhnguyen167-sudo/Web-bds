@@ -503,7 +503,7 @@ export default function HomePage() {
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const scrollFeatured = (direction: 'left' | 'right') => {
     if (featuredScrollRef.current) {
-      const offset = direction === 'left' ? -360 : 360;
+      const offset = direction === 'left' ? -380 : 380;
       featuredScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
     }
   };
@@ -1011,12 +1011,12 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Bố cục chuẩn Hình 2: Tiêu đề ở giữa, thẻ ở dưới dóng thẳng Logo)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="featured" className="bg-slate-50/70 min-h-screen snap-start flex flex-col justify-center py-4 sm:py-6 overflow-hidden relative border-b border-slate-200/80">
+      <section id="featured" className="bg-slate-50/70 py-10 sm:py-12 lg:py-14 overflow-hidden relative border-b border-slate-200/80">
         
-        {/* ── PHẦN CHỮ Ở TRÊN (CĂN GIỮA CHUẨN HÌNH 2) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] text-center mb-3 sm:mb-4">
+        {/* ── PHẦN CHỮ Ở TRÊN (CĂN GIỮA, RỘNG SANG 2 BÊN) ── */}
+        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 text-center mb-5 sm:mb-6">
           {/* Top Badge */}
-          <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3.5 shadow-xs">
+          <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3 shadow-xs">
             <Flame className="h-3.5 w-3.5 fill-orange-500" />
             <span>HOT · ĐƯỢC XEM NHIỀU NHẤT</span>
           </div>
@@ -1027,29 +1027,29 @@ export default function HomePage() {
           </h2>
 
           {/* Subtitle */}
-          <p className="text-slate-600 text-[11px] sm:text-xs mt-2 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-slate-600 text-xs sm:text-sm mt-2 max-w-2xl mx-auto leading-relaxed">
             Cho dù bạn đang tìm kiếm không gian để <strong>an cư dài lâu</strong>, <strong>nghỉ dưỡng tinh hoa</strong> hay <strong>đầu tư sinh lời vượt trội</strong>, luôn có một bất động sản hoàn hảo dành riêng cho bạn tại Hà Nội.
           </p>
         </div>
 
-        {/* ── DẢI CÁC THẺ BÀI VIẾT Ở DƯỚI (DÓNG THẲNG LOGO WEB NHƯ HÌNH 2) ── */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:pl-[180px] lg:pr-[240px] xl:pl-[220px] xl:pr-[280px] relative">
+        {/* ── DẢI CÁC THẺ BÀI VIẾT Ở DƯỚI (PHÓNG TO & TRẢI RỘNG SANG 2 BÊN) ── */}
+        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 relative">
           <div className="relative group/carousel">
             
             {/* Carousel Track */}
             <div
               ref={featuredScrollRef}
-              className="flex gap-3 sm:gap-4 overflow-x-auto py-2 snap-x scrollbar-none scroll-smooth"
+              className="flex gap-4 sm:gap-5 lg:gap-6 overflow-x-auto py-3 px-1 snap-x scrollbar-none scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {featuredListings.map((listing) => (
                 <div
                   key={listing.id}
-                  className="w-[220px] sm:w-[240px] md:w-[260px] lg:w-[270px] shrink-0 snap-start"
+                  className="w-[270px] sm:w-[300px] md:w-[325px] lg:w-[350px] xl:w-[365px] shrink-0 snap-start"
                 >
                   <Link
                     href={`/listings/${listing.id}`}
-                    className="group relative h-[210px] sm:h-[240px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
+                    className="group relative h-[260px] sm:h-[285px] md:h-[310px] lg:h-[330px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
                   >
                     {/* Background Image */}
                     <img
@@ -1063,8 +1063,8 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/60 to-transparent opacity-90" />
 
                     {/* Top Badges (Price & Save) */}
-                    <div className="absolute top-3 sm:top-4 inset-x-3 sm:inset-x-4 flex items-center justify-between z-10">
-                      <span className="px-3 py-1 sm:py-1.5 rounded-full bg-orange-500 text-white font-black text-[11px] sm:text-xs shadow-md shadow-orange-500/30">
+                    <div className="absolute top-3.5 sm:top-4 inset-x-3.5 sm:inset-x-4 flex items-center justify-between z-10">
+                      <span className="px-3.5 py-1.5 rounded-full bg-orange-500 text-white font-black text-xs sm:text-sm shadow-md shadow-orange-500/30">
                         {formatCurrencyVND(listing.price)}
                       </span>
                       <button
@@ -1074,7 +1074,7 @@ export default function HomePage() {
                           e.stopPropagation();
                           toggleSaveListing(listing.id);
                         }}
-                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
+                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${
                           savedListingIds.includes(listing.id)
                             ? 'bg-rose-500 text-white'
                             : 'bg-white/80 hover:bg-white text-slate-700 hover:text-rose-500'
@@ -1082,7 +1082,7 @@ export default function HomePage() {
                         title="Lưu tin đăng"
                       >
                         <Heart
-                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                          className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${
                             savedListingIds.includes(listing.id) ? 'fill-current' : ''
                           }`}
                         />
@@ -1091,30 +1091,30 @@ export default function HomePage() {
 
                     {/* Planning Status Badge (Top-left below price if exists) */}
                     {(listing.planningZone || listing.legalStatus) && (
-                      <div className="absolute top-11 sm:top-12 left-3 sm:left-4 z-10">
-                        <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-white/90 border border-white/20">
+                      <div className="absolute top-13 sm:top-14 left-3.5 sm:left-4 z-10">
+                        <span className="px-2.5 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[10px] sm:text-xs font-bold text-white/90 border border-white/20">
                           {listing.planningZone || listing.legalStatus}
                         </span>
                       </div>
                     )}
 
                     {/* Bottom Info Overlay */}
-                    <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4 z-10">
+                    <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-4.5 z-10">
                       {/* Title */}
-                      <h3 className="text-sm sm:text-base font-bold text-white line-clamp-2 mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors leading-tight">
+                      <h3 className="text-sm sm:text-base lg:text-lg font-bold text-white line-clamp-2 mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors leading-snug">
                         {listing.title}
                       </h3>
 
                       {/* Location */}
-                      <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-white/85 mb-2">
-                        <MapPin className="w-3 h-3 text-orange-400 shrink-0" />
+                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-white/85 mb-2">
+                        <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0" />
                         <span className="truncate">
                           Quận {listing.district}, Hà Nội
                         </span>
                       </div>
 
                       {/* Specs Bar (Area, Bed, Bath) */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-white/15 text-[9px] sm:text-[10px] text-white/75 font-medium">
+                      <div className="flex items-center gap-2 pt-2 border-t border-white/15 text-[10px] sm:text-xs text-white/75 font-medium">
                         <span className="font-semibold">{listing.area} m²</span>
                         <span className="opacity-60">•</span>
                         <span>{listing.bedrooms} PN</span>
@@ -1139,7 +1139,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => scrollFeatured('left')}
-              className="hidden md:flex absolute -left-4 lg:-left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+              className="hidden md:flex absolute -left-2 md:-left-4 lg:-left-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
               title="Trượt sang trái"
               aria-label="Trượt sang trái"
             >
@@ -1150,7 +1150,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => scrollFeatured('right')}
-              className="hidden md:flex absolute -right-4 lg:-right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+              className="hidden md:flex absolute -right-2 md:-right-4 lg:-right-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
               title="Xem tiếp các bất động sản nổi bật"
               aria-label="Xem tiếp"
             >
@@ -1159,10 +1159,10 @@ export default function HomePage() {
           </div>
 
           {/* ── NÚT KHÁM PHÁ Ở GIỮA BÊN DƯỚI (Chuẩn nút Book a tour trong Hình 2) ── */}
-          <div className="mt-4 sm:mt-5 flex justify-center">
+          <div className="mt-6 sm:mt-8 flex justify-center">
             <Link
               href="/search"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
             >
               <span>Khám phá các bất động sản</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
