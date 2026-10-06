@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { mockListings, ListingItem } from '@/lib/mock-data';
 import { parseLocationCoordinates } from '@/lib/utils';
+import { getListingUrl } from '@/lib/listing-slug';
 import ListingDetailClient from '@/components/listing/ListingDetailClient';
 
 interface ListingPageProps {
@@ -130,8 +132,12 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 
 export default async function ListingPage({ params }: ListingPageProps) {
   const initialListing = await getListingById(params.id);
-  const listing = initialListing || mockListings[0];
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+  const listing = initialListing || mockListings.find((l) => l.id === params.id) || mockListings[0];
+
+  // Auto redirect dạng URL cũ sang URL SEO mới
+  if (listing) {
+    redirect(getListingUrl(listing));
+  }
 
   // Schema.org RealEstateListing & SingleFamilyResidence JSON-LD
   const schemaData = {
@@ -139,7 +145,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
     '@type': listing.type === 'apartment' ? 'Apartment' : 'SingleFamilyResidence',
     name: listing.title,
     description: listing.description || `${listing.title} tại ${listing.address || listing.district}, Hà Nội.`,
-    url: `${baseUrl}/listings/${listing.id}`,
+    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn'}/listings/${listing.id}`,
     image: listing.images && listing.images.length > 0 ? listing.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
     numberOfRooms: listing.bedrooms || 3,
     numberOfBedrooms: listing.bedrooms || 3,
@@ -175,12 +181,11 @@ export default async function ListingPage({ params }: ListingPageProps) {
       },
     },
     datePosted: listing.createdAt || '2026-01-15T08:00:00+07:00',
-    dateModified: new Date().toISOString(), // Patent 61, 62: Freshness Boost on substantive inspection & price validation
+    dateModified: new Date().toISOString(),
   };
 
   return (
     <>
-      {/* Schema.org Structured Data for Googlebot (Patent 41, 71, 74) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
