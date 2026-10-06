@@ -668,7 +668,7 @@ export default function HomePage() {
           <div className="relative flex flex-col lg:block min-h-[350px] sm:min-h-[380px] lg:min-h-[410px] xl:min-h-[430px] pt-1 sm:pt-2">
             
             {/* 1. KHỐI ẢNH: ĐỐI XỨNG CÂN ĐỐI VỚI CONTAINER */}
-            <div className="w-full lg:w-[calc(100%-200px)] xl:w-[calc(100%-230px)] lg:ml-auto relative h-[280px] sm:h-[330px] lg:h-[390px] xl:h-[420px] rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] overflow-hidden shadow-xl border border-slate-100 bg-slate-100 group">
+            <div className="w-full lg:w-[calc(100%-160px)] xl:w-[calc(100%-180px)] lg:ml-auto relative h-[280px] sm:h-[330px] lg:h-[390px] xl:h-[420px] rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] overflow-hidden shadow-xl border border-slate-100 bg-slate-100 group">
               <img
                 src="/images/hanoi-luxury-home-hero.jpg"
                 alt="Bất động sản nhà ở cao cấp tại Hà Nội - Không gian sống tinh hoa"
@@ -678,27 +678,27 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Dóng thẳng mép trái Logo web (left-0) & căn giữa chiều dọc ảnh */}
-            <div className="w-full md:w-[400px] lg:w-[420px] xl:w-[440px] md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 z-20 mt-4 md:mt-0">
+            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Thu gọn 10-15%, thiết kế Compact Modern & Tinh tế */}
+            <div className="w-full md:w-[350px] lg:w-[365px] xl:w-[380px] md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 z-20 mt-4 md:mt-0">
               <motion.div
                 initial={{ opacity: 0, x: -25 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full"
               >
-                <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 lg:p-6.5 shadow-[0_20px_50px_rgba(10,17,40,0.10)] border border-slate-200/90 flex flex-col justify-between">
+                <div className="bg-white/98 backdrop-blur-md rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 shadow-[0_16px_40px_rgba(10,17,40,0.08)] border border-slate-200/90 flex flex-col justify-between">
                 
                 {/* H1 Title: Tìm ngôi nhà mơ ước tại Hà Nội */}
-                <h1 className="text-xl sm:text-[23px] lg:text-[25px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-3">
+                <h1 className="text-lg sm:text-[21px] lg:text-[22px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-2.5">
                   Tìm ngôi nhà mơ ước <br className="hidden sm:inline" />
                   <span className="text-orange-500">tại Hà Nội</span>
                 </h1>
 
                 {/* THANH TÌM KIẾM ĐẦY ĐỦ TÍNH NĂNG */}
-                <div ref={heroSearchBoxRef} className="space-y-2.5">
+                <div ref={heroSearchBoxRef} className="space-y-2">
                   
                   {/* HÀNG 1: TABS NHU CẦU (Mua bán / Cho thuê / Dự án) */}
-                  <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl w-fit">
+                  <div className="flex items-center gap-1 p-0.5 sm:p-1 bg-slate-100/90 rounded-xl w-fit">
                     {[
                       { key: 'buy', label: 'Mua bán', icon: '🏠' },
                       { key: 'rent', label: 'Cho thuê', icon: '🔑' },
@@ -710,7 +710,7 @@ export default function HomePage() {
                         onClick={() => setHeroSearchTab(tab.key as any)}
                         className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                           heroSearchTab === tab.key
-                            ? 'bg-[#0a1128] text-white shadow-sm'
+                            ? 'bg-[#0a1128] text-white shadow-xs'
                             : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                         }`}
                       >
@@ -720,10 +720,10 @@ export default function HomePage() {
                     ))}
                   </div>
 
-                  {/* HÀNG 2: THANH TÌM KIẾM ĐỊA ĐIỂM DẠNG VIÊN THUỐC */}
+                  {/* HÀNG 2: THANH TÌM KIẾM ĐỊA ĐIỂM */}
                   <div className="relative">
                     <div className="relative flex items-center">
-                      <MapPin className="absolute left-3.5 h-4 w-4 text-orange-500 pointer-events-none" />
+                      <MapPin className="absolute left-3 h-4 w-4 text-orange-500 pointer-events-none" />
                       <input
                         type="text"
                         value={heroLocationQuery}
@@ -737,13 +737,13 @@ export default function HomePage() {
                           setHeroPriceDropdownOpen(false);
                         }}
                         placeholder="Nhập quận, huyện, tên đường..."
-                        className="w-full pl-10 pr-9 py-2.5 sm:py-3 rounded-full border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/15 bg-white text-xs sm:text-sm text-slate-800 placeholder-slate-400 outline-none transition-all shadow-xs"
+                        className="w-full h-10 pl-9 pr-8 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-3 focus:ring-orange-500/15 bg-slate-50/60 focus:bg-white text-xs sm:text-[13px] text-slate-800 placeholder-slate-400 outline-none transition-all shadow-xs"
                       />
                       {heroLocationQuery && (
                         <button
                           type="button"
                           onClick={() => setHeroLocationQuery('')}
-                          className="absolute right-3.5 p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                          className="absolute right-2.5 p-1 hover:bg-slate-200/80 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -758,7 +758,7 @@ export default function HomePage() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 8, scale: 0.98 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute top-full left-0 right-0 mt-2 rounded-2xl bg-white p-2.5 shadow-2xl border border-slate-100 z-50 text-left max-h-60 overflow-y-auto"
+                          className="absolute top-full left-0 right-0 mt-1.5 rounded-2xl bg-white p-2.5 shadow-2xl border border-slate-100 z-50 text-left max-h-60 overflow-y-auto"
                         >
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-2">
                             Khu vực phổ biến Hà Nội
@@ -788,7 +788,7 @@ export default function HomePage() {
                   </div>
 
                   {/* HÀNG 3: BỘ LỌC LOẠI HÌNH & MỨC GIÁ */}
-                  <div className="grid grid-cols-2 gap-2.5 relative">
+                  <div className="grid grid-cols-2 gap-2 relative">
                     {/* Dropdown 1 */}
                     <div className="relative">
                       <button
@@ -798,10 +798,10 @@ export default function HomePage() {
                           setHeroPriceDropdownOpen(false);
                           setHeroLocationDropdownOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all ${
+                        className={`w-full h-10 flex items-center justify-between px-3 rounded-xl border text-xs sm:text-[13px] font-semibold transition-all ${
                           heroTypeDropdownOpen
-                            ? 'border-orange-500 ring-2 ring-orange-500/20 bg-orange-50/20 text-[#0a1128]'
-                            : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
+                            ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
+                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
                         }`}
                       >
                         <span className="truncate">
@@ -819,7 +819,7 @@ export default function HomePage() {
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 6 }}
-                            className="absolute top-full left-0 right-0 w-full mt-2 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
+                            className="absolute top-full left-0 right-0 w-full mt-1.5 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
                           >
                             {heroPropertyTypes.map((t) => (
                               <button
@@ -833,7 +833,7 @@ export default function HomePage() {
                                   heroType === t.value
                                     ? 'bg-orange-500 text-white shadow-sm'
                                     : 'hover:bg-slate-50 text-slate-700'
-                                }`}
+                                Juice}`}
                               >
                                 <span className="shrink-0">{t.icon}</span>
                                 <span className="truncate">{t.label}</span>
@@ -853,10 +853,10 @@ export default function HomePage() {
                           setHeroTypeDropdownOpen(false);
                           setHeroLocationDropdownOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all ${
+                        className={`w-full h-10 flex items-center justify-between px-3 rounded-xl border text-xs sm:text-[13px] font-semibold transition-all ${
                           heroPriceDropdownOpen
-                            ? 'border-orange-500 ring-2 ring-orange-500/20 bg-orange-50/20 text-[#0a1128]'
-                            : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
+                            ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
+                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
                         }`}
                       >
                         <span className="truncate">
@@ -874,7 +874,7 @@ export default function HomePage() {
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 6 }}
-                            className="absolute top-full left-0 right-0 w-full mt-2 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
+                            className="absolute top-full left-0 right-0 w-full mt-1.5 rounded-2xl bg-white p-1.5 shadow-2xl border border-slate-200/90 z-50 space-y-0.5 max-h-72 overflow-y-auto"
                           >
                             {heroPricePresets.map((p) => (
                               <button
@@ -900,11 +900,11 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* HÀNG 4: NÚT TÌM KIẾM TO */}
+                  {/* HÀNG 4: NÚT TÌM KIẾM TO NỔI BẬT */}
                   <button
                     type="button"
                     onClick={() => handleExecuteHeroSearch()}
-                    className="w-full py-2.5 sm:py-3 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-0.5"
+                    className="w-full h-10.5 sm:h-11 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs sm:text-[13px] tracking-wide shadow-md shadow-orange-500/30 hover:shadow-orange-500/45 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-1"
                   >
                     <Search className="w-4 h-4" />
                     <span>Tìm kiếm Bất động sản</span>
