@@ -52,7 +52,8 @@ import {
   X,
   Bed,
   Bath,
-  Maximize2
+  Maximize2,
+  Mail
 } from 'lucide-react';
 
 // Dynamic import for Leaflet GIS Map with SSR false
@@ -358,7 +359,7 @@ function CategoryCarousel() {
       <button
         onClick={() => scroll('left')}
         aria-label="Cuộn trái"
-        className="hidden sm:flex absolute -left-2 sm:-left-3 lg:-left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-slate-800 shadow-xl border border-slate-200/80 items-center justify-center opacity-85 group-hover:opacity-100 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer"
+        className="hidden sm:flex absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-slate-800 shadow-xl border border-slate-200/80 items-center justify-center opacity-90 group-hover:opacity-100 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
@@ -389,7 +390,7 @@ function CategoryCarousel() {
       <button
         onClick={() => scroll('right')}
         aria-label="Cuộn phải"
-        className="hidden sm:flex absolute -right-2 sm:-right-3 lg:-right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-slate-800 shadow-xl border border-slate-200/80 items-center justify-center opacity-85 group-hover:opacity-100 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer"
+        className="hidden sm:flex absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-slate-800 shadow-xl border border-slate-200/80 items-center justify-center opacity-90 group-hover:opacity-100 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
@@ -503,7 +504,7 @@ export default function HomePage() {
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const scrollFeatured = (direction: 'left' | 'right') => {
     if (featuredScrollRef.current) {
-      const offset = direction === 'left' ? -380 : 380;
+      const offset = direction === 'left' ? -360 : 360;
       featuredScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
     }
   };
@@ -550,7 +551,7 @@ export default function HomePage() {
   const personalizedScrollRef = useRef<HTMLDivElement>(null);
   const scrollPersonalized = (direction: 'left' | 'right') => {
     if (personalizedScrollRef.current) {
-      const offset = direction === 'left' ? -380 : 380;
+      const offset = direction === 'left' ? -360 : 360;
       personalizedScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
     }
   };
@@ -1006,142 +1007,221 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="featured" className="bg-slate-50/70 py-10 sm:py-12 lg:py-14 overflow-hidden relative border-b border-slate-200/80">
 
-        {/* ── PHẦN CHỮ Ở TRÊN (CĂN THEO GRID CHUẨN MAX-W-7XL) ── */}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-5 sm:mb-6">
-          {/* Top Badge */}
-          <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-3 shadow-xs">
-            <Flame className="h-3.5 w-3.5 fill-orange-500" />
-            <span>HOT · ĐƯỢC XEM NHIỀU NHẤT</span>
+        {/* ── PHẦN CHỮ Ở TRÊN (CĂN THEO GRID CHUẨN MAX-W-7XL + NÚT ĐIỀU HƯỚNG HEADER) ── */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              {/* Top Badge */}
+              <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-2.5 shadow-xs">
+                <Flame className="h-3.5 w-3.5 fill-orange-500" />
+                <span>HOT · ĐƯỢC XEM NHIỀU NHẤT</span>
+              </div>
+
+              {/* Heading */}
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] tracking-tight leading-tight">
+                Bất động sản, <span className="text-orange-500">nổi bật nhất tuần</span>
+              </h2>
+
+              {/* Subtitle */}
+              <p className="text-slate-600 text-xs sm:text-sm mt-1.5 max-w-2xl leading-relaxed">
+                Cho dù bạn đang tìm kiếm không gian để <strong>an cư dài lâu</strong>, <strong>nghỉ dưỡng tinh hoa</strong> hay <strong>đầu tư sinh lời vượt trội</strong>, luôn có một bất động sản hoàn hảo dành riêng cho bạn tại Hà Nội.
+              </p>
+            </div>
+
+            {/* Header Navigation Controls: Dễ nhìn, trong container, không che nội dung */}
+            <div className="hidden sm:flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => scrollFeatured('left')}
+                className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-500 hover:border-orange-300 shadow-sm transition-all flex items-center justify-center active:scale-95 cursor-pointer"
+                aria-label="Cuộn trái"
+                title="Xem tin trước"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollFeatured('right')}
+                className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-500 hover:border-orange-300 shadow-sm transition-all flex items-center justify-center active:scale-95 cursor-pointer"
+                aria-label="Cuộn phải"
+                title="Xem tin tiếp theo"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-
-          {/* Heading */}
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] tracking-tight leading-tight">
-            Bất động sản, <span className="text-orange-500">nổi bật nhất tuần</span>
-          </h2>
-
-          {/* Subtitle */}
-          <p className="text-slate-600 text-xs sm:text-sm mt-2 max-w-2xl mx-auto leading-relaxed">
-            Cho dù bạn đang tìm kiếm không gian để <strong>an cư dài lâu</strong>, <strong>nghỉ dưỡng tinh hoa</strong> hay <strong>đầu tư sinh lời vượt trội</strong>, luôn có một bất động sản hoàn hảo dành riêng cho bạn tại Hà Nội.
-          </p>
         </div>
 
         {/* ── DẢI CÁC THẺ BÀI VIẾT Ở DƯỚI (CĂN THEO GRID CHUẨN MAX-W-7XL) ── */}
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="relative group/carousel">
 
-            {/* Carousel Track */}
+            {/* Carousel Track: Tỷ lệ thẻ tạo partial preview 35% có chủ đích, không tràn container */}
             <div
               ref={featuredScrollRef}
-              className="flex gap-4 sm:gap-5 lg:gap-6 overflow-x-auto py-3 px-1 snap-x scrollbar-none scroll-smooth"
+              className="flex gap-4 sm:gap-5 overflow-x-auto py-3 px-1 snap-x snap-mandatory scrollbar-none scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              {featuredListings.map((listing) => (
-                <div
-                  key={listing.id}
-                  className="w-[270px] sm:w-[300px] md:w-[325px] lg:w-[350px] xl:w-[365px] shrink-0 snap-start"
-                >
-                  <Link
-                    href={`/listings/${listing.id}`}
-                    className="group relative h-[260px] sm:h-[285px] md:h-[310px] lg:h-[330px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/80 cursor-pointer block hover:-translate-y-1.5"
+              {featuredListings.map((listing) => {
+                const isSaved = savedListingIds.includes(listing.id);
+                const cardPricePerM2 = formatPricePerM2(listing.price, listing.area);
+                const formattedPrice = formatCurrencyVND(listing.price);
+                const firstImage = listing.images?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80';
+
+                return (
+                  <div
+                    key={listing.id}
+                    className="w-[275px] sm:w-[295px] md:w-[315px] lg:w-[335px] xl:w-[345px] shrink-0 snap-start"
                   >
-                    {/* Background Image */}
-                    <img
-                      src={listing.images[0]}
-                      alt={listing.title}
-                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-                      loading="lazy"
-                    />
-
-                    {/* Navy Deep Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128] via-[#0a1128]/60 to-transparent opacity-90" />
-
-                    {/* Top Badges (Price & Save) */}
-                    <div className="absolute top-3.5 sm:top-4 inset-x-3.5 sm:inset-x-4 flex items-center justify-between z-10">
-                      <span className="px-3.5 py-1.5 rounded-full bg-orange-500 text-white font-black text-xs sm:text-sm shadow-md shadow-orange-500/30">
-                        {formatCurrencyVND(listing.price)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          toggleSaveListing(listing.id);
-                        }}
-                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-md ${savedListingIds.includes(listing.id)
-                            ? 'bg-rose-500 text-white'
-                            : 'bg-white/80 hover:bg-white text-slate-700 hover:text-rose-500'
-                          }`}
-                        title="Lưu tin đăng"
-                      >
-                        <Heart
-                          className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${savedListingIds.includes(listing.id) ? 'fill-current' : ''
-                            }`}
+                    <div
+                      onClick={() => handleOpenDetailModal(listing)}
+                      className="group/card relative flex flex-col h-[405px] sm:h-[420px] overflow-hidden rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-sm hover:shadow-2xl hover:shadow-orange-500/15 hover:border-orange-400 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer select-none"
+                      title="Nhấp để xem nội dung chi tiết bài đăng"
+                    >
+                      {/* Thumbnail Image Container: Aspect 16/10 đồng bộ */}
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 shrink-0">
+                        <img
+                          src={firstImage}
+                          alt={listing.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-108"
+                          loading="lazy"
                         />
-                      </button>
-                    </div>
 
-                    {/* Planning Status Badge (Top-left below price if exists) */}
-                    {(listing.planningZone || listing.legalStatus) && (
-                      <div className="absolute top-13 sm:top-14 left-3.5 sm:left-4 z-10">
-                        <span className="px-2.5 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[10px] sm:text-xs font-bold text-white/90 border border-white/20">
-                          {listing.planningZone || listing.legalStatus}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Bottom Info Overlay */}
-                    <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-4.5 z-10">
-                      {/* Title */}
-                      <h3 className="text-sm sm:text-base lg:text-lg font-bold text-white line-clamp-2 mb-1.5 tracking-tight group-hover:text-orange-400 transition-colors leading-snug">
-                        {listing.title}
-                      </h3>
-
-                      {/* Location */}
-                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-white/85 mb-2">
-                        <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                        <span className="truncate">
-                          Quận {listing.district}, Hà Nội
-                        </span>
-                      </div>
-
-                      {/* Specs Bar (Area, Bed, Bath) */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-white/15 text-[10px] sm:text-xs text-white/75 font-medium">
-                        <span className="font-semibold">{listing.area} m²</span>
-                        <span className="opacity-60">•</span>
-                        <span>{listing.bedrooms} PN</span>
-                        <span className="opacity-60">•</span>
-                        <span>{listing.bathrooms} PT</span>
-                        {listing.price && listing.area && (
-                          <>
-                            <span className="opacity-60">•</span>
-                            <span className="text-orange-300 font-bold tracking-tight">
-                              {formatPricePerM2(listing.price, listing.area)}
+                        {/* Badges (Top-left) */}
+                        <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1.5 items-center">
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 px-2 py-0.5 text-[10px] font-black text-white shadow-md border border-white/20">
+                            <Flame className="h-3 w-3 fill-white" />
+                            <span>HOT</span>
+                          </span>
+                          {(listing.planningZone || listing.legalStatus) && (
+                            <span className="inline-flex items-center rounded-lg bg-slate-900/85 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white shadow-md border border-white/20">
+                              {listing.planningZone || listing.legalStatus}
                             </span>
-                          </>
-                        )}
+                          )}
+                        </div>
+
+                        {/* Wishlist Heart Button (Top-right) */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleSaveListing(listing.id);
+                          }}
+                          className="absolute top-2.5 right-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-md transition-all hover:scale-115 hover:bg-white cursor-pointer"
+                          title={isSaved ? 'Bỏ lưu tin' : 'Lưu tin yêu thích'}
+                        >
+                          <Heart
+                            className={`h-4 w-4 transition-colors ${isSaved ? 'fill-red-500 text-red-500' : 'text-slate-600 hover:text-red-500'}`}
+                          />
+                        </button>
+
+                        {/* Price Tag Overlay (Bottom-left) */}
+                        <div className="absolute bottom-2.5 left-2.5 z-20 rounded-xl bg-slate-900/90 backdrop-blur-md px-2.5 py-1 text-xs font-black text-white shadow-md border border-white/15">
+                          <span className="text-white font-black text-xs tracking-tight">
+                            {formattedPrice}
+                          </span>
+                          <span className="ml-1 text-[10px] font-medium text-slate-300">
+                            ({cardPricePerM2})
+                          </span>
+                        </div>
+
+                        {/* Quick view hover pill (Bottom-right) */}
+                        <div className="absolute bottom-2.5 right-2.5 z-20 opacity-0 group-hover/card:opacity-100 transition-all duration-200 translate-y-1 group-hover/card:translate-y-0">
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-orange-500 text-white text-[11px] font-bold px-2 py-1 shadow-md">
+                            <Eye className="h-3 w-3" />
+                            <span>Xem nhanh</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Details */}
+                      <div className="flex flex-1 flex-col p-3.5 justify-between bg-white">
+                        {/* Title: Cố định 2 dòng, line-clamp-2, không làm xô lệch chiều cao */}
+                        <div className="h-10 sm:h-11 flex items-start mb-1.5">
+                          <Link
+                            href={`/listings/${listing.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="line-clamp-2 text-xs sm:text-[13px] font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
+                            title={listing.title}
+                          >
+                            {listing.title}
+                          </Link>
+                        </div>
+
+                        {/* Location */}
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2.5 h-4 truncate">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
+                          <span className="truncate font-semibold">
+                            {listing.ward ? `${listing.ward}, ` : ''}Quận {listing.district}, Hà Nội
+                          </span>
+                        </div>
+
+                        {/* Specs Row */}
+                        <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-600 mb-2.5 h-7">
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Maximize2 className="h-3 w-3 text-slate-400" />
+                            <span className="font-bold text-slate-800 text-[11px]">{listing.area} m²</span>
+                          </div>
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Building className="h-3 w-3 text-slate-400" />
+                            <span className="font-bold text-slate-700 text-[11px]">{listing.floors > 0 ? `${listing.floors} tầng` : 'Nhà đẹp'}</span>
+                          </div>
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Bed className="h-3 w-3 text-slate-400" />
+                            <span className="font-bold text-slate-700 text-[11px]">{listing.bedrooms || 2} PN</span>
+                          </div>
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Bath className="h-3 w-3 text-slate-400" />
+                            <span className="font-bold text-slate-700 text-[11px]">{listing.bathrooms || 1} PT</span>
+                          </div>
+                        </div>
+
+                        {/* Action buttons CTA: Cùng một baseline */}
+                        <div className="mt-auto pt-2.5 border-t border-slate-100 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDetailModal(listing);
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            <span>Xem chi tiết</span>
+                          </button>
+                          <Link
+                            href={`/listings/${listing.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors shrink-0"
+                            title="Mở toàn bộ trang chi tiết riêng"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </Link>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Floating Left Arrow Button */}
+            {/* Side Floating Left Arrow Button: Nằm trong container (left-1 sm:left-2), căn trên ảnh (top-[95px]), không che nội dung */}
             <button
               type="button"
               onClick={() => scrollFeatured('left')}
-              className="hidden md:flex absolute -left-2 md:-left-4 lg:-left-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+              className="hidden md:flex absolute left-1 sm:left-2 top-[95px] -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 items-center justify-center transition-all cursor-pointer"
               title="Trượt sang trái"
               aria-label="Trượt sang trái"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
 
-            {/* Floating Right Arrow Button (Chuẩn Hình 2) */}
+            {/* Side Floating Right Arrow Button: Nằm trong container (right-1 sm:right-2), căn trên ảnh (top-[95px]), không che nội dung */}
             <button
               type="button"
               onClick={() => scrollFeatured('right')}
-              className="hidden md:flex absolute -right-2 md:-right-4 lg:-right-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+              className="hidden md:flex absolute right-1 sm:right-2 top-[95px] -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 items-center justify-center transition-all cursor-pointer"
               title="Xem tiếp các bất động sản nổi bật"
               aria-label="Xem tiếp"
             >
@@ -1166,74 +1246,126 @@ export default function HomePage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="map-search" className="bg-[#0a1128] z-10 min-h-screen snap-start flex items-center py-6 lg:py-0 border-y border-slate-800/80 text-white relative overflow-hidden">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-10 items-center lg:items-stretch">
+      <section id="map-search" className="bg-[#0a1128] z-10 py-10 sm:py-14 lg:py-16 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-6">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-10 items-stretch">
 
-            {/* Left 45%: District List */}
-            <div className="lg:col-span-5 flex flex-col justify-center space-y-2 sm:space-y-3">
+            {/* Left 40-42%: District List & Filter Control */}
+            <div className="lg:col-span-5 flex flex-col justify-between lg:h-[520px] xl:h-[540px]">
+              {/* Section Header */}
               <div>
-                <span className="text-orange-500 font-extrabold text-[10px] sm:text-xs tracking-wider uppercase">
-                  KHÁM PHÁ THEO KHU VỰC
+                <span className="inline-flex items-center gap-1.5 text-orange-400 font-extrabold text-[11px] sm:text-xs tracking-wider uppercase bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full">
+                  <Compass className="w-3.5 h-3.5 text-orange-400" />
+                  <span>KHÁM PHÁ THEO KHU VỰC</span>
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white mt-1 leading-tight tracking-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-white mt-2 leading-tight tracking-tight">
                   Tìm nhà trên bản đồ Hà Nội
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
-                  Rê chuột vào quận để xem nhanh vị trí hoặc nhấp để lọc tin đăng chính xác
+                  Rê chuột vào quận để xem vị trí trực quan hoặc nhấp để lọc tin đăng chính xác
                 </p>
               </div>
 
-              {/* District Table List */}
-              <div className="max-h-[200px] sm:max-h-[240px] lg:max-h-[280px] xl:max-h-[300px] overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-2 sm:p-2.5 divide-y divide-slate-100 shadow-2xl">
-                {popularDistricts.map((d) => (
-                  <div
-                    key={d.name}
-                    onMouseEnter={() => setHoveredDistrict(d.name)}
-                    onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
-                    className={`flex items-center justify-between py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-xl cursor-pointer transition-all ${hoveredDistrict === d.name
-                        ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                        : 'hover:bg-slate-100 text-slate-700'
-                      }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <MapPin className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${hoveredDistrict === d.name ? 'text-white' : 'text-orange-500'}`} />
-                      <span className="font-bold text-xs sm:text-sm">Quận {d.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs">
-                      <span className={hoveredDistrict === d.name ? 'text-white/80' : 'text-slate-400'}>
-                        {d.count} tin
-                      </span>
-                      <span className={`font-mono font-bold ${hoveredDistrict === d.name ? 'text-yellow-200' : 'text-orange-600'}`}>
-                        {d.avgPrice}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              {/* District Table Panel - Structured 3-column scan */}
+              <div className="rounded-2xl sm:rounded-[20px] border border-slate-200/90 bg-white shadow-2xl flex-1 my-3 sm:my-3.5 overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
+                {/* Column Headers for Easy Scanning */}
+                <div className="grid grid-cols-12 px-3 sm:px-4 py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-500 uppercase border-b border-slate-100 bg-slate-50/90 select-none">
+                  <span className="col-span-5 flex items-center gap-1.5">
+                    Khu vực
+                  </span>
+                  <span className="col-span-3 text-center">Nguồn cung</span>
+                  <span className="col-span-4 text-right">Đơn giá TB</span>
+                </div>
+
+                {/* Scrollable District Rows */}
+                <div className="overflow-y-auto flex-1 divide-y divide-slate-100 p-1.5 sm:p-2 scrollbar-thin scrollbar-thumb-slate-200">
+                  {popularDistricts.map((d) => {
+                    const isSelected = hoveredDistrict === d.name;
+                    return (
+                      <div
+                        key={d.name}
+                        onMouseEnter={() => setHoveredDistrict(d.name)}
+                        onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
+                        className={`grid grid-cols-12 items-center py-2 px-2.5 sm:px-3 rounded-xl cursor-pointer transition-all duration-150 ${
+                          isSelected
+                            ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 font-semibold'
+                            : 'hover:bg-orange-50/70 text-slate-700'
+                        }`}
+                      >
+                        {/* District Name with Pin */}
+                        <div className="col-span-5 flex items-center gap-2 min-w-0 pr-1">
+                          <MapPin
+                            className={`h-3.5 w-3.5 shrink-0 transition-colors ${
+                              isSelected ? 'text-white' : 'text-orange-500'
+                            }`}
+                          />
+                          <span className="font-bold text-xs sm:text-[13px] truncate">
+                            Quận {d.name}
+                          </span>
+                        </div>
+
+                        {/* Supply Count Badge */}
+                        <div className="col-span-3 text-center">
+                          <span
+                            className={`inline-block px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold transition-colors ${
+                              isSelected
+                                ? 'bg-white/20 text-white'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            {d.count.toLocaleString()} tin
+                          </span>
+                        </div>
+
+                        {/* Avg Price per m² */}
+                        <div className="col-span-4 text-right">
+                          <span
+                            className={`font-mono font-bold text-xs sm:text-[13px] transition-colors ${
+                              isSelected
+                                ? 'text-yellow-200 drop-shadow-xs'
+                                : 'text-orange-600'
+                            }`}
+                          >
+                            {d.avgPrice}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
+              {/* Action Buttons - Identical Height h-11 */}
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <Link
                   href={`/search?district=${encodeURIComponent(hoveredDistrict)}`}
-                  className="flex-1 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] sm:text-[11px] lg:text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/25 transition-all"
+                  className="h-11 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/25 transition-all px-2.5"
                 >
-                  <MapPin className="h-3.5 w-3.5 shrink-0" />
-                  <span className="whitespace-nowrap">Xem tin quận {hoveredDistrict}</span>
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Xem tin {hoveredDistrict}</span>
                 </Link>
 
                 <Link
                   href="/planning"
-                  className="flex-1 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-slate-700 bg-[#131d3b]/80 hover:bg-[#1b274e] text-slate-200 hover:text-white font-bold text-[10px] sm:text-[11px] lg:text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  className="h-11 rounded-xl border border-slate-700 bg-slate-800/90 hover:bg-slate-700 text-slate-100 hover:text-white active:scale-[0.98] font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all px-2.5"
                 >
-                  <Layers className="h-3.5 w-3.5 text-orange-400 shrink-0" />
-                  <span className="whitespace-nowrap">Xem bản đồ quy hoạch</span>
+                  <Layers className="h-4 w-4 text-orange-400 shrink-0" />
+                  <span className="truncate">Bản đồ quy hoạch</span>
                 </Link>
               </div>
             </div>
 
-            {/* Right 55%: Interactive Mini Leaflet Map */}
-            <div className="lg:col-span-7 flex flex-col mt-4 lg:mt-0">
-              <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-700/80 h-[320px] sm:h-[400px] lg:h-full min-h-[320px] relative bg-slate-900 ring-1 ring-white/10 flex-1">
+            {/* Right 58-60%: Interactive Leaflet GIS Map */}
+            <div className="lg:col-span-7 flex flex-col h-[380px] sm:h-[440px] lg:h-[520px] xl:h-[540px]">
+              <div className="rounded-2xl sm:rounded-[20px] overflow-hidden shadow-2xl border border-slate-700/80 w-full h-full relative bg-slate-900 ring-1 ring-white/10 flex-1">
+                {/* Active Indicator Floating Badge */}
+                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[400] bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-xl flex items-center gap-2 pointer-events-none">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span className="text-[11px] sm:text-xs font-medium text-slate-200">
+                    Đang xem: <strong className="text-orange-400 font-bold">Quận {hoveredDistrict}</strong>
+                  </span>
+                </div>
+
                 <MiniSearchMap
                   listings={mockListings as any}
                   targetDistrict={hoveredDistrict}
@@ -1252,7 +1384,7 @@ export default function HomePage() {
       <section id="roadmap" className="bg-white min-h-screen snap-start flex items-center justify-center py-6 lg:py-0 border-y border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 gap-2">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 gap-3">
             <div>
               <span className="inline-flex items-center gap-1.5 text-orange-600 font-extrabold text-xs tracking-wider uppercase bg-orange-50 px-3.5 py-1.5 rounded-full border border-orange-200/80 shadow-xs">
                 <Sparkles className="h-3.5 w-3.5 text-orange-500" />
@@ -1266,34 +1398,58 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {[
-                { id: 'all', label: '✨ Tất cả gợi ý' },
-                { id: 'price-3-5', label: '💰 Giá 3 - 5 tỷ' },
-                { id: 'dongda', label: '📍 Đống Đa' },
-                { id: 'metro', label: '🚆 Gần tuyến Metro' },
-              ].map((pill) => (
+            {/* Filter Pills + Header Navigation Controls */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {[
+                  { id: 'all', label: '✨ Tất cả gợi ý' },
+                  { id: 'price-3-5', label: '💰 Giá 3 - 5 tỷ' },
+                  { id: 'dongda', label: '📍 Đống Đa' },
+                  { id: 'metro', label: '🚆 Gần tuyến Metro' },
+                ].map((pill) => (
+                  <button
+                    key={pill.id}
+                    onClick={() => setPersonalFilter(pill.id)}
+                    className={`px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shrink-0 transition-all cursor-pointer ${personalFilter === pill.id
+                        ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:text-slate-900'
+                      }`}
+                  >
+                    {pill.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Header Carousel Controls for Section 5 */}
+              <div className="hidden sm:flex items-center gap-1.5 shrink-0 pl-2 border-l border-slate-200">
                 <button
-                  key={pill.id}
-                  onClick={() => setPersonalFilter(pill.id)}
-                  className={`px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shrink-0 transition-all cursor-pointer ${personalFilter === pill.id
-                      ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:text-slate-900'
-                    }`}
+                  type="button"
+                  onClick={() => scrollPersonalized('left')}
+                  className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-500 hover:border-orange-300 shadow-sm transition-all flex items-center justify-center active:scale-95 cursor-pointer"
+                  aria-label="Cuộn trái"
+                  title="Xem tin trước"
                 >
-                  {pill.label}
+                  <ChevronLeft className="w-4.5 h-4.5" />
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => scrollPersonalized('right')}
+                  className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:text-orange-500 hover:border-orange-300 shadow-sm transition-all flex items-center justify-center active:scale-95 cursor-pointer"
+                  aria-label="Cuộn phải"
+                  title="Xem tin tiếp theo"
+                >
+                  <ChevronRight className="w-4.5 h-4.5" />
+                </button>
+              </div>
             </div>
           </div>
 
           {/* 1 Row Carousel of Cards */}
           <div className="relative group/personalized">
-            {/* Carousel Track */}
+            {/* Carousel Track: Tỷ lệ thẻ tạo partial preview 35% có chủ đích, không tràn container */}
             <div
               ref={personalizedScrollRef}
-              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 sm:py-3 snap-x scrollbar-none scroll-smooth"
+              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 sm:py-3 snap-x snap-mandatory scrollbar-none scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {personalizedListings.slice(0, 10).map((listing) => {
@@ -1307,15 +1463,15 @@ export default function HomePage() {
                 return (
                   <div
                     key={listing.id}
-                    className="w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] xl:w-[330px] shrink-0 snap-start"
+                    className="w-[275px] sm:w-[295px] md:w-[315px] lg:w-[335px] xl:w-[345px] shrink-0 snap-start"
                   >
                     <div
                       onClick={() => handleOpenDetailModal(listing)}
-                      className="group/card relative flex flex-col h-full overflow-hidden rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-sm hover:shadow-2xl hover:shadow-orange-500/15 hover:border-orange-400 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer select-none"
+                      className="group/card relative flex flex-col h-[405px] sm:h-[420px] overflow-hidden rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-sm hover:shadow-2xl hover:shadow-orange-500/15 hover:border-orange-400 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer select-none"
                       title="Nhấp để xem nội dung chi tiết bài đăng"
                     >
-                      {/* Thumbnail Image Container */}
-                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+                      {/* Thumbnail Image Container: Aspect 16/10 đồng bộ */}
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 shrink-0">
                         <img
                           src={firstImage}
                           alt={listing.title}
@@ -1372,59 +1528,56 @@ export default function HomePage() {
                       </div>
 
                       {/* Content Details */}
-                      <div className="flex flex-1 flex-col p-3">
-                        {/* Title */}
-                        <Link
-                          href={`/listings/${listing.id}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="line-clamp-2 text-sm font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
-                        >
-                          {listing.title}
-                        </Link>
+                      <div className="flex flex-1 flex-col p-3.5 justify-between bg-white">
+                        {/* Title: Cố định 2 dòng, line-clamp-2, không làm xô lệch chiều cao */}
+                        <div className="h-10 sm:h-11 flex items-start mb-1.5">
+                          <Link
+                            href={`/listings/${listing.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="line-clamp-2 text-xs sm:text-[13px] font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
+                            title={listing.title}
+                          >
+                            {listing.title}
+                          </Link>
+                        </div>
 
                         {/* Address */}
-                        <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2.5 h-4 truncate">
                           <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
                           <span className="truncate font-semibold">
-                            {listing.ward ? `${listing.ward}, ` : ''}{listing.district}, Hà Nội
+                            {listing.ward ? `${listing.ward}, ` : ''}Quận {listing.district}, Hà Nội
                           </span>
                         </div>
 
                         {/* Specs Row */}
-                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-600">
+                        <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-600 mb-2.5 h-7">
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                             <Maximize2 className="h-3 w-3 text-slate-400" />
                             <span className="font-bold text-slate-800 text-[11px]">{listing.area} m²</span>
                           </div>
-                          {listing.floors > 0 && (
-                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                              <Building className="h-3 w-3 text-slate-400" />
-                              <span className="font-bold text-slate-700 text-[11px]">{listing.floors} tầng</span>
-                            </div>
-                          )}
-                          {listing.bedrooms > 0 && (
-                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                              <Bed className="h-3 w-3 text-slate-400" />
-                              <span className="font-bold text-slate-700 text-[11px]">{listing.bedrooms} PN</span>
-                            </div>
-                          )}
-                          {listing.bathrooms > 0 && (
-                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                              <Bath className="h-3 w-3 text-slate-400" />
-                              <span className="font-bold text-slate-700 text-[11px]">{listing.bathrooms} PT</span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Building className="h-3 w-3 text-slate-400" />
+                            <span className="font-bold text-slate-700 text-[11px]">{listing.floors > 0 ? `${listing.floors} tầng` : 'Nhà đẹp'}</span>
+                          </div>
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Bed className="h-3 w-3 text-slate-400" />
+                            <span className="font-bold text-slate-700 text-[11px]">{listing.bedrooms || 2} PN</span>
+                          </div>
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Bath className="h-3 w-3 text-slate-400" />
+                            <span className="font-bold text-slate-700 text-[11px]">{listing.bathrooms || 1} PT</span>
+                          </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2">
+                        {/* Action buttons CTA: Cùng một baseline */}
+                        <div className="mt-auto pt-2.5 border-t border-slate-100 flex items-center gap-2">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleOpenDetailModal(listing);
                             }}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
+                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             <span>Xem chi tiết</span>
@@ -1432,7 +1585,7 @@ export default function HomePage() {
                           <Link
                             href={`/listings/${listing.id}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors"
+                            className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors shrink-0"
                             title="Mở toàn bộ trang chi tiết riêng"
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
@@ -1445,22 +1598,22 @@ export default function HomePage() {
               })}
             </div>
 
-            {/* Floating Left Arrow Button */}
+            {/* Side Floating Left Arrow Button: Nằm trong container (left-1 sm:left-2), căn trên ảnh (top-[95px]), không che nội dung */}
             <button
               type="button"
               onClick={() => scrollPersonalized('left')}
-              className="hidden md:flex absolute -left-4 lg:-left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+              className="hidden md:flex absolute left-1 sm:left-2 top-[95px] -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 items-center justify-center transition-all cursor-pointer"
               title="Trượt sang trái"
               aria-label="Trượt sang trái"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
 
-            {/* Floating Right Arrow Button */}
+            {/* Side Floating Right Arrow Button: Nằm trong container (right-1 sm:right-2), căn trên ảnh (top-[95px]), không che nội dung */}
             <button
               type="button"
               onClick={() => scrollPersonalized('right')}
-              className="hidden md:flex absolute -right-4 lg:-right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-2xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-110 active:scale-95 items-center justify-center transition-all cursor-pointer"
+              className="hidden md:flex absolute right-1 sm:right-2 top-[95px] -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 text-slate-800 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 items-center justify-center transition-all cursor-pointer"
               title="Xem tiếp các gợi ý"
               aria-label="Xem tiếp"
             >
@@ -2100,144 +2253,279 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 10 — ĐĂNG TIN CTA (NỘI DUNG & MÀU NỀN CHUẨN HÌNH 2)
+          📌 SECTION 10 — ĐĂNG TIN FINAL CTA
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="cta-dang-tin"
-        className="bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 text-white py-10 sm:py-12 lg:py-14 relative overflow-hidden flex flex-col justify-center"
+        className="bg-slate-50 py-12 sm:py-16 lg:py-20 border-t border-slate-200/80 relative"
       >
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative rounded-3xl bg-gradient-to-br from-[#0c1636] via-[#0a1128] to-[#070d1e] border border-slate-800/90 shadow-2xl overflow-hidden p-8 sm:p-10 lg:p-14">
 
-            {/* Left info chuẩn Hình 2 */}
-            <div className="space-y-2.5 text-left max-w-2xl">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
-                Bạn muốn đăng tin bán hoặc cho thuê nhà?
-              </h2>
-              <p className="text-xs sm:text-sm text-white/95 max-w-xl font-medium leading-relaxed">
-                Tiếp cận hàng nghìn khách mua tiềm năng mỗi ngày. Đăng tin miễn phí, định vị toạ độ chính xác trên bản đồ.
-              </p>
-              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs font-semibold text-white/90">
-                <span>✓ Miễn phí không cần thẻ</span>
-                <span>·</span>
-                <span>✓ Hiển thị ngay trên bản đồ GIS</span>
-                <span>·</span>
-                <span>✓ Tự động thẩm định AI</span>
+            {/* Ambient Background Glows */}
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 lg:gap-12">
+
+              {/* Left Column: Heading & Value Proposition */}
+              <div className="space-y-3.5 max-w-2xl text-left">
+                <span className="inline-flex items-center gap-1.5 text-orange-400 font-extrabold text-[11px] sm:text-xs tracking-wider uppercase bg-orange-500/10 border border-orange-500/20 px-3.5 py-1 rounded-full">
+                  <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+                  <span>DÀNH CHO CHỦ NHÀ & MÔI GIỚI</span>
+                </span>
+
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
+                  Bạn muốn đăng tin bán hoặc cho thuê nhà?
+                </h2>
+
+                <p className="text-sm sm:text-base text-slate-300 font-normal leading-relaxed max-w-xl">
+                  Tiếp cận hàng nghìn khách mua tiềm năng mỗi ngày. Đăng tin miễn phí, định vị toạ độ chính xác trên bản đồ.
+                </p>
+
+                {/* Trust / Benefit Checkpoints */}
+                <div className="flex flex-wrap items-center gap-y-2 gap-x-4 pt-2 text-xs sm:text-sm font-medium text-slate-300">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    Miễn phí không cần thẻ
+                  </span>
+                  <span className="text-slate-600 hidden sm:inline">•</span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    Hiển thị ngay trên bản đồ GIS
+                  </span>
+                  <span className="text-slate-600 hidden sm:inline">•</span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    Tự động thẩm định AI
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* Right buttons chuẩn Hình 2 */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
-              <Link
-                href="/listings/create"
-                className="w-full sm:w-auto px-7 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-white text-orange-600 hover:bg-orange-50 font-black text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all hover:scale-105 text-center flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>📝</span>
-                <span>Đăng tin ngay — Miễn phí</span>
-              </Link>
-              <Link
-                href="/pricing"
-                className="w-full sm:w-auto px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl border-2 border-white text-white hover:bg-white/15 font-bold text-sm sm:text-base transition-all hover:scale-105 text-center flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>💎</span>
-                <span>Xem các gói Pro</span>
-              </Link>
-            </div>
+              {/* Right Column: CTA Buttons Hierarchy */}
+              <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center gap-3.5 w-full lg:w-auto shrink-0">
+                {/* Primary CTA - Bold Orange */}
+                <Link
+                  href="/listings/create"
+                  className="h-12 sm:h-13 px-6 sm:px-8 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-extrabold text-sm sm:text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all text-center whitespace-nowrap group cursor-pointer"
+                >
+                  <span>Đăng tin ngay — Miễn phí</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
 
+                {/* Secondary CTA - Elegant Muted Slate */}
+                <Link
+                  href="/pricing"
+                  className="h-12 sm:h-13 px-6 sm:px-7 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white active:scale-[0.98] font-bold text-sm sm:text-[15px] flex items-center justify-center gap-2 transition-all text-center whitespace-nowrap cursor-pointer"
+                >
+                  <span>Xem các gói Pro</span>
+                </Link>
+              </div>
+
+            </div>
           </div>
         </div>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 FOOTER (Full width)
+          📌 FOOTER (Full width — Professional PropTech Theme)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <footer className="bg-[#0a0f1e] text-slate-400 text-xs py-16 border-t border-slate-800">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <footer className="bg-[#0a0f1e] text-slate-400 text-xs py-16 sm:py-20 lg:py-24 border-t border-slate-800">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 xl:gap-12">
 
-          {/* Col 1 - Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-xl bg-orange-500 text-white flex items-center justify-center font-black text-lg shadow-md">
-                🏠
+            {/* Col 1 — Brand (lg:col-span-4 xl:col-span-3) */}
+            <div className="lg:col-span-4 xl:col-span-3 flex flex-col justify-between">
+              <div>
+                <Link href="/" className="inline-flex items-center gap-2.5 group">
+                  <div className="h-9 w-9 rounded-xl bg-orange-500 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-orange-500/25 group-hover:scale-105 transition-transform">
+                    🏠
+                  </div>
+                  <span className="text-xl font-black text-white tracking-tight">
+                    HaNoi <span className="text-orange-500">Realty</span>
+                  </span>
+                </Link>
+
+                <p className="text-xs sm:text-[13px] text-slate-400 leading-relaxed mt-4 max-w-[280px] sm:max-w-xs font-normal">
+                  Nền tảng BĐS thông minh nhất Hà Nội. Tiên phong ứng dụng dữ liệu quy hoạch và định giá AI.
+                </p>
               </div>
-              <span className="text-lg font-black text-white">
-                HaNoi <span className="text-orange-500">Realty</span>
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Nền tảng BĐS thông minh nhất Hà Nội. Tiên phong ứng dụng dữ liệu quy hoạch và định giá AI.
-            </p>
-            <div className="flex items-center gap-2 pt-1">
-              {['Facebook', 'YouTube', 'TikTok', 'LinkedIn'].map((social) => (
-                <div
-                  key={social}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs cursor-pointer transition-colors"
-                  title={social}
-                >
-                  {social[0]}
+
+              {/* Social Icons */}
+              <div className="mt-6 pt-2">
+                <span className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                  Mạng xã hội
+                </span>
+                <div className="flex items-center gap-2">
+                  {['Facebook', 'YouTube', 'TikTok', 'LinkedIn'].map((social) => (
+                    <div
+                      key={social}
+                      className="w-8 h-8 rounded-lg bg-slate-800/90 hover:bg-orange-500 text-slate-300 hover:text-white border border-slate-700/60 flex items-center justify-center text-xs font-bold transition-all shadow-sm cursor-pointer hover:scale-105 active:scale-95"
+                      title={social}
+                    >
+                      {social[0]}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
 
-          {/* Col 2 - Sản phẩm */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-white uppercase text-xs tracking-wider">Sản phẩm & Hệ thống</h4>
-            <ul className="space-y-2 text-slate-400">
-              <li><Link href="/search" className="hover:text-white transition-colors">Tìm kiếm BĐS</Link></li>
-              <li><Link href="/planning" className="hover:text-white transition-colors">Bản đồ quy hoạch</Link></li>
-              <li><Link href="/reports" className="hover:text-white transition-colors">Báo cáo AI</Link></li>
-              <li><Link href="/listings/create" className="hover:text-white transition-colors">Đăng tin BĐS</Link></li>
-              <li><Link href="/pricing" className="hover:text-white transition-colors">Gói thành viên</Link></li>
-              <li><Link href="/admin" className="text-orange-400 hover:text-white transition-colors font-bold flex items-center gap-1">🛡️ Admin Portal</Link></li>
-            </ul>
-          </div>
-
-          {/* Col 3 - Công ty */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-white uppercase text-xs tracking-wider">Công ty</h4>
-            <ul className="space-y-2 text-slate-400">
-              <li><Link href="/about" className="hover:text-white transition-colors">Về chúng tôi</Link></li>
-              <li><Link href="/about#team" className="hover:text-white transition-colors">Đội ngũ</Link></li>
-              <li><Link href="/about#careers" className="hover:text-white transition-colors">Tuyển dụng</Link></li>
-              <li><Link href="/news" className="hover:text-white transition-colors">Blog & Tin tức</Link></li>
-              <li><Link href="/dashboard" className="hover:text-white transition-colors">Liên hệ</Link></li>
-            </ul>
-          </div>
-
-          {/* Col 4 - Liên hệ & Hỗ trợ */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-white uppercase text-xs tracking-wider">Liên hệ</h4>
-            <div className="space-y-2 text-slate-400 text-xs">
-              <p className="flex items-center gap-2">
-                <span className="text-orange-400 font-bold">✉️</span>
-                <span>support@hanoirealty.vn</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <span className="text-orange-400 font-bold">📞</span>
-                <span>1800 6868 (miễn phí)</span>
-              </p>
-              <p className="flex items-start gap-2">
-                <span className="text-orange-400 font-bold mt-0.5">📍</span>
-                <span>Tầng 12, Tòa nhà Handico, Phạm Hùng, Nam Từ Liêm, Hà Nội</span>
-              </p>
-              <p className="text-[11px] text-slate-500 pt-1">
-                ⏰ T2-T6: 8:00-18:00 | T7: 8:00-12:00
-              </p>
+            {/* Col 2 — Sản phẩm & hệ thống (lg:col-span-3 xl:col-span-3) */}
+            <div className="lg:col-span-3 xl:col-span-3">
+              <h4 className="text-[13px] font-black text-white uppercase tracking-wider">
+                Sản phẩm & Hệ thống
+              </h4>
+              <ul className="mt-4 sm:mt-5 space-y-3 text-xs sm:text-[13px]">
+                <li>
+                  <Link href="/search" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Tìm kiếm BĐS
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/planning" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Bản đồ quy hoạch
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/reports" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Báo cáo AI
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/listings/create" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Đăng tin BĐS
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Gói thành viên
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/admin" className="text-orange-400 hover:text-orange-300 font-bold hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    🛡️ Admin Portal
+                  </Link>
+                </li>
+              </ul>
             </div>
+
+            {/* Col 3 — Công ty (lg:col-span-2 xl:col-span-2) */}
+            <div className="lg:col-span-2 xl:col-span-2">
+              <h4 className="text-[13px] font-black text-white uppercase tracking-wider">
+                Công ty
+              </h4>
+              <ul className="mt-4 sm:mt-5 space-y-3 text-xs sm:text-[13px]">
+                <li>
+                  <Link href="/about" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Về chúng tôi
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about#team" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Đội ngũ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about#careers" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Tuyển dụng
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/news" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Blog & Tin tức
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                    Liên hệ
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4 — Liên hệ (lg:col-span-3 xl:col-span-4) */}
+            <div className="lg:col-span-3 xl:col-span-4">
+              <h4 className="text-[13px] font-black text-white uppercase tracking-wider">
+                Liên hệ
+              </h4>
+              <div className="mt-4 sm:mt-5 space-y-3.5 text-xs sm:text-[13px]">
+                {/* Email Item */}
+                <div className="flex items-start gap-3 group">
+                  <div className="w-8 h-8 rounded-lg bg-slate-800/90 border border-slate-700/80 flex items-center justify-center shrink-0 text-orange-400 group-hover:border-orange-500/50 group-hover:bg-orange-500/10 transition-colors mt-0.5">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="block text-[11px] text-slate-500 font-semibold uppercase tracking-wider">
+                      Email hỗ trợ
+                    </span>
+                    <a
+                      href="mailto:support@hanoirealty.vn"
+                      className="text-slate-200 hover:text-orange-400 font-semibold transition-colors break-all"
+                    >
+                      support@hanoirealty.vn
+                    </a>
+                  </div>
+                </div>
+
+                {/* Hotline Item */}
+                <div className="flex items-start gap-3 group">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/15 border border-orange-500/30 flex items-center justify-center shrink-0 text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-all mt-0.5">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="block text-[11px] text-slate-500 font-semibold uppercase tracking-wider">
+                      Hotline tư vấn
+                    </span>
+                    <a
+                      href="tel:18006868"
+                      className="font-mono font-extrabold text-orange-400 hover:text-orange-300 text-sm sm:text-base tracking-tight transition-colors inline-block"
+                    >
+                      1800 6868 <span className="text-[11px] font-normal text-slate-400">(miễn phí)</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Address Item */}
+                <div className="flex items-start gap-3 group">
+                  <div className="w-8 h-8 rounded-lg bg-slate-800/90 border border-slate-700/80 flex items-center justify-center shrink-0 text-orange-400 group-hover:border-orange-500/50 transition-colors mt-0.5">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="block text-[11px] text-slate-500 font-semibold uppercase tracking-wider">
+                      Trụ sở văn phòng
+                    </span>
+                    <p className="text-slate-300 text-xs sm:text-[13px] leading-relaxed">
+                      Tầng 12, Tòa nhà Handico, Phạm Hùng, Nam Từ Liêm, Hà Nội
+                    </p>
+                  </div>
+                </div>
+
+                {/* Office Hours */}
+                <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-400 font-medium">
+                  <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <span>T2 - T6: 8:00 - 18:00 &nbsp;|&nbsp; T7: 8:00 - 12:00</span>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© 2025 HaNoi Realty. Bảo lưu mọi quyền.</p>
-          <div className="flex gap-4">
-            <Link href="/about" className="hover:text-slate-300 transition-colors">Chính sách bảo mật</Link>
-            <span>·</span>
-            <Link href="/about" className="hover:text-slate-300 transition-colors">Điều khoản sử dụng</Link>
-            <span>·</span>
-            <Link href="/about" className="hover:text-slate-300 transition-colors">Cookies</Link>
+          {/* Bottom Bar */}
+          <div className="mt-14 sm:mt-16 lg:mt-20 pt-8 border-t border-slate-800/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <p>© 2025 HaNoi Realty. Bảo lưu mọi quyền.</p>
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+              <Link href="/about" className="hover:text-slate-300 transition-colors">
+                Chính sách bảo mật
+              </Link>
+              <span className="text-slate-700">·</span>
+              <Link href="/about" className="hover:text-slate-300 transition-colors">
+                Điều khoản sử dụng
+              </Link>
+              <span className="text-slate-700">·</span>
+              <Link href="/about" className="hover:text-slate-300 transition-colors">
+                Cookies
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
