@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { parseLocationCoordinates, HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xdqfxsszpglbgvpcqfss.supabase.co';
 const supabaseKey =
@@ -18,6 +19,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') || 'all';
+    const author = searchParams.get('author');
 
     let query = supabase
       .from('listings')
@@ -26,6 +28,15 @@ export async function GET(req: Request) {
 
     if (status !== 'all') {
       query = query.eq('status', status);
+    }
+
+    if (author === 'me') {
+      const supabaseServer = createServerSupabaseClient();
+      const { data: { user } } = await supabaseServer.auth.getUser();
+      if (!user) {
+        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+      query = query.eq('user_id', user.id);
     }
 
     const { data, error } = await query;
@@ -69,10 +80,17 @@ export async function GET(req: Request) {
 // POST: Tạo tin đăng mới (mặc định status: 'pending' chờ admin duyệt)
 export async function POST(req: Request) {
   try {
+    const supabaseServer = createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabaseServer.auth.getUser();
+    
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const finalUserId = user.id;
+
     const body = await req.json();
     const {
-      user_id,
-      author_email,
       title,
       description,
       property_type,
@@ -94,27 +112,6 @@ export async function POST(req: Request) {
 
     if (!title || !price || !area || !district) {
       return NextResponse.json({ success: false, error: 'Thiếu thông tin bắt buộc' }, { status: 400 });
-    }
-
-    // Đảm bảo user_id hợp lệ trong bảng users (phải là UUID v4)
-    let finalUserId = user_id;
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(finalUserId || '');
-    if (!isUuid) {
-      // Tìm xem có user nào trong bảng users trùng email không
-      const targetEmail = author_email || 'cozyhollys@gmail.com';
-      const { data: matchedUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', targetEmail)
-        .maybeSingle();
-
-      if (matchedUser?.id) {
-        finalUserId = matchedUser.id;
-      } else {
-        // Tìm 1 user đầu tiên có sẵn trong db làm author fallback
-        const { data: firstUser } = await supabase.from('users').select('id').limit(1).maybeSingle();
-        finalUserId = firstUser?.id || '08880538-c501-47ff-835f-63b7573b7577';
-      }
     }
 
     const pricePerM2 = Math.round(Number(price) / (Number(area) || 1));

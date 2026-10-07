@@ -175,6 +175,29 @@ export default function BookingModal({
         }
       };
 
+      // Gọi API để lấy ownerId và lưu notification backend
+      let ownerId = '';
+      try {
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            listingId,
+            bookingData: {
+              title: newNotif.title,
+              content: newNotif.content
+            }
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.ownerId) {
+          ownerId = data.ownerId;
+          (newNotif as any).ownerId = ownerId; // Attach ownerId for filtering
+        }
+      } catch (err) {
+        console.warn('Lỗi gọi API đặt lịch:', err);
+      }
+
       // 2. Lưu vào danh sách thông báo người bán trong LocalStorage
       if (typeof window !== 'undefined') {
         const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
