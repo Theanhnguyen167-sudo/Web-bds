@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -95,6 +95,8 @@ export default function PlanningMap({
   const polygonsRef = useRef<any[]>([])
   const metroMarkersRef = useRef<any[]>([])
   const tileLayerRef = useRef<any>(null)
+  const districtBoundaryLayerRef = useRef<any>(null)
+  const districtLabelLayersRef = useRef<any[]>([])
 
   // Custom marker refs for user GPS & searched pin
   const userLocationMarkerRef = useRef<any>(null)
@@ -113,6 +115,7 @@ export default function PlanningMap({
   const [hoveredZone, setHoveredZone] = useState<string | null>(null)
   const [showInfoPanel, setShowInfoPanel] = useState(false)
   const [showLegend, setShowLegend] = useState(false)
+  const [showDistrictBoundaries, setShowDistrictBoundaries] = useState(true)
   const [mapStyle, setMapStyle] = useState<'light' | 'satellite'>('satellite')
   const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(13)
@@ -814,6 +817,133 @@ export default function PlanningMap({
     }
   }, [subdivisionGroup, activeDistrict, isMapReady])
 
+  // ── RENDER DISTRICT BOUNDARY LAYER FROM OSM GEOJSON ──
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return
+
+    const renderDistrictBoundaries = async () => {
+      const L = (await import('leaflet')).default
+      const map = mapInstanceRef.current
+      if (!map) return
+
+      // Remove existing district boundary layer
+      if (districtBoundaryLayerRef.current) {
+        try { map.removeLayer(districtBoundaryLayerRef.current) } catch {}
+        districtBoundaryLayerRef.current = null
+      }
+      districtLabelLayersRef.current.forEach(lbl => {
+        try { map.removeLayer(lbl) } catch {}
+      })
+      districtLabelLayersRef.current = []
+
+      if (!showDistrictBoundaries) return
+
+      try {
+        const res = await fetch('/geojson/hanoi-districts-detailed.json')
+        if (!res.ok) return
+        const geojson = await res.json()
+
+        const DISTRICT_COLORS: Record<string, string> = {
+          'Phường Hoàn Kiếm': '#f59e0b',
+          'Phường Ba Đình': '#3b82f6',
+          'Phường Đống Đa': '#8b5cf6',
+          'Phường Hai Bà Trưng': '#ec4899',
+          'Phường Tây Hồ': '#06b6d4',
+          'Phường Cầu Giấy': '#10b981',
+          'Phường Thanh Xuân': '#f97316',
+          'Phường Hoàng Mai': '#ef4444',
+          'Phường Long Biên': '#84cc16',
+          'Phường Hà Đông': '#a855f7',
+          'Phường Nam Từ Liêm': '#0ea5e9',
+          'Phường Bắc Từ Liêm': '#14b8a6',
+        }
+
+        const boundaryLayer = L.geoJSON(geojson, {
+          pane: 'planningPane',
+          style: (feature: any) => {
+            const name = feature?.properties?.name || ''
+            const color = DISTRICT_COLORS[name] || '#ffffff'
+            return {
+              color: color,
+              weight: 2.5,
+              opacity: 0.9,
+              fillColor: color,
+              fillOpacity: 0.06,
+              dashArray: undefined,
+            }
+          },
+          onEachFeature: (feature: any, layer: any) => {
+            const name = feature?.properties?.name || ''
+            const displayName = name.replace('Phường ', '').replace('Quận ', '')
+            
+            layer.on('mouseover', function(this: any, e: any) {
+              this.setStyle({ fillOpacity: 0.18, weight: 3.5 })
+              layer.bindTooltip(`
+                <div style="
+                  font-family:Inter,sans-serif;
+                  padding:8px 12px;
+                  background:rgba(15,23,42,0.95);
+                  backdrop-filter:blur(6px);
+                  border-radius:10px;
+                  color:white;
+                  border:1px solid rgba(255,255,255,0.15);
+                  box-shadow:0 8px 20px rgba(0,0,0,0.5);
+                  font-size:13px;
+                  font-weight:700;
+                ">
+                  🏙️ ${name}
+                  <div style="font-size:10px;color:#94a3b8;font-weight:400;margin-top:2px;">Ranh giới hành chính (OSM)</div>
+                </div>
+              `, { sticky: true, direction: 'top' }).openTooltip(e.latlng)
+            })
+            layer.on('mouseout', function(this: any) {
+              this.setStyle({ fillOpacity: 0.06, weight: 2.5 })
+              layer.closeTooltip()
+            })
+
+            // Add district name label at centroid
+            try {
+              const bounds = layer.getBounds()
+              const center = bounds.getCenter()
+              const name_ = feature?.properties?.name || ''
+              const shortName = name_.replace('Phường ', 'P. ').replace('Quận ', 'Q. ')
+              const labelIcon = L.divIcon({
+                html: `<div style="
+                  font-family:Inter,sans-serif;
+                  font-size:10px;
+                  font-weight:800;
+                  color:white;
+                  text-shadow:0 1px 4px rgba(0,0,0,0.9),0 0 8px rgba(0,0,0,0.7);
+                  white-space:nowrap;
+                  pointer-events:none;
+                  letter-spacing:0.5px;
+                  text-transform:uppercase;
+                ">${shortName}</div>`,
+                className: 'district-label-icon',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10],
+              })
+              const labelMarker = L.marker([center.lat, center.lng], {
+                icon: labelIcon,
+                interactive: false,
+                zIndexOffset: 500,
+              })
+              labelMarker.addTo(map)
+              districtLabelLayersRef.current.push(labelMarker)
+            } catch {}
+          }
+        })
+
+        boundaryLayer.addTo(map)
+        districtBoundaryLayerRef.current = boundaryLayer
+      } catch (e) {
+        console.warn('Could not load district boundaries:', e)
+      }
+    }
+
+    renderDistrictBoundaries()
+  }, [isMapReady, showDistrictBoundaries])
+
   // ── RENDER METRO STATIONS ──
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return
@@ -1096,6 +1226,20 @@ export default function PlanningMap({
                     {tile.label}
                   </motion.button>
                 ))}
+
+                {/* District Boundary Toggle */}
+                <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Lớp phủ</p>
+                  <motion.button
+                    onClick={() => setShowDistrictBoundaries(!showDistrictBoundaries)}
+                    whileHover={{ x: 2 }}
+                    className={showDistrictBoundaries ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-bold border border-cyan-400/30 w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all'}
+                  >
+                    <span className="text-base">🗺️</span>
+                    <span>Ranh giới hành chính</span>
+                    {showDistrictBoundaries && <span className="ml-auto text-[10px] bg-cyan-500 text-white rounded px-1 py-0.5 font-bold">BẬT</span>}
+                  </motion.button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
