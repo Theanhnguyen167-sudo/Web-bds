@@ -95,13 +95,13 @@ const getSavingsText = (pkgId: string, isYearly: boolean): string => {
     return 'Trải nghiệm cá nhân • Không mất phí';
   }
   if (isYearly) {
-    if (pkgId === 'basic') return 'Giảm đến 32% · Tiết kiệm 150.000 đ/tháng';
-    if (pkgId === 'pro') return 'Giảm đến 45% · Tiết kiệm 520.000 đ/tháng';
-    if (pkgId === 'agency') return 'Giảm đến 50% · Tiết kiệm 1.600.000 đ/tháng';
+    if (pkgId === 'basic') return 'Giảm đến 32% • Tiết kiệm 150.000 đ/tháng';
+    if (pkgId === 'pro') return 'Giảm đến 45% • Tiết kiệm 520.000 đ/tháng';
+    if (pkgId === 'agency') return 'Giảm đến 50% • Tiết kiệm 1.600.000 đ/tháng';
   } else {
-    if (pkgId === 'basic') return 'Giảm 15% · Tiết kiệm 70.000 đ/tháng';
-    if (pkgId === 'pro') return 'Giảm 31% · Tiết kiệm 360.000 đ/tháng';
-    if (pkgId === 'agency') return 'Giảm 38% · Tiết kiệm 1.200.000 đ/tháng';
+    if (pkgId === 'basic') return 'Giảm 15% • Tiết kiệm 70.000 đ/tháng';
+    if (pkgId === 'pro') return 'Giảm 31% • Tiết kiệm 360.000 đ/tháng';
+    if (pkgId === 'agency') return 'Giảm 38% • Tiết kiệm 1.200.000 đ/tháng';
   }
   return '';
 };
@@ -342,19 +342,45 @@ export const PricingTable: React.FC = () => {
                   )}
                 </div>
 
-                {/* Dòng phụ cam/đỏ ngay dưới giá: whitespace-nowrap để 'đ/tháng' luôn cùng 1 dòng với giá */}
-                <div className="min-h-[28px] flex items-center pt-0.5 overflow-hidden">
-                  <span
-                    className={`whitespace-nowrap text-[10.5px] sm:text-[11px] xl:text-[11.5px] font-bold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs ${
+                {/* Thanh ưu đãi/tiết kiệm lướt ngang marquee lặp liên tục với tốc độ vừa phải */}
+                <div className="pt-1.5 min-h-[32px] flex items-center">
+                  <div
+                    className={`w-full h-[28px] rounded-lg overflow-hidden relative flex items-center select-none shadow-2xs ${
                       isPro
-                        ? 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-300'
+                        ? 'bg-gradient-to-r from-orange-100/90 via-amber-100/90 to-orange-100/90 text-orange-900 border border-orange-300/90'
                         : isAgency || isBasic
-                        ? 'bg-rose-50 text-rose-700 border border-rose-200/80'
-                        : 'bg-slate-100 text-slate-600 border border-slate-200'
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200/90'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
                     }`}
                   >
-                    {savingsText}
-                  </span>
+                    {/* Hiệu ứng làm mờ nhẹ 2 mép viền để chữ vào/ra thanh thoát */}
+                    <div className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10px,black_calc(100%-10px),transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,black_10px,black_calc(100%-10px),transparent)]">
+                      <div className="flex w-max items-center animate-[marquee_20s_linear_infinite] hover:[animation-play-state:paused] cursor-default">
+                        {/* Nhóm 1 */}
+                        <div className="flex shrink-0 items-center">
+                          <span className="whitespace-nowrap text-[11px] sm:text-[11.5px] font-bold px-3">
+                            {savingsText}
+                          </span>
+                          <span className="text-[10px] opacity-40 select-none">✦</span>
+                          <span className="whitespace-nowrap text-[11px] sm:text-[11.5px] font-bold px-3">
+                            {savingsText}
+                          </span>
+                          <span className="text-[10px] opacity-40 select-none">✦</span>
+                        </div>
+                        {/* Nhóm 2 (bản sao giống hệt để lặp vô tận liền mạch) */}
+                        <div className="flex shrink-0 items-center" aria-hidden="true">
+                          <span className="whitespace-nowrap text-[11px] sm:text-[11.5px] font-bold px-3">
+                            {savingsText}
+                          </span>
+                          <span className="text-[10px] opacity-40 select-none">✦</span>
+                          <span className="whitespace-nowrap text-[11px] sm:text-[11.5px] font-bold px-3">
+                            {savingsText}
+                          </span>
+                          <span className="text-[10px] opacity-40 select-none">✦</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
