@@ -134,63 +134,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
   const initialListing = await getListingById(params.id);
   const listing = initialListing || mockListings.find((l) => l.id === params.id) || mockListings[0];
 
-  // Auto redirect dạng URL cũ sang URL SEO mới
-  if (listing) {
-    redirect(getListingUrl(listing));
-  }
-
-  // Schema.org RealEstateListing & SingleFamilyResidence JSON-LD
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': listing.type === 'apartment' ? 'Apartment' : 'SingleFamilyResidence',
-    name: listing.title,
-    description: listing.description || `${listing.title} tại ${listing.address || listing.district}, Hà Nội.`,
-    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn'}/listings/${listing.id}`,
-    image: listing.images && listing.images.length > 0 ? listing.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
-    numberOfRooms: listing.bedrooms || 3,
-    numberOfBedrooms: listing.bedrooms || 3,
-    numberOfBathroomsTotal: listing.bathrooms || 2,
-    floorSize: {
-      '@type': 'QuantitativeValue',
-      value: listing.area || 75,
-      unitCode: 'MTK',
-    },
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: listing.address || `Quận ${listing.district}`,
-      addressLocality: listing.district || 'Hà Nội',
-      addressRegion: 'Hà Nội',
-      addressCountry: 'VN',
-    },
-    geo: {
-      '@type': 'GeoCoordinates',
-      latitude: listing.lat,
-      longitude: listing.lng,
-    },
-    offers: {
-      '@type': 'Offer',
-      price: listing.price,
-      priceCurrency: 'VND',
-      availability: listing.status === 'sold' ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
-      validFrom: listing.createdAt || '2026-01-01',
-      priceSpecification: {
-        '@type': 'UnitPriceSpecification',
-        price: listing.price,
-        priceCurrency: 'VND',
-        unitCode: 'MTK',
-      },
-    },
-    datePosted: listing.createdAt || '2026-01-15T08:00:00+07:00',
-    dateModified: new Date().toISOString(),
-  };
-
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-      />
-      <ListingDetailClient listingId={params.id} initialListing={initialListing || undefined} />
-    </>
-  );
+  // Auto redirect dạng URL cũ sang URL SEO mới: /mua-ban/[loai-bds]/[quan]/[slug]
+  redirect(getListingUrl(listing));
 }
