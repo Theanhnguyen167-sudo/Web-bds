@@ -34,10 +34,23 @@ import {
   Bath,
   Building,
   ArrowRight,
-  Search
+  Search,
+  Bell,
+  Calendar,
+  Phone,
+  MessageSquare,
+  User,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  AlertCircle
 } from 'lucide-react';
+import { NotificationBell } from '@/components/notification/NotificationBell';
 
-type TabType = 'listings' | 'reports' | 'saved' | 'stitch' | 'packages';
+type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications';
+
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications'];
 
 interface MenuItem {
   id: TabType;
@@ -59,19 +72,85 @@ function DashboardContent() {
 
   const { user, listings, setListings, savedListingIds, toggleSaveListing, addToast } = useApp();
   const [activeTab, setActiveTab] = useState<TabType>(
-    tabQuery && ['listings', 'reports', 'saved', 'stitch', 'packages'].includes(tabQuery)
+    tabQuery && VALID_TABS.includes(tabQuery)
       ? tabQuery
       : 'listings'
   );
-  const [isSyncingStitch, setIsSyncingStitch] = useState(false);
-  const [stitchApiKey, setStitchApiKey] = useState('AQ.Ab8RN6IZHLmSH1J7xdlYndtnZm6fJi2_YExaS4HA6Fqfr7YlTw');
+  const [unreadNotifCount, setUnreadNotifCount] = useState<number>(3);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [appointmentFilter, setAppointmentFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
+  const [appointmentSearch, setAppointmentSearch] = useState<string>('');
+  const [appointmentViewMode, setAppointmentViewMode] = useState<'list' | 'calendar'>('calendar');
+  const [selectedScheduleDate, setSelectedScheduleDate] = useState<Date>(new Date());
+  const [selectedScheduleListingId, setSelectedScheduleListingId] = useState<string>('all');
 
   // Sync tab with URL query parameter on load
   useEffect(() => {
-    if (tabQuery && ['listings', 'reports', 'saved', 'stitch', 'packages'].includes(tabQuery)) {
+    if (tabQuery && VALID_TABS.includes(tabQuery)) {
       setActiveTab(tabQuery);
     }
   }, [tabQuery]);
+
+  // Load and sync appointments for the current user
+  useEffect(() => {
+    const syncAppointments = () => {
+      try {
+        const raw = localStorage.getItem('hanoi_realty_appointments');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setAppointments(parsed);
+          }
+        }
+      } catch {}
+    };
+
+    syncAppointments();
+    window.addEventListener('hanoi_appointments_updated', syncAppointments);
+    window.addEventListener('storage', syncAppointments);
+    return () => {
+      window.removeEventListener('hanoi_appointments_updated', syncAppointments);
+      window.removeEventListener('storage', syncAppointments);
+    };
+  }, []);
+
+  // Sync unread notification count CHỈ cho tài khoản hiện tại từ localStorage
+  useEffect(() => {
+    const syncUnreadCount = () => {
+      try {
+        const raw = localStorage.getItem('hanoi_realty_notifications');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            if (user) {
+              const userEmail = user.email?.toLowerCase();
+              const myIds = new Set(listings.filter(l => l.ownerId === user.id || l.userId === user.id || (userEmail && l.authorEmail?.toLowerCase() === userEmail)).map(l => l.id));
+              const count = parsed.filter(
+                (n: any) =>
+                  !n.isRead &&
+                  (n.recipientUserId === user.id ||
+                   (userEmail && n.recipientUserId?.toLowerCase() === userEmail) ||
+                   (n.listingId && myIds.has(n.listingId)) ||
+                   n.recipientUserId === 'all')
+              ).length;
+              setUnreadNotifCount(count);
+            } else {
+              setUnreadNotifCount(0);
+            }
+          }
+        }
+      } catch {}
+    };
+    syncUnreadCount();
+    window.addEventListener('hanoi_notifications_updated', syncUnreadCount);
+    window.addEventListener('storage', syncUnreadCount);
+    window.addEventListener('hanoi_new_notification', syncUnreadCount);
+    return () => {
+      window.removeEventListener('hanoi_notifications_updated', syncUnreadCount);
+      window.removeEventListener('storage', syncUnreadCount);
+      window.removeEventListener('hanoi_new_notification', syncUnreadCount);
+    };
+  }, [user, listings]);
 
   const handleSelectTab = (tabId: TabType) => {
     setActiveTab(tabId);
@@ -107,49 +186,102 @@ function DashboardContent() {
     addToast('🗑️ Đã xoá tin đăng thành công', 'info');
   };
 
-  const handleSyncStitch = async () => {
-    setIsSyncingStitch(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setIsSyncingStitch(false);
-      addToast('✨ Đã đồng bộ thành công toàn bộ UI Screens & Tokens từ Google Stitch!', 'success');
-    } catch {
-      setIsSyncingStitch(false);
-      addToast('Có lỗi xảy ra khi đồng bộ Stitch', 'error');
+  // Lọc danh sách lịch hẹn thuộc về các bài đăng hoặc tài khoản của người dùng hiện tại
+  const rawUserAppointments = appointments.filter((appt) => {
+    if (!user) return false;
+    const userEmail = user.email?.toLowerCase();
+    if (appt.sellerId && appt.sellerId === user.id) return true;
+    if (appt.sellerEmail && userEmail && appt.sellerEmail.toLowerCase() === userEmail) return true;
+    // Kiểm tra theo ID bài đăng người dùng sở hữu
+    if (appt.listingId && userListings.some((l) => l.id === appt.listingId)) return true;
+    return false;
+  });
+
+  const userAppointments = rawUserAppointments.filter((appt) => {
+    if (appointmentFilter === 'pending' && appt.status && appt.status !== 'pending') return false;
+    if (appointmentFilter === 'confirmed' && appt.status !== 'confirmed') return false;
+    if (appointmentFilter === 'cancelled' && appt.status !== 'cancelled') return false;
+    if (appointmentSearch.trim()) {
+      const q = appointmentSearch.toLowerCase().trim();
+      const matchName = appt.buyerName?.toLowerCase().includes(q);
+      const matchPhone = appt.buyerPhone?.includes(q);
+      const matchTitle = appt.listingTitle?.toLowerCase().includes(q);
+      if (!matchName && !matchPhone && !matchTitle) return false;
     }
+    return true;
+  });
+
+  const handleUpdateAppointmentStatus = (apptId: string, newStatus: 'confirmed' | 'cancelled') => {
+    const updated = appointments.map((a) => (a.id === apptId ? { ...a, status: newStatus } : a));
+    setAppointments(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hanoi_realty_appointments', JSON.stringify(updated));
+
+      // Đồng bộ cập nhật trạng thái trong danh sách thông báo
+      try {
+        const notifsRaw = localStorage.getItem('hanoi_realty_notifications');
+        if (notifsRaw) {
+          const notifs = JSON.parse(notifsRaw);
+          if (Array.isArray(notifs)) {
+            const updatedNotifs = notifs.map((n: any) => {
+              if (n.appointmentId === apptId || n.appointmentData?.id === apptId) {
+                return {
+                  ...n,
+                  appointmentData: {
+                    ...n.appointmentData,
+                    status: newStatus
+                  }
+                };
+              }
+              return n;
+            });
+            localStorage.setItem('hanoi_realty_notifications', JSON.stringify(updatedNotifs));
+            window.dispatchEvent(new Event('hanoi_notifications_updated'));
+          }
+        }
+      } catch {}
+
+      window.dispatchEvent(new Event('hanoi_appointments_updated'));
+    }
+    addToast(
+      newStatus === 'confirmed'
+        ? '✅ Đã xác nhận lịch hẹn xem nhà thành công'
+        : '❌ Đã cập nhật huỷ lịch hẹn',
+      newStatus === 'confirmed' ? 'success' : 'info'
+    );
   };
 
-  // Sidebar Menu categorized into 3 required groups
+  // Sidebar Menu categorized
   const menuGroups: MenuGroup[] = [
     {
       title: 'QUẢN LÝ',
       items: [
         { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
+        {
+          id: 'appointments',
+          label: 'Lịch hẹn xem nhà',
+          icon: CalendarDays,
+          count: userAppointments.length,
+          badge: userAppointments.filter((a) => a.status === 'pending').length > 0
+            ? `${userAppointments.filter((a) => a.status === 'pending').length} MỚI`
+            : undefined,
+        },
         { id: 'saved', label: 'Tin đã lưu', icon: Heart, count: savedListingIds.length },
         { id: 'reports', label: 'Báo cáo AI', icon: Sparkles, count: user?.aiReportsUsed || 8 },
       ],
     },
     {
-      title: 'KẾT NỐI',
-      items: [
-        { id: 'stitch', label: 'Google Stitch', icon: Cpu, badge: 'CONNECTED' },
-      ],
-    },
-    {
       title: 'TÀI KHOẢN & DỊCH VỤ',
       items: [
+        {
+          id: 'notifications',
+          label: 'Thông báo',
+          icon: Bell,
+          badge: unreadNotifCount > 0 ? `${unreadNotifCount} MỚI` : undefined,
+        },
         { id: 'packages', label: 'Gói VIP', icon: Tag, badge: user?.package?.toUpperCase() || 'PRO' },
       ],
     },
-  ];
-
-  const stitchScreens = [
-    { id: 's1', name: 'HaNoi Realty - Homepage Split Map', category: 'Main Layout', status: 'Đã đồng bộ', components: 14 },
-    { id: 's2', name: 'Property Detail & AI Scorecard', category: 'Listing', status: 'Đã đồng bộ', components: 9 },
-    { id: 's3', name: '5-Step Create Listing Wizard', category: 'Forms', status: 'Đã đồng bộ', components: 12 },
-    { id: 's4', name: 'AI Valuation & Planning Report', category: 'AI Intelligence', status: 'Đã đồng bộ', components: 8 },
-    { id: 's5', name: 'Membership Pricing & VIP Table', category: 'Monetization', status: 'Đã đồng bộ', components: 6 },
-    { id: 's6', name: 'User Management Dashboard', category: 'Management', status: 'Đã đồng bộ', components: 11 },
   ];
 
   return (
@@ -172,10 +304,6 @@ function DashboardContent() {
                 <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-extrabold text-accent uppercase">
                   Gói {user?.package || 'Pro'} VIP
                 </span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Stitch Connected
-                </span>
               </div>
               <p className="text-xs text-text-secondary mt-0.5">{user?.email || 'an@example.com'}</p>
               <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-09-15'}</p>
@@ -183,14 +311,6 @@ function DashboardContent() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => handleSelectTab('stitch')}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-page-bg px-4 py-3 text-xs font-bold text-text-primary hover:bg-slate-100 transition-all"
-            >
-              <Cpu className="h-4 w-4 text-accent" />
-              <span>Stitch API: AQ.Ab8...</span>
-            </button>
-
             <Link
               href="/listings/create"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-xs font-black text-white shadow-lg shadow-accent/25 hover:bg-accent-hover transition-all"
@@ -405,7 +525,566 @@ function DashboardContent() {
                 </motion.div>
               )}
 
-              {/* TAB 2: SAVED LISTINGS (REAL DATA & CONTROLS) */}
+              {/* TAB: LỊCH HẸN XEM NHÀ (DÀNH CHO CHỦ TIN ĐĂNG) */}
+              {activeTab === 'appointments' && (
+                <motion.div
+                  key="tab-appointments"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-6"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-5 w-5 text-accent" />
+                        <h3 className="text-base font-extrabold text-text-primary">
+                          Khách đăng ký lịch hẹn xem nhà
+                        </h3>
+                        <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-black text-accent">
+                          {rawUserAppointments.length} lịch hẹn
+                        </span>
+                      </div>
+                      <p className="text-xs text-text-secondary mt-1">
+                        Danh sách các khách hàng đã đặt lịch xem trực tiếp các bất động sản do bạn đăng bán.
+                      </p>
+                    </div>
+
+                    {/* Tìm kiếm & Lọc nhanh */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <div className="relative">
+                        <Search className="h-3.5 w-3.5 text-slate-400 absolute left-3 top-3" />
+                        <input
+                          type="text"
+                          placeholder="Tìm theo tên, SĐT, BĐS..."
+                          value={appointmentSearch}
+                          onChange={(e) => setAppointmentSearch(e.target.value)}
+                          className="pl-8 pr-3 py-1.5 rounded-xl border border-border text-xs bg-page-bg focus:border-accent focus:outline-none w-full sm:w-56 font-medium shadow-2xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filter Status Pills */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentFilter('all')}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                        appointmentFilter === 'all'
+                          ? 'bg-primary text-white shadow-xs'
+                          : 'bg-slate-100 text-text-secondary hover:bg-slate-200'
+                      }`}
+                    >
+                      Tất cả ({rawUserAppointments.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentFilter('pending')}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                        appointmentFilter === 'pending'
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                      }`}
+                    >
+                      <span>⏳ Chờ xác nhận</span>
+                      <span className="rounded-full bg-black/10 px-1.5 py-0.2 text-[10px]">
+                        {rawUserAppointments.filter((a) => !a.status || a.status === 'pending').length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentFilter('confirmed')}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                        appointmentFilter === 'confirmed'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                      }`}
+                    >
+                      <span>✓ Đã xác nhận</span>
+                      <span className="rounded-full bg-black/10 px-1.5 py-0.2 text-[10px]">
+                        {rawUserAppointments.filter((a) => a.status === 'confirmed').length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentFilter('cancelled')}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                        appointmentFilter === 'cancelled'
+                          ? 'bg-slate-700 text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      <span>✕ Đã huỷ</span>
+                      <span className="rounded-full bg-black/10 px-1.5 py-0.2 text-[10px]">
+                        {rawUserAppointments.filter((a) => a.status === 'cancelled').length}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Switch View Mode & Quick Actions */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
+                    {/* View Switcher Buttons */}
+                    <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => setAppointmentViewMode('calendar')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          appointmentViewMode === 'calendar'
+                            ? 'bg-accent text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>Bảng khung giờ & Ngày</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAppointmentViewMode('list')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          appointmentViewMode === 'list'
+                            ? 'bg-accent text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Layers className="h-3.5 w-3.5" />
+                        <span>Danh sách thẻ ({userAppointments.length})</span>
+                      </button>
+                    </div>
+
+                    {/* Lọc theo bài đăng BĐS cụ thể */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">Xem theo BĐS:</span>
+                      <select
+                        value={selectedScheduleListingId}
+                        onChange={(e) => setSelectedScheduleListingId(e.target.value)}
+                        className="py-1.5 px-2.5 rounded-xl border border-slate-300 text-xs font-semibold bg-white text-slate-800 focus:outline-none focus:border-accent max-w-[220px] truncate shadow-2xs cursor-pointer"
+                      >
+                        <option value="all">Tất cả bài đăng ({userListings.length} tin)</option>
+                        {userListings.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* ══════ VIEW 1: BẢNG KHUNG GIỜ THEO NGÀY (TIME-SLOT MATRIX) ══════ */}
+                  {appointmentViewMode === 'calendar' && (
+                    <div className="space-y-4">
+                      {/* Date Navigator Bar */}
+                      <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-100 text-orange-600 font-extrabold text-xs">
+                              📅
+                            </span>
+                            <div>
+                              <h4 className="text-xs font-extrabold text-slate-900">
+                                Lịch trình ngày: {selectedScheduleDate.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                              </h4>
+                              <p className="text-[10px] text-slate-500">
+                                Kiểm tra các khung giờ đã kín lịch, khách hẹn và bài đăng tương ứng
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const prev = new Date(selectedScheduleDate);
+                                prev.setDate(prev.getDate() - 1);
+                                setSelectedScheduleDate(prev);
+                              }}
+                              className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors"
+                              title="Ngày hôm trước"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedScheduleDate(new Date())}
+                              className="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                            >
+                              Hôm nay
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = new Date(selectedScheduleDate);
+                                next.setDate(next.getDate() + 1);
+                                setSelectedScheduleDate(next);
+                              }}
+                              className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors"
+                              title="Ngày kế tiếp"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Thanh chọn 7 ngày liên tiếp */}
+                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5 pt-1">
+                          {Array.from({ length: 7 }, (_, i) => {
+                            const d = new Date();
+                            d.setDate(d.getDate() + i);
+                            const isSelected = d.toDateString() === selectedScheduleDate.toDateString();
+                            const isToday = d.toDateString() === new Date().toDateString();
+
+                            // Đếm số lịch hẹn trong ngày này
+                            const dayDateStr = d.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+                            const dayCount = rawUserAppointments.filter((a) => a.date === dayDateStr && a.status !== 'cancelled').length;
+
+                            return (
+                              <button
+                                key={d.toISOString()}
+                                type="button"
+                                onClick={() => setSelectedScheduleDate(d)}
+                                className={`p-2 rounded-xl text-center border transition-all relative ${
+                                  isSelected
+                                    ? 'border-accent bg-accent text-white shadow-sm ring-2 ring-accent/25'
+                                    : 'border-slate-200 bg-slate-50/80 text-slate-700 hover:bg-slate-100'
+                                }`}
+                              >
+                                <span className="block text-[10px] uppercase font-bold opacity-80">
+                                  {isToday ? 'Hôm nay' : d.toLocaleDateString('vi-VN', { weekday: 'short' })}
+                                </span>
+                                <span className="block text-sm font-black mt-0.5">
+                                  {d.getDate()}/{d.getMonth() + 1}
+                                </span>
+                                {dayCount > 0 && (
+                                  <span className={`inline-block px-1.5 py-0.2 rounded-full text-[9px] font-extrabold mt-1 ${
+                                    isSelected ? 'bg-white text-accent' : 'bg-orange-500 text-white'
+                                  }`}>
+                                    {dayCount} lịch
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Khung giờ chi tiết (Sáng - Chiều - Tối) */}
+                      {(() => {
+                        const targetDateStr = selectedScheduleDate.toLocaleDateString('vi-VN', {
+                          weekday: 'long',
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        });
+
+                        const ALL_SLOTS = [
+                          { session: 'Sáng', slots: ['08:30', '09:30', '10:30', '11:15'] },
+                          { session: 'Chiều', slots: ['14:00', '15:00', '16:00', '17:00'] },
+                          { session: 'Tối', slots: ['17:45', '18:30', '19:15'] },
+                        ];
+
+                        // Lọc các lịch hẹn khớp với ngày đang chọn và BĐS đang chọn
+                        const apptsForDay = rawUserAppointments.filter((a) => {
+                          if (a.date !== targetDateStr) return false;
+                          if (selectedScheduleListingId !== 'all' && a.listingId !== selectedScheduleListingId) return false;
+                          return true;
+                        });
+
+                        const totalBooked = apptsForDay.filter((a) => a.status !== 'cancelled').length;
+
+                        return (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between px-1">
+                              <span className="text-xs font-bold text-slate-700">
+                                Danh sách các mốc thời gian ({targetDateStr})
+                              </span>
+                              <span className="text-[11px] font-extrabold text-orange-600 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-lg">
+                                {totalBooked > 0 ? `Đã kín ${totalBooked} khung giờ` : 'Chưa có giờ nào bị đặt'}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              {ALL_SLOTS.map((group) => (
+                                <div
+                                  key={group.session}
+                                  className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3.5 space-y-2.5"
+                                >
+                                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-200">
+                                    <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                                      <Clock className="h-3.5 w-3.5 text-accent" />
+                                      <span>Buổi {group.session}</span>
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-semibold">
+                                      {group.slots.length} mốc giờ
+                                    </span>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    {group.slots.map((slot) => {
+                                      // Tìm xem khung giờ này có khách nào đặt chưa
+                                      const matchedAppt = apptsForDay.find(
+                                        (a) => a.time === slot && a.status !== 'cancelled'
+                                      );
+
+                                      if (matchedAppt) {
+                                        const isConfirmed = matchedAppt.status === 'confirmed';
+                                        const cleanPhone = (matchedAppt.buyerPhone || '').replace(/\D/g, '');
+
+                                        return (
+                                          <div
+                                            key={slot}
+                                            className={`rounded-xl border p-2.5 transition-all space-y-1.5 ${
+                                              isConfirmed
+                                                ? 'border-emerald-300 bg-emerald-50/60 shadow-2xs'
+                                                : 'border-orange-300 bg-orange-50/70 shadow-2xs'
+                                            }`}
+                                          >
+                                            <div className="flex items-center justify-between">
+                                              <span className="text-xs font-black text-slate-900 flex items-center gap-1">
+                                                <Clock className="h-3 w-3 text-orange-600" />
+                                                <span>{slot}</span>
+                                              </span>
+                                              <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-extrabold ${
+                                                isConfirmed ? 'bg-emerald-200 text-emerald-900' : 'bg-amber-200 text-amber-900 animate-pulse'
+                                              }`}>
+                                                {isConfirmed ? '✓ Đã kín lịch' : '⏳ Chờ duyệt'}
+                                              </span>
+                                            </div>
+
+                                            {/* Tên khách & SĐT */}
+                                            <div className="text-[11px] text-slate-800">
+                                              <span className="font-extrabold text-slate-900">{matchedAppt.buyerName}</span>
+                                              <span className="text-slate-400 mx-1">•</span>
+                                              <span className="font-mono font-bold text-emerald-700">{matchedAppt.buyerPhone}</span>
+                                            </div>
+
+                                            {/* BĐS hẹn xem */}
+                                            <div className="text-[10px] text-slate-600 truncate font-medium bg-white/70 px-1.5 py-1 rounded-md border border-slate-200/60">
+                                              🏠 {matchedAppt.listingTitle}
+                                            </div>
+
+                                            {/* Quick Actions */}
+                                            <div className="pt-1 flex items-center gap-1.5 border-t border-slate-200/60">
+                                              {cleanPhone && (
+                                                <a
+                                                  href={`tel:${cleanPhone}`}
+                                                  className="flex-1 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[9px] flex items-center justify-center gap-1 transition-colors"
+                                                >
+                                                  <Phone className="h-2.5 w-2.5" />
+                                                  <span>Gọi</span>
+                                                </a>
+                                              )}
+                                              {cleanPhone && (
+                                                <a
+                                                  href={`https://zalo.me/${cleanPhone}`}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="flex-1 py-1 rounded-md bg-[#0068FF] hover:bg-[#0055d4] text-white font-bold text-[9px] flex items-center justify-center gap-1 transition-colors"
+                                                >
+                                                  <MessageSquare className="h-2.5 w-2.5" />
+                                                  <span>Zalo</span>
+                                                </a>
+                                              )}
+                                              {matchedAppt.status !== 'confirmed' && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleUpdateAppointmentStatus(matchedAppt.id, 'confirmed')}
+                                                  className="px-2 py-1 rounded-md bg-accent hover:bg-accent-hover text-white font-bold text-[9px] transition-colors"
+                                                >
+                                                  Duyệt
+                                                </button>
+                                              )}
+                                              <button
+                                                type="button"
+                                                onClick={() => handleUpdateAppointmentStatus(matchedAppt.id, 'cancelled')}
+                                                className="px-1.5 py-1 rounded-md bg-white hover:bg-red-50 text-slate-400 hover:text-red-500 text-[9px] font-semibold border border-slate-200"
+                                                title="Huỷ lịch"
+                                              >
+                                                Huỷ
+                                              </button>
+                                            </div>
+                                          </div>
+                                        );
+                                      }
+
+                                      // Slot còn trống (Chưa có khách đặt)
+                                      return (
+                                        <div
+                                          key={slot}
+                                          className="rounded-xl border border-dashed border-slate-200 bg-white p-2.5 flex items-center justify-between text-xs text-slate-400 hover:border-slate-300 transition-colors"
+                                        >
+                                          <div className="flex items-center gap-1.5 font-bold text-slate-600">
+                                            <Clock className="h-3 w-3 text-slate-400" />
+                                            <span>{slot}</span>
+                                          </div>
+                                          <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                                            Trống lịch
+                                          </span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* ══════ VIEW 2: DANH SÁCH THẺ TRUYỀN THỐNG ══════ */}
+                  {appointmentViewMode === 'list' && (
+                    <>
+                      {userAppointments.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-border bg-slate-50/60 p-10 text-center space-y-3">
+                          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm border border-border text-slate-400">
+                            <Calendar className="h-7 w-7 text-slate-300" />
+                          </div>
+                          <div className="space-y-1">
+                            <h4 className="text-sm font-bold text-text-primary">Chưa có lịch hẹn xem nhà nào</h4>
+                            <p className="text-xs text-text-muted max-w-sm mx-auto">
+                              Khi có khách hàng bấm "Đặt lịch xem nhà" trên bài đăng BĐS của bạn, thông tin liên hệ và thời gian hẹn sẽ xuất hiện tại đây ngay lập tức.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3.5">
+                      {userAppointments.map((appt) => {
+                        const isPending = !appt.status || appt.status === 'pending';
+                        const isConfirmed = appt.status === 'confirmed';
+                        const isCancelled = appt.status === 'cancelled';
+                        const cleanPhone = (appt.buyerPhone || '').replace(/\D/g, '');
+
+                        return (
+                          <div
+                            key={appt.id}
+                            className={`rounded-2xl border p-4 sm:p-5 transition-all ${
+                              isPending
+                                ? 'border-orange-200 bg-orange-50/20 shadow-xs'
+                                : isConfirmed
+                                ? 'border-emerald-200 bg-emerald-50/15'
+                                : 'border-slate-200 bg-slate-50/50 opacity-75'
+                            }`}
+                          >
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                              <div className="space-y-2 flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-orange-500/10 text-orange-700 px-2.5 py-1 text-xs font-black">
+                                    <Clock className="h-3.5 w-3.5 text-orange-600" />
+                                    <span>{appt.time} • {appt.date}</span>
+                                  </span>
+
+                                  {isPending && (
+                                    <span className="rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1 animate-pulse">
+                                      ⏳ Chờ xác nhận
+                                    </span>
+                                  )}
+                                  {isConfirmed && (
+                                    <span className="rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-extrabold flex items-center gap-1">
+                                      ✓ Đã xác nhận đón khách
+                                    </span>
+                                  )}
+                                  {isCancelled && (
+                                    <span className="rounded-full bg-slate-200 text-slate-700 px-2.5 py-0.5 text-[10px] font-extrabold">
+                                      ✕ Đã huỷ
+                                    </span>
+                                  )}
+
+                                  {appt.purpose && (
+                                    <span className="rounded-md bg-slate-100 text-slate-600 text-[10px] font-semibold px-2 py-0.5">
+                                      Mục đích: {appt.purpose}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <h4 className="text-sm font-extrabold text-text-primary line-clamp-1">
+                                  {appt.listingTitle}
+                                </h4>
+
+                                <div className="flex items-center gap-3 text-xs text-text-secondary flex-wrap">
+                                  <span className="flex items-center gap-1 font-bold text-text-primary">
+                                    <User className="h-3.5 w-3.5 text-slate-400" />
+                                    <span>{appt.buyerName}</span>
+                                  </span>
+                                  <span>•</span>
+                                  <span className="font-mono font-bold text-emerald-600">
+                                    {appt.buyerPhone}
+                                  </span>
+                                </div>
+
+                                {appt.note && (
+                                  <p className="text-xs text-text-muted italic bg-white/80 p-2.5 rounded-xl border border-slate-200/80">
+                                    "{appt.note}"
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Action buttons */}
+                              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                                {cleanPhone && (
+                                  <>
+                                    <a
+                                      href={`tel:${cleanPhone}`}
+                                      className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-2 text-xs font-bold text-white transition-colors shadow-xs"
+                                    >
+                                      <Phone className="h-3.5 w-3.5" />
+                                      <span>Gọi ngay</span>
+                                    </a>
+                                    <a
+                                      href={`https://zalo.me/${cleanPhone}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] px-3 py-2 text-xs font-bold text-white transition-colors shadow-xs"
+                                    >
+                                      <MessageSquare className="h-3.5 w-3.5" />
+                                      <span>Zalo</span>
+                                    </a>
+                                  </>
+                                )}
+
+                                {isPending && (
+                                  <button
+                                    onClick={() => handleUpdateAppointmentStatus(appt.id, 'confirmed')}
+                                    className="inline-flex items-center gap-1 rounded-xl bg-accent hover:bg-accent-hover px-3 py-2 text-xs font-bold text-white transition-colors shadow-xs"
+                                  >
+                                    <Check className="h-3.5 w-3.5" />
+                                    <span>Xác nhận</span>
+                                  </button>
+                                )}
+
+                                {!isCancelled && (
+                                  <button
+                                    onClick={() => handleUpdateAppointmentStatus(appt.id, 'cancelled')}
+                                    className="rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:text-danger px-2.5 py-2 text-xs font-bold text-text-muted transition-colors"
+                                    title="Huỷ lịch hẹn này"
+                                  >
+                                    Huỷ
+                                  </button>
+                                )}
+
+                                {appt.listingId && (
+                                  <Link
+                                    href={`/listings/${appt.listingId}`}
+                                    className="rounded-xl border border-slate-200 bg-white hover:border-accent hover:text-accent p-2 text-text-muted transition-colors"
+                                    title="Xem tin đăng BĐS"
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </motion.div>
+          )}
+
+          {/* TAB 2: SAVED LISTINGS (REAL DATA & CONTROLS) */}
               {activeTab === 'saved' && (
                 <motion.div
                   key="tab-saved"
@@ -626,105 +1305,6 @@ function DashboardContent() {
                 </motion.div>
               )}
 
-              {/* TAB 4: GOOGLE STITCH DESIGN SYNC */}
-              {activeTab === 'stitch' && (
-                <motion.div
-                  key="tab-stitch"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-6"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Cpu className="h-5 w-5 text-accent" />
-                        <h3 className="text-base font-extrabold text-text-primary">
-                          Google Stitch AI Design System Sync
-                        </h3>
-                      </div>
-                      <p className="text-xs text-text-secondary mt-1">
-                        Kết nối và đồng bộ tự động thiết kế UI, components và Design Tokens từ Google Stitch
-                      </p>
-                    </div>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={isSyncingStitch}
-                      onClick={handleSyncStitch}
-                      className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-all disabled:opacity-75 shrink-0"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isSyncingStitch ? 'animate-spin' : ''}`} />
-                      <span>{isSyncingStitch ? 'Đang đồng bộ...' : 'Đồng bộ từ Stitch ngay'}</span>
-                    </motion.button>
-                  </div>
-
-                  {/* Active Key Box */}
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-emerald-700" />
-                        <span className="text-xs font-extrabold text-emerald-900">
-                          Khóa Xác Thực Google Stitch Đang Hoạt Động
-                        </span>
-                      </div>
-                      <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                        ACTIVE · CONNECTED
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        readOnly
-                        value={stitchApiKey}
-                        className="w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-mono font-bold text-slate-800 focus:outline-none select-all"
-                      />
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(stitchApiKey);
-                          addToast('Đã sao chép khóa Stitch API Key!', 'success');
-                        }}
-                        className="rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-800 transition-colors shrink-0"
-                      >
-                        Sao chép
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-emerald-700">
-                      Khóa này đã được liên kết với Antigravity MCP Server proxy và hệ thống runtime của website.
-                    </p>
-                  </div>
-
-                  {/* Synchronized Screens List */}
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-                      Màn hình & Components Đã Đồng Bộ
-                    </h4>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {stitchScreens.map((sc) => (
-                        <div
-                          key={sc.id}
-                          className="flex items-center justify-between rounded-2xl bg-page-bg p-3.5 border border-border"
-                        >
-                          <div className="space-y-0.5">
-                            <h5 className="text-xs font-bold text-text-primary">{sc.name}</h5>
-                            <span className="text-[10px] text-text-muted">{sc.category} · {sc.components} UI widgets</span>
-                          </div>
-
-                          <span className="rounded-md bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold flex items-center gap-1">
-                            <Check className="h-3 w-3" />
-                            {sc.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
               {/* TAB 5: PACKAGES */}
               {activeTab === 'packages' && (
                 <motion.div
@@ -749,6 +1329,22 @@ function DashboardContent() {
                       Gia hạn hoặc Nâng cấp Agency
                     </Link>
                   </div>
+                </motion.div>
+              )}
+
+              {/* TAB 6: NOTIFICATIONS */}
+              {activeTab === 'notifications' && (
+                <motion.div
+                  key="tab-notifications"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <NotificationBell
+                    variant="embedded"
+                    onUnreadCountChange={setUnreadNotifCount}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

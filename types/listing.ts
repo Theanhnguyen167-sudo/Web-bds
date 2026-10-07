@@ -9,6 +9,7 @@ export interface Listing {
   id: string;
   user_id: string;
   title: string;
+  slug?: string | null;
   description: string | null;
   property_type: PropertyType;
   price: number;

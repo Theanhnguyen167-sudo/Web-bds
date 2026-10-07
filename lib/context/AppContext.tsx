@@ -5,6 +5,12 @@ import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import { createClient } from '@/lib/supabase/client';
 import { toggleSavedListing, getSavedListings } from '@/lib/supabase/queries/saved';
 import { PlanningZoneItem, DEFAULT_PLANNING_ZONES } from '@/lib/planning/planning-utils';
+import { getAllHanoiPlanningZones } from '@/lib/planning/hanoi-planning-db';
+import {
+  getPlanningZonesFromSupabase,
+  savePlanningZoneToSupabase,
+  deletePlanningZoneFromSupabase,
+} from '@/lib/supabase/queries/planning';
 import { auth as firebaseAuth } from '@/lib/firebase/config';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { parseLocationCoordinates } from '@/lib/utils';
@@ -32,7 +38,7 @@ interface AppContextType {
   addToast: (message: string, type?: ToastItem['type']) => void;
   removeToast: (id: string) => void;
   addNewListing: (listing: Partial<ListingItem>) => Promise<string>;
-  updateListingStatus: (id: string, status: 'active' | 'pending' | 'rejected') => Promise<void>;
+  updateListingStatus: (id: string, status: 'active' | 'pending' | 'rejected', reason?: string) => Promise<void>;
   refreshListings: () => Promise<void>;
   planningZones: PlanningZoneItem[];
   setPlanningZones: React.Dispatch<React.SetStateAction<PlanningZoneItem[]>>;
@@ -89,7 +95,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [showPlanningOverlay, setShowPlanningOverlay] = useState<boolean>(true);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [planningZones, setPlanningZones] = useState<PlanningZoneItem[]>(DEFAULT_PLANNING_ZONES);
+  const [planningZones, setPlanningZones] = useState<PlanningZoneItem[]>(() => {
+    try {
+      const all = getAllHanoiPlanningZones();
+      return all.length > 0 ? all : DEFAULT_PLANNING_ZONES;
+    } catch {
+      return DEFAULT_PLANNING_ZONES;
+    }
+  });
   const [selectedPlanningZoneId, setSelectedPlanningZoneId] = useState<string | null>(null);
 
   // Helper function to sync user profile from Supabase
@@ -369,6 +382,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               direction: row.direction || 'Đông Nam',
               description: autoDesc,
               userId: row.user_id,
+              ownerId: row.user_id,
+              createdBy: row.user_id,
               authorName: row.users?.full_name || row.author_name,
               authorPhone: row.users?.phone || row.author_phone,
               authorEmail: row.author_email,
@@ -453,6 +468,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const pendingItem: ListingItem = {
       id: newId,
+      ownerId: user?.id || 'anonymous_user',
+      createdBy: user?.id || 'anonymous_user',
       title: newListingData.title || 'BĐS mới đăng tại Hà Nội',
       price: newListingData.price || 5000000000,
       pricePerM2,
@@ -479,14 +496,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       direction: newListingData.direction || 'Đông Nam',
       description: newListingData.description || 'Bất động sản vị trí đẹp.',
       userId: user?.id,
-      authorName: user?.name || 'Cozy Hollys',
-      authorEmail: user?.email || 'cozyhollys@gmail.com',
-      authorPhone: user?.phone || '0988 123 456',
+      authorName: newListingData.authorName || user?.name || 'Nguyễn Văn A',
+      authorEmail: newListingData.authorEmail || user?.email || 'nguyenvana@gmail.com',
+      authorPhone: newListingData.authorPhone || user?.phone || '0988 123 456',
       authorAvatar: user?.avatar,
+      sellerType: newListingData.sellerType || 'Chính chủ',
+      companyName: newListingData.companyName,
+      contactAddress: newListingData.contactAddress,
+      showPhone: newListingData.showPhone !== undefined ? newListingData.showPhone : true,
+      allowEmailContact: newListingData.allowEmailContact !== undefined ? newListingData.allowEmailContact : true,
+      showCompany: newListingData.showCompany !== undefined ? newListingData.showCompany : false,
+      isPhoneVerified: newListingData.isPhoneVerified !== undefined ? newListingData.isPhoneVerified : false,
       users: user ? {
-        full_name: user.name,
+        full_name: newListingData.authorName || user.name,
         avatar_url: user.avatar,
-        phone: user.phone || '0988 123 456',
+        phone: newListingData.authorPhone || user.phone || '0988 123 456',
         role: user.role,
       } : undefined,
     };
@@ -541,7 +565,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Hàm cập nhật trạng thái tin đăng (Duyệt tin: 'active', Từ chối: 'rejected')
-  const updateListingStatus = async (id: string, status: 'active' | 'pending' | 'rejected') => {
+  const updateListingStatus = async (id: string, status: 'active' | 'pending' | 'rejected', reason?: string) => {
     // 1. Cập nhật state listings trong app
     setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
 
@@ -562,51 +586,73 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     saveStoredUserListings(updatedStored);
 
-    // 3. TỰ ĐỘNG TẠO THÔNG BÁO CHO TÀI KHOẢN NGƯỜI DÙNG KHI ADMIN DUYỆT BÀI ĐĂNG
+    // 3. TẠO THÔNG BÁO CHO ĐÚNG CHỦ TÀI KHOẢN (listing.ownerId) - TUYỆT ĐỐI KHÔNG BROADCAST CHO USER KHÁC
     if (typeof window !== 'undefined') {
       try {
         const STORAGE_KEY_NOTIFICATIONS = 'hanoi_realty_notifications';
         const title = targetItem?.title || 'Bất động sản của bạn';
+        // Xác định chính xác ID người dùng sở hữu bài đăng
+        const recipientUserId = targetItem?.ownerId || targetItem?.userId || targetItem?.createdBy;
 
-        if (status === 'active') {
-          const newNotif = {
-            id: `notif-approved-${id}-${Date.now()}`,
-            title: 'Tin đăng BĐS đã duyệt thành công',
-            content: `Tin đăng "${title}" của bạn đã được Admin kiểm duyệt thành công và chính thức hiển thị trên bản đồ!`,
-            category: 'listing' as const,
-            createdAt: 'Vừa xong',
-            timestamp: Date.now(),
-            isRead: false,
-            link: `/listings/${id}`,
-            tag: 'Đã duyệt'
-          };
+        if (recipientUserId) {
+          if (status === 'active') {
+            const notifMsg = `Tin đăng "${title}" của bạn đã được Admin kiểm duyệt thành công và chính thức hiển thị trên bản đồ!`;
+            const newNotif = {
+              id: `notif-approved-${id}-${Date.now()}`,
+              recipientUserId, // CHỈ tài khoản này mới được nhận thông báo
+              type: 'listing_approved',
+              title: 'Tin đăng BĐS đã duyệt thành công',
+              message: notifMsg,
+              content: notifMsg,
+              listingId: id,
+              category: 'listing' as const,
+              createdAt: 'Vừa xong',
+              timestamp: Date.now(),
+              isRead: false,
+              link: `/listings/${id}`,
+              tag: 'Đã duyệt'
+            };
 
-          const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
-          const existingNotifs = existingRaw ? JSON.parse(existingRaw) : [];
-          const updatedNotifs = [newNotif, ...existingNotifs.filter((n: any) => n.id !== newNotif.id)];
-          localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
+            const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
+            const existingNotifs = existingRaw ? JSON.parse(existingRaw) : [];
+            const updatedNotifs = [newNotif, ...existingNotifs.filter((n: any) => n.id !== newNotif.id)];
+            localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
 
-          // Phát sự kiện toàn cục để chuông thông báo (NotificationBell) cập nhật tức thì
-          window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
-        } else if (status === 'rejected') {
-          const newNotif = {
-            id: `notif-rejected-${id}-${Date.now()}`,
-            title: 'Tin đăng cần chỉnh sửa lại',
-            content: `Tin đăng "${title}" của bạn chưa được duyệt. Vui lòng kiểm tra lại thông tin mô tả và hình ảnh.`,
-            category: 'listing' as const,
-            createdAt: 'Vừa xong',
-            timestamp: Date.now(),
-            isRead: false,
-            link: '/dashboard',
-            tag: 'Cần sửa'
-          };
+            // Phát sự kiện toàn cục với chi tiết recipientUserId
+            window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
+            window.dispatchEvent(new Event('hanoi_notifications_updated'));
+          } else if (status === 'rejected') {
+            const rejectMsg = reason
+              ? `Tin "${title}" chưa được duyệt. Lý do: ${reason}`
+              : `Tin "${title}" chưa được duyệt. Vui lòng kiểm tra lại thông tin mô tả và hình ảnh.`;
 
-          const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
-          const existingNotifs = existingRaw ? JSON.parse(existingRaw) : [];
-          const updatedNotifs = [newNotif, ...existingNotifs.filter((n: any) => n.id !== newNotif.id)];
-          localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
+            const newNotif = {
+              id: `notif-rejected-${id}-${Date.now()}`,
+              recipientUserId, // CHỈ chủ tin nhận được
+              type: 'listing_rejected',
+              rejectionReason: reason,
+              title: 'Tin đăng chưa được duyệt',
+              message: rejectMsg,
+              content: rejectMsg,
+              listingId: id,
+              category: 'listing' as const,
+              createdAt: 'Vừa xong',
+              timestamp: Date.now(),
+              isRead: false,
+              link: '/dashboard',
+              tag: 'Cần sửa'
+            };
 
-          window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
+            const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
+            const existingNotifs = existingRaw ? JSON.parse(existingRaw) : [];
+            const updatedNotifs = [newNotif, ...existingNotifs.filter((n: any) => n.id !== newNotif.id)];
+            localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
+
+            window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
+            window.dispatchEvent(new Event('hanoi_notifications_updated'));
+          }
+        } else {
+          console.warn(`[Notification] Không tìm thấy ownerId cho listing ${id}. Không phát sinh thông báo cá nhân.`);
         }
       } catch (notifErr) {
         console.warn('Lỗi ghi nhận thông báo duyệt tin:', notifErr);
@@ -625,21 +671,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Load planning zones from localStorage
+  // Load planning zones from Supabase (fallback to localStorage / DEFAULT_PLANNING_ZONES)
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('hanoi_planning_zones');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setPlanningZones(parsed);
+    let isMounted = true;
+    async function loadPlanning() {
+      try {
+        const dbZones = await getPlanningZonesFromSupabase();
+        if (isMounted && dbZones && dbZones.length > 0) {
+          setPlanningZones(dbZones);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('hanoi_planning_zones', JSON.stringify(dbZones));
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn('Lỗi lấy quy hoạch từ Supabase, fallback về localStorage:', err);
+      }
+
+      // Fallback nếu Supabase trống hoặc chưa có mạng
+      try {
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('hanoi_planning_zones');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0 && isMounted) {
+              setPlanningZones(parsed);
+            }
           }
         }
+      } catch (e) {
+        console.warn('Failed to parse planning zones from localStorage', e);
       }
-    } catch (e) {
-      console.warn('Failed to parse planning zones from localStorage', e);
     }
+
+    loadPlanning();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const savePlanningZonesToStorage = (zones: PlanningZoneItem[]) => {
@@ -654,7 +722,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addPlanningZone = (zone: Partial<PlanningZoneItem>): string => {
-    const id = 'zone_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+    const id = zone.id || 'zone_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
     const newZone: PlanningZoneItem = {
       id,
       code: zone.code || 'ODT-NEW',
@@ -680,6 +748,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = [newZone, ...planningZones];
     savePlanningZonesToStorage(updated);
     setSelectedPlanningZoneId(id);
+
+    // Đồng bộ lên Supabase PostGIS nền
+    savePlanningZoneToSupabase(newZone).then((res) => {
+      if (res.success) {
+        console.log('[Supabase] Đã đồng bộ phân khu quy hoạch:', newZone.name);
+      } else {
+        console.warn('[Supabase] Lưu quy hoạch thất bại (sẽ lưu offline):', res.error);
+      }
+    });
+
     addToast(`🎉 Đã thêm phân khu "${newZone.name}" vào bản đồ quy hoạch!`, 'success');
     return id;
   };
@@ -691,6 +769,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (newZones[0]?.id) {
       setSelectedPlanningZoneId(newZones[0].id);
     }
+
+    // Đồng bộ hàng loạt lên Supabase
+    Promise.all(newZones.map((z) => savePlanningZoneToSupabase(z))).then(() => {
+      console.log(`[Supabase] Đã đồng bộ ${newZones.length} phân khu lên Database.`);
+    });
+
     addToast(`🎉 Đã nhập thành công ${newZones.length} phân khu quy hoạch vào bản đồ!`, 'success');
     return newZones.length;
   };
@@ -701,6 +785,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (selectedPlanningZoneId === id) {
       setSelectedPlanningZoneId(null);
     }
+
+    // Xóa trên Supabase
+    deletePlanningZoneFromSupabase(id).then((ok) => {
+      if (ok) console.log('[Supabase] Đã xóa phân khu ID:', id);
+    });
+
     addToast('Đã xóa phân khu khỏi bản đồ', 'info');
   };
 

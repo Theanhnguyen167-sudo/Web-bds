@@ -1,6 +1,10 @@
 export interface ListingItem {
   id: string;
   title: string;
+  slug?: string;
+  /** ID tài khoản đã tạo tin đăng (BẮT BUỘC để phân quyền thông báo cho đúng chủ tin) */
+  ownerId?: string;
+  createdBy?: string;
   price: number;
   pricePerM2: number;
   area: number;
@@ -14,7 +18,7 @@ export interface ListingItem {
   lng: number;
   type: "house" | "apartment" | "land" | "villa";
   images: string[];
-  status: "active" | "pending" | "sold" | "rejected";
+  status: "active" | "pending" | "sold" | "rejected" | "draft";
   isFeatured: boolean;
   views: number;
   createdAt: string;
@@ -23,11 +27,19 @@ export interface ListingItem {
   legalStatus: string;
   direction?: string;
   description?: string;
+  purpose?: "sale" | "rent";
   userId?: string;
   authorName?: string;
   authorPhone?: string;
   authorEmail?: string;
   authorAvatar?: string;
+  sellerType?: string;
+  companyName?: string;
+  contactAddress?: string;
+  showPhone?: boolean;
+  allowEmailContact?: boolean;
+  showCompany?: boolean;
+  isPhoneVerified?: boolean;
   users?: {
     full_name?: string;
     avatar_url?: string;
@@ -39,6 +51,8 @@ export interface ListingItem {
 export const mockListings: ListingItem[] = [
   {
     id: "1",
+    ownerId: "u1",
+    createdBy: "u1",
     title: "Nhà phố Đống Đa 5 tầng, mặt tiền 6m, gần Văn Miếu",
     price: 8500000000,
     pricePerM2: 85000000,
@@ -69,6 +83,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "2",
+    ownerId: "u2",
+    createdBy: "u2",
     title: "Căn hộ cao cấp Masteri West Heights Tây Mỗ, 2PN view hồ công viên",
     price: 3600000000,
     pricePerM2: 56250000,
@@ -98,6 +114,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "3",
+    ownerId: "u3",
+    createdBy: "u3",
     title: "Biệt thự song lập Tây Hồ view Hồ Tây thoáng mát, 180m2 sân vườn",
     price: 38000000000,
     pricePerM2: 211111111,
@@ -127,6 +145,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "4",
+    ownerId: "u1",
+    createdBy: "u1",
     title: "Nhà mặt phố Cầu Giấy kinh doanh sầm uất, 8 tầng thang máy",
     price: 24500000000,
     pricePerM2: 272222222,
@@ -156,6 +176,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "5",
+    ownerId: "u2",
+    createdBy: "u2",
     title: "Đất thổ cư Hoàn Kiếm phố cổ, mặt tiền 5m kinh doanh khách sạn/homestay",
     price: 16800000000,
     pricePerM2: 240000000,
@@ -185,6 +207,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "6",
+    ownerId: "u3",
+    createdBy: "u3",
     title: "Biệt thự ven sông Vinhomes Riverside Long Biên, 300m2 đơn lập VIP",
     price: 48000000000,
     pricePerM2: 160000000,
@@ -214,6 +238,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "7",
+    ownerId: "u4",
+    createdBy: "u4",
     title: "Căn hộ Vinhomes Metropolis Liễu Giai Ba Đình, 3PN full kính tràn viền",
     price: 9200000000,
     pricePerM2: 83636363,
@@ -243,6 +269,8 @@ export const mockListings: ListingItem[] = [
   },
   {
     id: "8",
+    ownerId: "u1",
+    createdBy: "u1",
     title: "Nhà liền kề Thanh Xuân gần ngã tư sở, ngõ ô tô tránh đỗ ngày đêm",
     price: 7200000000,
     pricePerM2: 96000000,
@@ -298,6 +326,71 @@ export const mockListings: ListingItem[] = [
     legalStatus: "Sổ đỏ cất két",
     direction: "Đông",
     description: "Đất vuông vắn không lỗi phong thủy, trước mặt là hồ Bảy Mẫu công viên Thống Nhất. Được cấp phép xây dựng 6 tầng 1 tum.",
+    purpose: "sale",
+  },
+  {
+    id: "10",
+    ownerId: "u2",
+    createdBy: "u2",
+    title: "Penthouse Duplex Sunshine Crystal Tây Hồ view trọn Sông Hồng",
+    price: 28500000000,
+    pricePerM2: 95000000,
+    area: 300,
+    floors: 2,
+    bedrooms: 4,
+    bathrooms: 4,
+    address: "KĐT Ciputra, Tây Hồ, Hà Nội",
+    district: "Tây Hồ",
+    ward: "Phường Phú Thượng",
+    lat: 21.0850,
+    lng: 105.8050,
+    type: "apartment",
+    purpose: "sale",
+    images: [
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80",
+    ],
+    status: "active",
+    isFeatured: true,
+    views: 680,
+    createdAt: "2025-08-24",
+    planningZone: "Đất ở đô thị cao tầng",
+    planningYear: 2030,
+    legalStatus: "Sổ hồng lâu dài",
+    direction: "Đông Bắc",
+    description: "Penthouse Duplex thông tầng siêu sang tại Ciputra Tây Hồ. Bể bơi vô cực riêng trên cao, kính Low-E tràn viền ngắm trọn hoàng hôn Sông Hồng.",
+  },
+  {
+    id: "11",
+    ownerId: "u4",
+    createdBy: "u4",
+    title: "Cho thuê căn hộ dịch vụ cao cấp Ba Đình full nội thất chuẩn 5 sao",
+    price: 25000000,
+    pricePerM2: 357000,
+    area: 70,
+    floors: 1,
+    bedrooms: 2,
+    bathrooms: 2,
+    address: "Phố Đội Cấn, Ba Đình, Hà Nội",
+    district: "Ba Đình",
+    ward: "Phường Liễu Giai",
+    lat: 21.0360,
+    lng: 105.8190,
+    type: "apartment",
+    purpose: "rent",
+    images: [
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=80",
+    ],
+    status: "active",
+    isFeatured: true,
+    views: 350,
+    createdAt: "2025-08-25",
+    planningZone: "Đất ở đô thị",
+    planningYear: 2030,
+    legalStatus: "Đầy đủ hợp đồng",
+    direction: "Đông Nam",
+    description: "Căn hộ dịch vụ cao cấp cho người nước ngoài và chuyên gia thuê. Đầy đủ tiện nghi máy giặt, máy sấy, dọn phòng tuần 3 lần, an ninh 24/7.",
   },
 ];
 

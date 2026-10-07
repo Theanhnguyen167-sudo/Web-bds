@@ -58,6 +58,7 @@ export function AboutFooter() {
           <ul className="space-y-2 text-slate-400">
             <li><Link href="/about" className="hover:text-white transition-colors">Về chúng tôi</Link></li>
             <li><Link href="/about#team" className="hover:text-white transition-colors">Đội ngũ sáng lập</Link></li>
+            <li><Link href="/news" className="hover:text-white transition-colors">Tin tức thị trường</Link></li>
             <li><Link href="/streets" className="hover:text-white transition-colors">Danh mục tuyến đường</Link></li>
             <li><Link href="/dashboard" className="hover:text-white transition-colors">Bảng điều khiển</Link></li>
           </ul>

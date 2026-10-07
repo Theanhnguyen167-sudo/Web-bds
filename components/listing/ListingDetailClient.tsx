@@ -11,7 +11,7 @@ import BookingModal from '@/components/contact/BookingModal';
 import { useApp } from '@/lib/context/AppContext';
 import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import PropertyAmenities from '@/components/listing/PropertyAmenities';
-import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
+import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
 import {
   Home,
   MapPin,
@@ -387,14 +387,23 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
           
           {/* ── BÊN TRÁI (70% / lg:col-span-7): ẢNH CỦA BÀI ĐĂNG ── */}
           <div className="lg:col-span-7 flex flex-col gap-3">
-            {/* Ảnh lớn chính */}
+            {/* Ảnh lớn chính (LCP Element - Patent 86) */}
             <div
               onClick={() => openLightbox(activeImageIndex)}
               className="relative w-full h-[360px] sm:h-[450px] rounded-2xl overflow-hidden cursor-pointer group bg-slate-950 shadow-md border border-slate-200/80"
             >
               <img
-                src={images[activeImageIndex] || images[0]}
+                src={getOptimizedImageUrl(images[activeImageIndex] || images[0], 1200, 85)}
+                srcSet={`
+                  ${getOptimizedImageUrl(images[activeImageIndex] || images[0], 640, 80)} 640w,
+                  ${getOptimizedImageUrl(images[activeImageIndex] || images[0], 1024, 85)} 1024w,
+                  ${getOptimizedImageUrl(images[activeImageIndex] || images[0], 1440, 85)} 1440w
+                `}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 840px"
                 alt={listing.title}
+                // @ts-ignore
+                fetchPriority="high"
+                decoding="async"
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
 
@@ -457,8 +466,10 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
                     }`}
                   >
                     <img
-                      src={img}
+                      src={getOptimizedImageUrl(img, 240, 75)}
                       alt={`thumb-${idx}`}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform"
                     />
                     {idx === 4 && remainingImagesCount > 0 && (
@@ -998,6 +1009,8 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             agentAvatar={sellerAvatar}
             listingTitle={listing.title}
             listingId={listing.id}
+            sellerId={listing.ownerId || listing.userId || (listing as any).createdBy}
+            sellerEmail={listing.authorEmail}
             onClose={() => setIsBookingModalOpen(false)}
           />
         )}
@@ -1010,6 +1023,8 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
         agentZalo={sellerPhone}
         listingTitle={listing.title}
         listingId={listing.id}
+        sellerId={listing.ownerId || listing.userId || (listing as any).createdBy}
+        sellerEmail={listing.authorEmail}
       />
     </div>
   );

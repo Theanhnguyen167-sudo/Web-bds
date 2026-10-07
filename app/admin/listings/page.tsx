@@ -18,6 +18,7 @@ import {
   CheckCircle,
   XCircle,
   Eye,
+  EyeOff,
   Edit,
   Trash2,
   X,
@@ -26,7 +27,10 @@ import {
   Maximize2,
   Bed,
   CheckSquare,
-  AlertCircle
+  AlertCircle,
+  ChevronDown,
+  Building2,
+  FileText
 } from 'lucide-react';
 
 export default function AdminListingsPage() {
@@ -38,6 +42,12 @@ export default function AdminListingsPage() {
   const [selectedDistrict, setSelectedDistrict] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Dropdown "+ Đăng tin mới" state
+  const [showCreateDropdown, setShowCreateDropdown] = useState(false);
+
+  // Delete modal state
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Review Drawer State
   const [reviewListing, setReviewListing] = useState<AdminListing | null>(null);
@@ -206,8 +216,49 @@ export default function AdminListingsPage() {
     setReviewListing(null);
     setIsRejecting(false);
 
-    await updateListingStatus(id, 'rejected');
+    await updateListingStatus(id, 'rejected', rejectionReason);
     await refreshListings();
+  };
+
+  const handleToggleHide = async (listing: AdminListing) => {
+    const nextStatus = listing.status === 'expired' ? 'active' : 'expired';
+    setListings((prev) =>
+      prev.map((l) => (l.id === listing.id ? { ...l, status: nextStatus as any } : l))
+    );
+    addToast(
+      nextStatus === 'expired'
+        ? `Đã ẩn tin đăng: "${listing.title}"`
+        : `Đã kích hoạt hiển thị lại tin: "${listing.title}"`,
+      'info'
+    );
+    await updateListingStatus(listing.id, nextStatus === 'active' ? 'active' : 'rejected');
+  };
+
+  const handlePublish = async (listing: AdminListing) => {
+    setListings((prev) =>
+      prev.map((l) => (l.id === listing.id ? { ...l, status: 'active' as const } : l))
+    );
+    addToast(`Đã xuất bản tin đăng: "${listing.title}"`, 'success');
+    await updateListingStatus(listing.id, 'active');
+    await refreshListings();
+  };
+
+  const handleDelete = (id: string) => {
+    setListings((prev) => prev.filter((l) => l.id !== id));
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('hanoi_platform_user_listings');
+        if (raw) {
+          const list = JSON.parse(raw);
+          if (Array.isArray(list)) {
+            const filtered = list.filter((item: any) => item.id !== id);
+            localStorage.setItem('hanoi_platform_user_listings', JSON.stringify(filtered));
+          }
+        }
+      } catch {}
+    }
+    setDeleteConfirmId(null);
+    addToast('Đã xóa vĩnh viễn tin đăng khỏi hệ thống', 'success');
   };
 
   const columns: Column<AdminListing>[] = [
@@ -296,7 +347,7 @@ export default function AdminListingsPage() {
               Tất cả Tin đăng ({listings.length.toLocaleString()})
             </h2>
             <p className="text-xs text-slate-500">
-              Kiểm duyệt, chỉnh sửa nội dung và quản lý trạng thái tin
+              Kiểm duyệt, chỉnh sửa nội dung và quản lý trạng thái tin bất động sản.
             </p>
           </div>
 
@@ -309,13 +360,58 @@ export default function AdminListingsPage() {
               <span>Export</span>
             </button>
 
-            <Link
-              href="/listings/create"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-md shadow-orange-500/20 transition-colors"
-            >
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span>+ Đăng tin mới</span>
-            </Link>
+            {/* Dropdown Menu "+ Đăng tin mới" */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowCreateDropdown(!showCreateDropdown)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-md shadow-orange-500/20 transition-all cursor-pointer"
+              >
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span>+ Đăng tin mới</span>
+                <ChevronDown className={`h-3 w-3 ml-0.5 transition-transform ${showCreateDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showCreateDropdown && (
+                <div className="absolute right-0 top-full mt-2 z-40 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 p-2 space-y-1 animate-in fade-in zoom-in-95">
+                  <Link
+                    href="/admin/listings/create"
+                    onClick={() => setShowCreateDropdown(false)}
+                    className="flex items-start gap-3 p-3 rounded-xl hover:bg-orange-50/60 transition-colors group"
+                  >
+                    <div className="p-2 rounded-lg bg-orange-100 text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-navy group-hover:text-orange-600">
+                        + Đăng tin bất động sản
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        Quy trình chuẩn 6 bước: Vị trí, hình ảnh, thông số & bản đồ
+                      </p>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/admin/articles/new"
+                    onClick={() => setShowCreateDropdown(false)}
+                    className="flex items-start gap-3 p-3 rounded-xl hover:bg-blue-50/60 transition-colors group"
+                  >
+                    <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-navy group-hover:text-blue-600">
+                        + Tạo bài viết / tin tức
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        CMS chuyên nghiệp, Rich Text Editor & khối nội dung
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -402,15 +498,39 @@ export default function AdminListingsPage() {
             <div className="flex items-center gap-1">
               {listing.status === 'pending' && (
                 <button
+                  type="button"
                   onClick={() => {
                     setReviewListing(listing);
                     setIsRejecting(false);
                   }}
                   className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center gap-1 shadow-2xs"
+                  title="Duyệt tin đăng"
                 >
                   <Eye className="h-3 w-3" />
                   <span>Duyệt tin</span>
                 </button>
+              )}
+
+              {listing.status === 'active' ? (
+                <button
+                  type="button"
+                  onClick={() => handleToggleHide(listing)}
+                  className="p-1.5 rounded-lg hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-colors"
+                  title="Ẩn tin đăng"
+                >
+                  <EyeOff className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                listing.status !== 'pending' && (
+                  <button
+                    type="button"
+                    onClick={() => handlePublish(listing)}
+                    className="p-1.5 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors"
+                    title="Xuất bản lại tin đăng"
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" />
+                  </button>
+                )
               )}
 
               <Link
@@ -429,6 +549,15 @@ export default function AdminListingsPage() {
               >
                 <Edit className="h-3.5 w-3.5" />
               </Link>
+
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(listing.id)}
+                className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
+                title="Xóa tin đăng"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
         />
@@ -598,6 +727,39 @@ export default function AdminListingsPage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* ── MODAL XÁC NHẬN XÓA TIN ĐĂNG ── */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="p-2.5 rounded-full bg-rose-50">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <h4 className="font-bold text-navy text-sm">Xác nhận xóa tin đăng?</h4>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Thao tác này sẽ xóa tin đăng bất động sản khỏi hệ thống quản lý. Bạn có chắc chắn muốn tiếp tục?
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(deleteConfirmId)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
+              >
+                Xóa tin đăng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

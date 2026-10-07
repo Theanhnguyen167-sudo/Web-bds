@@ -231,6 +231,19 @@ export function filterListings(
       }
     }
 
+    // 16. Listing Purpose (Cần bán vs Cho thuê)
+    if (filters.listingType) {
+      if (filters.listingType === 'rent') {
+        const isRent =
+          listing.purpose === 'rent' ||
+          (listing.description && /cho thuê|giá thuê|cho thue/i.test(listing.description)) ||
+          /cho thuê|cho thue/i.test(listing.title);
+        if (!isRent) return false;
+      } else if (filters.listingType === 'sale') {
+        if (listing.purpose === 'rent') return false;
+      }
+    }
+
     return true;
   });
 }

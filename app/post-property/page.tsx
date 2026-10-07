@@ -1,0 +1,19 @@
+'use client';
+
+import React from 'react';
+import { Navbar } from '@/components/layout/Navbar';
+import { CreateListingWizard } from '@/components/listing/CreateListingWizard';
+
+export default function PostPropertyPage() {
+  return (
+    <div className="min-h-screen bg-page-bg flex flex-col">
+      <Navbar />
+
+      <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+        <React.Suspense fallback={<div className="py-20 text-center text-sm text-text-muted">Đang tải bộ đăng tin...</div>}>
+          <CreateListingWizard />
+        </React.Suspense>
+      </main>
+    </div>
+  );
+}

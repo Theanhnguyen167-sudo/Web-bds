@@ -2,11 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiModel } from '@/lib/ai/gemini';
 import { buildPlanningPDFAnalysisPrompt } from '@/lib/ai/prompts';
 import { generateDistrictMultiZones, detectDistrictFromText } from '@/lib/planning/planning-utils';
+import { checkRateLimit } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate Limiting: 10 requests / 60s
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'anonymous';
+    const rateCheck = checkRateLimit(`ai-pdf:${clientIp}`, 10, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: `Tần suất phân tích PDF quá nhanh. Vui lòng thử lại sau ${rateCheck.retryAfterSec} giây.`,
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSec) } }
+      );
+    }
+
     const body = await req.json();
     const { fileName, pdfBase64, fileSize, districtHint } = body;
 

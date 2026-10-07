@@ -11,6 +11,8 @@ export interface FloatingContactWidgetProps {
   agentZalo?: string
   listingTitle: string
   listingId: string
+  sellerId?: string
+  sellerEmail?: string
 }
 
 export default function FloatingContactWidget({
@@ -19,6 +21,8 @@ export default function FloatingContactWidget({
   agentZalo,
   listingTitle,
   listingId,
+  sellerId,
+  sellerEmail,
 }: FloatingContactWidgetProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showBookingModal, setShowBookingModal] = useState(false)
@@ -169,8 +173,11 @@ export default function FloatingContactWidget({
         {showBookingModal && (
           <BookingModal
             agentName={agentName}
+            agentPhone={agentPhone}
             listingTitle={listingTitle}
             listingId={listingId}
+            sellerId={sellerId}
+            sellerEmail={sellerEmail}
             onClose={() => setShowBookingModal(false)}
           />
         )}

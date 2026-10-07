@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { parseLocationCoordinates, HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/api-utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xdqfxsszpglbgvpcqfss.supabase.co';
 const supabaseKey =
@@ -17,6 +18,21 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 // query param ?status=all | pending | active
 export async function GET(req: Request) {
   try {
+    // 3.3. Rate Limiting: 60 requests / minute / IP
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'anonymous';
+    const rateCheck = checkRateLimit(`listings:${clientIp}`, 60, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: `Tần suất tìm kiếm quá nhanh. Vui lòng thử lại sau ${rateCheck.retryAfterSec} giây.`,
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSec) } }
+      );
+    }
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') || 'all';
     const author = searchParams.get('author');

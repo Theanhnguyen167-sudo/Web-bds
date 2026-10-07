@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ListingItem } from '@/lib/mock-data';
-import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
+import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
 import {
   MapPin,
@@ -83,8 +83,10 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
           className="relative aspect-video w-full overflow-hidden bg-slate-100 cursor-pointer"
         >
           <img
-            src={listing.images[0]}
+            src={getOptimizedImageUrl(listing.images[0], 600, 80)}
             alt={listing.title}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
           />
 
@@ -148,46 +150,46 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
 
         {/* Content Details */}
         <div className="flex flex-1 flex-col p-3.5">
-          {/* Title */}
+          {/* Title — Secondary Information (text-slate-800, hover orange) */}
           <Link
             href={`/listings/${listing.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="line-clamp-2 text-xs font-bold leading-snug text-text-primary hover:text-accent transition-colors block cursor-pointer"
+            className="line-clamp-2 text-xs font-bold leading-snug text-slate-800 hover:text-orange-600 transition-colors block cursor-pointer"
           >
             {listing.title}
           </Link>
 
-          {/* Address truncated */}
-          <div className="mt-2 flex items-center gap-1 text-[11px] text-text-secondary">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" />
+          {/* Address — Secondary Information (text-slate-600) */}
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-600 font-medium">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
             <span className="truncate">{listing.ward ? `${listing.ward}, ` : ''}{listing.district}, Hà Nội</span>
           </div>
 
-          {/* Specs Row */}
-          <div className="mt-3 flex items-center justify-between border-t border-border/80 pt-2.5 text-[11px] text-text-secondary">
+          {/* Specs Row — Metadata (text-slate-500 / 600, nhẹ hơn Title & Location) */}
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11px] text-slate-500">
             <div className="flex items-center gap-1">
               <Maximize2 className="h-3.5 w-3.5 text-slate-400" />
-              <span className="font-semibold text-text-primary">{listing.area} m²</span>
+              <span className="font-semibold text-slate-600">{listing.area} m²</span>
             </div>
 
             {listing.floors > 0 && (
               <div className="flex items-center gap-1">
                 <Building className="h-3.5 w-3.5 text-slate-400" />
-                <span>{listing.floors} tầng</span>
+                <span className="font-medium text-slate-500">{listing.floors} tầng</span>
               </div>
             )}
 
             {listing.bedrooms > 0 && (
               <div className="flex items-center gap-1">
                 <Bed className="h-3.5 w-3.5 text-slate-400" />
-                <span>{listing.bedrooms} PN</span>
+                <span className="font-medium text-slate-500">{listing.bedrooms} PN</span>
               </div>
             )}
 
             {listing.bathrooms > 0 && (
               <div className="flex items-center gap-1">
                 <Bath className="h-3.5 w-3.5 text-slate-400" />
-                <span>{listing.bathrooms} PT</span>
+                <span className="font-medium text-slate-500">{listing.bathrooms} PT</span>
               </div>
             )}
           </div>

@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { mockListings, ListingItem } from '@/lib/mock-data';
 import { parseLocationCoordinates } from '@/lib/utils';
+import { getListingUrl } from '@/lib/listing-slug';
 import ListingDetailClient from '@/components/listing/ListingDetailClient';
 
 interface ListingPageProps {
@@ -103,13 +105,18 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   const listing = (await getListingById(params.id)) || mockListings[0];
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
   const formattedPrice = ((listing.price || 0) / 1e9).toFixed(1);
+  const pageUrl = `${baseUrl}/listings/${params.id}`;
 
   return {
     title: `${listing.title} - HaNoi Realty`,
-    description: `${listing.area}m² · ${listing.district} · ${formattedPrice} tỷ VNĐ`,
+    description: `${listing.area}m² · ${listing.district} · ${formattedPrice} tỷ VNĐ · ${listing.legalStatus || 'Sổ đỏ chính chủ'}`,
+    alternates: {
+      canonical: pageUrl,
+    },
     openGraph: {
       title: listing.title,
-      description: `Giá: ${formattedPrice} tỷ · ${listing.area}m² · ${listing.district}`,
+      description: `Giá: ${formattedPrice} tỷ · ${listing.area}m² · ${listing.district} · Pháp lý: ${listing.legalStatus || 'Sổ đỏ chính chủ'}`,
+      url: pageUrl,
       images: [
         {
           url: listing.images?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
@@ -125,5 +132,8 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 
 export default async function ListingPage({ params }: ListingPageProps) {
   const initialListing = await getListingById(params.id);
-  return <ListingDetailClient listingId={params.id} initialListing={initialListing || undefined} />;
+  const listing = initialListing || mockListings.find((l) => l.id === params.id) || mockListings[0];
+
+  // Auto redirect dạng URL cũ sang URL SEO mới: /mua-ban/[loai-bds]/[quan]/[slug]
+  redirect(getListingUrl(listing));
 }

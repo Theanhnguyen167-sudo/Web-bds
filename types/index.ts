@@ -4,6 +4,7 @@ export * from './planning';
 export * from './ai-report';
 export * from './payment';
 export * from './notification';
+export * from './article';
 
 export interface ApiResponse<T = any> {
   success: boolean;

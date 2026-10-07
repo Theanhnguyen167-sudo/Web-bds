@@ -36,6 +36,7 @@ const STORAGE_KEY_PREFS = 'hanoi_realty_notification_prefs';
 const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'notif-1',
+    recipientUserId: 'all', // Thông báo quy hoạch chung cho toàn bộ người dùng
     title: 'Cập nhật Quy hoạch Phân khu H2-2 Cầu Giấy',
     content: 'Đồ án điều chỉnh quy hoạch chi tiết 1/2000 khu đô thị mới Cầu Giấy vừa được UBND Hà Nội phê duyệt.',
     category: 'planning',
@@ -47,6 +48,8 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-2',
+    recipientUserId: 'u1', // Chỉ thuộc về tài khoản u1
+    type: 'appointment',
     title: 'Khách hẹn xem nhà mới',
     content: 'Khách hàng Hoàng Nam gửi yêu cầu hẹn xem căn "Nhà phố phân lô Dịch Vọng 65m²" vào 14:30 ngày mai.',
     category: 'message',
@@ -55,6 +58,7 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
     isRead: false,
     link: '/listings/1',
     tag: 'Hẹn xem nhà',
+    listingId: '1',
     appointmentData: {
       buyerName: 'Hoàng Nam',
       buyerPhone: '0912 888 999',
@@ -67,6 +71,8 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-3',
+    recipientUserId: 'u1',
+    type: 'ai',
     title: 'Báo cáo AI Thẩm định hoàn tất',
     content: 'Gemini AI 1.5 Pro đã hoàn tất định giá tự động và rà soát pháp lý cho bất động sản tại Nam Từ Liêm.',
     category: 'ai',
@@ -78,6 +84,7 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-4',
+    recipientUserId: 'all', // Biến động giá thị trường chung
     title: 'Biến động giá khu vực quan tâm',
     content: 'Chỉ số giá đất ở tại quận Tây Hồ tăng 2.3% so với quý trước, đạt mức trung bình 285 triệu/m².',
     category: 'listing',
@@ -89,6 +96,8 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-5',
+    recipientUserId: 'u1',
+    type: 'listing_approved',
     title: 'Tin đăng BĐS đã duyệt thành công',
     content: 'Tin đăng "Biệt thự Gamuda Yên Sở 220m²" của bạn đã được kiểm duyệt hợp lệ và hiển thị ưu tiên trên bản đồ.',
     category: 'system',
@@ -109,10 +118,32 @@ const DEFAULT_PREFS: NotificationPreferences = {
   weeklyEmailDigest: true
 };
 
-export const NotificationBell: React.FC = () => {
+export interface NotificationBellProps {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
+  variant?: 'popover' | 'embedded';
+  onUnreadCountChange?: (count: number) => void;
+}
+
+export const NotificationBell: React.FC<NotificationBellProps> = ({
+  isOpen: controlledOpen,
+  onOpenChange,
+  hideTrigger = false,
+  variant = 'popover',
+  onUnreadCountChange,
+}) => {
   const router = useRouter();
-  const { addToast } = useApp();
-  const [isOpen, setIsOpen] = useState(false);
+  const { user, listings, addToast } = useApp();
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = variant === 'embedded' ? true : (controlledOpen !== undefined ? controlledOpen : internalOpen);
+  const setIsOpen = (val: boolean | ((prev: boolean) => boolean)) => {
+    const nextVal = typeof val === 'function' ? val(isOpen) : val;
+    if (controlledOpen === undefined) {
+      setInternalOpen(nextVal);
+    }
+    onOpenChange?.(nextVal);
+  };
   const [viewMode, setViewMode] = useState<'list' | 'settings'>('list');
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'planning' | 'listings' | 'appointments'>('all');
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentData | null>(null);
@@ -178,12 +209,26 @@ export const NotificationBell: React.FC = () => {
       }
     };
 
+    const handleLocalUpdate = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setNotifications(parsed);
+          }
+        }
+      } catch {}
+    };
+
     window.addEventListener('hanoi_new_notification', handleNewNotification);
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('hanoi_notifications_updated', handleLocalUpdate);
 
     return () => {
       window.removeEventListener('hanoi_new_notification', handleNewNotification);
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('hanoi_notifications_updated', handleLocalUpdate);
     };
   }, []);
 
@@ -193,6 +238,7 @@ export const NotificationBell: React.FC = () => {
     try {
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(newNotifs));
+        window.dispatchEvent(new Event('hanoi_notifications_updated'));
       }
     } catch {
       // Ignore
@@ -210,8 +256,10 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
-  // Close on outside click or ESC
+  // Close on outside click or ESC (only for popover variant)
   useEffect(() => {
+    if (variant === 'embedded') return;
+
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -234,7 +282,7 @@ export const NotificationBell: React.FC = () => {
       document.removeEventListener('touchstart', handleOutsideClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, variant]);
 
   // Audio Chime using Web Audio API
   const playChime = () => {
@@ -258,13 +306,61 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  // CHỈ lấy các thông báo thuộc về tài khoản hiện tại hoặc thông báo chung toàn hệ thống ('all')
+  const currentUserId = user?.id;
+  const currentUserEmail = user?.email?.toLowerCase();
 
-  // Filtered Notifications
-  const filteredNotifications = notifications.filter((n) => {
+  // Danh sách ID các bài đăng thuộc sở hữu của người dùng hiện tại
+  const myListingIds = new Set(
+    listings
+      .filter((l) => {
+        if (!user) return false;
+        if (l.ownerId && l.ownerId === user.id) return true;
+        if (l.userId && l.userId === user.id) return true;
+        if (l.createdBy && l.createdBy === user.id) return true;
+        if (currentUserEmail && l.authorEmail && l.authorEmail.toLowerCase() === currentUserEmail) return true;
+        return false;
+      })
+      .map((l) => l.id)
+  );
+
+  const userNotifications = notifications.filter((n) => {
+    // Nếu notification cũ không có recipientUserId, tuyệt đối không hiển thị bừa bãi
+    if (!n.recipientUserId) return false;
+
+    // Thông báo chung toàn hệ thống
+    if (n.recipientUserId === 'all') return true;
+
+    // Nếu chưa đăng nhập, chỉ nhận thông báo hệ thống chung 'all'
+    if (!currentUserId && !currentUserEmail) return false;
+
+    // 1. Trùng ID người dùng
+    if (currentUserId && n.recipientUserId === currentUserId) return true;
+
+    // 2. Trùng Email tác giả
+    if (currentUserEmail && n.recipientUserId.toLowerCase() === currentUserEmail) return true;
+
+    // 3. Trong trường hợp có appointmentData nhưng recipientUserId được lưu dưới dạng email hoặc id
+    if (n.appointmentData?.sellerId && currentUserId && n.appointmentData.sellerId === currentUserId) return true;
+    if (n.appointmentData?.sellerEmail && currentUserEmail && n.appointmentData.sellerEmail.toLowerCase() === currentUserEmail) return true;
+
+    // 4. Khớp với ID tin đăng mà người dùng này sở hữu
+    if (n.listingId && myListingIds.has(n.listingId)) return true;
+
+    return false;
+  });
+
+  const unreadCount = userNotifications.filter((n) => !n.isRead).length;
+
+  useEffect(() => {
+    onUnreadCountChange?.(unreadCount);
+  }, [unreadCount, onUnreadCountChange]);
+
+  // Filtered Notifications dựa trên userNotifications
+  const filteredNotifications = userNotifications.filter((n) => {
     if (activeFilter === 'unread') return !n.isRead;
     if (activeFilter === 'planning') return n.category === 'planning';
-    if (activeFilter === 'listings') return ['listing', 'message', 'ai'].includes(n.category);
+    if (activeFilter === 'listings') return ['listing', 'ai'].includes(n.category) && n.tag !== 'Hẹn xem nhà';
     if (activeFilter === 'appointments') return n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData);
     return true;
   });
@@ -283,11 +379,12 @@ export const NotificationBell: React.FC = () => {
     saveNotifications(updated);
   };
 
-  // Mark all as read
+  // Mark all as read: CHỈ đánh dấu đã đọc cho thông báo của tài khoản hiện tại
   const handleMarkAllAsRead = () => {
-    const updated = notifications.map((n) => ({ ...n, isRead: true }));
+    const userNotifIds = new Set(userNotifications.map((n) => n.id));
+    const updated = notifications.map((n) => (userNotifIds.has(n.id) ? { ...n, isRead: true } : n));
     saveNotifications(updated);
-    addToast('Đã đánh dấu tất cả thông báo là đã đọc', 'info');
+    addToast('Đã đánh dấu tất cả thông báo của bạn là đã đọc', 'info');
   };
 
   // Delete notification
@@ -298,17 +395,70 @@ export const NotificationBell: React.FC = () => {
     addToast('Đã xoá thông báo', 'info');
   };
 
-  // Clear all notifications
+  // Clear all notifications: CHỈ xoá các thông báo của chính user hiện tại, không xoá của tài khoản khác
   const handleClearAll = () => {
-    saveNotifications([]);
-    addToast('Đã xoá toàn bộ danh sách thông báo', 'info');
+    const userNotifIds = new Set(userNotifications.map((n) => n.id));
+    const updated = notifications.filter((n) => !userNotifIds.has(n.id));
+    saveNotifications(updated);
+    addToast('Đã xoá danh sách thông báo của bạn', 'info');
+  };
+
+  // Update status for an appointment from notification card
+  const handleUpdateAppointmentStatus = (
+    apptId: string,
+    newStatus: 'confirmed' | 'cancelled',
+    e?: React.MouseEvent
+  ) => {
+    e?.stopPropagation();
+    try {
+      // 1. Update in notifications
+      const updatedNotifs = notifications.map((n) => {
+        if (n.appointmentId === apptId || (n.appointmentData && n.appointmentId === apptId)) {
+          return {
+            ...n,
+            appointmentData: n.appointmentData ? { ...n.appointmentData, status: newStatus } : undefined
+          };
+        }
+        return n;
+      });
+      saveNotifications(updatedNotifs);
+
+      // 2. Update in appointments storage
+      if (typeof window !== 'undefined') {
+        const rawAppts = localStorage.getItem('hanoi_realty_appointments');
+        if (rawAppts) {
+          const appts = JSON.parse(rawAppts);
+          if (Array.isArray(appts)) {
+            const updatedAppts = appts.map((a: any) =>
+              a.id === apptId ? { ...a, status: newStatus } : a
+            );
+            localStorage.setItem('hanoi_realty_appointments', JSON.stringify(updatedAppts));
+            window.dispatchEvent(new Event('hanoi_appointments_updated'));
+          }
+        }
+      }
+
+      if (selectedAppointment && (selectedAppointment as any).id === apptId) {
+        setSelectedAppointment((prev) => (prev ? { ...prev, status: newStatus } : null));
+      }
+
+      addToast(
+        newStatus === 'confirmed'
+          ? '✅ Đã xác nhận đón khách xem nhà thành công'
+          : '❌ Đã huỷ lịch hẹn xem nhà',
+        newStatus === 'confirmed' ? 'success' : 'info'
+      );
+    } catch {}
   };
 
   // Click on a notification item
   const handleItemClick = (notif: NotificationItem) => {
     handleMarkAsRead(notif.id);
     if (notif.appointmentData) {
-      setSelectedAppointment(notif.appointmentData);
+      setSelectedAppointment({
+        ...notif.appointmentData,
+        id: notif.appointmentId || (notif.appointmentData as any).id
+      } as any);
       return;
     }
     setIsOpen(false);
@@ -347,7 +497,7 @@ export const NotificationBell: React.FC = () => {
   const handleSimulateDemoNotification = () => {
     playChime();
 
-    const sampleNotifications: Omit<NotificationItem, 'id' | 'createdAt' | 'timestamp' | 'isRead'>[] = [
+    const sampleNotifications: Omit<NotificationItem, 'id' | 'createdAt' | 'timestamp' | 'isRead' | 'recipientUserId'>[] = [
       {
         title: 'Tin đăng BĐS đã duyệt thành công',
         content: 'Tin đăng "Bán Biệt thự / Shophouse 75m² tại Cầu Giấy" của bạn đã được Admin kiểm duyệt thành công và chính thức hiển thị trên bản đồ!',
@@ -382,6 +532,7 @@ export const NotificationBell: React.FC = () => {
     const newNotif: NotificationItem = {
       ...randomTemplate,
       id: `notif-${Date.now()}`,
+      recipientUserId: user?.id || 'u1', // Gắn cho chính user hiện tại đang bấm thử
       createdAt: 'Vừa xong',
       timestamp: Date.now(),
       isRead: false
@@ -457,47 +608,53 @@ export const NotificationBell: React.FC = () => {
   };
 
   return (
-    <div className="relative inline-block" ref={containerRef}>
+    <div className={variant === 'embedded' ? 'w-full' : 'relative inline-block'} ref={containerRef}>
       {/* ── TRIGGER BELL BUTTON ── */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen((prev) => !prev);
-        }}
-        aria-label="Quản lý và nhận thông báo"
-        className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 border cursor-pointer select-none ${
-          isOpen
-            ? 'bg-accent text-white border-accent shadow-md shadow-accent/25'
-            : 'bg-primary-light/60 border-slate-700 text-slate-200 hover:text-white hover:bg-primary-light hover:border-slate-500'
-        }`}
-        title="Thông báo hệ thống, quy hoạch và BĐS"
-      >
-        <Bell className="h-4 w-4 transition-transform duration-200" />
+      {!hideTrigger && variant === 'popover' && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+          aria-label="Quản lý và nhận thông báo"
+          className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 border cursor-pointer select-none ${
+            isOpen
+              ? 'bg-accent text-white border-accent shadow-md shadow-accent/25'
+              : 'bg-primary-light/60 border-slate-700 text-slate-200 hover:text-white hover:bg-primary-light hover:border-slate-500'
+          }`}
+          title="Thông báo hệ thống, quy hoạch và BĐS"
+        >
+          <Bell className="h-4 w-4 transition-transform duration-200" />
 
-        {/* Unread Counter Badge */}
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-extrabold text-white shadow-md shadow-accent/40 ring-2 ring-primary">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
+          {/* Unread Counter Badge */}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-extrabold text-white shadow-md shadow-accent/40 ring-2 ring-primary">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
 
-        {/* Subtle Pulse Ring when unread exists */}
-        {unreadCount > 0 && !isOpen && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent/40 animate-ping pointer-events-none" />
-        )}
-      </button>
+          {/* Subtle Pulse Ring when unread exists */}
+          {unreadCount > 0 && !isOpen && (
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent/40 animate-ping pointer-events-none" />
+          )}
+        </button>
+      )}
 
-      {/* ── DROPDOWN POPOVER PANEL ── */}
+      {/* ── DROPDOWN POPOVER OR EMBEDDED PANEL ── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.96 }}
+            initial={variant === 'embedded' ? { opacity: 0, y: 10 } : { opacity: 0, y: 8, scale: 0.96 }}
+            animate={variant === 'embedded' ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={variant === 'embedded' ? { opacity: 0, y: -10 } : { opacity: 0, y: 6, scale: 0.96 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-0 top-full mt-2.5 w-[360px] sm:w-[410px] max-w-[calc(100vw-24px)] rounded-2xl border border-slate-700 bg-slate-900 text-slate-100 shadow-2xl z-[9999] overflow-hidden ring-1 ring-white/10"
+            className={
+              variant === 'embedded'
+                ? 'w-full rounded-3xl border border-slate-800 bg-slate-900 text-slate-100 shadow-xl overflow-hidden ring-1 ring-white/10'
+                : 'fixed right-3 top-16 sm:absolute sm:right-0 sm:top-full sm:mt-2.5 w-[360px] sm:w-[410px] max-w-[calc(100vw-24px)] rounded-2xl border border-slate-700 bg-slate-900 text-slate-100 shadow-2xl z-[9999] overflow-hidden ring-1 ring-white/10'
+            }
           >
             {/* Popover Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/70 bg-slate-950/60">
@@ -560,14 +717,16 @@ export const NotificationBell: React.FC = () => {
                   </button>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-1"
-                  aria-label="Đóng"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                {variant !== 'embedded' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-1"
+                    aria-label="Đóng"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
 
@@ -585,7 +744,7 @@ export const NotificationBell: React.FC = () => {
                         : 'text-slate-300 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    Tất cả ({notifications.length})
+                    Tất cả ({userNotifications.length})
                   </button>
                   <button
                     type="button"
@@ -607,7 +766,7 @@ export const NotificationBell: React.FC = () => {
                         : 'text-slate-300 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    📅 Lịch hẹn ({notifications.filter(n => n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData)).length})
+                    📅 Lịch hẹn ({userNotifications.filter(n => n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData)).length})
                   </button>
                   <button
                     type="button"
@@ -634,7 +793,7 @@ export const NotificationBell: React.FC = () => {
                 </div>
 
                 {/* Notifications Scroll Container */}
-                <div className="max-h-[350px] sm:max-h-[380px] overflow-y-auto divide-y divide-slate-700/50">
+                <div className={`${variant === 'embedded' ? 'max-h-[520px]' : 'max-h-[350px] sm:max-h-[380px]'} overflow-y-auto divide-y divide-slate-700/50`}>
                   {filteredNotifications.length > 0 ? (
                     filteredNotifications.map((item) => {
                       const details = getCategoryDetails(item.category, item.tag);
@@ -695,9 +854,19 @@ export const NotificationBell: React.FC = () => {
                                     <Calendar className="h-3.5 w-3.5 text-orange-400" />
                                     <span>{item.appointmentData.time} • {item.appointmentData.date}</span>
                                   </span>
-                                  <span className="rounded-full bg-orange-500/20 text-orange-300 text-[10px] font-bold px-1.5 py-0.2 border border-orange-500/30">
-                                    Lịch hẹn mới
-                                  </span>
+                                  {item.appointmentData.status === 'confirmed' ? (
+                                    <span className="rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.2 border border-emerald-500/30">
+                                      ✓ Đã xác nhận
+                                    </span>
+                                  ) : item.appointmentData.status === 'cancelled' ? (
+                                    <span className="rounded-full bg-slate-700/60 text-slate-400 text-[10px] font-bold px-2 py-0.2 border border-slate-600">
+                                      ✕ Đã huỷ
+                                    </span>
+                                  ) : (
+                                    <span className="rounded-full bg-orange-500/20 text-orange-300 text-[10px] font-bold px-2 py-0.2 border border-orange-500/30">
+                                      ⏳ Chờ xác nhận
+                                    </span>
+                                  )}
                                 </div>
 
                                 <div className="flex items-center gap-1.5 text-slate-300 text-[11px]">
@@ -713,11 +882,11 @@ export const NotificationBell: React.FC = () => {
                                   </p>
                                 )}
 
-                                <div className="pt-1.5 flex items-center gap-2 border-t border-slate-800">
+                                <div className="pt-1.5 flex flex-wrap items-center gap-1.5 border-t border-slate-800">
                                   <a
                                     href={`tel:${item.appointmentData.buyerPhone.replace(/\s+/g, '')}`}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition-colors shadow-xs"
+                                    className="flex-1 min-w-[70px] flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition-colors shadow-xs"
                                   >
                                     <Phone className="h-3 w-3" />
                                     <span>Gọi ngay</span>
@@ -727,11 +896,30 @@ export const NotificationBell: React.FC = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#0068FF] hover:bg-[#0055d4] text-white font-bold text-[10px] transition-colors shadow-xs"
+                                    className="flex-1 min-w-[70px] flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#0068FF] hover:bg-[#0055d4] text-white font-bold text-[10px] transition-colors shadow-xs"
                                   >
                                     <MessageSquare className="h-3 w-3" />
-                                    <span>Chat Zalo</span>
+                                    <span>Zalo</span>
                                   </a>
+
+                                  {(!item.appointmentData.status || item.appointmentData.status === 'pending') && item.appointmentId && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => handleUpdateAppointmentStatus(item.appointmentId!, 'confirmed', e)}
+                                        className="py-1.5 px-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] transition-colors shadow-xs"
+                                      >
+                                        Xác nhận
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => handleUpdateAppointmentStatus(item.appointmentId!, 'cancelled', e)}
+                                        className="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-red-950 hover:text-red-400 text-slate-400 text-[10px] font-semibold transition-colors"
+                                      >
+                                        Huỷ
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             )}
@@ -793,17 +981,28 @@ export const NotificationBell: React.FC = () => {
 
                 {/* Popover Footer */}
                 <div className="flex items-center justify-between px-3.5 py-2.5 bg-primary/70 border-t border-slate-700/70 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      router.push('/dashboard');
-                    }}
-                    className="flex items-center gap-1 font-semibold text-accent hover:text-accent-hover transition-colors"
-                  >
-                    <span>Xem bảng điều khiển</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </button>
+                  {variant === 'embedded' ? (
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('settings')}
+                      className="flex items-center gap-1 font-semibold text-accent hover:text-accent-hover transition-colors"
+                    >
+                      <Sliders className="h-3 w-3" />
+                      <span>Cài đặt nhận thông báo</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push('/dashboard?tab=notifications');
+                      }}
+                      className="flex items-center gap-1 font-semibold text-accent hover:text-accent-hover transition-colors"
+                    >
+                      <span>Quản lý trong Tài khoản</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </button>
+                  )}
 
                   {notifications.length > 0 && (
                     <button
@@ -1071,23 +1270,46 @@ export const NotificationBell: React.FC = () => {
               </div>
 
               {/* Action buttons */}
-              <div className="pt-2 flex items-center gap-2.5">
-                <a
-                  href={`tel:${selectedAppointment.buyerPhone.replace(/\s+/g, '')}`}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition-colors"
-                >
-                  <Phone className="h-4 w-4" />
-                  <span>Gọi điện ngay</span>
-                </a>
-                <a
-                  href={`https://zalo.me/${selectedAppointment.buyerPhone.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white font-extrabold text-xs shadow-md transition-colors"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Nhắn Zalo</span>
-                </a>
+              <div className="pt-2 flex flex-col gap-2">
+                <div className="flex items-center gap-2.5">
+                  <a
+                    href={`tel:${selectedAppointment.buyerPhone.replace(/\s+/g, '')}`}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition-colors"
+                  >
+                    <Phone className="h-4 w-4" />
+                    <span>Gọi điện ngay</span>
+                  </a>
+                  <a
+                    href={`https://zalo.me/${selectedAppointment.buyerPhone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white font-extrabold text-xs shadow-md transition-colors"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Nhắn Zalo</span>
+                  </a>
+                </div>
+
+                {/* Confirm or Cancel buttons */}
+                {(!selectedAppointment.status || selectedAppointment.status === 'pending') && (selectedAppointment as any).id && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateAppointmentStatus((selectedAppointment as any).id, 'confirmed')}
+                      className="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span>Xác nhận đón khách</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateAppointmentStatus((selectedAppointment as any).id, 'cancelled')}
+                      className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-red-950 hover:text-red-400 text-slate-300 font-bold text-xs transition-colors"
+                    >
+                      Huỷ hẹn
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button

@@ -97,11 +97,14 @@ export default function ListingDetailMap({
         fillOpacity: 0.08,
         weight: 1.5,
         dashArray: '6,6',
-      }).addTo(map).bindTooltip('Bán kính đi bộ 500m', {
-        permanent: false,
-        direction: 'top',
-        className: 'planning-tooltip',
-      })
+      }).addTo(map).bindTooltip(
+        `<div style="font-family:Inter,sans-serif;padding:8px 12px;background:rgba(15,23,42,0.95);color:white;border-radius:10px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,0.14);box-shadow:0 8px 20px rgba(0,0,0,0.3);">🚶 Bán kính đi bộ 500m</div>`,
+        {
+          permanent: false,
+          direction: 'top',
+          className: 'planning-tooltip',
+        }
+      )
 
       // ── Planning Zones for this District ──
       const districtZones = safeDistrict
@@ -115,32 +118,117 @@ export default function ListingDetailMap({
           fillColor: zone.color,
           fillOpacity: 0.18,
           weight: 1.5,
-        }).addTo(map).bindTooltip(`🏛️ ${zone.name} (${zone.planYear})`, {
-          permanent: false,
-          direction: 'center',
-          className: 'planning-tooltip',
-        })
+        }).addTo(map).bindTooltip(
+          `<div style="font-family:Inter,sans-serif;padding:10px 14px;background:rgba(15,23,42,0.95);color:white;border-radius:12px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,0.14);box-shadow:0 8px 20px rgba(0,0,0,0.3);">🏛️ ${zone.name} (${zone.planYear})</div>`,
+          {
+            permanent: false,
+            direction: 'center',
+            className: 'planning-tooltip',
+          }
+        )
       })
 
-      // ── Nearby Metro Stations ──
+      // ── Geodesic Distance Helper (Haversine formula in meters) ──
+      const getDistanceMeters = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const R = 6371e3; // metres
+        const φ1 = (lat1 * Math.PI) / 180;
+        const φ2 = (lat2 * Math.PI) / 180;
+        const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+        const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+        const a =
+          Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+          Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return Math.round(R * c);
+      };
+
+      // ── Find Nearest Metro Station (Metro TOD Trắc Địa) ──
+      let nearestMetro: { name: string; lat: number; lng: number; line: string; distance: number } | null = null;
+      let minMetroDist = Infinity;
+
       HANOI_METRO_STATIONS.forEach(station => {
-        // Only show if reasonably close (< 3km)
-        const dLat = Math.abs(station.lat - safeLat)
-        const dLng = Math.abs(station.lng - safeLng)
-        if (dLat < 0.03 && dLng < 0.03) {
+        const dist = getDistanceMeters(safeLat, safeLng, station.lat, station.lng);
+        if (dist < minMetroDist) {
+          minMetroDist = dist;
+          nearestMetro = { ...station, distance: dist };
+        }
+      });
+
+      // ── Render All Stations within 3.5km & Draw Glowing Polyline to Nearest ──
+      HANOI_METRO_STATIONS.forEach(station => {
+        const dist = getDistanceMeters(safeLat, safeLng, station.lat, station.lng);
+        if (dist <= 3500) {
+          const isNearest = nearestMetro && nearestMetro.name === station.name;
           const metroIcon = L.divIcon({
             html: `
-              <div style="background:#8b5cf6;color:white;padding:3px 6px;border-radius:12px;font-size:10px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.3);white-space:nowrap;display:flex;align-items:center;gap:3px;border:1.5px solid white;">
-                🚇 ${station.name}
+              <div style="background:${isNearest ? '#6366f1' : '#8b5cf6'};color:white;padding:${isNearest ? '4px 8px' : '3px 6px'};border-radius:12px;font-size:10px;font-weight:700;box-shadow:${isNearest ? '0 0 12px rgba(99,102,241,0.8), 0 2px 6px rgba(0,0,0,0.3)' : '0 2px 6px rgba(0,0,0,0.3)'};white-space:nowrap;display:flex;align-items:center;gap:4px;border:${isNearest ? '2px solid #ffffff' : '1.5px solid rgba(255,255,255,0.8)'};transform:${isNearest ? 'scale(1.08)' : 'scale(1)'};">
+                🚇 ${station.name} ${isNearest ? `· ${dist}m` : ''}
               </div>
             `,
             className: 'metro-pin',
-            iconSize: [80, 24],
-            iconAnchor: [40, 12],
-          })
-          L.marker([station.lat, station.lng], { icon: metroIcon }).addTo(map)
+            iconSize: [isNearest ? 100 : 80, 26],
+            iconAnchor: [isNearest ? 50 : 40, 13],
+          });
+          L.marker([station.lat, station.lng], { icon: metroIcon })
+            .addTo(map)
+            .bindTooltip(
+              `<div style="font-family:Inter,sans-serif;padding:6px 10px;background:#0f172a;color:white;border-radius:8px;font-size:11px;font-weight:600;">
+                🚇 ${station.name} (${station.line})<br/>
+                <span style="color:#a5b4fc">Khoảng cách: ${dist >= 1000 ? (dist / 1000).toFixed(1) + 'km' : dist + 'm'}</span>
+              </div>`,
+              { direction: 'top', className: 'planning-tooltip' }
+            );
         }
-      })
+      });
+
+      // ── Draw Glowing Trắc Địa Polyline to Nearest Metro Station ──
+      if (nearestMetro && minMetroDist <= 4000) {
+        const walkingMinutes = Math.max(1, Math.round(minMetroDist / 80)); // 80m/phút đi bộ
+
+        // Outer glow polyline
+        L.polyline(
+          [
+            [safeLat, safeLng],
+            [(nearestMetro as any).lat, (nearestMetro as any).lng],
+          ],
+          {
+            color: '#6366f1',
+            weight: 6,
+            opacity: 0.35,
+            lineCap: 'round',
+          }
+        ).addTo(map);
+
+        // Core dashed dynamic line
+        const metroLine = L.polyline(
+          [
+            [safeLat, safeLng],
+            [(nearestMetro as any).lat, (nearestMetro as any).lng],
+          ],
+          {
+            color: '#818cf8',
+            weight: 2.5,
+            dashArray: '6, 8',
+            opacity: 0.95,
+          }
+        ).addTo(map);
+
+        // Middle Point Tooltip for Walking Time
+        const midLat = (safeLat + (nearestMetro as any).lat) / 2;
+        const midLng = (safeLng + (nearestMetro as any).lng) / 2;
+        L.tooltip({
+          permanent: true,
+          direction: 'center',
+          className: 'metro-tod-badge',
+        })
+          .setLatLng([midLat, midLng])
+          .setContent(
+            `<div style="font-family:Inter,sans-serif;padding:4px 9px;background:#1e1b4b;color:#c7d2fe;border:1px solid #6366f1;border-radius:9999px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.35);display:flex;align-items:center;gap:4px;">
+              <span>🚶</span> <strong>${minMetroDist >= 1000 ? (minMetroDist / 1000).toFixed(1) + 'km' : minMetroDist + 'm'}</strong> · ~${walkingMinutes} phút đi bộ
+            </div>`
+          )
+          .addTo(map);
+      }
 
       // ── Main Property Marker ──
       const propertyIcon = L.divIcon({
@@ -162,22 +250,22 @@ export default function ListingDetailMap({
 
       // Popup Content
       const popupHtml = `
-        <div style="padding:10px;min-width:200px;font-family:sans-serif">
-          <p style="font-size:13px;font-weight:800;color:#1e293b;margin:0 0 4px 0;line-height:1.3">
+        <div style="padding:14px 16px;min-width:220px;font-family:Inter,sans-serif">
+          <p style="font-size:13px;font-weight:800;color:#1e293b;margin:0 0 6px 0;line-height:1.4">
             ${title || 'Bất động sản Hà Nội'}
           </p>
-          <p style="font-size:11px;color:#64748b;margin:0 0 8px 0;">
+          <p style="font-size:11px;color:#64748b;margin:0 0 12px 0;line-height:1.4">
             📍 ${address || safeDistrict}
           </p>
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:14px;font-weight:900;color:#f97316;">${formatPriceShort(price)}</span>
-            <a href="https://www.google.com/maps/search/?api=1&query=${safeLat},${safeLng}" target="_blank" rel="noopener noreferrer" style="font-size:11px;font-weight:700;color:#2563eb;text-decoration:none;">
-              Google Maps ↗
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:8px;border-top:1px solid #f1f5f9;">
+            <span style="font-size:15px;font-weight:900;color:#f97316;">${formatPriceShort(price)}</span>
+            <a href="https://www.google.com/maps/search/?api=1&query=${safeLat},${safeLng}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);padding:4px 9px;border-radius:8px;font-size:11px;font-weight:700;color:#ea580c;text-decoration:none;">
+              Mở Google Maps ↗
             </a>
           </div>
         </div>
       `
-      marker.bindPopup(popupHtml, { maxWidth: 260 }).openPopup()
+      marker.bindPopup(popupHtml, { maxWidth: 280 }).openPopup()
 
       mapInstanceRef.current = map
       setIsMapReady(true)
@@ -274,6 +362,9 @@ export default function ListingDetailMap({
               🏛️ {planningZone}
             </span>
           )}
+          <span className="inline-flex items-center gap-1 text-[10px] bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-md font-bold border border-indigo-200/50">
+            🚇 Metro TOD Connected
+          </span>
         </div>
         <a
           href={`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`}

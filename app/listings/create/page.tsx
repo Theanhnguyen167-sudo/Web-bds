@@ -10,7 +10,9 @@ export default function CreateListingPage() {
       <Navbar />
 
       <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-        <CreateListingWizard />
+        <React.Suspense fallback={<div className="py-20 text-center text-sm text-text-muted">Đang tải bộ đăng tin...</div>}>
+          <CreateListingWizard />
+        </React.Suspense>
       </main>
     </div>
   );
