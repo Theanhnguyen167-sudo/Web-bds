@@ -76,20 +76,22 @@ export const saveStoredUserListings = (items: ListingItem[]) => {
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<typeof mockUser | null>(null);
   const [listings, setListings] = useState<ListingItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(USER_LISTINGS_STORAGE_KEY);
-        if (stored) {
-          const parsed: ListingItem[] = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const parsedIds = new Set(parsed.map(p => p.id));
-            return [...parsed, ...mockListings.filter(m => !parsedIds.has(m.id))];
-          }
-        }
-      } catch {}
-    }
     return mockListings;
   });
+
+  // Load from localStorage on client-side after hydration
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(USER_LISTINGS_STORAGE_KEY);
+      if (stored) {
+        const parsed: ListingItem[] = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const parsedIds = new Set(parsed.map(p => p.id));
+          setListings([...parsed, ...mockListings.filter(m => !parsedIds.has(m.id))]);
+        }
+      }
+    } catch {}
+  }, []);
   const [savedListingIds, setSavedListingIds] = useState<string[]>(['1', '3']);
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);

@@ -132,8 +132,15 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 
 export default async function ListingPage({ params }: ListingPageProps) {
   const initialListing = await getListingById(params.id);
-  const listing = initialListing || mockListings.find((l) => l.id === params.id) || mockListings[0];
+  const listing = initialListing || mockListings.find((l) => l.id === params.id);
 
-  // Auto redirect dạng URL cũ sang URL SEO mới: /mua-ban/[loai-bds]/[quan]/[slug]
-  redirect(getListingUrl(listing));
+  if (listing) {
+    // Auto redirect dạng URL cũ sang URL SEO mới: /mua-ban/[loai-bds]/[quan]/[slug]
+    redirect(getListingUrl(listing));
+  } else {
+    // Nếu không tìm thấy trên server (ví dụ tin mới tạo đang lưu ở localStorage), 
+    // không thể redirect vì không biết slug. 
+    // Trả về giao diện client-side để tự động tra cứu trong useApp() context.
+    return <ListingDetailClient listingId={params.id} />;
+  }
 }
