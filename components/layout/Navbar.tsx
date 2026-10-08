@@ -115,19 +115,17 @@ export const Navbar: React.FC = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-[#0a1128]/90 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10 text-white'
+          ? 'bg-[#0a1128]/95 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10 text-white'
           : 'bg-[#0a1128]/95 backdrop-blur-sm shadow-sm border-b border-slate-800/80 text-white'
       }`}
     >
       <div
-        className={`w-full max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
+        className={`header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
           isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
         }`}
       >
-        
-        {/* Left Group: Logo + Nav Links */}
-        <div className="flex items-center gap-5 lg:gap-7 xl:gap-9 min-w-0">
-          {/* Logo Left */}
+        {/* 1. LOGO */}
+        <div className="logo shrink-0 flex items-center">
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -137,58 +135,60 @@ export const Navbar: React.FC = () => {
               <Home className="h-4.5 w-4.5" />
             </motion.div>
             <div className="flex flex-col">
-              <span className="font-extrabold tracking-tight flex items-center gap-1 text-white text-base lg:text-[17px] leading-tight transition-colors group-hover:text-white">
+              <span className="font-extrabold tracking-tight flex items-center gap-1 text-white text-base lg:text-[17px] leading-tight transition-colors group-hover:text-white whitespace-nowrap">
                 HaNoi <span className="text-accent font-black">Realty</span>
               </span>
-              <span className="text-[10px] font-medium uppercase tracking-widest text-slate-300 -mt-0.5 leading-none">
+              <span className="text-[10px] font-medium uppercase tracking-widest text-slate-300 -mt-0.5 leading-none whitespace-nowrap">
                 PropTech & Quy Hoạch
               </span>
             </div>
           </Link>
-
-          {/* Nav Links (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 transition-all duration-300">
-            {navLinks.map((link) => {
-              const isActive =
-                link.href === '/'
-                  ? pathname === '/'
-                  : pathname === link.href || pathname.startsWith(link.href + '/');
-              return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2.5 xl:px-3 py-1.5 ${
-                    isActive
-                      ? 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <span className="whitespace-nowrap">{link.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
         </div>
 
-        {/* Right Section Actions (Desktop lg+) */}
-        <div className="hidden lg:flex items-center gap-2.5 xl:gap-3 shrink-0">
+        {/* 2. MAIN NAVIGATION (Desktop lg+) */}
+        <nav className="main-navigation hidden lg:flex items-center gap-3.5 xl:gap-5 2xl:gap-7 shrink-0 transition-all duration-200">
+          {navLinks.map((link) => {
+            const isActive =
+              link.href === '/'
+                ? pathname === '/'
+                : pathname === link.href || pathname.startsWith(link.href + '/');
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2 xl:px-2.5 py-1.5 ${
+                  isActive
+                    ? 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
+                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <span className="whitespace-nowrap">{link.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* 3. HEADER ACTIONS (Desktop lg+) */}
+        <div className="header-actions hidden lg:flex items-center gap-3 shrink-0">
           {/* Quick Search Shortcut */}
           <Link
             href="/search"
-            className="h-9 w-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200 border border-transparent hover:border-white/10"
+            className="h-9 w-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200 border border-transparent hover:border-white/10 shrink-0"
             title="Tìm kiếm BĐS"
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-4 w-4 shrink-0" />
           </Link>
+
           {/* Admin Portal Quick Switch Button for Admins */}
           {user?.role === 'admin' && (
             <Link
               href="/admin"
-              className="h-9 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white transition-all shadow-xs whitespace-nowrap"
+              className="h-9 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white transition-all shadow-xs whitespace-nowrap shrink-0"
               title="Chuyển sang trang Quản trị Admin"
             >
               <ShieldCheck className="h-4 w-4 text-orange-400 shrink-0" />
-              <span className="hidden xl:inline">Admin Portal</span>
+              <span className="hidden xl:inline">Vào </span>
+              <span>Admin Portal</span>
             </Link>
           )}
 
@@ -200,28 +200,28 @@ export const Navbar: React.FC = () => {
             className="h-9 flex items-center gap-1.5 rounded-xl bg-accent px-3.5 text-xs font-bold text-white shadow-sm shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             <PlusCircle className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">Đăng tin</span>
+            <span className="whitespace-nowrap">+ Đăng tin</span>
           </motion.button>
 
           {/* Auth State / Account Dropdown */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               type="button"
               onClick={() => {
                 setNotifOpen(false);
                 setUserDropdownOpen(!userDropdownOpen);
               }}
-              className="h-9 relative flex items-center gap-2 rounded-xl bg-white/5 hover:bg-white/10 px-2 text-white transition-all border border-white/10 hover:border-white/20 cursor-pointer"
+              className="h-9 relative flex items-center gap-2 rounded-xl bg-white/5 hover:bg-white/10 px-2.5 text-white transition-all border border-white/10 hover:border-white/20 cursor-pointer shrink-0 whitespace-nowrap"
             >
               <div className="relative shrink-0">
                 {user ? (
                   <img
                     src={user.avatar}
                     alt={user.name}
-                    className="h-6 w-6 rounded-lg object-cover ring-1 ring-accent"
+                    className="h-6 w-6 rounded-lg object-cover ring-1 ring-accent shrink-0"
                   />
                 ) : (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/20 text-accent ring-1 ring-accent/40">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/20 text-accent ring-1 ring-accent/40 shrink-0">
                     <User className="h-3.5 w-3.5" />
                   </div>
                 )}
@@ -231,7 +231,7 @@ export const Navbar: React.FC = () => {
                   </span>
                 )}
               </div>
-              <span className="text-xs font-semibold max-w-[100px] truncate text-slate-200">
+              <span className="text-xs font-semibold max-w-[110px] xl:max-w-[140px] truncate text-slate-200">
                 {user ? user.name : 'Tài khoản'}
               </span>
               <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
