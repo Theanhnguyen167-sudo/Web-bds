@@ -130,7 +130,10 @@ export const CreateListingWizard: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
-  const { user, addNewListing, addToast } = useApp();
+  const { user, listings, addNewListing, updateListing, addToast } = useApp();
+
+  const editId = searchParams?.get('editId') || searchParams?.get('id');
+  const isEditMode = Boolean(editId);
 
   // Step state (1 to 6)
   const stepParamFromPath = params?.step as string | undefined;
@@ -163,7 +166,7 @@ export const CreateListingWizard: React.FC = () => {
 
   // UNIFIED POSTING DATA STATE DÙNG CHUNG CHO TOÀN BỘ FLOW (STEP 1 ĐẾN STEP 6)
   const [postingData, setPostingData] = useState<PostingData>(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !isEditMode) {
       try {
         const cached = localStorage.getItem('listing_wizard_draft');
         if (cached) {
@@ -217,9 +220,62 @@ export const CreateListingWizard: React.FC = () => {
     };
   });
 
-  // Tự động điền email và thông tin tài khoản nếu user đã đăng nhập
+  // Nếu là edit mode: load dữ liệu của tin cần chỉnh sửa
   useEffect(() => {
-    if (user) {
+    if (editId && listings.length > 0) {
+      const existing = listings.find((l) => l.id === editId);
+      if (existing) {
+        setPostingData({
+          propertyType: (existing.propertyType || existing.type || 'house') as any,
+          location: {
+            district: existing.district || 'Cầu Giấy',
+            ward: existing.ward || '',
+            street: existing.address || '',
+            addressNumber: '',
+            lat: existing.lat || 21.0315,
+            lng: existing.lng || 105.7825,
+            displayName: existing.address || '',
+          },
+          images: existing.images && existing.images.length > 0 ? existing.images : [],
+          price: existing.price,
+          area: existing.area,
+          floors: existing.floors || 1,
+          bedrooms: existing.bedrooms || 1,
+          bathrooms: existing.bathrooms || 1,
+          direction: existing.direction || 'Đông Nam',
+          legalStatus: existing.legalStatus || 'Sổ đỏ chính chủ',
+          title: existing.title || '',
+          description: existing.description || '',
+          seller: {
+            fullName: existing.seller?.fullName || existing.authorName || user?.name || 'Chủ nhà',
+            phone: existing.seller?.phone || existing.authorPhone || user?.phone || '0912 345 678',
+            email: existing.seller?.email || existing.authorEmail || user?.email || '',
+            sellerType: (existing.seller?.sellerType || (existing as any).sellerType || 'Chính chủ') as any,
+            companyName: existing.seller?.companyName || (existing as any).companyName || '',
+            contactAddress: existing.seller?.contactAddress || (existing as any).contactAddress || '',
+            showPhone: true,
+            allowEmailContact: true,
+            showCompany: Boolean(existing.seller?.companyName || (existing as any).companyName),
+            isPhoneVerified: true,
+          },
+          status: existing.status,
+        });
+        setPickedLocation({
+          lat: existing.lat || 21.0315,
+          lng: existing.lng || 105.7825,
+          displayName: existing.address || '',
+          district: existing.district || '',
+          ward: existing.ward || '',
+          road: '',
+          houseNumber: '',
+        });
+      }
+    }
+  }, [editId, listings]);
+
+  // Tự động điền email và thông tin tài khoản nếu user đã đăng nhập (chỉ khi không phải edit)
+  useEffect(() => {
+    if (user && !editId) {
       setPostingData((prev) => ({
         ...prev,
         seller: {
@@ -237,16 +293,16 @@ export const CreateListingWizard: React.FC = () => {
         },
       }));
     }
-  }, [user]);
+  }, [user, editId]);
 
-  // Lưu tự động dữ liệu vào localStorage để không bị mất khi refresh hay chuyển bước
+  // Lưu tự động dữ liệu vào localStorage để không bị mất khi refresh hay chuyển bước (chỉ khi tạo mới)
   useEffect(() => {
-    if (typeof window !== 'undefined' && !publishedListingId) {
+    if (typeof window !== 'undefined' && !publishedListingId && !editId) {
       try {
         localStorage.setItem('listing_wizard_draft', JSON.stringify(postingData));
       } catch {}
     }
-  }, [postingData, publishedListingId]);
+  }, [postingData, publishedListingId, editId]);
 
   const propertyTypes = [
     { id: 'house', title: 'Nhà phố / Nhà riêng', icon: Home, desc: 'Nhà liền kề, nhà phân lô, nhà mặt ngõ ô tô' },
@@ -490,41 +546,104 @@ export const CreateListingWizard: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const fullAddress = `${postingData.location.addressNumber} ${postingData.location.street}, ${postingData.location.ward}, ${postingData.location.district}, Hà Nội`;
+      const fullAddress = `${postingData.location.addressNumber ? `${postingData.location.addressNumber} ` : ''}${postingData.location.street}, ${postingData.location.ward}, ${postingData.location.district}, Hà Nội`;
       const finalTitle =
         postingData.title ||
         `Bán ${propertyTypes.find((t) => t.id === postingData.propertyType)?.title || 'BĐS'} ${postingData.area}m² tại ${postingData.location.district}`;
 
-      const newId = await addNewListing({
-        title: finalTitle,
-        description: postingData.description,
-        type: postingData.propertyType,
-        price: postingData.price,
-        area: postingData.area,
-        pricePerM2: postingData.price / postingData.area,
-        floors: postingData.floors,
-        bedrooms: postingData.bedrooms,
-        bathrooms: postingData.bathrooms,
-        direction: postingData.direction,
-        legalStatus: postingData.legalStatus,
-        address: fullAddress,
-        district: postingData.location.district,
-        ward: postingData.location.ward,
-        lat: postingData.location.lat,
-        lng: postingData.location.lng,
-        images: postingData.images,
-        authorName: postingData.seller.fullName,
-        authorPhone: postingData.seller.phone,
-        authorEmail: postingData.seller.email || undefined,
-        status: 'pending', // Luôn ở trạng thái Chờ duyệt
-        sellerType: postingData.seller.sellerType,
-        companyName: postingData.seller.companyName,
-        contactAddress: postingData.seller.contactAddress,
-        showPhone: postingData.seller.showPhone,
-        allowEmailContact: postingData.seller.allowEmailContact,
-        showCompany: postingData.seller.showCompany,
-        isPhoneVerified: postingData.seller.isPhoneVerified,
-      });
+      let resultId = editId;
+
+      if (isEditMode && editId) {
+        // CẬP NHẬT TIN ĐĂNG HIỆN TẠI (SECTION 11 & SECTION 12)
+        // Không tạo duplicate listing, giữ nguyên ID, kiểm tra đưa về pending nếu sửa trường quan trọng
+        const updated = await updateListing(editId, {
+          title: finalTitle,
+          description: postingData.description,
+          type: postingData.propertyType,
+          propertyType: postingData.propertyType,
+          price: postingData.price,
+          area: postingData.area,
+          pricePerM2: Math.round(postingData.price / (postingData.area || 1)),
+          floors: postingData.floors,
+          bedrooms: postingData.bedrooms,
+          bathrooms: postingData.bathrooms,
+          direction: postingData.direction,
+          legalStatus: postingData.legalStatus,
+          address: fullAddress,
+          district: postingData.location.district,
+          ward: postingData.location.ward,
+          lat: postingData.location.lat,
+          lng: postingData.location.lng,
+          images: postingData.images,
+          authorName: postingData.seller.fullName,
+          authorPhone: postingData.seller.phone,
+          authorEmail: postingData.seller.email || undefined,
+          seller: {
+            fullName: postingData.seller.fullName,
+            phone: postingData.seller.phone,
+            email: postingData.seller.email,
+            sellerType: postingData.seller.sellerType,
+            companyName: postingData.seller.companyName,
+            contactAddress: postingData.seller.contactAddress,
+          },
+          sellerType: postingData.seller.sellerType,
+          companyName: postingData.seller.companyName,
+          contactAddress: postingData.seller.contactAddress,
+          showPhone: postingData.seller.showPhone,
+          allowEmailContact: postingData.seller.allowEmailContact,
+          showCompany: postingData.seller.showCompany,
+          isPhoneVerified: postingData.seller.isPhoneVerified,
+        });
+
+        if (updated?.status === 'pending') {
+          addToast('🔄 Tin đã cập nhật và gửi tới Admin kiểm duyệt lại do thay đổi thông tin quan trọng!', 'info');
+        } else {
+          addToast('🎉 Đã cập nhật tin đăng thành công!', 'success');
+        }
+      } else {
+        // TẠO TIN ĐĂNG MỚI (SECTION 4 & SECTION 5)
+        const newId = await addNewListing({
+          title: finalTitle,
+          description: postingData.description,
+          type: postingData.propertyType,
+          propertyType: postingData.propertyType,
+          price: postingData.price,
+          area: postingData.area,
+          pricePerM2: Math.round(postingData.price / (postingData.area || 1)),
+          floors: postingData.floors,
+          bedrooms: postingData.bedrooms,
+          bathrooms: postingData.bathrooms,
+          direction: postingData.direction,
+          legalStatus: postingData.legalStatus,
+          address: fullAddress,
+          district: postingData.location.district,
+          ward: postingData.location.ward,
+          lat: postingData.location.lat,
+          lng: postingData.location.lng,
+          images: postingData.images,
+          authorName: postingData.seller.fullName,
+          authorPhone: postingData.seller.phone,
+          authorEmail: postingData.seller.email || undefined,
+          status: 'pending', // Luôn ở trạng thái Chờ duyệt ban đầu
+          seller: {
+            fullName: postingData.seller.fullName,
+            phone: postingData.seller.phone,
+            email: postingData.seller.email,
+            sellerType: postingData.seller.sellerType,
+            companyName: postingData.seller.companyName,
+            contactAddress: postingData.seller.contactAddress,
+          },
+          sellerType: postingData.seller.sellerType,
+          companyName: postingData.seller.companyName,
+          contactAddress: postingData.seller.contactAddress,
+          showPhone: postingData.seller.showPhone,
+          allowEmailContact: postingData.seller.allowEmailContact,
+          showCompany: postingData.seller.showCompany,
+          isPhoneVerified: postingData.seller.isPhoneVerified,
+        });
+        resultId = newId;
+        addToast('🎉 Đăng tin thành công! Tin đang chờ hệ thống kiểm duyệt.', 'success');
+      }
 
       if (typeof window !== 'undefined') {
         try {
@@ -532,12 +651,11 @@ export const CreateListingWizard: React.FC = () => {
         } catch {}
       }
 
-      setPublishedListingId(newId || 'lst_' + Date.now());
+      setPublishedListingId(resultId || 'lst_' + Date.now());
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      addToast('🎉 Đăng tin thành công! Tin đang chờ hệ thống kiểm duyệt.', 'success');
     } catch (e) {
-      console.error('Error publishing listing:', e);
-      addToast('Có lỗi xảy ra khi xuất bản tin đăng', 'error');
+      console.error('Error publishing/updating listing:', e);
+      addToast('Có lỗi xảy ra khi lưu tin đăng', 'error');
     } finally {
       setIsSubmitting(false);
     }

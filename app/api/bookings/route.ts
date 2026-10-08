@@ -21,12 +21,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Không tìm thấy tin đăng' }, { status: 404 });
     }
 
-    const ownerId = listing.user_id;
+    const ownerId = (listing as any)?.user_id;
 
     // 2. Lưu database thông báo cho riêng owner_id này
     // Cố gắng insert vào bảng notifications nếu có
-    const { error: insertError } = await supabase
-      .from('notifications' as any)
+    const { error: insertError } = await (supabase.from('notifications') as any)
       .insert({
         user_id: ownerId,
         title: bookingData?.title || 'Khách hẹn xem nhà mới',

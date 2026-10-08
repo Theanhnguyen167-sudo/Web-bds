@@ -205,14 +205,22 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, status } = body; // status: 'active' | 'rejected'
+    const { id, status, rejection_reason, rejectionReason } = body; // status: 'active' | 'rejected' | 'hidden'
 
     if (!id || !status) {
       return NextResponse.json({ success: false, error: 'Thiếu id hoặc status' }, { status: 400 });
     }
 
+    const updatePayload: Record<string, any> = { status };
+    if (status === 'active') {
+      updatePayload.published_at = new Date().toISOString();
+      updatePayload.rejection_reason = null;
+    } else if (status === 'rejected') {
+      updatePayload.rejection_reason = rejection_reason || rejectionReason || 'Chưa đạt tiêu chuẩn kiểm duyệt';
+    }
+
     const { data, error } = await (supabase.from('listings') as any)
-      .update({ status })
+      .update(updatePayload)
       .eq('id', id)
       .select('*, users!user_id(full_name, avatar_url, phone)')
       .single();
