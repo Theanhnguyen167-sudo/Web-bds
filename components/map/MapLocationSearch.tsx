@@ -139,10 +139,10 @@ export const MapLocationSearch: React.FC<MapLocationSearchProps> = ({
     <div ref={containerRef} className="relative w-full max-w-[340px] sm:max-w-[380px] z-[450]">
       {/* ── Search Input Box ── */}
       <div
-        className={`flex items-center gap-2 px-3.5 py-2 sm:py-2.5 rounded-2xl bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl border transition-all duration-200 ${
+        className={`flex items-center gap-2 px-3.5 py-2 sm:py-2.5 rounded-2xl bg-white dark:bg-slate-900 border transition-all duration-200 ${
           isOpen
-            ? 'border-orange-500 ring-4 ring-orange-500/20 shadow-[0_16px_40px_-4px_rgba(15,23,42,0.38),0_6px_16px_-2px_rgba(249,115,22,0.22)] dark:shadow-[0_16px_42px_-4px_rgba(0,0,0,0.75)]'
-            : 'border-slate-200/90 dark:border-slate-700/90 ring-1 ring-slate-900/8 dark:ring-white/10 shadow-[0_12px_32px_-4px_rgba(15,23,42,0.32),0_4px_12px_-2px_rgba(15,23,42,0.2)] dark:shadow-[0_14px_36px_-4px_rgba(0,0,0,0.7)] hover:shadow-[0_16px_38px_-4px_rgba(15,23,42,0.38),0_6px_14px_-2px_rgba(15,23,42,0.24)] hover:border-slate-300 dark:hover:border-slate-600'
+            ? 'border-orange-500 ring-4 ring-orange-500/20 shadow-xl'
+            : 'border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600'
         }`}
       >
         <Search className="h-4 w-4 text-orange-500 shrink-0" />
