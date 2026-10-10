@@ -780,7 +780,7 @@ export default function SearchMap({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: isMapReady ? 1 : 0, y: isMapReady ? 0 : -10 }}
-        className="absolute top-4 left-4 z-[400] flex flex-col gap-2 items-start max-w-[calc(100%-88px)] sm:max-w-none"
+        className="absolute top-4 left-4 z-[1000] flex flex-col gap-2 items-start max-w-[calc(100%-88px)] sm:max-w-none"
       >
         <MapLocationSearch
           onSelectLocation={handleSelectLocation}

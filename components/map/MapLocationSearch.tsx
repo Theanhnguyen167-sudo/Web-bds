@@ -240,13 +240,21 @@ export const MapLocationSearch: React.FC<MapLocationSearchProps> = ({
       setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : listLength - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (highlightedIndex >= 0) {
-        const targetList = query.trim() ? displayedResults : (recentSearches.length > 0 ? recentSearches : displayedResults);
-        if (targetList[highlightedIndex]) {
-          handleSelect(targetList[highlightedIndex]);
-        }
-      } else if (displayedResults.length > 0) {
-        handleSelect(displayedResults[0]);
+      const targetList = query.trim() ? displayedResults : (recentSearches.length > 0 ? recentSearches : displayedResults);
+      if (highlightedIndex >= 0 && targetList[highlightedIndex]) {
+        handleSelect(targetList[highlightedIndex]);
+      } else if (targetList.length > 0) {
+        handleSelect(targetList[0]);
+      } else if (query.trim().length >= 2) {
+        // Direct geocode lookup and select on Enter
+        fetch(`/api/geocode?q=${encodeURIComponent(query.trim())}`)
+          .then((res) => res.json())
+          .then((json) => {
+            if (json.success && json.data && json.data[0]) {
+              handleSelect(json.data[0]);
+            }
+          })
+          .catch(() => {});
       }
     } else if (e.key === 'Escape') {
       setIsOpen(false);
@@ -273,7 +281,13 @@ export const MapLocationSearch: React.FC<MapLocationSearchProps> = ({
   };
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-[340px] sm:max-w-[420px] z-[500]">
+    <div
+      ref={containerRef}
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
+      className="relative w-full max-w-[340px] sm:max-w-[420px] z-[500]"
+    >
       {/* ── Google Maps Search Bar ── */}
       <div
         className={`flex items-center gap-2 px-3.5 py-2.5 sm:py-3 rounded-2xl bg-white dark:bg-slate-900 border transition-all duration-200 ${

@@ -48,6 +48,11 @@ export const HANOI_LOCATIONS: HanoiLocationItem[] = [
   { id: 'dist-da', name: 'Huyện Đông Anh', category: 'district', district: 'Đông Anh', lat: 21.1350, lng: 105.8450, zoom: 12.5, description: 'Quy hoạch thành phố bờ Bắc sông Hồng' },
   { id: 'dist-hd-sub', name: 'Huyện Hoài Đức', category: 'district', district: 'Hoài Đức', lat: 21.0200, lng: 105.6950, zoom: 12.5, description: 'Trục Đại lộ Thăng Long, Vành đai 3.5' },
   { id: 'dist-tt', name: 'Huyện Thanh Trì', category: 'district', district: 'Thanh Trì', lat: 20.9400, lng: 105.8500, zoom: 12.5, description: 'Cửa ngõ phía Nam, bán đảo Linh Đàm mở rộng' },
+  { id: 'dist-thuongtin', name: 'Huyện Thường Tín', category: 'district', district: 'Thường Tín', lat: 20.8750, lng: 105.8600, zoom: 12.5, description: 'Cửa ngõ phía Nam, Nhị Khê, Quốc lộ 1A' },
+  { id: 'dist-danphuong', name: 'Huyện Đan Phượng', category: 'district', district: 'Đan Phượng', lat: 21.0950, lng: 105.6700, zoom: 12.5, description: 'Vinhomes Wonder Park, Trục Tây Thăng Long' },
+  { id: 'dist-thanhoai', name: 'Huyện Thanh Oai', category: 'district', district: 'Thanh Oai', lat: 20.8700, lng: 105.7800, zoom: 12.5, description: 'KĐT Thanh Hà Cienco 5, Vành đai 4' },
+  { id: 'dist-thachthat', name: 'Huyện Thạch Thất', category: 'district', district: 'Thạch Thất', lat: 21.0250, lng: 105.5300, zoom: 12.5, description: 'Khu công nghệ cao Hòa Lạc, Đại học FPT' },
+  { id: 'dist-sontay', name: 'Thị xã Sơn Tây', category: 'district', district: 'Sơn Tây', lat: 21.1400, lng: 105.5000, zoom: 13, description: 'Đô thị vệ tinh phía Tây, Thành cổ Sơn Tây' },
 
   // ── 2. KHU ĐÔ THỊ & DỰ ÁN BĐS LỚN ──
   { id: 'proj-vr', name: 'Vinhomes Riverside', category: 'project', district: 'Long Biên', lat: 21.0494, lng: 105.9080, zoom: 15.5, description: 'Biệt thự sinh thái ven sông đẳng cấp bậc nhất Hà Nội' },
@@ -120,6 +125,7 @@ export const HANOI_LOCATIONS: HanoiLocationItem[] = [
   { id: 'str-qt-hd', name: 'Đường Quang Trung', category: 'street', district: 'Hà Đông', ward: 'Quang Trung', lat: 20.9725, lng: 105.7745, zoom: 16, description: 'Trục chính quận Hà Đông, Metro 2A' },
   { id: 'str-tp-hd', name: 'Đường Trần Phú', category: 'street', district: 'Hà Đông', ward: 'Văn Quán', lat: 20.9855, lng: 105.7895, zoom: 16, description: 'Trục nối Thanh Xuân - Hà Đông' },
   { id: 'str-th-hd', name: 'Đường Tố Hữu', category: 'street', district: 'Hà Đông', ward: 'Vạn Phúc', lat: 20.9885, lng: 105.7725, zoom: 16, description: 'Lê Văn Lương kéo dài' },
+  { id: 'str-btb', name: 'Phố Bạch Thái Bưởi', category: 'street', district: 'Hà Đông', ward: 'Phúc La', lat: 20.9698, lng: 105.7872, zoom: 16.5, description: 'Khu đô thị Văn Quán, Hà Đông' },
   { id: 'str-pvd', name: 'Đường Phạm Văn Đồng', category: 'street', district: 'Bắc Từ Liêm', ward: 'Cổ Nhuế 1', lat: 21.0552, lng: 105.7825, zoom: 16, description: 'Vành đai 3 phía Bắc Cầu Thăng Long' },
   { id: 'str-ph-ntl', name: 'Đường Phạm Hùng', category: 'street', district: 'Nam Từ Liêm', ward: 'Mỹ Đình 1', lat: 21.0200, lng: 105.7790, zoom: 16, description: 'Vành đai 3 - Bến xe Mỹ Đình, Keangnam' },
   { id: 'str-dltt', name: 'Đại lộ Thăng Long', category: 'street', district: 'Nam Từ Liêm', ward: 'Mễ Trì', lat: 21.0050, lng: 105.7500, zoom: 14.5, description: 'Cao tốc cửa ngõ phía Tây' },
@@ -129,6 +135,7 @@ export const HANOI_LOCATIONS: HanoiLocationItem[] = [
   // ── 4. ĐỊA DANH & TIỆN ÍCH NỔI TIẾNG ──
   { id: 'lm-hg', name: 'Hồ Hoàn Kiếm (Hồ Gươm)', category: 'landmark', district: 'Hoàn Kiếm', lat: 21.0285, lng: 105.8542, zoom: 16.5, description: 'Trái tim của thủ đô Hà Nội, Tháp Rùa, Đền Ngọc Sơn' },
   { id: 'lm-ht', name: 'Hồ Tây (West Lake)', category: 'landmark', district: 'Tây Hồ', lat: 21.0550, lng: 105.8250, zoom: 14.5, description: 'Hồ nước ngọt tự nhiên lớn nhất Hà Nội với 500ha mặt nước' },
+  { id: 'lm-nhikhe', name: 'Xã Nhị Khê', category: 'landmark', district: 'Thường Tín', lat: 20.8956, lng: 105.8455, zoom: 15.5, description: 'Làng nghề tiện gỗ truyền thống, Huyện Thường Tín, Hà Nội' },
   { id: 'lm-catlinh', name: 'Ga Metro Cát Linh', category: 'landmark', district: 'Đống Đa', lat: 21.0280, lng: 105.8383, zoom: 16.5, description: 'Ga đầu tuyến đường sắt trên cao 2A Cát Linh - Hà Đông' },
   { id: 'lm-ganhon', name: 'Ga Metro Nhổn', category: 'landmark', district: 'Bắc Từ Liêm', lat: 21.0451, lng: 105.7614, zoom: 16.5, description: 'Ga depot tuyến đường sắt Metro Tuyến 3' },
   { id: 'lm-gahanoi', name: 'Ga Hà Nội', category: 'landmark', district: 'Đống Đa', lat: 21.0245, lng: 105.8415, zoom: 16.5, description: 'Đầu mối đường sắt quốc gia' },
@@ -140,16 +147,16 @@ export const HANOI_LOCATIONS: HanoiLocationItem[] = [
 
 /**
  * Intelligent Vietnamese Address Parser
- * Extracts house numbers, alleys (ngõ, ngách), building towers from user query
- * and pairs them with known Hanoi streets or projects.
+ * Extracts house numbers, alleys (ngõ, ngách), building towers, or rural subdivisions (đội, thôn, xóm)
+ * and pairs them with known Hanoi streets, projects, or localities.
  */
 export function parseVietnameseAddress(query: string): HanoiLocationItem | null {
   const cleanQ = query.trim();
   if (cleanQ.length < 3) return null;
 
-  // Regex matching: '15 Duy Tan', 'Số 15 phố Duy Tân', 'Ngõ 36 Hoàng Cầu', 'Tòa R2 Royal City', '340 Thái Hà'
+  // Regex matching: '15 Duy Tan', 'Số 15 phố Duy Tân', 'Ngõ 36 Hoàng Cầu', 'Đội 10 Nhị Khê', 'Tòa R2 Royal City'
   const match = cleanQ.match(
-    /^(số\s+|so\s+|ngõ\s+|ngo\s+|ngách\s+|ngach\s+|tòa\s+|toa\s+)?([0-9]+[a-zA-Z]?|[a-zA-Z][0-9]+)\s+(.+)$/i
+    /^(số\s+|so\s+|ngõ\s+|ngo\s+|ngách\s+|ngach\s+|tòa\s+|toa\s+|đội\s+|doi\s+|thôn\s+|thon\s+|xóm\s+|xom\s+)?([0-9]+[a-zA-Z0-9\.\-]*|[a-zA-Z][0-9]+)\s+(.+)$/i
   );
 
   if (!match) return null;
@@ -159,12 +166,12 @@ export function parseVietnameseAddress(query: string): HanoiLocationItem | null 
   const streetPart = match[3].trim();
   const normalizedStreetPart = removeVietnameseTones(streetPart);
 
-  // Search inside known streets and projects
+  // Search inside known streets, projects, and localities
   let matchedStreet: HanoiLocationItem | null = null;
   let highestScore = 0;
 
   for (const loc of HANOI_LOCATIONS) {
-    if (loc.category !== 'street' && loc.category !== 'project') continue;
+    if (loc.category !== 'street' && loc.category !== 'project' && loc.category !== 'landmark' && loc.category !== 'district') continue;
 
     const locNorm = removeVietnameseTones(loc.name);
     if (locNorm.includes(normalizedStreetPart) || normalizedStreetPart.includes(locNorm)) {
@@ -186,6 +193,12 @@ export function parseVietnameseAddress(query: string): HanoiLocationItem | null 
     prefix = 'Ngách';
   } else if (lowerRaw.includes('toa') || lowerRaw.includes('tòa')) {
     prefix = 'Tòa';
+  } else if (lowerRaw.includes('doi') || lowerRaw.includes('đội')) {
+    prefix = 'Đội';
+  } else if (lowerRaw.includes('thon') || lowerRaw.includes('thôn')) {
+    prefix = 'Thôn';
+  } else if (lowerRaw.includes('xom') || lowerRaw.includes('xóm')) {
+    prefix = 'Xóm';
   }
   const formattedName = `${prefix} ${houseNumber} ${matchedStreet.name}`;
 
@@ -199,7 +212,7 @@ export function parseVietnameseAddress(query: string): HanoiLocationItem | null 
     lng: matchedStreet.lng,
     zoom: 17.5,
     description: matchedStreet.description
-      ? `${matchedStreet.ward ? 'Phường ' + matchedStreet.ward + ', ' : ''}Quận ${matchedStreet.district}, Hà Nội`
+      ? `${matchedStreet.ward ? 'Phường ' + matchedStreet.ward + ', ' : ''}${matchedStreet.district ? (matchedStreet.district.startsWith('Huyện') ? matchedStreet.district : 'Quận ' + matchedStreet.district) + ', ' : ''}Hà Nội`
       : `Địa chỉ chi tiết tại ${matchedStreet.name}, Hà Nội`,
     houseNumber,
     street: matchedStreet.name,

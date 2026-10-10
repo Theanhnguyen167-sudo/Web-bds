@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -1250,7 +1250,7 @@ export default function PlanningMap({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: isMapReady ? 1 : 0, y: isMapReady ? 0 : -10 }}
-        className="absolute top-4 left-4 sm:left-[390px] z-[400] max-w-[calc(100%-88px)] sm:max-w-xs"
+        className="absolute top-4 left-4 sm:left-[390px] z-[1000] max-w-[calc(100%-88px)] sm:max-w-xs"
       >
         <MapLocationSearch
           onSelectLocation={handleSelectLocation}

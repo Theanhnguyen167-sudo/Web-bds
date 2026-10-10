@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { HanoiLocationItem, searchHanoiLocations, removeVietnameseTones } from '@/lib/data/hanoi-locations';
+import {
+  HanoiLocationItem,
+  searchHanoiLocations,
+  removeVietnameseTones,
+} from '@/lib/data/hanoi-locations';
 
 interface PhotonFeature {
   geometry: {
@@ -42,7 +46,7 @@ interface NominatimItem {
   };
 }
 
-// Simple in-memory cache for fast repeat requests
+// In-memory cache for fast repeat requests
 const GEOCODE_CACHE = new Map<string, { timestamp: number; data: HanoiLocationItem[] }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_CACHE_SIZE = 300;
@@ -79,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     const cacheKey = query.toLowerCase();
     const cached = getCached(cacheKey);
-    if (cached) {
+    if (cached && cached.length > 0) {
       return NextResponse.json({
         success: true,
         data: cached,
@@ -100,126 +104,169 @@ export async function GET(request: NextRequest) {
       results.push(item);
     };
 
-    // 0. Seed with instant local Hanoi database (includes streets, projects, and parsed address candidates)
-    const localMatches = searchHanoiLocations(query, 5);
+    // 0. Seed with instant local Hanoi database (streets, projects, and parsed address candidates)
+    const localMatches = searchHanoiLocations(query, 6);
     for (const match of localMatches) {
       appendResult(match);
     }
 
-    // 1. Primary online geocoder: Photon (Elasticsearch OSM Geocoder - optimized for autocomplete & house numbers)
+    // Helper to query Photon
+    const fetchPhoton = async (q: string): Promise<PhotonFeature[]> => {
+      try {
+        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(
+          q
+        )}&lat=21.0285&lon=105.8542&limit=8`;
+        const ctrl = new AbortController();
+        const tId = setTimeout(() => ctrl.abort(), 6000);
+        const res = await fetch(url, {
+          headers: { 'Accept-Language': 'vi,en' },
+          signal: ctrl.signal,
+        });
+        clearTimeout(tId);
+        if (!res.ok) return [];
+        const json = await res.json();
+        return json.features || [];
+      } catch {
+        return [];
+      }
+    };
+
+    // 1. Photon Geocoding
     try {
-      const photonQuery = `${query} Hanoi`;
-      const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(
-        photonQuery
-      )}&lat=21.0285&lon=105.8542&limit=8`;
+      // Check for rural/suburban prefixes: "Đội 10 Nhị Khê", "Thôn 2...", "Xóm 3..."
+      const subMatch = query.match(
+        /^(đội\s+\d+|doi\s+\d+|thôn\s+\S+|thon\s+\S+|xóm\s+\S+|xom\s+\S+|ngõ\s+\d+|ngo\s+\d+|ngách\s+\d+|số\s+\d+|so\s+\d+)\s+(.+)$/i
+      );
 
-      const photonController = new AbortController();
-      const photonTimeout = setTimeout(() => photonController.abort(), 7000);
+      let features = await fetchPhoton(query);
+      if (features.length === 0) {
+        features = await fetchPhoton(`${query} Hanoi`);
+      }
 
-      const photonRes = await fetch(photonUrl, {
-        headers: {
-          'Accept-Language': 'vi,en',
-        },
-        signal: photonController.signal,
-      });
-      clearTimeout(photonTimeout);
-
-      if (photonRes.ok) {
-        const photonJson = await photonRes.json();
-        const features: PhotonFeature[] = photonJson.features || [];
-
-        for (const feat of features) {
-          const props = feat.properties;
-          const coords = feat.geometry?.coordinates;
+      // If subdivision query (e.g. "Đội 10 Nhị Khê") didn't yield exact items, query the base location (e.g. "Nhị Khê")
+      if (subMatch && features.length < 2) {
+        const subPrefix = subMatch[1];
+        const baseQuery = subMatch[2];
+        const baseFeatures = await fetchPhoton(baseQuery);
+        for (const bf of baseFeatures) {
+          const coords = bf.geometry?.coordinates;
           if (!coords || coords.length < 2) continue;
-
           const [lng, lat] = coords;
+          if (lat < 20.4 || lat > 21.6 || lng < 105.2 || lng > 106.3) continue;
 
-          // Filter roughly within Hanoi bounding box [lat: 20.5 - 21.6, lng: 105.2 - 106.2]
-          if (lat < 20.5 || lat > 21.6 || lng < 105.2 || lng > 106.2) {
-            continue;
-          }
-
-          const houseNum = props.housenumber?.trim();
-          let cleanStreet = (props.street || '').trim();
-          cleanStreet = cleanStreet.replace(/\s+Street$/i, '').replace(/^Street\s+/i, 'Đường ');
-          const poiName = props.name?.trim();
-          const district =
-            props.district?.trim() ||
-            props.suburb?.trim() ||
-            props.locality?.trim() ||
-            'Hà Nội';
-          const ward = props.locality?.trim() || props.suburb?.trim() || '';
-
-          let displayName = '';
-          let category: HanoiLocationItem['category'] = 'landmark';
-          let zoom = 16;
-
-          if (houseNum && poiName && cleanStreet) {
-            category = 'address';
-            zoom = 17.5;
-            if (poiName.toLowerCase().includes(cleanStreet.toLowerCase())) {
-              displayName = poiName;
-            } else {
-              displayName = `${poiName} (Số ${houseNum} ${cleanStreet})`;
-            }
-          } else if (houseNum && cleanStreet) {
-            category = 'address';
-            zoom = 17.5;
-            if (cleanStreet.startsWith(houseNum)) {
-              displayName = `Số ${cleanStreet}`;
-            } else {
-              displayName = `Số ${houseNum} ${cleanStreet}`;
-            }
-          } else if (houseNum && poiName) {
-            category = 'address';
-            zoom = 17.5;
-            displayName = `${poiName} (Số ${houseNum})`;
-          } else if (poiName) {
-            displayName = poiName;
-            if (props.osm_key === 'building' || props.type === 'house') {
-              category = 'address';
-              zoom = 17.5;
-            } else if (props.osm_key === 'highway' || props.type === 'street') {
-              category = 'street';
-              zoom = 16;
-            } else {
-              category = 'landmark';
-              zoom = 16.5;
-            }
-          } else if (cleanStreet) {
-            displayName = cleanStreet;
-            category = 'street';
-            zoom = 16;
-          } else {
-            displayName = query;
-          }
-
-          const descParts: string[] = [];
-          if (ward && !displayName.includes(ward)) descParts.push(ward);
-          if (district && !displayName.includes(district)) descParts.push(district);
-          descParts.push('Hà Nội');
-
+          const baseName = bf.properties.name || baseQuery;
+          const subTitle = `${subPrefix.charAt(0).toUpperCase() + subPrefix.slice(1)}, ${baseName}`;
           appendResult({
-            id: `photon-${lat.toFixed(5)}-${lng.toFixed(5)}`,
-            name: displayName,
-            category,
-            district,
+            id: `sub-${lat.toFixed(5)}-${lng.toFixed(5)}`,
+            name: subTitle,
+            category: 'address',
+            district: bf.properties.district || bf.properties.city || 'Hà Nội',
             lat,
             lng,
-            zoom,
-            description: descParts.join(', '),
-            houseNumber: houseNum,
-            street: streetName,
+            zoom: 17,
+            description: `${baseName}, Hà Nội`,
+            houseNumber: subPrefix,
+            street: baseName,
           });
         }
       }
+
+      for (const feat of features) {
+        const props = feat.properties;
+        const coords = feat.geometry?.coordinates;
+        if (!coords || coords.length < 2) continue;
+
+        const [lng, lat] = coords;
+
+        // Filter roughly within Hanoi & surrounding area [lat: 20.4 - 21.6, lng: 105.2 - 106.3]
+        if (lat < 20.4 || lat > 21.6 || lng < 105.2 || lng > 106.3) {
+          continue;
+        }
+
+        const houseNum = props.housenumber?.trim();
+        let cleanStreet = (props.street || '').trim();
+        cleanStreet = cleanStreet.replace(/\s+Street$/i, '').replace(/^Street\s+/i, 'Đường ');
+        const poiName = props.name?.trim();
+        const district =
+          props.district?.trim() ||
+          props.suburb?.trim() ||
+          props.locality?.trim() ||
+          'Hà Nội';
+        const ward = props.locality?.trim() || props.suburb?.trim() || '';
+
+        let displayName = '';
+        let category: HanoiLocationItem['category'] = 'landmark';
+        let zoom = 16;
+
+        if (houseNum && poiName && cleanStreet) {
+          category = 'address';
+          zoom = 17.5;
+          if (poiName.toLowerCase().includes(cleanStreet.toLowerCase())) {
+            displayName = poiName;
+          } else {
+            displayName = `${poiName} (Số ${houseNum} ${cleanStreet})`;
+          }
+        } else if (houseNum && cleanStreet) {
+          category = 'address';
+          zoom = 17.5;
+          if (cleanStreet.startsWith(houseNum)) {
+            displayName = `Số ${cleanStreet}`;
+          } else {
+            displayName = `Số ${houseNum} ${cleanStreet}`;
+          }
+        } else if (houseNum && poiName) {
+          category = 'address';
+          zoom = 17.5;
+          displayName = `${poiName} (Số ${houseNum})`;
+        } else if (poiName) {
+          displayName = poiName;
+          if (props.osm_key === 'building' || props.type === 'house') {
+            category = 'address';
+            zoom = 17.5;
+          } else if (
+            props.osm_key === 'highway' ||
+            props.type === 'street' ||
+            poiName.toLowerCase().startsWith('phố') ||
+            poiName.toLowerCase().startsWith('đường')
+          ) {
+            category = 'street';
+            zoom = 16.5;
+          } else {
+            category = 'landmark';
+            zoom = 16.5;
+          }
+        } else if (cleanStreet) {
+          displayName = cleanStreet;
+          category = 'street';
+          zoom = 16;
+        } else {
+          displayName = query;
+        }
+
+        const descParts: string[] = [];
+        if (ward && !displayName.includes(ward)) descParts.push(ward);
+        if (district && !displayName.includes(district)) descParts.push(district);
+        descParts.push('Hà Nội');
+
+        appendResult({
+          id: `photon-${lat.toFixed(5)}-${lng.toFixed(5)}`,
+          name: displayName,
+          category,
+          district,
+          lat,
+          lng,
+          zoom,
+          description: descParts.join(', '),
+          houseNumber: houseNum,
+          street: cleanStreet || undefined,
+        });
+      }
     } catch {
-      // Photon fallback silently continue to Nominatim
+      // Photon fallback
     }
 
-    // 2. Secondary fallback: OSM Nominatim if Photon results are sparse (< 3)
-    if (results.length < 3) {
+    // 2. OSM Nominatim fallback if results are sparse (< 2)
+    if (results.length < 2) {
       try {
         const nominatimQuery = `${query}, Hà Nội, Việt Nam`;
         const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
@@ -227,11 +274,11 @@ export async function GET(request: NextRequest) {
         )}&countrycodes=vn&limit=5&addressdetails=1`;
 
         const nomController = new AbortController();
-        const nomTimeout = setTimeout(() => nomController.abort(), 3500);
+        const nomTimeout = setTimeout(() => nomController.abort(), 4000);
 
         const nomRes = await fetch(nominatimUrl, {
           headers: {
-            'User-Agent': 'HanoiRealtyApp/1.0 (contact@hanoirealty.vn)',
+            'User-Agent': 'HanoiRealty-Platform/1.0 (contact@hanoirealty.vn)',
             'Accept-Language': 'vi',
           },
           signal: nomController.signal,
@@ -260,7 +307,7 @@ export async function GET(request: NextRequest) {
               category = 'address';
               zoom = 17.5;
               displayName = `Số ${houseNum} ${road}`;
-            } else if (road && (item.type === 'secondary' || item.type === 'primary' || item.type === 'residential')) {
+            } else if (road) {
               category = 'street';
               zoom = 16;
             }
@@ -289,8 +336,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Cache the result
-    setCache(cacheKey, results);
+    // Only cache if we actually found results!
+    if (results.length > 0) {
+      setCache(cacheKey, results);
+    }
 
     return NextResponse.json({
       success: true,
