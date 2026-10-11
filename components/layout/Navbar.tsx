@@ -124,29 +124,9 @@ export const Navbar: React.FC = () => {
           isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
         }`}
       >
-        {/* 1. LOGO & MOBILE MENU TOGGLE */}
-        <div className="shrink-0 flex items-center gap-2 sm:gap-2.5">
-          {/* Hamburger Menu Toggle (Mobile & Tablet < lg) - Thiết kế nổi bật, không có badge số */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-expanded={mobileMenuOpen}
-            aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
-            title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
-            className={`lg:hidden relative flex h-10 w-10 items-center justify-center rounded-xl border-2 transition-all cursor-pointer active:scale-95 shrink-0 shadow-md ${
-              mobileMenuOpen
-                ? 'bg-orange-500 text-white border-orange-500 shadow-orange-500/30'
-                : 'bg-slate-800/90 hover:bg-slate-700/90 text-white border-slate-600/80 hover:border-orange-500/60 shadow-black/30'
-            }`}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5 stroke-[2.4]" />
-            ) : (
-              <Menu className="h-5 w-5 stroke-[2.4]" />
-            )}
-          </button>
-
-          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0">
+        {/* 1. LOGO */}
+        <div className="logo shrink-0 flex items-center">
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -388,7 +368,7 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Right Actions (Tablet & Mobile < lg) */}
+        {/* Hamburger Menu Toggle (Tablet & Mobile < lg) */}
         <div className="flex lg:hidden items-center gap-2 shrink-0">
           <Link
             href="/search"
@@ -402,6 +382,20 @@ export const Navbar: React.FC = () => {
             className="h-9 flex items-center justify-center rounded-xl bg-accent hover:bg-accent-hover px-3 text-xs font-bold text-white shadow-sm transition-colors whitespace-nowrap cursor-pointer"
           >
             Đăng tin
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
+            title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+            className="relative flex items-center justify-center p-1 text-white hover:text-orange-400 active:scale-90 transition-all cursor-pointer shrink-0"
+          >
+            {mobileMenuOpen ? (
+              <X className="h-7 w-7 stroke-[2.5] text-orange-400" />
+            ) : (
+              <Menu className="h-7 w-7 stroke-[2.5] text-white hover:text-orange-400 transition-colors" />
+            )}
           </button>
         </div>
       </div>
