@@ -631,3 +631,94 @@ export function createDirectNotification(params: {
   }
 }
 
+/**
+ * Kiểm tra trạng thái hết hạn và số ngày còn lại của tin đăng
+ */
+export function getListingExpiryInfo(listing: ListingItem): {
+  isExpired: boolean;
+  daysRemaining: number;
+  formattedExpiry: string;
+  badgeLabel: string;
+  durationDays: number;
+} {
+  const durationDays = listing.durationDays || (listing.isFeatured ? 60 : 7);
+  let expiresAt = listing.expiresAt;
+  
+  if (!expiresAt) {
+    const createdDate = new Date(listing.createdAt || Date.now());
+    createdDate.setDate(createdDate.getDate() + durationDays);
+    expiresAt = createdDate.toISOString().split('T')[0];
+  }
+
+  const expiryTimestamp = new Date(expiresAt).setHours(23, 59, 59, 999);
+  const now = Date.now();
+  const diffMs = expiryTimestamp - now;
+  const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const isExpired = listing.status === 'expired' || daysRemaining <= 0;
+
+  let badgeLabel = '';
+  if (isExpired) {
+    badgeLabel = 'Đã hết hạn';
+  } else if (daysRemaining === 1) {
+    badgeLabel = 'Hết hạn hôm nay';
+  } else {
+    badgeLabel = `Còn ${daysRemaining} ngày`;
+  }
+
+  return {
+    isExpired,
+    daysRemaining: Math.max(0, daysRemaining),
+    formattedExpiry: expiresAt,
+    badgeLabel,
+    durationDays,
+  };
+}
+
+/**
+ * Gia hạn tin đăng thêm N ngày (kéo dài expiresAt và đưa status về active)
+ */
+export function renewListingRecord(listingId: string, durationDays = 30): ListingItem | null {
+  if (typeof window === 'undefined') return null;
+  const currentList = getLocalListings();
+  const idx = currentList.findIndex((l) => l.id === listingId);
+  if (idx === -1) return null;
+
+  const target = currentList[idx];
+  const newExpiry = new Date();
+  newExpiry.setDate(newExpiry.getDate() + durationDays);
+  const updatedListing: ListingItem = {
+    ...target,
+    durationDays,
+    expiresAt: newExpiry.toISOString().split('T')[0],
+    status: 'active',
+    updatedAt: new Date().toISOString(),
+  };
+
+  currentList[idx] = updatedListing;
+  saveLocalListings(currentList);
+  return updatedListing;
+}
+
+/**
+ * Bật/tắt huy hiệu tin nổi bật (Top 1 Tìm Kiếm)
+ */
+export function toggleFeaturedListingRecord(listingId: string, isFeatured: boolean, badge = 'VIP'): ListingItem | null {
+  if (typeof window === 'undefined') return null;
+  const currentList = getLocalListings();
+  const idx = currentList.findIndex((l) => l.id === listingId);
+  if (idx === -1) return null;
+
+  const target = currentList[idx];
+  const updatedListing: ListingItem = {
+    ...target,
+    isFeatured,
+    featuredBadge: isFeatured ? badge : undefined,
+    updatedAt: new Date().toISOString(),
+  };
+
+  currentList[idx] = updatedListing;
+  saveLocalListings(currentList);
+  return updatedListing;
+}
+
+

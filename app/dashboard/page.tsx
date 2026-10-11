@@ -59,7 +59,7 @@ import {
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
-import { TEST_SELLERS_LIST, DemoSeller } from '@/lib/services/listing-service';
+import { TEST_SELLERS_LIST, DemoSeller, getListingExpiryInfo } from '@/lib/services/listing-service';
 import { Pencil } from 'lucide-react';
 import {
   getPackageDefinition,
@@ -91,7 +91,19 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const tabQuery = searchParams.get('tab') as TabType | null;
 
-  const { user, setUser, listings, setListings, savedListingIds, toggleSaveListing, addToast, deleteListing, upgradeUserPackage } = useApp();
+  const {
+    user,
+    setUser,
+    listings,
+    setListings,
+    savedListingIds,
+    toggleSaveListing,
+    addToast,
+    deleteListing,
+    renewListing,
+    toggleFeaturedListing,
+    upgradeUserPackage,
+  } = useApp();
   const pkgDef = getPackageDefinition(user?.package);
   const maxListings = user?.listingsLimit ?? pkgDef.limits.maxListings;
 
@@ -253,6 +265,13 @@ function DashboardContent() {
     return l.ownerId === user.id || l.userId === user.id || l.createdBy === user.id;
   });
   const savedListings = listings.filter((l) => savedListingIds.includes(l.id));
+
+  const remainingListings = Math.max(0, maxListings - userListings.length);
+  const featuredUsed = userListings.filter((l) => l.isFeatured).length;
+  const remainingFeatured = Math.max(0, pkgDef.limits.featuredListings - featuredUsed);
+  const aiReportsUsed = user?.aiReportsUsed || 0;
+  const aiReportsLimit = user?.aiReportsLimit ?? pkgDef.limits.aiReports;
+  const remainingAiReports = Math.max(0, aiReportsLimit - aiReportsUsed);
 
   // Chuyển đổi nhanh tài khoản Seller để test Section 23
   const handleSwitchSeller = (seller: DemoSeller) => {
@@ -570,41 +589,80 @@ function DashboardContent() {
 
             {/* Quick Metrics Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                <span className="text-[11px] text-text-muted font-semibold">Tin bất động sản của bạn</span>
+              {/* Thẻ 1: Hạn mức tin đăng & Lượt còn lại */}
+              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                  <span>Hạn mức tin ({pkgDef.name})</span>
+                  <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
+                    {pkgDef.badgeLabel}
+                  </span>
+                </div>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <p className="text-2xl font-black text-text-primary">{userListings.length}</p>
+                  <p className="text-2xl font-black text-text-primary">
+                    {userListings.length} / {maxListings}
+                  </p>
                   {userListings.some(l => l.status === 'pending') && (
-                    <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full animate-pulse">
+                    <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.2 rounded-full animate-pulse">
                       {userListings.filter(l => l.status === 'pending').length} chờ duyệt
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] text-success font-bold flex items-center gap-1 mt-1">
-                  <CheckCircle2 className="h-3 w-3" /> Chuẩn quy hoạch
-                </span>
+                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                  <span className={remainingListings > 0 ? "text-emerald-600" : "text-rose-600"}>
+                    {remainingListings > 0 ? `Còn lại ${remainingListings} lượt đăng` : 'Đã hết hạn mức'}
+                  </span>
+                  <span className="text-slate-400">Hạn: {pkgDef.limits.listingDurationDays} ngày/tin</span>
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                <span className="text-[11px] text-text-muted font-semibold">Tổng lượt xem tin</span>
-                <p className="text-2xl font-black text-accent mt-1">2,840</p>
-                <span className="text-[10px] text-success font-bold flex items-center gap-1 mt-1">
-                  <TrendingUp className="h-3 w-3" /> +18% tuần này
-                </span>
+              {/* Thẻ 2: Tin nổi bật / VIP (Top 1 Tìm Kiếm) */}
+              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                  <span>Tin nổi bật (Top 1)</span>
+                  <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
+                    <Crown className="h-3 w-3" /> VIP
+                  </span>
+                </div>
+                <p className="text-2xl font-black text-amber-500 mt-1">
+                  {featuredUsed} / {pkgDef.limits.featuredListings}
+                </p>
+                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                  <span className={remainingFeatured > 0 ? "text-amber-600" : "text-slate-500"}>
+                    {pkgDef.limits.featuredListings > 0 ? `Còn ${remainingFeatured} lượt đẩy Top` : 'Gói Free (0 tin)'}
+                  </span>
+                  <span className="text-slate-400">Ghim đầu tìm kiếm</span>
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                <span className="text-[11px] text-text-muted font-semibold">Báo cáo AI đã dùng</span>
-                <p className="text-2xl font-black text-text-primary mt-1">8 / 30</p>
-                <span className="text-[10px] text-text-muted mt-1">Còn lại 22 lượt</span>
+              {/* Thẻ 3: Thời hạn hiển thị tin theo gói */}
+              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                <span className="text-[11px] text-text-muted font-semibold">Thời hạn hiển thị tin</span>
+                <p className="text-2xl font-black text-indigo-600 mt-1">
+                  {pkgDef.limits.listingDurationDays} <span className="text-xs font-bold text-slate-500">ngày/tin</span>
+                </p>
+                <div className="text-[10px] font-bold text-slate-500 pt-1 flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-slate-400" />
+                  <span className="truncate">
+                    {pkgDef.id === 'free' ? 'Sau 7 ngày tự động ẩn' : `Gói ${pkgDef.name} (${pkgDef.limits.listingDurationDays} ngày/tin)`}
+                  </span>
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                <span className="text-[11px] text-text-muted font-semibold">Tin đã lưu</span>
-                <p className="text-2xl font-black text-rose-600 mt-1">{savedListingIds.length}</p>
-                <span className="text-[10px] text-rose-600 font-bold mt-1 flex items-center gap-1">
-                  <Heart className="h-3 w-3 fill-rose-600" /> Đang theo dõi
-                </span>
+              {/* Thẻ 4: Báo cáo AI & Tin đã lưu */}
+              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                  <span>Báo cáo AI ({aiReportsLimit} lượt)</span>
+                  <span className="text-rose-600 font-bold flex items-center gap-0.5">
+                    <Heart className="h-2.5 w-2.5 fill-rose-600" /> {savedListingIds.length}
+                  </span>
+                </div>
+                <p className="text-2xl font-black text-text-primary mt-1">
+                  {aiReportsUsed} / {aiReportsLimit}
+                </p>
+                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                  <span className="text-emerald-600">Còn lại {remainingAiReports} lượt AI</span>
+                  <span className="text-slate-400">{savedListingIds.length} tin đã lưu</span>
+                </div>
               </div>
             </div>
 
@@ -638,12 +696,70 @@ function DashboardContent() {
                     </Link>
                   </div>
 
+                  {/* Banner Hạn Mức Gói Cước & Thời Hạn Hiển Thị */}
+                  <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 via-sky-50/50 to-orange-50/30 p-4 space-y-2.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-indigo-600 text-white font-black text-[11px] uppercase tracking-wider">
+                            <Layers className="w-3 h-3" />
+                            Gói {pkgDef.name} ({pkgDef.badgeLabel})
+                          </span>
+                          <span className="text-xs font-bold text-slate-800">
+                            • Còn lại: <strong className={remainingListings > 0 ? "text-emerald-600 font-black" : "text-rose-600 font-black"}>{remainingListings}</strong> / {maxListings} lượt đăng
+                          </span>
+                          <span className="text-xs font-bold text-slate-800">
+                            • Thời hạn: <strong className="text-indigo-600 font-black">{pkgDef.limits.listingDurationDays} ngày/tin</strong>
+                          </span>
+                          {pkgDef.limits.featuredListings > 0 && (
+                            <span className="text-xs font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md flex items-center gap-1">
+                              <Crown className="w-3 h-3 text-amber-600" />
+                              Còn {remainingFeatured} / {pkgDef.limits.featuredListings} lượt Top 1
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed">
+                          {pkgDef.id === 'free' ? (
+                            <span>
+                              ⚠️ <strong>Quy định Gói Free:</strong> Mỗi tin đăng có thời hạn <strong>7 ngày</strong>. Sau 7 ngày, tin sẽ tự động hết hạn và không hiển thị trên bản đồ quy hoạch cũng như bộ lọc tìm kiếm của khách hàng. Nâng cấp lên gói trả phí để có thời hạn 30 - 90 ngày và quyền ghim tin lên <strong>TOP 1 Tìm Kiếm</strong>.
+                            </span>
+                          ) : (
+                            <span>
+                              ✨ <strong>Đặc quyền Gói {pkgDef.name}:</strong> Thời hạn tin đăng lên đến <strong>{pkgDef.limits.listingDurationDays} ngày</strong>. Được cấp <strong>{pkgDef.limits.featuredListings} lượt đẩy Top 1</strong> ưu tiên đứng đầu kết quả tìm kiếm khi có khách hàng lọc mua bán đất/nhà phù hợp!
+                            </span>
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0 flex items-center gap-2">
+                        {pkgDef.id === 'free' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTab('packages')}
+                            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5"
+                          >
+                            <Crown className="w-3.5 h-3.5 text-yellow-200" />
+                            <span>Nâng cấp để giữ tin 90 ngày & Đẩy Top 1</span>
+                          </button>
+                        ) : remainingListings === 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTab('packages')}
+                            className="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-sm transition-all"
+                          >
+                            Hết hạn mức - Nâng cấp gói
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
                   {userListings.length === 0 ? (
                     <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
                       <Home className="w-12 h-12 mx-auto text-slate-300 mb-3" />
                       <h4 className="font-bold text-sm text-slate-700">Tài khoản này chưa có tin đăng nào</h4>
                       <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">
-                        Tạo tin đăng mới ngay để tiếp cận hàng nghìn khách hàng tiềm năng tại Hà Nội.
+                        Tạo tin đăng mới ngay để tiếp cận hàng nghìn khách hàng tiềm năng tại Hà Nội ({pkgDef.limits.listingDurationDays} ngày hiển thị/tin).
                       </p>
                       <Link
                         href="/listings/create"
@@ -655,121 +771,249 @@ function DashboardContent() {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {userListings.map((listing) => (
-                        <div
-                          key={listing.id}
-                          className="group flex flex-col gap-3 rounded-2xl border border-border p-4 hover:border-accent hover:bg-orange-50/10 transition-all shadow-sm"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-3.5">
-                              <Link
-                                href={`/listings/${listing.id}`}
-                                className="shrink-0 block"
-                              >
-                                <img
-                                  src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400'}
-                                  alt={listing.title}
-                                  className="h-16 w-24 rounded-xl object-cover hover:opacity-90 transition-opacity"
-                                />
-                              </Link>
-                              <div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-xs font-black text-accent">
-                                    {formatCurrencyVND(listing.price)}
-                                  </span>
-                                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-text-secondary">
-                                    {listing.area}m²
-                                  </span>
-                                  <span className="rounded bg-emerald-50 text-emerald-700 px-1.5 py-0.5 text-[9px] font-bold">
-                                    {listing.planningZone || 'Đất ở đô thị'}
-                                  </span>
+                      {userListings.map((listing) => {
+                        const expiry = getListingExpiryInfo(listing);
+                        const isFeatured = Boolean(listing.isFeatured);
 
-                                  {/* Trạng thái tin đăng theo chuẩn Section 8, 9, 10 */}
-                                  {listing.status === 'pending' ? (
-                                    <span className="rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1 animate-pulse">
-                                      ⏳ Chờ Admin duyệt
-                                    </span>
-                                  ) : listing.status === 'rejected' ? (
-                                    <span className="rounded-full bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
-                                      ❌ Bị từ chối
-                                    </span>
-                                  ) : listing.status === 'hidden' ? (
-                                    <span className="rounded-full bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
-                                      👁️ Đã ẩn (Tạm ngưng)
-                                    </span>
-                                  ) : listing.status === 'expired' ? (
-                                    <span className="rounded-full bg-gray-100 text-gray-700 border border-gray-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
-                                      ⌛ Hết hạn
-                                    </span>
-                                  ) : (
-                                    <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
-                                      ✓ Đã duyệt (Đang hiển thị)
-                                    </span>
-                                  )}
-                                </div>
+                        return (
+                          <div
+                            key={listing.id}
+                            className={`group flex flex-col gap-3 rounded-2xl border p-4 transition-all shadow-sm ${
+                              isFeatured
+                                ? 'border-amber-300 bg-amber-50/20 hover:border-amber-400'
+                                : expiry.isExpired
+                                ? 'border-rose-200 bg-rose-50/15'
+                                : 'border-border hover:border-accent hover:bg-orange-50/10'
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div className="flex items-center gap-3.5">
                                 <Link
                                   href={`/listings/${listing.id}`}
-                                  className="text-xs font-bold text-text-primary hover:text-accent transition-colors line-clamp-1 mt-1 block cursor-pointer"
+                                  className="shrink-0 block relative"
                                 >
-                                  {listing.title}
+                                  <img
+                                    src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400'}
+                                    alt={listing.title}
+                                    className="h-16 w-24 rounded-xl object-cover hover:opacity-90 transition-opacity"
+                                  />
+                                  {isFeatured && (
+                                    <span className="absolute top-1 left-1 bg-amber-500 text-white text-[8px] font-black px-1.5 py-0.2 rounded shadow-xs flex items-center gap-0.5">
+                                      <Crown className="w-2 h-2" /> Top 1
+                                    </span>
+                                  )}
                                 </Link>
-                                <p className="text-[11px] text-text-muted mt-0.5">{listing.district}, Hà Nội • Mã: <span className="font-mono text-[10px] text-slate-500">{listing.id}</span></p>
-                              </div>
-                            </div>
-
-                            {/* Action buttons */}
-                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                              {/* Nút Chỉnh sửa tin (Section 11) */}
-                              <Link
-                                href={`/listings/create?editId=${listing.id}`}
-                                className="flex items-center gap-1 rounded-lg bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 text-xs font-bold text-text-primary transition-colors"
-                                title="Chỉnh sửa tin"
-                              >
-                                <Pencil className="h-3.5 w-3.5 text-slate-600" />
-                                <span>Sửa</span>
-                              </Link>
-
-                              <Link
-                                href={`/reports/${listing.id}`}
-                                className="flex items-center gap-1 rounded-lg bg-accent/10 px-2.5 py-1.5 text-xs font-bold text-accent hover:bg-accent hover:text-white transition-colors"
-                              >
-                                <Sparkles className="h-3.5 w-3.5" />
-                                <span>AI</span>
-                              </Link>
-
-                              <button
-                                onClick={(e) => handleDeleteListing(listing.id, e)}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-red-50 hover:text-danger transition-colors"
-                                title="Xoá tin"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Báo lỗi từ chối nếu tin bị rejected theo Section 9 */}
-                          {listing.status === 'rejected' && (
-                            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <div className="flex items-start gap-2">
-                                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                                 <div>
-                                  <span className="font-bold text-[11px] text-rose-900">Lý do từ chối của Admin:</span>
-                                  <p className="text-[11px] text-rose-700 mt-0.5">
-                                    {listing.rejectionReason || 'Thông tin tin đăng chưa đáp ứng tiêu chuẩn kiểm duyệt.'}
-                                  </p>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-xs font-black text-accent">
+                                      {formatCurrencyVND(listing.price)}
+                                    </span>
+                                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-text-secondary">
+                                      {listing.area}m²
+                                    </span>
+                                    <span className="rounded bg-emerald-50 text-emerald-700 px-1.5 py-0.5 text-[9px] font-bold">
+                                      {listing.planningZone || 'Đất ở đô thị'}
+                                    </span>
+
+                                    {/* Huy hiệu Top 1 VIP nếu được ghim nổi bật */}
+                                    {isFeatured && (
+                                      <span className="rounded-full bg-amber-500 text-white px-2 py-0.5 text-[9px] font-black flex items-center gap-1 shadow-2xs">
+                                        <Crown className="h-2.5 w-2.5 fill-white" /> TOP 1 TÌM KIẾM
+                                      </span>
+                                    )}
+
+                                    {/* Trạng thái duyệt của tin đăng */}
+                                    {listing.status === 'pending' ? (
+                                      <span className="rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1 animate-pulse">
+                                        ⏳ Chờ Admin duyệt
+                                      </span>
+                                    ) : listing.status === 'rejected' ? (
+                                      <span className="rounded-full bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
+                                        ❌ Bị từ chối
+                                      </span>
+                                    ) : listing.status === 'hidden' ? (
+                                      <span className="rounded-full bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
+                                        👁️ Đã ẩn (Tạm ngưng)
+                                      </span>
+                                    ) : expiry.isExpired ? (
+                                      <span className="rounded-full bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
+                                        ⌛ Hết hạn (Đã tự động ẩn)
+                                      </span>
+                                    ) : (
+                                      <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
+                                        ✓ Đang hiển thị
+                                      </span>
+                                    )}
+
+                                    {/* Huy hiệu đếm ngược thời hạn tin đăng */}
+                                    {expiry.isExpired ? (
+                                      <span className="rounded-full bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 text-[9px] font-semibold flex items-center gap-1">
+                                        Hết hạn: {expiry.formattedExpiry}
+                                      </span>
+                                    ) : expiry.daysRemaining <= 3 ? (
+                                      <span className="rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
+                                        ⚠️ Sắp hết hạn: Còn {expiry.daysRemaining} ngày
+                                      </span>
+                                    ) : (
+                                      <span className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[9px] font-semibold flex items-center gap-1">
+                                        <Clock className="h-2.5 w-2.5" /> Còn {expiry.daysRemaining} ngày hiển thị (Hạn: {expiry.formattedExpiry})
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <Link
+                                    href={`/listings/${listing.id}`}
+                                    className="text-xs font-bold text-text-primary hover:text-accent transition-colors line-clamp-1 mt-1 block cursor-pointer"
+                                  >
+                                    {listing.title}
+                                  </Link>
+                                  <div className="flex items-center gap-2 text-[11px] text-text-muted mt-0.5 flex-wrap">
+                                    <span>{listing.district}, Hà Nội</span>
+                                    <span>•</span>
+                                    <span>Ngày đăng: <strong>{listing.createdAt ? new Date(listing.createdAt).toLocaleDateString('vi-VN') : 'Mới đăng'}</strong></span>
+                                    <span>•</span>
+                                    <span>Mã: <code className="font-mono text-[10px] text-slate-500">{listing.id}</code></span>
+                                  </div>
                                 </div>
                               </div>
-                              <Link
-                                href={`/listings/create?editId=${listing.id}`}
-                                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] shrink-0 transition-colors shadow-2xs"
-                              >
-                                <Pencil className="w-3 h-3" />
-                                <span>Sửa & Gửi duyệt lại</span>
-                              </Link>
+
+                              {/* Action buttons */}
+                              <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+                                {/* Nút Ghim / Bỏ Ghim TOP 1 TÌM KIẾM */}
+                                {isFeatured ? (
+                                  <button
+                                    type="button"
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      await toggleFeaturedListing(listing.id, false);
+                                    }}
+                                    className="flex items-center gap-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-1.5 text-xs font-bold transition-all shadow-2xs"
+                                    title="Tin đang ghim ở vị trí Top 1 khi khách tìm mua theo nhu cầu. Nhấn để hủy ghim."
+                                  >
+                                    <Crown className="h-3.5 w-3.5 text-amber-600 fill-amber-500" />
+                                    <span>Đang Top 1</span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (pkgDef.limits.featuredListings === 0) {
+                                        addToast('Gói Free không có lượt đẩy Top 1. Vui lòng nâng cấp gói Basic, Pro hoặc Agency!', 'warning');
+                                        handleSelectTab('packages');
+                                        return;
+                                      }
+                                      if (remainingFeatured <= 0) {
+                                        addToast(`Bạn đã sử dụng hết ${pkgDef.limits.featuredListings} lượt đẩy Top 1 của gói. Vui lòng nâng cấp thêm!`, 'warning');
+                                        return;
+                                      }
+                                      await toggleFeaturedListing(listing.id, true);
+                                    }}
+                                    className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all ${
+                                      pkgDef.limits.featuredListings > 0 && remainingFeatured > 0
+                                        ? 'bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-700 border border-amber-200'
+                                        : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                                    }`}
+                                    title="Đẩy tin lên vị trí Top 1 khi khách hàng tìm kiếm hoặc lọc theo nhu cầu phù hợp"
+                                  >
+                                    <Crown className="h-3.5 w-3.5" />
+                                    <span>Đẩy Top 1</span>
+                                  </button>
+                                )}
+
+                                {/* Nút Gia hạn tin đăng (+durationDays) */}
+                                <button
+                                  type="button"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await renewListing(listing.id, pkgDef.limits.listingDurationDays);
+                                  }}
+                                  className="flex items-center gap-1 rounded-lg bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-200 px-2.5 py-1.5 text-xs font-bold transition-all"
+                                  title={`Gia hạn thêm ${pkgDef.limits.listingDurationDays} ngày hiển thị theo gói ${pkgDef.name}`}
+                                >
+                                  <RefreshCw className="h-3.5 w-3.5" />
+                                  <span>Gia hạn (+{pkgDef.limits.listingDurationDays} ngày)</span>
+                                </button>
+
+                                {/* Nút Chỉnh sửa tin (Section 11) */}
+                                <Link
+                                  href={`/listings/create?editId=${listing.id}`}
+                                  className="flex items-center gap-1 rounded-lg bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 text-xs font-bold text-text-primary transition-colors"
+                                  title="Chỉnh sửa tin"
+                                >
+                                  <Pencil className="h-3.5 w-3.5 text-slate-600" />
+                                  <span>Sửa</span>
+                                </Link>
+
+                                <Link
+                                  href={`/reports/${listing.id}`}
+                                  className="flex items-center gap-1 rounded-lg bg-accent/10 px-2.5 py-1.5 text-xs font-bold text-accent hover:bg-accent hover:text-white transition-colors"
+                                  title="Báo cáo phân tích AI"
+                                >
+                                  <Sparkles className="h-3.5 w-3.5" />
+                                  <span>AI</span>
+                                </Link>
+
+                                <button
+                                  onClick={(e) => handleDeleteListing(listing.id, e)}
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-red-50 hover:text-danger transition-colors"
+                                  title="Xoá tin"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      ))}
+
+                            {/* Cảnh báo tin hết hạn và nút Gia hạn nhanh */}
+                            {expiry.isExpired && (
+                              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div className="flex items-start gap-2">
+                                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                                  <div>
+                                    <span className="font-bold text-[11px] text-rose-900">Tin đã hết hạn ngày {expiry.formattedExpiry}:</span>
+                                    <p className="text-[11px] text-rose-700 mt-0.5">
+                                      Tin đăng này đã tự động ẩn khỏi kết quả tìm kiếm công khai và bản đồ quy hoạch. Nhấn &quot;Gia hạn ngay&quot; để tiếp tục hiển thị thêm {pkgDef.limits.listingDurationDays} ngày.
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await renewListing(listing.id, pkgDef.limits.listingDurationDays);
+                                  }}
+                                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shrink-0 transition-colors shadow-2xs cursor-pointer"
+                                >
+                                  <RefreshCw className="w-3.5 h-3.5" />
+                                  <span>Gia hạn ngay (+{pkgDef.limits.listingDurationDays} ngày)</span>
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Báo lỗi từ chối nếu tin bị rejected theo Section 9 */}
+                            {listing.status === 'rejected' && (
+                              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div className="flex items-start gap-2">
+                                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                                  <div>
+                                    <span className="font-bold text-[11px] text-rose-900">Lý do từ chối của Admin:</span>
+                                    <p className="text-[11px] text-rose-700 mt-0.5">
+                                      {listing.rejectionReason || 'Thông tin tin đăng chưa đáp ứng tiêu chuẩn kiểm duyệt.'}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Link
+                                  href={`/listings/create?editId=${listing.id}`}
+                                  className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] shrink-0 transition-colors shadow-2xs"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                  <span>Sửa & Gửi duyệt lại</span>
+                                </Link>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </motion.div>

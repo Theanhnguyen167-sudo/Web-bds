@@ -24,6 +24,9 @@ import {
   rejectListingRecord,
   toggleHideListingRecord,
   deleteListingRecord,
+  renewListingRecord,
+  toggleFeaturedListingRecord,
+  getListingExpiryInfo,
   EVENT_LISTINGS_UPDATED,
   TEST_SELLERS,
   TEST_SELLERS_LIST,
@@ -63,6 +66,8 @@ interface AppContextType {
   updateListing: (id: string, updates: Partial<ListingItem>) => Promise<ListingItem | null>;
   deleteListing: (id: string) => Promise<void>;
   hideListing: (id: string, forceHidden?: boolean) => Promise<void>;
+  renewListing: (id: string, durationDays?: number) => void;
+  toggleFeaturedListing: (id: string, isFeatured?: boolean) => void;
   updateListingStatus: (
     id: string,
     status: 'active' | 'pending' | 'rejected' | 'hidden' | 'expired' | 'sold',
@@ -620,6 +625,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addToast('Đã cập nhật trạng thái hiển thị của tin đăng', 'info');
   };
 
+  const renewListing = (id: string, durationDays?: number) => {
+    const pkg = getPackageDefinition(user?.package);
+    const days = durationDays || pkg.limits.listingDurationDays || 30;
+    const updated = renewListingRecord(id, days);
+    if (updated) {
+      setListings(getLocalListings());
+      addToast(`🎉 Đã gia hạn tin đăng thành công thêm ${days} ngày! Tin đã được kích hoạt lại.`, 'success');
+    }
+  };
+
+  const toggleFeaturedListing = (id: string, isFeatured?: boolean) => {
+    const pkg = getPackageDefinition(user?.package);
+    const badge = pkg.name.toUpperCase();
+    const currentList = getLocalListings();
+    const currentItem = currentList.find((l) => l.id === id);
+    const nextState = isFeatured !== undefined ? isFeatured : !currentItem?.isFeatured;
+
+    if (nextState) {
+      if (pkg.limits.featuredListings <= 0) {
+        addToast(`Gói ${pkg.name} không hỗ trợ tính năng Tin Nổi Bật. Vui lòng nâng cấp Gói Basic trở lên để ghim tin Top 1!`, 'warning');
+        return;
+      }
+      const featuredUsed = currentList.filter((l) => l.ownerId === user?.id && l.isFeatured).length;
+      if (featuredUsed >= pkg.limits.featuredListings) {
+        addToast(`Hạn mức tin nổi bật của bạn đã đạt giới hạn (${featuredUsed}/${pkg.limits.featuredListings} tin). Nâng cấp gói để thêm lượt đẩy Top!`, 'warning');
+        return;
+      }
+    }
+
+    const updated = toggleFeaturedListingRecord(id, nextState, badge);
+    if (updated) {
+      setListings(getLocalListings());
+      if (nextState) {
+        addToast(`⭐ Đã ghim tin lên TOP 1 Tìm kiếm thành công (Gói ${pkg.name})!`, 'success');
+      } else {
+        addToast('Đã tắt ghim nổi bật của tin đăng', 'info');
+      }
+    }
+  };
+
   const updateListingStatus = async (
     id: string,
     status: 'active' | 'pending' | 'rejected' | 'hidden' | 'expired' | 'sold',
@@ -791,6 +836,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateListing,
         deleteListing,
         hideListing,
+        renewListing,
+        toggleFeaturedListing,
         updateListingStatus,
         refreshListings,
         planningZones,

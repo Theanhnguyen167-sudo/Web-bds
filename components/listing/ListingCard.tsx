@@ -67,6 +67,8 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
         onMouseLeave={() => setHoveredListingId(null)}
         onClick={handleCardClick}
         className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-2xl hover:shadow-slate-900/20 hover:border-orange-400 hover:z-20 cursor-pointer ${
+          listing.isFeatured ? 'ring-2 ring-amber-400/60 border-amber-300 shadow-amber-500/10' : ''
+        } ${
           isSelected
             ? 'border-l-4 border-l-accent border-accent ring-2 ring-accent/20 bg-orange-50/20 shadow-lg'
             : isHovered
@@ -93,8 +95,8 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
           {/* Featured Badge (Top-left) */}
           <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5 pointer-events-none">
             {listing.isFeatured && (
-              <span className="rounded-md bg-accent px-2 py-0.5 text-[10px] font-extrabold text-white shadow-md">
-                ⭐ Nổi bật
+              <span className="rounded-md bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 px-2 py-0.5 text-[10px] font-black text-white shadow-md flex items-center gap-1 border border-white/20">
+                👑 TOP 1 {listing.featuredBadge ? `· ${listing.featuredBadge}` : ''}
               </span>
             )}
             <span className="rounded-md bg-primary/80 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white">

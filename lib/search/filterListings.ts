@@ -125,7 +125,21 @@ export function filterListings(
   listings: ListingItem[],
   filters: SearchFilters
 ): ListingItem[] {
+  const nowTime = Date.now();
+
   return listings.filter((listing) => {
+    // 0. LOẠI BỎ TIN ĐÃ HẾT HẠN HOẶC BỊ ẨN / TỪ CHỐI / NHÁP
+    // VD: Tài khoản dùng gói Free đăng 1 tin được 7 ngày, sau 7 ngày tự động hết hạn và không hiển thị trên tìm kiếm
+    if (listing.status === 'expired' || listing.status === 'hidden' || listing.status === 'rejected' || listing.status === 'draft') {
+      return false;
+    }
+    if (listing.expiresAt) {
+      const expiryTimestamp = new Date(listing.expiresAt).setHours(23, 59, 59, 999);
+      if (nowTime > expiryTimestamp) {
+        return false;
+      }
+    }
+
     // 1. Keyword search (title, address, district, description)
     if (filters.keyword.trim()) {
       const kw = filters.keyword.trim().toLowerCase();
@@ -254,6 +268,28 @@ export function sortListings(
   sortBy: string
 ): ListingItem[] {
   return [...listings].sort((a, b) => {
+    // 🌟 1. TIN NỔI BẬT ĐƯỢC ƯU TIÊN HIỂN THỊ Ở TOP 1 (HÀNG ĐẦU) THEO BỘ LỌC CỦA NGƯỜI DÙNG
+    // Mỗi lần có khách tìm mua đất/nhà, tin nổi bật đáp ứng đúng nhu cầu luôn được đẩy lên đầu tiên
+    const aFeatured = a.isFeatured ? 1 : 0;
+    const bFeatured = b.isFeatured ? 1 : 0;
+    if (aFeatured !== bFeatured) {
+      return bFeatured - aFeatured; // 1 đứng trước 0 => tin nổi bật lên đầu
+    }
+
+    // Nếu cả 2 cùng là tin nổi bật, ưu tiên theo cấp độ gói: AGENCY (40 tin) > PRO (10 tin) > BASIC (2 tin)
+    if (a.isFeatured && b.isFeatured) {
+      const getBadgeScore = (item: ListingItem) => {
+        const badge = (item.featuredBadge || '').toUpperCase();
+        if (badge.includes('AGENCY')) return 3;
+        if (badge.includes('PRO')) return 2;
+        if (badge.includes('BASIC')) return 1;
+        return 1;
+      };
+      const scoreDiff = getBadgeScore(b) - getBadgeScore(a);
+      if (scoreDiff !== 0) return scoreDiff;
+    }
+
+    // 2. Tiếp theo sắp xếp theo tiêu chí người dùng lựa chọn (Giá, Diện tích, Mới nhất...)
     switch (sortBy) {
       case 'price_asc':
         return a.price - b.price;
