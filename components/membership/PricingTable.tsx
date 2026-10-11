@@ -108,7 +108,7 @@ const getSavingsText = (pkgId: string, isYearly: boolean): string => {
 
 export const PricingTable: React.FC = () => {
   const router = useRouter();
-  const { user, addToast } = useApp();
+  const { user, addToast, upgradeUserPackage } = useApp();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
 
   const handleSelectPackage = (pkg: (typeof mockPackages)[0]) => {
@@ -116,19 +116,25 @@ export const PricingTable: React.FC = () => {
       if (typeof window !== 'undefined') {
         localStorage.setItem('pendingPackage', JSON.stringify({ packageId: pkg.id, billing: billingCycle }));
       }
-      addToast('Vui lòng đăng nhập để tiến hành thanh toán gói thành viên', 'info');
+      addToast('Vui lòng đăng nhập để tiến hành kích hoạt gói thành viên', 'info');
       router.push(`/login?redirect=/payment/checkout?packageId=${pkg.id}&billing=${billingCycle}`);
       return;
     }
 
     if (pkg.id === 'free') {
-      addToast('Bạn đang sử dụng gói Free mặc định', 'info');
+      if (user.package?.toLowerCase() === 'free') {
+        addToast('Bạn đang sử dụng gói Free mặc định!', 'info');
+      } else {
+        upgradeUserPackage('free');
+        addToast('🎉 Đã chuyển sang Gói Cơ Bản (Free)! Hạn mức 3 tin và đặc quyền cơ bản đã có hiệu lực.', 'success');
+        router.push('/dashboard?tab=packages');
+      }
       return;
     }
 
     if (user.package?.toLowerCase() === pkg.id.toLowerCase()) {
       addToast(`Bạn hiện đang kích hoạt và sử dụng Gói ${pkg.name} rồi!`, 'info');
-      router.push('/dashboard');
+      router.push('/dashboard?tab=packages');
       return;
     }
 

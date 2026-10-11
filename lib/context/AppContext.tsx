@@ -28,6 +28,11 @@ import {
   TEST_SELLERS,
   TEST_SELLERS_LIST,
 } from '@/lib/services/listing-service';
+import {
+  getPackageDefinition,
+  calculatePackageExpiry,
+  PackageTierId,
+} from '@/lib/packages/package-config';
 
 export interface ToastItem {
   id: string;
@@ -38,6 +43,9 @@ export interface ToastItem {
 interface AppContextType {
   user: typeof mockUser | null;
   setUser: React.Dispatch<React.SetStateAction<typeof mockUser | null>>;
+  upgradeUserPackage: (packageId: string, billing?: 'monthly' | 'yearly') => void;
+  incrementAiReportUsage: () => boolean;
+  incrementFeaturedUsage: () => boolean;
   listings: ListingItem[];
   setListings: React.Dispatch<React.SetStateAction<ListingItem[]>>;
   savedListingIds: string[];
@@ -92,21 +100,99 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
     }
     const defaultSeller = TEST_SELLERS_LIST[0];
+    const defaultPkgDef = getPackageDefinition(defaultSeller.package || 'pro');
     return {
       id: defaultSeller.id,
       name: defaultSeller.name,
       email: defaultSeller.email,
       phone: defaultSeller.phone,
       role: 'agent',
-      package: 'pro',
+      package: defaultPkgDef.name,
       packageExpiry: '2026-12-31',
       aiReportsUsed: 3,
-      aiReportsLimit: 30,
+      aiReportsLimit: defaultPkgDef.limits.aiReports,
       listingsCount: 2,
+      listingsLimit: defaultPkgDef.limits.maxListings,
+      listingDurationDays: defaultPkgDef.limits.listingDurationDays,
+      featuredListingsUsed: 1,
+      featuredListingsLimit: defaultPkgDef.limits.featuredListings,
       activeListings: 1,
       avatar: defaultSeller.avatar,
     };
   });
+
+  // Nâng cấp / Chuyển đổi gói cước hội viên và áp dụng tức thì
+  const upgradeUserPackage = (packageId: string, billing: 'monthly' | 'yearly' = 'monthly') => {
+    const pkgDef = getPackageDefinition(packageId);
+    const expiry = calculatePackageExpiry(billing);
+    setUser((prev) => {
+      const base = prev || {
+        id: 'u1',
+        name: 'Nguyễn Văn An',
+        email: 'an@example.com',
+        phone: '0988 123 456',
+        role: 'agent',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+        activeListings: 0,
+        listingsCount: 0,
+      };
+      const updated: typeof mockUser = {
+        ...base,
+        package: pkgDef.name,
+        packageExpiry: expiry,
+        listingsLimit: pkgDef.limits.maxListings,
+        listingDurationDays: pkgDef.limits.listingDurationDays,
+        featuredListingsLimit: pkgDef.limits.featuredListings,
+        featuredListingsUsed: 0,
+        aiReportsLimit: pkgDef.limits.aiReports,
+        aiReportsUsed: 0,
+      };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('hanoi_current_user', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
+
+  // Tiêu hao 1 lượt phân tích AI nếu còn hạn mức
+  const incrementAiReportUsage = (): boolean => {
+    if (!user) return false;
+    const pkgDef = getPackageDefinition(user.package);
+    const currentLimit = user.aiReportsLimit !== undefined ? user.aiReportsLimit : pkgDef.limits.aiReports;
+    if (user.aiReportsUsed >= currentLimit) {
+      return false;
+    }
+    const nextUsed = user.aiReportsUsed + 1;
+    const updated = { ...user, aiReportsUsed: nextUsed };
+    setUser(updated);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('hanoi_current_user', JSON.stringify(updated));
+      } catch {}
+    }
+    return true;
+  };
+
+  // Tiêu hao 1 suất tin nổi bật nếu còn hạn mức
+  const incrementFeaturedUsage = (): boolean => {
+    if (!user) return false;
+    const pkgDef = getPackageDefinition(user.package);
+    const currentLimit = user.featuredListingsLimit !== undefined ? user.featuredListingsLimit : pkgDef.limits.featuredListings;
+    const currentUsed = user.featuredListingsUsed || 0;
+    if (currentUsed >= currentLimit) {
+      return false;
+    }
+    const updated = { ...user, featuredListingsUsed: currentUsed + 1 };
+    setUser(updated);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('hanoi_current_user', JSON.stringify(updated));
+      } catch {}
+    }
+    return true;
+  };
 
   // Tự động lưu user vào localStorage khi user thay đổi để duy trì session giữa các portal
   useEffect(() => {
@@ -180,18 +266,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Gói dịch vụ: Mặc định luôn là 'Free'. Chỉ nhận gói cao hơn nếu user đã thanh toán trong DB hoặc là admin
       let userPackage = 'Free';
       let packageExpiry = 'Vĩnh viễn';
-      let aiReportsLimit = 1;
 
       if (userRole === 'admin') {
         userPackage = 'Agency';
         packageExpiry = '2026-12-31';
-        aiReportsLimit = 100;
       } else if (profile?.package && profile.package.toLowerCase() !== 'free') {
         userPackage = profile.package;
         packageExpiry = profile.package_expires_at || profile.packageExpiry || '2026-12-31';
-        const pkgLow = userPackage.toLowerCase();
-        aiReportsLimit = pkgLow === 'agency' ? 50 : pkgLow === 'pro' ? 20 : 5;
       }
+
+      const pkgDef = getPackageDefinition(userPackage);
 
       setUser({
         id: sessionUser.id,
@@ -200,12 +284,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         phone: profile?.phone || sessionUser.user_metadata?.phone || '',
         role: userRole,
         avatar: avatar,
-        package: userPackage,
+        package: pkgDef.name,
         packageExpiry: packageExpiry,
         listingsCount: 0,
+        listingsLimit: pkgDef.limits.maxListings,
+        listingDurationDays: pkgDef.limits.listingDurationDays,
+        featuredListingsUsed: 0,
+        featuredListingsLimit: pkgDef.limits.featuredListings,
         activeListings: 0,
         aiReportsUsed: 0,
-        aiReportsLimit: aiReportsLimit,
+        aiReportsLimit: pkgDef.limits.aiReports,
       });
 
       // Fetch saved listings from Supabase
@@ -231,12 +319,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       let userPackage = 'Free';
       let packageExpiry = 'Vĩnh viễn';
-      let aiReportsLimit = 1;
 
       if (userRole === 'admin') {
         userPackage = 'Agency';
         packageExpiry = '2026-12-31';
-        aiReportsLimit = 100;
       }
 
       // Đồng bộ thông tin người dùng lên bảng public.users của Supabase qua API an toàn
@@ -259,12 +345,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (userRole !== 'admin' && dbUser?.package && dbUser.package.toLowerCase() !== 'free') {
           userPackage = dbUser.package;
           packageExpiry = dbUser.package_expires_at || dbUser.packageExpiry || '2026-12-31';
-          const pkgLow = userPackage.toLowerCase();
-          aiReportsLimit = pkgLow === 'agency' ? 50 : pkgLow === 'pro' ? 20 : 5;
         }
       } catch (dbErr) {
         console.warn('Sync to Supabase users table notice:', dbErr);
       }
+
+      const fbPkgDef = getPackageDefinition(userPackage);
 
       setUser({
         id: fbUser.uid,
@@ -273,12 +359,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         phone: fbUser.phoneNumber || '',
         role: userRole,
         avatar: avatar,
-        package: userPackage,
+        package: fbPkgDef.name,
         packageExpiry: packageExpiry,
         listingsCount: 0,
+        listingsLimit: fbPkgDef.limits.maxListings,
+        listingDurationDays: fbPkgDef.limits.listingDurationDays,
+        featuredListingsUsed: 0,
+        featuredListingsLimit: fbPkgDef.limits.featuredListings,
         activeListings: 0,
         aiReportsUsed: 0,
-        aiReportsLimit: aiReportsLimit,
+        aiReportsLimit: fbPkgDef.limits.aiReports,
       });
     } catch (e) {
       console.error('Error syncing Firebase user:', e);
@@ -681,6 +771,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         user,
         setUser,
+        upgradeUserPackage,
+        incrementAiReportUsage,
+        incrementFeaturedUsage,
         listings,
         setListings,
         savedListingIds,

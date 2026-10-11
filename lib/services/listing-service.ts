@@ -172,7 +172,7 @@ export function getListingByIdFromStore(id: string): ListingItem | null {
  */
 export async function createListingRecord(
   data: Partial<ListingItem>,
-  currentUser: { id: string; name?: string; email?: string; phone?: string; avatar?: string } | null
+  currentUser: { id: string; name?: string; email?: string; phone?: string; avatar?: string; package?: string } | null
 ): Promise<ListingItem> {
   // 1. Xác định ownerId bắt buộc
   const ownerId = currentUser?.id || 'seller_a';
@@ -199,6 +199,13 @@ export async function createListingRecord(
 
   const nowIso = new Date().toISOString();
   const dateStr = nowIso.split('T')[0];
+
+  // Tính toán thời hạn tin đăng theo gói thành viên
+  const pkgName = (currentUser?.package || 'Free').toLowerCase();
+  const pkgDurationDays = data.durationDays || (pkgName === 'agency' ? 90 : pkgName === 'pro' ? 60 : pkgName === 'basic' ? 30 : 7);
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + pkgDurationDays);
+  const expiresAt = expiryDate.toISOString().split('T')[0];
 
   const newListing: ListingItem = {
     id: newId,
@@ -227,7 +234,10 @@ export async function createListingRecord(
       ? data.images
       : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
     status: 'pending', // Luôn khởi tạo ở trạng thái Chờ duyệt
-    isFeatured: false,
+    isFeatured: Boolean(data.isFeatured),
+    featuredBadge: data.isFeatured ? (currentUser?.package?.toUpperCase() || 'VIP') : undefined,
+    durationDays: pkgDurationDays,
+    expiresAt: expiresAt,
     views: 1,
     createdAt: dateStr,
     updatedAt: nowIso,

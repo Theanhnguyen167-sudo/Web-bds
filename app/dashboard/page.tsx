@@ -44,16 +44,34 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  AlertCircle
+  AlertCircle,
+  Users,
+  Crown,
+  Zap,
+  Lock,
+  Building2,
+  Mail,
+  Smartphone,
+  Award,
+  ChevronDown,
+  UserCheck,
+  X,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
 import { TEST_SELLERS_LIST, DemoSeller } from '@/lib/services/listing-service';
 import { Pencil } from 'lucide-react';
+import {
+  getPackageDefinition,
+  DEFAULT_AGENCY_TEAM,
+  DEFAULT_DEDICATED_MANAGER,
+  AgencyTeamMember,
+  PackageTierId,
+} from '@/lib/packages/package-config';
 
-type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications';
+type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team';
 
-const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications'];
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team'];
 
 interface MenuItem {
   id: TabType;
@@ -73,7 +91,71 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const tabQuery = searchParams.get('tab') as TabType | null;
 
-  const { user, setUser, listings, setListings, savedListingIds, toggleSaveListing, addToast, deleteListing } = useApp();
+  const { user, setUser, listings, setListings, savedListingIds, toggleSaveListing, addToast, deleteListing, upgradeUserPackage } = useApp();
+  const pkgDef = getPackageDefinition(user?.package);
+  const maxListings = user?.listingsLimit ?? pkgDef.limits.maxListings;
+
+  const [teamMembers, setTeamMembers] = useState<AgencyTeamMember[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('hanoi_agency_team');
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return DEFAULT_AGENCY_TEAM;
+  });
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [newMemberForm, setNewMemberForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    role: 'agent' as 'leader' | 'agent' | 'assistant',
+    maxListingsQuota: 50,
+  });
+
+  const handleAddMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberForm.name.trim() || !newMemberForm.phone.trim()) {
+      addToast('Vui lòng nhập họ tên và số điện thoại môi giới', 'warning');
+      return;
+    }
+    const member: AgencyTeamMember = {
+      id: `agent_${Date.now()}`,
+      name: newMemberForm.name.trim(),
+      phone: newMemberForm.phone.trim(),
+      email: newMemberForm.email.trim() || `${newMemberForm.phone.trim()}@agency.vn`,
+      role: newMemberForm.role,
+      assignedListings: 0,
+      maxListingsQuota: Number(newMemberForm.maxListingsQuota) || 50,
+      activeListings: 0,
+      avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80`,
+      joinedDate: new Date().toISOString().split('T')[0],
+    };
+    const updated = [member, ...teamMembers];
+    setTeamMembers(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hanoi_agency_team', JSON.stringify(updated));
+    }
+    setIsAddMemberModalOpen(false);
+    setNewMemberForm({ name: '', phone: '', email: '', role: 'agent', maxListingsQuota: 50 });
+    addToast(`🎉 Đã thêm môi giới ${member.name} vào sàn thành công!`, 'success');
+  };
+
+  const handleDeleteMember = (memberId: string, memberName: string) => {
+    const updated = teamMembers.filter((m) => m.id !== memberId);
+    setTeamMembers(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hanoi_agency_team', JSON.stringify(updated));
+    }
+    addToast(`Đã xoá môi giới ${memberName} khỏi sàn`, 'info');
+  };
+
+  const handleQuickSwitchPackage = (packageId: string) => {
+    upgradeUserPackage(packageId);
+    const def = getPackageDefinition(packageId);
+    addToast(`⚡ Đã kích hoạt nhanh Gói ${def.name}! Toàn bộ hạn mức và đặc quyền công nghệ đã được nạp.`, 'success');
+  };
+
   const [activeTab, setActiveTab] = useState<TabType>(
     tabQuery && VALID_TABS.includes(tabQuery)
       ? tabQuery
@@ -174,22 +256,27 @@ function DashboardContent() {
 
   // Chuyển đổi nhanh tài khoản Seller để test Section 23
   const handleSwitchSeller = (seller: DemoSeller) => {
+    const sPkgDef = getPackageDefinition(seller.package || 'pro');
     const updatedUser: any = {
       id: seller.id,
       name: seller.name,
       email: seller.email,
       phone: seller.phone,
       role: 'agent',
-      package: (seller.package || 'pro').toLowerCase(),
+      package: sPkgDef.name,
       packageExpiry: '2026-12-31',
       aiReportsUsed: 3,
-      aiReportsLimit: 30,
+      aiReportsLimit: sPkgDef.limits.aiReports,
       listingsCount: listings.filter((l) => l.ownerId === seller.id).length,
+      listingsLimit: sPkgDef.limits.maxListings,
+      listingDurationDays: sPkgDef.limits.listingDurationDays,
+      featuredListingsUsed: 1,
+      featuredListingsLimit: sPkgDef.limits.featuredListings,
       activeListings: listings.filter((l) => l.ownerId === seller.id && l.status === 'active').length,
       avatar: seller.avatar,
     };
     setUser(updatedUser);
-    addToast(`👤 Đã chuyển phiên làm việc sang: ${seller.name} (${seller.id.toUpperCase()})`, 'info');
+    addToast(`👤 Đã chuyển phiên làm việc sang: ${seller.name} (${sPkgDef.name.toUpperCase()})`, 'info');
   };
 
   const handleDeleteListing = async (id: string, e: React.MouseEvent) => {
@@ -292,7 +379,18 @@ function DashboardContent() {
           icon: Bell,
           badge: unreadNotifCount > 0 ? `${unreadNotifCount} MỚI` : undefined,
         },
-        { id: 'packages', label: 'Gói VIP', icon: Tag, badge: user?.package?.toUpperCase() || 'PRO' },
+        {
+          id: 'packages',
+          label: 'Gói Hội Viên',
+          icon: Tag,
+          badge: user?.package?.toUpperCase() || 'FREE',
+        },
+        {
+          id: 'agency-team',
+          label: 'Đội Ngũ Môi Giới',
+          icon: Users,
+          badge: user?.package?.toLowerCase() === 'agency' ? 'AGENCY' : 'VIP',
+        },
       ],
     },
   ];
@@ -303,36 +401,65 @@ function DashboardContent() {
 
       <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
 
-        {/* SECTION 23: MULTI-SELLER QUICK TEST SWITCHER */}
-        <div className="mb-6 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50/90 via-sky-50/60 to-purple-50/60 p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <span className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-black text-[10px] uppercase tracking-wider shadow-2xs">
-              🧪 Kiểm thử Multi-Seller
-            </span>
-            <div>
-              <p className="font-bold text-slate-800">
-                Đang đăng nhập: <span className="text-indigo-600 font-black">{user?.name}</span> (ID: <code className="bg-white px-1.5 py-0.5 rounded border border-indigo-100 font-mono text-[11px] text-indigo-700">{user?.id}</code>)
-              </p>
-              <p className="text-[11px] text-slate-500">Chuyển đổi seller để kiểm tra tính năng phân quyền, chỉ thấy tin của mình và nhận notification riêng biệt:</p>
+        {/* SECTION 23: MULTI-SELLER & PACKAGE TESTING HUB */}
+        <div className="mb-6 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50/90 via-sky-50/60 to-purple-50/60 p-4 space-y-3 text-xs shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-black text-[10px] uppercase tracking-wider shadow-2xs">
+                🧪 Testing Hub
+              </span>
+              <div>
+                <p className="font-bold text-slate-800">
+                  Đang đăng nhập: <span className="text-indigo-600 font-black">{user?.name}</span> · Gói: <span className="font-black text-orange-600">{pkgDef.name}</span>
+                </p>
+                <p className="text-[11px] text-slate-500">Chuyển nhanh tài khoản hoặc gói cước để kiểm thử hạn mức và đặc quyền:</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-bold text-slate-500">Seller:</span>
+              {TEST_SELLERS_LIST.map((s: DemoSeller) => {
+                const isSelected = user?.id === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => handleSwitchSeller(s)}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/50 scale-[1.02]'
+                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-300' : 'bg-slate-300'}`} />
+                    <span>{s.id === 'seller_a' ? 'Seller A' : s.id === 'seller_b' ? 'Seller B' : 'Seller C'}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {TEST_SELLERS_LIST.map((s: DemoSeller) => {
-              const isSelected = user?.id === s.id;
+
+          {/* Quick Package Switcher */}
+          <div className="pt-2 border-t border-indigo-100 flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+              <Zap className="h-3 w-3 text-amber-500" />
+              <span>Thử nhanh gói:</span>
+            </span>
+            {(['free', 'basic', 'pro', 'agency'] as PackageTierId[]).map((pKey) => {
+              const isCur = pkgDef.id === pKey;
               return (
                 <button
-                  key={s.id}
+                  key={pKey}
                   type="button"
-                  onClick={() => handleSwitchSeller(s)}
-                  className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs ${
-                    isSelected
-                      ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/50 scale-[1.02]'
-                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                  onClick={() => handleQuickSwitchPackage(pKey)}
+                  className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
+                    isCur
+                      ? 'bg-orange-600 text-white shadow-sm ring-2 ring-orange-400/60'
+                      : 'bg-white text-slate-700 hover:bg-orange-50 border border-slate-200'
                   }`}
                 >
-                  <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-300' : 'bg-slate-300'}`} />
-                  <span>{s.id === 'seller_a' ? 'Seller A' : s.id === 'seller_b' ? 'Seller B' : 'Seller C'}</span>
-                  <span className="text-[10px] opacity-80">({s.name.split(' ').slice(-2).join(' ')})</span>
+                  {pKey === 'free' ? 'Free (3 tin)' : pKey === 'basic' ? 'Basic (20 tin)' : pKey === 'pro' ? 'Pro (50 tin)' : 'Agency (250 tin)'}
+                  {isCur && ' ✓'}
                 </button>
               );
             })}
@@ -350,12 +477,20 @@ function DashboardContent() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-extrabold text-text-primary">{user?.name || 'Môi giới BĐS'}</h1>
-                <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-extrabold text-accent uppercase">
-                  Gói {user?.package || 'Pro'} VIP
+                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase ${
+                  pkgDef.id === 'agency'
+                    ? 'bg-indigo-900 text-amber-300'
+                    : pkgDef.id === 'pro'
+                    ? 'bg-orange-500 text-white'
+                    : pkgDef.id === 'basic'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-200 text-slate-700'
+                }`}>
+                  Gói {pkgDef.name} {pkgDef.badgeLabel}
                 </span>
               </div>
               <p className="text-xs text-text-secondary mt-0.5">{user?.email || 'an@example.com'}</p>
-              <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-09-15'}</p>
+              <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-12-31'}</p>
             </div>
           </div>
 
@@ -1428,22 +1563,444 @@ function DashboardContent() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-4"
+                  className="rounded-3xl border border-border bg-white p-6 sm:p-8 shadow-sm space-y-6"
                 >
-                  <h3 className="text-sm font-extrabold text-text-primary">Thông tin gói hội viên PRO</h3>
-                  <div className="rounded-2xl bg-orange-50/40 border border-orange-200 p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-accent">GÓI PRO (799.000 đ/tháng)</span>
-                      <span className="text-[11px] font-bold text-success">Đang hoạt động</span>
+                  {/* Active Package Banner */}
+                  <div className={`rounded-3xl p-6 sm:p-8 border shadow-sm relative overflow-hidden ${
+                    pkgDef.id === 'agency'
+                      ? 'bg-gradient-to-br from-[#0a1128] via-[#141e3d] to-[#1e1b4b] text-white border-indigo-900'
+                      : pkgDef.id === 'pro'
+                      ? 'bg-gradient-to-br from-orange-50 via-white to-amber-50 border-orange-300 ring-2 ring-orange-500/20'
+                      : pkgDef.id === 'basic'
+                      ? 'bg-gradient-to-br from-blue-50 via-white to-sky-50 border-blue-300'
+                      : 'bg-gradient-to-br from-slate-50 via-white to-gray-50 border-slate-200'
+                  }`}>
+                    {/* Background Glow */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-orange-400/10 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-black/10 dark:border-white/10">
+                      <div>
+                        <div className="flex items-center gap-2.5 mb-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+                            pkgDef.id === 'agency'
+                              ? 'bg-amber-400 text-slate-950'
+                              : pkgDef.id === 'pro'
+                              ? 'bg-orange-500 text-white'
+                              : pkgDef.id === 'basic'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-slate-200 text-slate-700'
+                          }`}>
+                            {pkgDef.badgeLabel}
+                          </span>
+                          <span className={`inline-flex items-center gap-1.5 text-xs font-bold ${
+                            pkgDef.id === 'agency' ? 'text-emerald-400' : 'text-emerald-600'
+                          }`}>
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            Đang hoạt động
+                          </span>
+                        </div>
+
+                        <h2 className={`text-2xl sm:text-3xl font-black tracking-tight ${
+                          pkgDef.id === 'agency' ? 'text-white' : 'text-[#0a1128]'
+                        }`}>
+                          Gói {pkgDef.name} ({pkgDef.subtitle})
+                        </h2>
+
+                        <p className={`text-xs mt-1 font-medium ${
+                          pkgDef.id === 'agency' ? 'text-slate-300' : 'text-slate-600'
+                        }`}>
+                          {pkgDef.monthlyPrice === 0
+                            ? 'Miễn phí trải nghiệm cá nhân'
+                            : `${pkgDef.monthlyPrice.toLocaleString('vi-VN')} đ/tháng · Hạn dùng: ${user?.packageExpiry || '2026-12-31'}`}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <Link
+                          href="/pricing"
+                          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs shadow-lg shadow-orange-500/25 transition-all flex items-center gap-2"
+                        >
+                          <Crown className="h-4 w-4" />
+                          <span>{pkgDef.id === 'agency' ? 'Gia hạn gói' : 'Nâng cấp gói cao hơn'}</span>
+                        </Link>
+                      </div>
                     </div>
-                    <p className="text-xs text-text-secondary">Đã kích hoạt quyền lợi đăng 50 tin và 30 Báo cáo AI chuyên sâu mỗi tháng.</p>
-                    <Link
-                      href="/pricing"
-                      className="inline-block rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-sm"
-                    >
-                      Gia hạn hoặc Nâng cấp Agency
-                    </Link>
+
+                    {/* 4 Live Quota Progress Meters */}
+                    <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
+                      {/* Metric 1: Tin đăng BĐS */}
+                      <div className={`p-4 rounded-2xl border ${
+                        pkgDef.id === 'agency' ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="font-bold flex items-center gap-1.5">
+                            <Home className="h-3.5 w-3.5 text-orange-500" />
+                            Tin đăng BĐS
+                          </span>
+                          <span className="font-black">
+                            {userListings.length}/{maxListings}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-slate-200/50 overflow-hidden mb-1.5">
+                          <div
+                            className="h-full bg-orange-500 rounded-full"
+                            style={{ width: `${Math.min(100, Math.round((userListings.length / maxListings) * 100))}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-500">
+                          Thời hạn hiển thị <strong>{pkgDef.limits.listingDurationDays} ngày</strong>/tin
+                        </p>
+                      </div>
+
+                      {/* Metric 2: Tin nổi bật */}
+                      <div className={`p-4 rounded-2xl border ${
+                        pkgDef.id === 'agency' ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="font-bold flex items-center gap-1.5">
+                            <Crown className="h-3.5 w-3.5 text-amber-500" />
+                            Tin nổi bật tháng
+                          </span>
+                          <span className="font-black">
+                            {user?.featuredListingsUsed || 0}/{pkgDef.limits.featuredListings}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-slate-200/50 overflow-hidden mb-1.5">
+                          <div
+                            className="h-full bg-amber-500 rounded-full"
+                            style={{
+                              width: pkgDef.limits.featuredListings > 0
+                                ? `${Math.min(100, Math.round(((user?.featuredListingsUsed || 0) / pkgDef.limits.featuredListings) * 100))}%`
+                                : '0%'
+                            }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-500">
+                          {pkgDef.limits.featuredListings > 0
+                            ? `Còn ${Math.max(0, pkgDef.limits.featuredListings - (user?.featuredListingsUsed || 0))} lượt ghim VIP`
+                            : 'Không có (Mở từ Basic)'}
+                        </p>
+                      </div>
+
+                      {/* Metric 3: Báo cáo AI */}
+                      <div className={`p-4 rounded-2xl border ${
+                        pkgDef.id === 'agency' ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="font-bold flex items-center gap-1.5">
+                            <Sparkles className="h-3.5 w-3.5 text-accent" />
+                            Báo cáo AI & Định giá
+                          </span>
+                          <span className="font-black">
+                            {user?.aiReportsUsed || 0}/{user?.aiReportsLimit ?? pkgDef.limits.aiReports}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-slate-200/50 overflow-hidden mb-1.5">
+                          <div
+                            className="h-full bg-purple-500 rounded-full"
+                            style={{
+                              width: (user?.aiReportsLimit ?? pkgDef.limits.aiReports) > 0
+                                ? `${Math.min(100, Math.round(((user?.aiReportsUsed || 0) / (user?.aiReportsLimit ?? pkgDef.limits.aiReports)) * 100))}%`
+                                : '0%'
+                            }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-500">
+                          {pkgDef.limits.aiReports > 0
+                            ? `Còn ${Math.max(0, (user?.aiReportsLimit ?? pkgDef.limits.aiReports) - (user?.aiReportsUsed || 0))} lượt phân tích`
+                            : 'Không có (Mở từ Basic)'}
+                        </p>
+                      </div>
+
+                      {/* Metric 4: Đặc quyền quy hoạch */}
+                      <div className={`p-4 rounded-2xl border ${
+                        pkgDef.id === 'agency' ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="font-bold flex items-center gap-1.5">
+                            <Layers className="h-3.5 w-3.5 text-blue-500" />
+                            Cấp độ Bản đồ
+                          </span>
+                          <span className="font-black text-[11px] text-emerald-500">
+                            {pkgDef.features.planningLevel === 'basic' ? 'Cơ bản' : pkgDef.features.planningLevel === 'detailed' ? 'Chi tiết' : '2030 & Giá đất'}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-slate-200/50 overflow-hidden mb-1.5">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full"
+                            style={{
+                              width: pkgDef.features.planningLevel === 'basic' ? '33%' : pkgDef.features.planningLevel === 'detailed' ? '66%' : '100%'
+                            }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-500 truncate">
+                          {pkgDef.features.canExportPDF ? 'Hỗ trợ Xuất file PDF' : 'Chưa hỗ trợ PDF'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Privileges Checklist Section */}
+                  <div className="rounded-3xl border border-slate-200 p-6 space-y-4">
+                    <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                      <span>Đặc quyền đã được kích hoạt cho Gói {pkgDef.name}</span>
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      {pkgDef.privilegesDisplay.map((priv, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                          <span className="font-bold text-slate-800">{priv}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span className="font-bold text-slate-800">
+                          Kênh hỗ trợ: {pkgDef.features.supportLevel}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dev Sandbox Quick Package Tester */}
+                  <div className="rounded-2xl border border-dashed border-slate-300 p-4 bg-slate-50/80 space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5 text-amber-500" />
+                        <span>Kích hoạt nhanh các gói để kiểm thử tính năng (Dev Sandbox):</span>
+                      </span>
+                      <span className="text-[11px] text-slate-500">Áp dụng tức thì vào tài khoản</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {(['free', 'basic', 'pro', 'agency'] as PackageTierId[]).map((pkgKey) => {
+                        const isCurrent = pkgDef.id === pkgKey;
+                        return (
+                          <button
+                            key={pkgKey}
+                            type="button"
+                            onClick={() => handleQuickSwitchPackage(pkgKey)}
+                            className={`p-2.5 rounded-xl font-bold transition-all text-xs flex items-center justify-center gap-1.5 ${
+                              isCurrent
+                                ? 'bg-orange-600 text-white shadow-sm ring-2 ring-orange-400'
+                                : 'bg-white text-slate-700 hover:bg-orange-50 border border-slate-200'
+                            }`}
+                          >
+                            <span>{pkgKey === 'free' ? 'Gói Free' : pkgKey === 'basic' ? 'Gói Basic' : pkgKey === 'pro' ? 'Gói Pro' : 'Gói Agency'}</span>
+                            {isCurrent && <span className="text-[10px] bg-white text-orange-600 px-1 rounded font-black">✓</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* TAB 7: AGENCY TEAM */}
+              {activeTab === 'agency-team' && (
+                <motion.div
+                  key="tab-agency-team"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  {pkgDef.id === 'agency' || user?.role === 'admin' ? (
+                    <div className="space-y-6">
+                      {/* Agency Header & Actions */}
+                      <div className="rounded-3xl border border-indigo-200 bg-gradient-to-r from-indigo-900 via-[#0a1128] to-purple-950 p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black uppercase mb-2">
+                            <Building2 className="h-3.5 w-3.5" />
+                            <span>Đặc Quyền Gói Agency</span>
+                          </div>
+                          <h2 className="text-2xl font-black">Quản Trị Đội Ngũ Môi Giới & Sàn Giao Dịch</h2>
+                          <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                            Phân bổ hạn mức 250 tin đăng, 40 tin nổi bật và 150 báo cáo AI cho các chuyên viên môi giới trực thuộc sàn.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsAddMemberModalOpen(true)}
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5 shrink-0"
+                        >
+                          <PlusCircle className="h-4 w-4" />
+                          <span>+ Thêm Môi Giới Vào Sàn</span>
+                        </button>
+                      </div>
+
+                      {/* Dedicated Account Manager Card */}
+                      <div className="rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50/80 via-orange-50/40 to-amber-50/80 p-6 shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <img
+                              src={DEFAULT_DEDICATED_MANAGER.avatar}
+                              alt={DEFAULT_DEDICATED_MANAGER.name}
+                              className="w-16 h-16 rounded-2xl object-cover ring-2 ring-amber-400 shadow-md shrink-0"
+                            />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500 text-white">
+                                  Dedicated VIP Manager
+                                </span>
+                                <h3 className="text-base font-black text-slate-900">{DEFAULT_DEDICATED_MANAGER.name}</h3>
+                              </div>
+                              <p className="text-xs text-slate-600 mt-0.5">{DEFAULT_DEDICATED_MANAGER.title}</p>
+                              <div className="flex items-center gap-4 text-xs font-bold text-slate-800 mt-2 flex-wrap">
+                                <span className="flex items-center gap-1">
+                                  <Phone className="h-3.5 w-3.5 text-amber-600" />
+                                  <span>{DEFAULT_DEDICATED_MANAGER.hotlineVip}</span>
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Mail className="h-3.5 w-3.5 text-amber-600" />
+                                  <span>{DEFAULT_DEDICATED_MANAGER.email}</span>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="inline-block px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800 font-bold text-xs">
+                              Hỗ trợ trực tiếp 24/7 (Phản hồi &lt;5p)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Team Members List Table */}
+                      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                            <Users className="h-4 w-4 text-indigo-600" />
+                            <span>Danh sách Chuyên viên Môi giới ({teamMembers.length} thành viên)</span>
+                          </h3>
+                          <button
+                            type="button"
+                            onClick={() => setIsAddMemberModalOpen(true)}
+                            className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                          >
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span>Thêm môi giới</span>
+                          </button>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
+                              <tr>
+                                <th className="p-3">Họ Tên & Avatar</th>
+                                <th className="p-3">Vai Trò</th>
+                                <th className="p-3">Liên Hệ</th>
+                                <th className="p-3">Hạn Mức Đăng Tin</th>
+                                <th className="p-3">Tin Đang Hoạt Động</th>
+                                <th className="p-3 text-right">Thao Tác</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {teamMembers.map((member) => (
+                                <tr key={member.id} className="hover:bg-slate-50/80 transition-colors">
+                                  <td className="p-3 flex items-center gap-3">
+                                    <img
+                                      src={member.avatar}
+                                      alt={member.name}
+                                      className="w-9 h-9 rounded-xl object-cover border border-slate-200"
+                                    />
+                                    <div>
+                                      <p className="font-bold text-slate-900">{member.name}</p>
+                                      <p className="text-[10px] text-slate-400">Tham gia: {member.joinedDate}</p>
+                                    </div>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                      member.role === 'leader'
+                                        ? 'bg-amber-100 text-amber-800'
+                                        : 'bg-blue-100 text-blue-800'
+                                    }`}>
+                                      {member.role === 'leader' ? 'Trưởng nhóm' : 'Môi giới'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3">
+                                    <p className="font-semibold text-slate-700">{member.phone}</p>
+                                    <p className="text-[10px] text-slate-400">{member.email}</p>
+                                  </td>
+                                  <td className="p-3">
+                                    <div className="space-y-1 max-w-[140px]">
+                                      <div className="flex justify-between text-[11px] font-bold">
+                                        <span>{member.assignedListings}/{member.maxListingsQuota} tin</span>
+                                      </div>
+                                      <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                                        <div
+                                          className="h-full bg-indigo-600 rounded-full"
+                                          style={{ width: `${Math.round((member.assignedListings / member.maxListingsQuota) * 100)}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="font-black text-emerald-600">{member.activeListings} tin</span>
+                                  </td>
+                                  <td className="p-3 text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => addToast(`Đang phân bổ lại hạn mức cho ${member.name}`, 'info')}
+                                        className="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 font-bold text-[11px] text-slate-700 transition-colors cursor-pointer"
+                                      >
+                                        Phân bổ chỉ tiêu
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteMember(member.id, member.name)}
+                                        className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                        title="Xoá môi giới"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Locked Teaser for non-Agency */
+                    <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center space-y-6 shadow-sm">
+                      <div className="w-16 h-16 rounded-3xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center mx-auto shadow-sm">
+                        <Lock className="h-8 w-8" />
+                      </div>
+
+                      <div className="max-w-md mx-auto space-y-2">
+                        <span className="px-3 py-1 rounded-full text-xs font-black uppercase bg-indigo-100 text-indigo-800">
+                          Đặc quyền Gói Agency (Doanh Nghiệp)
+                        </span>
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+                          Quản Trị Đội Ngũ Môi Giới & Sàn BĐS
+                        </h2>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          Tính năng cho phép chủ sàn phân bổ hạn mức 250 tin đăng, 40 tin nổi bật và quản lý hiệu suất bán hàng của từng môi giới, cùng sự hỗ trợ của Chuyên viên tài khoản riêng Dedicated Account Manager 24/7.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-3">
+                        <Link
+                          href="/payment/checkout?packageId=agency&billing=monthly"
+                          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#0a1128] via-indigo-900 to-purple-900 hover:from-black hover:to-indigo-950 text-white font-black text-xs shadow-lg transition-all flex items-center gap-2"
+                        >
+                          <Crown className="h-4 w-4 text-amber-400" />
+                          <span>Nâng Cấp Gói Agency Ngay (1.999.000 đ/tháng) →</span>
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -1468,6 +2025,119 @@ function DashboardContent() {
 
         </div>
       </main>
+      {/* Modal Thêm Môi Giới Cho Sàn (Agency Only) */}
+      <AnimatePresence>
+        {isAddMemberModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">Thêm Môi Giới Vào Sàn</h3>
+                    <p className="text-[10px] text-slate-400">Phân quyền và hạn mức đăng tin gói Agency</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddMemberModalOpen(false)}
+                  className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddMember} className="space-y-3.5 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Họ và tên môi giới *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMemberForm.name}
+                    onChange={(e) => setNewMemberForm({ ...newMemberForm, name: e.target.value })}
+                    placeholder="VD: Nguyễn Văn Bình"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Số điện thoại *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={newMemberForm.phone}
+                      onChange={(e) => setNewMemberForm({ ...newMemberForm, phone: e.target.value })}
+                      placeholder="0987..."
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={newMemberForm.email}
+                      onChange={(e) => setNewMemberForm({ ...newMemberForm, email: e.target.value })}
+                      placeholder="email@..."
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Vai trò</label>
+                    <select
+                      value={newMemberForm.role}
+                      onChange={(e) => setNewMemberForm({ ...newMemberForm, role: e.target.value as any })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+                    >
+                      <option value="agent">Môi giới viên</option>
+                      <option value="leader">Trưởng nhóm kinh doanh</option>
+                      <option value="assistant">Trợ lý sàn</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Chỉ tiêu tin đăng</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={250}
+                      value={newMemberForm.maxListingsQuota}
+                      onChange={(e) => setNewMemberForm({ ...newMemberForm, maxListingsQuota: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddMemberModalOpen(false)}
+                    className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    Huỷ
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span>Xác nhận thêm</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

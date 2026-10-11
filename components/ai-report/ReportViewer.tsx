@@ -1,13 +1,13 @@
-'use client';
-
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockListings, ListingItem } from '@/lib/mock-data';
 import { getAIReportForListing, PropertyAIReport } from '@/lib/ai/report-service';
 import { formatCurrencyVND } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
+import { getPackageDefinition } from '@/lib/packages/package-config';
 import { DownloadPDFButton } from '@/components/ai-report/DownloadPDFButton';
 import { PropertyReportSelector } from '@/components/ai-report/PropertyReportSelector';
 import type { FocusTarget } from '@/components/map/InfrastructureMap';
@@ -57,7 +57,9 @@ interface ReportViewerProps {
 }
 
 export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
-  const { user, addToast } = useApp();
+  const router = useRouter();
+  const { user, addToast, incrementAiReportUsage } = useApp();
+  const pkgDef = getPackageDefinition(user?.package);
 
   // Find initial listing or fallback to first
   const initialListing = mockListings.find((l) => l.id === listingId) || mockListings[0];
@@ -109,6 +111,19 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
 
   // Re-run real-time AI Analysis
   const handleReanalyzeAI = async () => {
+    if (pkgDef.id === 'free') {
+      addToast?.('Tính năng Báo cáo AI chuyên sâu & định giá khả dụng từ gói Basic trở lên. Nâng cấp ngay để mở khóa!', 'warning');
+      router.push('/pricing');
+      return;
+    }
+
+    const canProceed = incrementAiReportUsage?.();
+    if (canProceed === false) {
+      addToast?.(`Bạn đã dùng hết hạn mức (${user?.aiReportsLimit ?? pkgDef.limits.aiReports} lượt) Báo cáo AI của tháng này. Vui lòng nâng cấp gói để tiếp tục!`, 'warning');
+      router.push('/pricing');
+      return;
+    }
+
     setIsAiLoading(true);
     try {
       const res = await fetch('/api/ai/report', {
@@ -151,6 +166,36 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
   return (
     <div className="w-full max-w-5xl mx-auto py-6 space-y-6">
       
+      {/* Package Quota Indicator */}
+      <div className={`p-3.5 rounded-2xl border flex items-center justify-between text-xs ${
+        pkgDef.id === 'free'
+          ? 'bg-amber-50/80 border-amber-200 text-amber-900'
+          : pkgDef.id === 'agency'
+          ? 'bg-indigo-50/80 border-indigo-200 text-indigo-900'
+          : 'bg-orange-50/80 border-orange-200 text-orange-900'
+      }`}>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 shrink-0 text-accent" />
+          <span>
+            {pkgDef.id === 'free' ? (
+              <span><strong>Gói Free:</strong> Bạn đang xem báo cáo thẩm định mẫu. Nâng cấp để chạy phân tích Gemini AI chuyên sâu cho bất động sản của bạn!</span>
+            ) : (
+              <span>
+                <strong>Gói {pkgDef.name}:</strong> Đã sử dụng <strong>{user?.aiReportsUsed || 0}/{user?.aiReportsLimit ?? pkgDef.limits.aiReports}</strong> lượt Báo cáo AI chuyên sâu trong tháng.
+              </span>
+            )}
+          </span>
+        </div>
+        {pkgDef.id === 'free' && (
+          <Link
+            href="/pricing"
+            className="px-3 py-1 rounded-lg bg-accent text-white font-bold text-xs hover:bg-accent-hover transition-colors shrink-0 shadow-xs"
+          >
+            Mở khóa AI →
+          </Link>
+        )}
+      </div>
+
       {/* Top Header & Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>

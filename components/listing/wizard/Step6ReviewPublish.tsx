@@ -29,8 +29,15 @@ import {
   HelpCircle,
   Bookmark,
   Share2,
-  Check
+  Check,
+  Zap,
+  Clock,
+  Crown,
+  Sparkles
 } from 'lucide-react';
+import Link from 'next/link';
+import { useApp } from '@/lib/context/AppContext';
+import { getPackageDefinition } from '@/lib/packages/package-config';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { PostingData } from './PostingDataTypes';
 import { TermsModal } from './TermsModal';
@@ -55,7 +62,10 @@ export const Step6ReviewPublish: React.FC<Step6ReviewPublishProps> = ({
   isCommitted,
   setIsCommitted,
 }) => {
+  const { user } = useApp();
+  const pkgDef = getPackageDefinition(user?.package);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isFeaturedSelected, setIsFeaturedSelected] = useState(Boolean(data.isFeatured));
 
   const displayTitle =
     data.title ||
@@ -546,6 +556,100 @@ export const Step6ReviewPublish: React.FC<Step6ReviewPublishProps> = ({
             </div>
 
           </div>
+        </div>
+      </div>
+
+      {/* 9.5. THỜI HẠN TIN ĐĂNG & ĐẶC QUYỀN GÓI HỘI VIÊN */}
+      <div className="rounded-2xl border border-orange-200 bg-gradient-to-r from-orange-50/60 via-amber-50/40 to-orange-50/60 p-4 sm:p-5 space-y-3.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 rounded-lg bg-orange-500 text-white shadow-xs">
+              <Zap className="h-4 w-4" />
+            </span>
+            <span className="text-xs sm:text-sm font-extrabold text-slate-900">
+              Quyền lợi Gói {pkgDef.name}: Thời hạn & Tin nổi bật
+            </span>
+          </div>
+
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-orange-100 text-orange-700 border border-orange-300">
+            {pkgDef.badgeLabel}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          {/* Thời hạn tin */}
+          <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
+            <div className="flex items-center gap-1.5 text-slate-500 font-semibold">
+              <Clock className="h-3.5 w-3.5 text-blue-600" />
+              <span>Thời hạn hiển thị tin:</span>
+            </div>
+            <p className="text-sm font-black text-slate-900">
+              {pkgDef.limits.listingDurationDays} ngày{' '}
+              <span className="text-[11px] font-normal text-slate-500">
+                (kể từ ngày được duyệt)
+              </span>
+            </p>
+          </div>
+
+          {/* Hạn mức tin nổi bật */}
+          <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
+            <div className="flex items-center gap-1.5 text-slate-500 font-semibold">
+              <Crown className="h-3.5 w-3.5 text-amber-500" />
+              <span>Tin nổi bật / tháng:</span>
+            </div>
+            <p className="text-sm font-black text-slate-900">
+              {pkgDef.limits.featuredListings > 0 ? (
+                <span>
+                  {pkgDef.limits.featuredListings} tin/tháng{' '}
+                  <span className="text-[11px] font-bold text-emerald-600">
+                    (Còn {Math.max(0, (user?.featuredListingsLimit ?? pkgDef.limits.featuredListings) - (user?.featuredListingsUsed || 0))} lượt)
+                  </span>
+                </span>
+              ) : (
+                <span className="text-slate-400 font-medium">0 tin (Gói Free)</span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Toggle Ghim tin nổi bật */}
+        <div className="pt-1">
+          {pkgDef.limits.featuredListings > 0 ? (
+            <label className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-orange-300 cursor-pointer hover:bg-orange-50/50 transition-colors shadow-2xs">
+              <input
+                type="checkbox"
+                checked={isFeaturedSelected}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setIsFeaturedSelected(checked);
+                  data.isFeatured = checked;
+                }}
+                className="h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-500 cursor-pointer"
+              />
+              <div className="flex-1">
+                <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-amber-400" />
+                  <span>Ghim tin này làm Tin Nổi Bật (VIP Highlight)</span>
+                </span>
+                <p className="text-[11px] text-slate-500">
+                  Tin sẽ gắn huy hiệu VIP và ưu tiên xếp trên đầu kết quả tìm kiếm bản đồ.
+                </p>
+              </div>
+            </label>
+          ) : (
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 border border-slate-200 text-xs">
+              <div className="flex items-center gap-2 text-slate-600">
+                <Lock className="h-3.5 w-3.5 text-slate-400" />
+                <span>Ghim tin nổi bật yêu cầu nâng cấp từ gói <strong>Basic</strong> trở lên.</span>
+              </div>
+              <Link
+                href="/pricing"
+                className="font-bold text-orange-600 hover:underline shrink-0"
+              >
+                Nâng cấp gói →
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 

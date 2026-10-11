@@ -2,13 +2,14 @@
 
 import React, { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useApp } from '@/lib/context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Layers, ShieldCheck, MapPin, Compass, Info, 
   Train, Building, Trees, Sliders, Calendar, ChevronRight, 
   ChevronUp, ChevronDown, X, Scissors, FileText, Sparkles, Filter,
-  MousePointerClick
+  MousePointerClick, Lock, Crown, DollarSign
 } from 'lucide-react';
 import type { SelectedZoneInfo } from '@/components/map/PlanningMap';
 import { 
@@ -21,6 +22,7 @@ import { PlanningInspectorDrawer } from '@/components/map/PlanningInspectorDrawe
 import { PlanningReportModal } from '@/components/map/PlanningReportModal';
 import { CadastralSearchModal } from '@/components/map/CadastralSearchModal';
 import { CadastralParcelResult } from '@/lib/gis/cadastral-db';
+import { getPackageDefinition } from '@/lib/packages/package-config';
 
 const PlanningMap = dynamic(
   () => import('@/components/map/PlanningMap'),
@@ -54,11 +56,15 @@ const ALL_DISTRICTS = [
 ];
 
 export function PlanningClient() {
-  const { listings } = useApp();
+  const { listings, user, addToast } = useApp();
+  const pkgDef = getPackageDefinition(user?.package);
+
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [selectedSymbol, setSelectedSymbol] = useState<string>('all');
-  const [selectedYear, setSelectedYear] = useState<2025 | 2030 | 2045>(2030);
+  const [selectedYear, setSelectedYear] = useState<2025 | 2030 | 2045>(
+    pkgDef.features.canView2030Planning ? 2030 : 2025
+  );
   const [opacityValue, setOpacityValue] = useState<number>(45);
   const [isSwipeMode, setIsSwipeMode] = useState<boolean>(false);
   const [selectedZoneInfo, setSelectedZoneInfo] = useState<SelectedZoneInfo | null>(null);
@@ -66,6 +72,12 @@ export function PlanningClient() {
   const [reportInspection, setReportInspection] = useState<PlanningInspectionResult | null>(null);
   const [selectedCadastralParcel, setSelectedCadastralParcel] = useState<CadastralParcelResult | null>(null);
   const [isCadastralModalOpen, setIsCadastralModalOpen] = useState<boolean>(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState<boolean>(false);
+  const [upgradeNotice, setUpgradeNotice] = useState<{ title: string; desc: string; targetPkg: 'basic' | 'pro' | 'agency' }>({
+    title: '',
+    desc: '',
+    targetPkg: 'pro',
+  });
   const [isControlPanelCollapsed, setIsControlPanelCollapsed] = useState<boolean>(false);
   const [showGuidePill, setShowGuidePill] = useState<boolean>(true);
 
@@ -75,13 +87,42 @@ export function PlanningClient() {
     projects: true,
     amenities: false,
     green: true,
+    landPrice: false,
   });
 
+  const handleSelectYear = (year: 2025 | 2030 | 2045) => {
+    if ((year === 2030 || year === 2045) && !pkgDef.features.canView2030Planning) {
+      setUpgradeNotice({
+        title: `Mở Khóa Bản Đồ Quy Hoạch Tầm Nhìn ${year}`,
+        desc: `Dữ liệu quy hoạch đô thị tương lai tầm nhìn ${year} là đặc quyền công nghệ dành cho Hội viên Gói Pro (VIP) và Gói Agency. Vui lòng nâng cấp tài khoản để truy cập đầy đủ các bản đồ phân khu tương lai!`,
+        targetPkg: 'pro',
+      });
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+    setSelectedYear(year);
+  };
+
   const toggleLayer = (layerKey: keyof typeof activeLayers) => {
-    setActiveLayers(prev => ({
-      ...prev,
-      [layerKey]: !prev[layerKey]
-    }));
+    if (layerKey === 'landPrice' && !pkgDef.features.canViewLandPrices) {
+      setUpgradeNotice({
+        title: 'Mở Khóa Bảng Giá Đất & Biến Động Thị Trường 2026',
+        desc: 'Tính năng tra cứu bảng giá đất nhà nước mới nhất và đơn giá thị trường theo từng tuyến đường Hà Nội là đặc quyền nâng cao của Gói Pro và Gói Agency.',
+        targetPkg: 'pro',
+      });
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+    setActiveLayers((prev) => {
+      const nextVal = !prev[layerKey];
+      if (layerKey === 'landPrice' && nextVal) {
+        addToast?.('✨ Đã kích hoạt lớp dữ liệu Bảng Giá Đất Nhà Nước & Đơn Giá Thị Trường Hà Nội', 'success');
+      }
+      return {
+        ...prev,
+        [layerKey]: nextVal,
+      };
+    });
   };
 
   const currentGroup = HANOI_SUBDIVISION_GROUPS.find(g => g.id === selectedGroup);
@@ -157,19 +198,26 @@ export function PlanningClient() {
           {/* Horizon Year Selector */}
           <div className="flex items-center gap-1 bg-[#0a1128]/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1 shadow-xl shrink-0">
             <Calendar className="h-3.5 w-3.5 text-slate-400 ml-2" />
-            {[2025, 2030, 2045].map((year) => (
-              <button
-                key={year}
-                onClick={() => setSelectedYear(year as 2025 | 2030 | 2045)}
-                className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
-                  selectedYear === year
-                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                }`}
-              >
-                {year}
-              </button>
-            ))}
+            {[2025, 2030, 2045].map((year) => {
+              const isLocked = (year === 2030 || year === 2045) && !pkgDef.features.canView2030Planning;
+              return (
+                <button
+                  key={year}
+                  onClick={() => handleSelectYear(year as 2025 | 2030 | 2045)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+                    selectedYear === year
+                      ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
+                      : isLocked
+                        ? 'text-slate-400 hover:text-amber-300 hover:bg-slate-800/60'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                  title={isLocked ? `Quy hoạch tầm nhìn ${year} (Đặc quyền Gói Pro & Agency)` : `Tầm nhìn ${year}`}
+                >
+                  <span>{year}</span>
+                  {isLocked && <Lock className="h-2.5 w-2.5 text-amber-400" />}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -383,6 +431,26 @@ export function PlanningClient() {
                       <Trees className="h-3.5 w-3.5 text-emerald-400" />
                       <span>Cây xanh/Hồ</span>
                     </button>
+                    <button
+                      onClick={() => toggleLayer('landPrice')}
+                      className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all col-span-2 cursor-pointer ${
+                        activeLayers.landPrice
+                          ? 'bg-amber-500/25 border-amber-400/70 text-amber-300 font-bold shadow-md shadow-amber-500/20'
+                          : !pkgDef.features.canViewLandPrices
+                            ? 'bg-slate-800/40 border-slate-700/40 text-slate-400 hover:border-amber-500/50'
+                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
+                      }`}
+                    >
+                      <DollarSign className="h-3.5 w-3.5 text-amber-400" />
+                      <span className="flex-1">Bảng giá đất 2026</span>
+                      {!pkgDef.features.canViewLandPrices ? (
+                        <span className="flex items-center gap-1 text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                          <Lock className="h-2.5 w-2.5" /> PRO
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold text-emerald-400 uppercase">Mở</span>
+                      )}
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -505,6 +573,72 @@ export function PlanningClient() {
           setSelectedCadastralParcel(parcel);
         }}
       />
+
+      {/* MODAL NÂNG CẤP GÓI KHI BẤM TÍNH NĂNG KHÓA */}
+      <AnimatePresence>
+        {isUpgradeModalOpen && (
+          <div className="fixed inset-0 z-[650] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl text-slate-100 space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center">
+                    <Crown className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">Đặc quyền Hội viên VIP</span>
+                    <h3 className="text-sm font-bold text-white">{upgradeNotice.title}</h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsUpgradeModalOpen(false)}
+                  className="p-1 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs text-slate-300">
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-400">Gói hiện tại của bạn:</span>
+                    <p className="font-extrabold text-white text-sm">Gói {pkgDef.name}</p>
+                  </div>
+                  <span className="text-[10px] font-black px-2.5 py-1 rounded-full uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                    {pkgDef.badgeLabel}
+                  </span>
+                </div>
+
+                <p className="leading-relaxed text-slate-300">
+                  {upgradeNotice.desc}
+                </p>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsUpgradeModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Để sau
+                </button>
+                <Link
+                  href={`/payment/checkout?packageId=${upgradeNotice.targetPkg}&billing=monthly`}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs shadow-lg shadow-orange-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Crown className="h-4 w-4" />
+                  <span>Nâng cấp Gói {upgradeNotice.targetPkg === 'pro' ? 'Pro (799k)' : 'Agency'} ngay →</span>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

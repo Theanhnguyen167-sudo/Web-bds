@@ -1,9 +1,10 @@
-'use client';
-
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Download, Loader2, CheckCircle2 } from 'lucide-react';
+import { Download, Loader2, CheckCircle2, Lock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useApp } from '@/lib/context/AppContext';
+import { getPackageDefinition } from '@/lib/packages/package-config';
 
 interface DownloadPDFButtonProps {
   reportId: string;
@@ -18,10 +19,20 @@ export function DownloadPDFButton({
   listing,
   userName = 'Chuyên viên BĐS Hà Nội',
 }: DownloadPDFButtonProps) {
+  const router = useRouter();
+  const { user, addToast } = useApp();
   const [state, setState] = useState<'idle' | 'generating' | 'done' | 'error'>('idle');
   const [progress, setProgress] = useState(0);
 
+  const pkgDef = getPackageDefinition(user?.package);
+  const canExportPDF = pkgDef.features.canExportPDF;
+
   const handleDownload = async () => {
+    if (!canExportPDF) {
+      addToast?.('Tính năng Xuất file báo cáo PDF khả dụng từ gói Basic trở lên. Vui lòng nâng cấp gói để tiếp tục!', 'warning');
+      router.push('/pricing');
+      return;
+    }
     setState('generating');
     setProgress(0);
 
@@ -113,7 +124,9 @@ export function DownloadPDFButton({
           onClick={handleDownload}
           disabled={state === 'generating'}
           className={`w-full gap-2 py-3 text-xs font-black shadow-lg transition-all ${
-            state === 'done'
+            !canExportPDF
+              ? 'bg-slate-700 hover:bg-slate-800 text-amber-300 border border-amber-500/30'
+              : state === 'done'
               ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20'
               : state === 'error'
               ? 'bg-red-600 hover:bg-red-700'
@@ -122,8 +135,27 @@ export function DownloadPDFButton({
         >
           {state === 'idle' && (
             <>
-              <Download size={16} />
-              <span>Tải báo cáo PDF (A4)</span>
+              {!canExportPDF ? (
+                <>
+                  <Lock size={15} className="text-amber-400 shrink-0" />
+                  <span>Xuất PDF (Mở từ gói Basic)</span>
+                </>
+              ) : pkgDef.id === 'agency' ? (
+                <>
+                  <Sparkles size={15} className="text-amber-300 shrink-0" />
+                  <span>Xuất PDF Doanh Nghiệp VIP</span>
+                </>
+              ) : pkgDef.id === 'pro' ? (
+                <>
+                  <Download size={16} />
+                  <span>Xuất PDF Chuẩn Pro VIP</span>
+                </>
+              ) : (
+                <>
+                  <Download size={16} />
+                  <span>Xuất Báo Cáo PDF</span>
+                </>
+              )}
             </>
           )}
           {state === 'generating' && (

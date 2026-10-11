@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
@@ -43,6 +44,7 @@ import {
   isValidEmail,
   isCompanyRequired
 } from './wizard/PostingDataTypes';
+import { getPackageDefinition } from '@/lib/packages/package-config';
 import { Step5SellerInfo } from './wizard/Step5SellerInfo';
 import { Step6ReviewPublish } from './wizard/Step6ReviewPublish';
 import { PublishSuccessView } from './wizard/PublishSuccessView';
@@ -130,10 +132,18 @@ export const CreateListingWizard: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
-  const { user, listings, addNewListing, updateListing, addToast } = useApp();
+  const { user, listings, addNewListing, updateListing, addToast, incrementFeaturedUsage } = useApp();
 
   const editId = searchParams?.get('editId') || searchParams?.get('id');
   const isEditMode = Boolean(editId);
+
+  // Hạn mức và thông tin gói thành viên hiện tại
+  const pkgDef = getPackageDefinition(user?.package);
+  const userListings = listings.filter(
+    (l) => l.ownerId === user?.id || l.userId === user?.id || l.createdBy === user?.id
+  );
+  const maxListings = user?.listingsLimit ?? pkgDef.limits.maxListings;
+  const isOverLimit = !isEditMode && userListings.length >= maxListings;
 
   // Step state (1 to 6)
   const stepParamFromPath = params?.step as string | undefined;
@@ -544,6 +554,15 @@ export const CreateListingWizard: React.FC = () => {
       return;
     }
 
+    if (!isEditMode && isOverLimit) {
+      addToast(
+        `⚠️ Bạn đã đạt hạn mức tối đa ${maxListings} tin của Gói ${pkgDef.name}. Vui lòng nâng cấp gói để tiếp tục đăng tin mới!`,
+        'error'
+      );
+      router.push('/pricing');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const fullAddress = `${postingData.location.addressNumber ? `${postingData.location.addressNumber} ` : ''}${postingData.location.street}, ${postingData.location.ward}, ${postingData.location.district}, Hà Nội`;
@@ -625,6 +644,8 @@ export const CreateListingWizard: React.FC = () => {
           authorPhone: postingData.seller.phone,
           authorEmail: postingData.seller.email || undefined,
           status: 'pending', // Luôn ở trạng thái Chờ duyệt ban đầu
+          isFeatured: Boolean(postingData.isFeatured),
+          durationDays: pkgDef.limits.listingDurationDays,
           seller: {
             fullName: postingData.seller.fullName,
             phone: postingData.seller.phone,
@@ -641,6 +662,11 @@ export const CreateListingWizard: React.FC = () => {
           showCompany: postingData.seller.showCompany,
           isPhoneVerified: postingData.seller.isPhoneVerified,
         });
+
+        if (postingData.isFeatured) {
+          incrementFeaturedUsage?.();
+        }
+
         resultId = newId;
         addToast('🎉 Đăng tin thành công! Tin đang chờ hệ thống kiểm duyệt.', 'success');
       }
@@ -663,7 +689,47 @@ export const CreateListingWizard: React.FC = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto py-8">
-      
+
+      {/* 🌟 BANNER HẠN MỨC GÓI ĐĂNG TIN THÀNH VIÊN 🌟 */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+            pkgDef.id === 'agency'
+              ? 'bg-[#0a1128] text-amber-300'
+              : pkgDef.id === 'pro'
+              ? 'bg-orange-500 text-white'
+              : pkgDef.id === 'basic'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-200 text-slate-700'
+          }`}>
+            Gói {pkgDef.name}
+          </span>
+          <span className="text-xs font-bold text-slate-700">
+            Hạn mức: <strong className={isOverLimit ? 'text-rose-600' : 'text-slate-900'}>{userListings.length}/{maxListings} tin</strong>
+            {' · '}Thời hạn hiển thị tin: <strong>{pkgDef.limits.listingDurationDays} ngày</strong>
+          </span>
+        </div>
+
+        {isOverLimit ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-rose-600">⚠️ Đã hết lượt đăng tin</span>
+            <Link
+              href="/pricing"
+              className="px-3 py-1 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs"
+            >
+              Nâng cấp gói ngay →
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href="/pricing"
+            className="text-xs font-bold text-orange-600 hover:underline inline-flex items-center gap-1"
+          >
+            Bảng giá & Hạn mức VIP →
+          </Link>
+        )}
+      </div>
+
       {/* 1. THANH TIẾN ĐỘ 6 BƯỚC CHUẨN */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">

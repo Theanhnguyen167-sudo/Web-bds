@@ -43,6 +43,7 @@ export interface PostingData {
   description: string;
   seller: SellerInfo;
   status: 'pending' | 'draft' | 'active' | 'rejected' | 'hidden' | 'expired' | 'sold';
+  isFeatured?: boolean;
 }
 
 export interface SellerValidationErrors {
