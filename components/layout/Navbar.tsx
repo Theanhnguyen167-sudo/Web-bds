@@ -197,10 +197,10 @@ export const Navbar: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             onClick={handlePostListingClick}
-            className="h-9 flex items-center gap-1.5 rounded-xl bg-accent px-3.5 text-xs font-bold text-white shadow-sm shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0 cursor-pointer"
+            className="h-9 flex items-center justify-center gap-1.5 rounded-xl bg-accent px-3.5 text-xs font-bold text-white shadow-sm shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             <PlusCircle className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">+ Đăng tin</span>
+            <span className="whitespace-nowrap">Đăng tin</span>
           </motion.button>
 
           {/* Auth State / Account Dropdown */}
