@@ -368,8 +368,8 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Hamburger Menu Toggle (Tablet & Mobile < lg) */}
-        <div className="flex lg:hidden items-center gap-2 shrink-0">
+        {/* Mobile Right Actions (Tablet & Mobile < lg) */}
+        <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
           <Link
             href="/search"
             className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
@@ -377,15 +377,42 @@ export const Navbar: React.FC = () => {
           >
             <Search className="h-4 w-4" />
           </Link>
+
+          {/* Nút Chuông Thông Báo đưa ra ngoài thanh trên cùng */}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setNotifOpen(!notifOpen);
+            }}
+            aria-label="Thông báo"
+            title="Thông báo tài khoản"
+            className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all cursor-pointer shrink-0 ${
+              notifOpen
+                ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40'
+                : 'text-slate-300 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Bell className="h-4.5 w-4.5" />
+            {unreadNotifCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-extrabold text-white shadow-md ring-2 ring-[#0a1128]">
+                {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+              </span>
+            )}
+          </button>
+
           <button
             onClick={handlePostListingClick}
-            className="h-9 flex items-center justify-center rounded-xl bg-accent hover:bg-accent-hover px-3 text-xs font-bold text-white shadow-sm transition-colors whitespace-nowrap cursor-pointer"
+            className="h-9 flex items-center justify-center rounded-xl bg-accent hover:bg-accent-hover px-2.5 sm:px-3 text-xs font-bold text-white shadow-sm transition-colors whitespace-nowrap cursor-pointer"
           >
             Đăng tin
           </button>
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => {
+              setNotifOpen(false);
+              setMobileMenuOpen(!mobileMenuOpen);
+            }}
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
             title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
@@ -445,24 +472,6 @@ export const Navbar: React.FC = () => {
             </div>
 
               <div className="border-t border-slate-700 pt-3 mt-3 flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setNotifOpen(true);
-                  }}
-                  className="flex items-center justify-between rounded-lg bg-primary-light/60 px-3 py-2 text-xs font-semibold text-left cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <Bell className="h-4 w-4 text-orange-400" />
-                    <span>Thông báo tài khoản</span>
-                  </div>
-                  {unreadNotifCount > 0 && (
-                    <span className="rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-0.5 text-[10px] font-extrabold">
-                      {unreadNotifCount} mới
-                    </span>
-                  )}
-                </button>
                 {user ? (
                   <>
                     {user.role === 'admin' && (
