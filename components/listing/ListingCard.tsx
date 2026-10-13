@@ -161,37 +161,37 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
             {listing.title}
           </Link>
 
-          {/* Address — Secondary Information (text-slate-600) */}
-          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-600 font-medium">
+          {/* Address — Secondary Information (text-slate-500 font-normal) */}
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-500 font-normal">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
             <span className="truncate">{listing.ward ? `${listing.ward}, ` : ''}{listing.district}, Hà Nội</span>
           </div>
 
-          {/* Specs Row — Metadata (text-slate-500 / 600, nhẹ hơn Title & Location) */}
-          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11px] text-slate-500">
+          {/* Specs Row — Metadata (text-slate-400 font-normal, nhỏ và ít nổi bật hơn Title & Location) */}
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[10px] sm:text-[11px] text-slate-400 font-normal">
             <div className="flex items-center gap-1">
               <Maximize2 className="h-3.5 w-3.5 text-slate-400" />
-              <span className="font-semibold text-slate-600">{listing.area} m²</span>
+              <span className="font-medium text-slate-600">{listing.area} m²</span>
             </div>
 
             {listing.floors > 0 && (
               <div className="flex items-center gap-1">
                 <Building className="h-3.5 w-3.5 text-slate-400" />
-                <span className="font-medium text-slate-500">{listing.floors} tầng</span>
+                <span className="font-normal text-slate-400">{listing.floors} tầng</span>
               </div>
             )}
 
             {listing.bedrooms > 0 && (
               <div className="flex items-center gap-1">
                 <Bed className="h-3.5 w-3.5 text-slate-400" />
-                <span className="font-medium text-slate-500">{listing.bedrooms} PN</span>
+                <span className="font-normal text-slate-400">{listing.bedrooms} PN</span>
               </div>
             )}
 
             {listing.bathrooms > 0 && (
               <div className="flex items-center gap-1">
                 <Bath className="h-3.5 w-3.5 text-slate-400" />
-                <span className="font-medium text-slate-500">{listing.bathrooms} PT</span>
+                <span className="font-normal text-slate-400">{listing.bathrooms} PT</span>
               </div>
             )}
           </div>
