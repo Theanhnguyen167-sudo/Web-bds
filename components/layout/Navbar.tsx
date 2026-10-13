@@ -68,8 +68,9 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 20);
     };
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -113,17 +114,13 @@ export const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,backdrop-filter,border-color,box-shadow] duration-200 ease-in-out ${
         isScrolled
-          ? 'bg-[#0a1128]/95 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10 text-white'
-          : 'bg-[#0a1128]/95 backdrop-blur-sm shadow-sm border-b border-slate-800/80 text-white'
+          ? 'bg-[#0a1128]/95 supports-[backdrop-filter]:bg-[#0a1128]/80 backdrop-blur-[14px] shadow-md shadow-black/20 border-b border-white/[0.08] text-white'
+          : 'bg-[#0a1128] shadow-xs border-b border-slate-800/80 text-white'
       }`}
     >
-      <div
-        className={`header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
-          isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
-        }`}
-      >
+      <div className="header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 sm:h-[68px]">
         {/* 1. LOGO */}
         <div className="logo shrink-0 flex items-center">
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
