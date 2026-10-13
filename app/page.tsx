@@ -304,12 +304,8 @@ const propertyCategories = [
   { name: 'Biệt thự', count: '456 tin', icon: '🏰', href: '/mua-ban/biet-thu' },
   { name: 'Thương mại', count: '234 tin', icon: '🏪', href: '/search?type=commercial' },
   { name: 'Dự án mới', count: '89 dự án', icon: '🏗️', href: '/search?type=project' },
-  { name: 'Cho thuê', count: '1,876 tin', icon: '🔑', href: '/cho-thue' },
-  { name: 'Quy hoạch', count: 'Sở QHKT', icon: '🗺️', href: '/planning' },
-  { name: 'Penthouse', count: '128 tin', icon: '✨', href: '/mua-ban/penthouse' },
   { name: 'Nhà mặt phố', count: '890 tin', icon: '🏬', href: '/mua-ban/nha-mat-pho' },
-  { name: 'Bản đồ 3D', count: 'Metro & VĐ4', icon: '🌐', href: '/planning' },
-  { name: 'Định giá AI', count: 'Tra cứu giá', icon: '🤖', href: '/reports' },
+  { name: 'Penthouse', count: '128 tin', icon: '✨', href: '/mua-ban/penthouse' },
 ];
 
 // ── Hero Search Constants ──
@@ -967,10 +963,19 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
+                <Link
+                  href="/cho-thue"
+                  className="text-xs sm:text-sm font-semibold text-slate-700 hover:text-orange-600 bg-white hover:bg-orange-50/60 border border-slate-200/80 hover:border-orange-300 px-3 sm:px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 transition-all shadow-xs group cursor-pointer"
+                >
+                  <span>🔑</span>
+                  <span className="font-bold">Cho thuê</span>
+                  <span className="text-xs text-slate-400 group-hover:text-orange-500 font-normal">· 1,876 tin</span>
+                </Link>
+
                 <Link
                   href="/search"
-                  className="text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 group"
+                  className="text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 group py-1.5 cursor-pointer"
                 >
                   <span>Xem tất cả loại BĐS</span>
                   <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
