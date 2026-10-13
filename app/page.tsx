@@ -1217,13 +1217,13 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* ── NÚT KHÁM PHÁ Ở GIỮA BÊN DƯỚI (Chuẩn nút Book a tour trong Hình 2) ── */}
+          {/* ── NÚT CTA XEM TẤT CẢ DƯỚI DANH SÁCH BĐS NỔI BẬT ── */}
           <div className="mt-6 sm:mt-8 flex justify-center">
             <Link
               href="/search"
               className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
             >
-              <span>Khám phá các bất động sản</span>
+              <span>Xem tất cả bất động sản</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
