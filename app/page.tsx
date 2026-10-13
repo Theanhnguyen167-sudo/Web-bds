@@ -2323,19 +2323,19 @@ export default function HomePage() {
 
                 {/* Description — Supporting Text (Nhẹ hơn heading) */}
                 <p className="text-sm sm:text-base text-slate-300 font-normal mt-2 sm:mt-2.5 leading-relaxed max-w-xl">
-                  Đăng tin nhanh chóng, ghim toạ độ trực quan trên bản đồ và kết nối trực tiếp với người tìm nhà tại Hà Nội.
+                  Đăng tin bán hoặc cho thuê nhanh chóng, ghim vị trí trên bản đồ và kết nối trực tiếp với người tìm nhà tại Hà Nội.
                 </p>
 
                 {/* Trust / Benefit Checkpoints (Chỉ giữ tính năng có dữ liệu và chức năng thực tế hỗ trợ) */}
                 <div className="flex flex-wrap items-center gap-y-2 gap-x-4 pt-3.5 text-xs sm:text-sm font-normal text-slate-300">
                   <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    Miễn phí không cần thẻ
+                    Đăng tin miễn phí không cần thẻ
                   </span>
                   <span className="text-slate-600 hidden sm:inline">•</span>
                   <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    Ghim toạ độ trên bản đồ tìm kiếm
+                    Hiển thị toạ độ trên bản đồ tìm kiếm
                   </span>
                   <span className="text-slate-600 hidden sm:inline">•</span>
                   <span className="flex items-center gap-1.5">
@@ -2352,7 +2352,7 @@ export default function HomePage() {
                   href="/listings/create"
                   className="h-12 sm:h-13 px-6 sm:px-8 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-extrabold text-sm sm:text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all text-center whitespace-nowrap group cursor-pointer"
                 >
-                  <span>Đăng tin ngay — Miễn phí</span>
+                  <span>Đăng tin miễn phí</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
 
