@@ -124,6 +124,8 @@ export interface NotificationBellProps {
   hideTrigger?: boolean;
   variant?: 'popover' | 'embedded';
   onUnreadCountChange?: (count: number) => void;
+  isScrolled?: boolean;
+  triggerClassName?: string;
 }
 
 export const NotificationBell: React.FC<NotificationBellProps> = ({
@@ -132,6 +134,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   hideTrigger = false,
   variant = 'popover',
   onUnreadCountChange,
+  isScrolled = false,
+  triggerClassName,
 }) => {
   const router = useRouter();
   const { user, listings, addToast } = useApp();
@@ -615,21 +619,32 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            if (viewMode === 'settings') setViewMode('list');
             setIsOpen((prev) => !prev);
           }}
+          aria-expanded={isOpen}
           aria-label="Quản lý và nhận thông báo"
-          className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 border cursor-pointer select-none ${
-            isOpen
-              ? 'bg-accent text-white border-accent shadow-md shadow-accent/25'
-              : 'bg-primary-light/60 border-slate-700 text-slate-200 hover:text-white hover:bg-primary-light hover:border-slate-500'
-          }`}
+          className={
+            triggerClassName ||
+            `relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 border cursor-pointer select-none shrink-0 ${
+              isOpen
+                ? 'bg-accent text-white border-accent shadow-md shadow-accent/25'
+                : isScrolled
+                  ? 'bg-slate-100/80 hover:bg-slate-200/70 text-slate-800 border-slate-200/80 hover:border-slate-300'
+                  : 'bg-white/5 hover:bg-white/10 text-white border-white/10 hover:border-white/20'
+            }`
+          }
           title="Thông báo hệ thống, quy hoạch và BĐS"
         >
-          <Bell className="h-4 w-4 transition-transform duration-200" />
+          <Bell className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-12' : ''}`} />
 
           {/* Unread Counter Badge */}
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-extrabold text-white shadow-md shadow-accent/40 ring-2 ring-primary">
+            <span
+              className={`absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-extrabold text-white shadow-md shadow-accent/40 ring-2 ${
+                isScrolled ? 'ring-white' : 'ring-[#0a1128]'
+              }`}
+            >
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -791,6 +806,28 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                     🏡 BĐS & Tin
                   </button>
                 </div>
+
+                {/* Quick Web Push Opt-in Banner */}
+                {browserPermission !== 'granted' && (
+                  <div className="p-2.5 bg-gradient-to-r from-orange-500/15 via-orange-500/10 to-transparent border-b border-orange-500/20 flex items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-orange-500/20 text-orange-400 shrink-0">
+                        <Bell className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-bold text-white truncate">Bật thông báo đẩy (Web Push)</p>
+                        <p className="text-[10px] text-slate-400 truncate">Nhận tin quy hoạch, giá & lịch hẹn</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRequestBrowserPermission}
+                      className="shrink-0 px-2.5 py-1 rounded-lg bg-accent hover:bg-accent-hover text-white text-[10px] font-bold shadow-xs transition-colors cursor-pointer"
+                    >
+                      Bật ngay
+                    </button>
+                  </div>
+                )}
 
                 {/* Notifications Scroll Container */}
                 <div className={`${variant === 'embedded' ? 'max-h-[520px]' : 'max-h-[350px] sm:max-h-[380px]'} overflow-y-auto divide-y divide-slate-700/50`}>

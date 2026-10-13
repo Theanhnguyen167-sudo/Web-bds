@@ -239,13 +239,6 @@ export const Navbar: React.FC = () => {
                     <User className="h-3.5 w-3.5" />
                   </div>
                 )}
-                {unreadNotifCount > 0 && (
-                  <span className={`absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-accent px-0.5 text-[8px] font-extrabold text-white shadow-md ring-2 ${
-                    isScrolled ? 'ring-white' : 'ring-[#0a1128]'
-                  }`}>
-                    {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
-                  </span>
-                )}
               </div>
               <span className={`text-xs font-semibold max-w-[110px] xl:max-w-[140px] truncate ${
                 isScrolled ? 'text-slate-800' : 'text-slate-200'
@@ -384,6 +377,19 @@ export const Navbar: React.FC = () => {
               )}
             </AnimatePresence>
           </div>
+
+          {/* 4. Notification Bell - Đặt ngay bên phải phần tên người dùng (Trần Minh Hoàng) */}
+          <div className="relative shrink-0">
+            <NotificationBell
+              isOpen={notifOpen}
+              onOpenChange={(open) => {
+                if (open) setUserDropdownOpen(false);
+                setNotifOpen(open);
+              }}
+              isScrolled={isScrolled}
+              onUnreadCountChange={setUnreadNotifCount}
+            />
+          </div>
         </div>
 
         {/* Mobile Right Actions (Tablet & Mobile < lg) */}
@@ -400,32 +406,15 @@ export const Navbar: React.FC = () => {
             <Search className="h-4 w-4" />
           </Link>
 
-          {/* Nút Chuông Thông Báo đưa ra ngoài thanh trên cùng */}
-          <button
-            type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              setNotifOpen(!notifOpen);
-            }}
-            aria-label="Thông báo"
-            title="Thông báo tài khoản"
-            className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all cursor-pointer shrink-0 ${
-              notifOpen
-                ? 'bg-orange-500/20 text-orange-500 border border-orange-500/40'
-                : isScrolled
-                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <Bell className="h-4.5 w-4.5" />
-            {unreadNotifCount > 0 && (
-              <span className={`absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-extrabold text-white shadow-md ring-2 ${
-                isScrolled ? 'ring-white' : 'ring-[#0a1128]'
-              }`}>
-                {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
-              </span>
-            )}
-          </button>
+          {/* Nút Chuông Thông Báo Mobile */}
+          <div className="relative shrink-0">
+            <NotificationBell
+              isScrolled={isScrolled}
+              onOpenChange={(open) => {
+                if (open) setMobileMenuOpen(false);
+              }}
+            />
+          </div>
 
           <button
             onClick={handlePostListingClick}
@@ -455,16 +444,6 @@ export const Navbar: React.FC = () => {
             )}
           </button>
         </div>
-      </div>
-
-      {/* Popover Trung tâm Thông báo (Hiển thị trên cả Desktop & Mobile khi mở từ mục Tài khoản) */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative flex justify-end">
-        <NotificationBell
-          isOpen={notifOpen}
-          onOpenChange={setNotifOpen}
-          hideTrigger
-          onUnreadCountChange={setUnreadNotifCount}
-        />
       </div>
 
       {/* Mobile & Tablet Drawer Menu (< lg) */}
