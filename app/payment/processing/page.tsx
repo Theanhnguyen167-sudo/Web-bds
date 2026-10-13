@@ -25,7 +25,7 @@ import { VNPAY_BANK_CODES } from '@/lib/payment/vnpay';
 function ProcessingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, setUser, addToast } = useApp();
+  const { user, setUser, upgradeUserPackage, addToast } = useApp();
 
   const orderId = searchParams.get('orderId') || `HNREALTY_${Date.now()}`;
   const method = searchParams.get('method') || 'momo';
@@ -33,9 +33,9 @@ function ProcessingContent() {
   const bankCode = searchParams.get('bankCode') || 'ALL';
   const paymentUrl = searchParams.get('paymentUrl') || '';
 
-  const packageId = searchParams.get('packageId') || 'agency';
+  const packageId = searchParams.get('packageId') || 'pro';
   const rawPackageName = searchParams.get('packageName');
-  const billing = searchParams.get('billing') || 'monthly';
+  const billing = (searchParams.get('billing') as 'monthly' | 'yearly') || 'monthly';
   const packageName = rawPackageName || (packageId === 'agency' ? 'Gói Agency' : packageId === 'basic' ? 'Gói Basic' : 'Gói Pro');
 
   const [isExpired, setIsExpired] = useState(false);
@@ -46,16 +46,8 @@ function ProcessingContent() {
   const selectedBankObj = VNPAY_BANK_CODES.find((b) => b.code === bankCode);
 
   const handleApplySuccessfulUpgrade = () => {
-    if (user) {
-      const isAgency = packageId.toLowerCase() === 'agency';
-      const isBasic = packageId.toLowerCase() === 'basic';
-      setUser({
-        ...user,
-        package: isAgency ? 'Agency' : isBasic ? 'Basic' : 'Pro',
-        packageExpiry: billing === 'yearly' ? '2027-09-23' : '2026-10-23',
-        listingsCount: isAgency ? 999999 : user.listingsCount + (isBasic ? 20 : 50),
-        aiReportsLimit: isAgency ? 999999 : (user.aiReportsLimit || 0) + (isBasic ? 5 : 30),
-      });
+    if (upgradeUserPackage) {
+      upgradeUserPackage(packageId, billing);
     }
   };
 

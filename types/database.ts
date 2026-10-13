@@ -8,7 +8,7 @@ export type Json =
 
 export type UserRole = 'user' | 'agent' | 'admin';
 export type PropertyType = 'house' | 'apartment' | 'land' | 'villa' | 'shophouse';
-export type ListingStatus = 'pending' | 'active' | 'expired' | 'sold' | 'rejected';
+export type ListingStatus = 'pending' | 'active' | 'expired' | 'sold' | 'rejected' | 'hidden' | 'draft';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'pending';
 export type PaymentStatus = 'pending' | 'success' | 'failed';
 export type ProjectStatus = 'planning' | 'construction' | 'completed';

@@ -1,0 +1,55 @@
+--- app/api/listings/route.ts
++++ app/api/listings/route.ts
+@@ -1,7 +1,8 @@
+ import { NextResponse } from 'next/server';
+ import { createClient } from '@supabase/supabase-js';
++import { createServerSupabaseClient } from '@/lib/supabase/server';
+ import { parseLocationCoordinates, HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
+ 
+ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xdqfxsszpglbgvpcqfss.supabase.co';
+ const supabaseKey =
+@@ -69,11 +70,14 @@
+ // POST: Tạo tin đăng mới (mặc định status: 'pending' chờ admin duyệt)
+ export async function POST(req: Request) {
+   try {
++    const supabaseServer = createServerSupabaseClient();
++    const { data: { user }, error: authError } = await supabaseServer.auth.getUser();
++    if (authError || !user) {
++      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
++    }
++
+     const body = await req.json();
+     const {
+-      user_id,
+-      author_email,
+       title,
+       description,
+       property_type,
+@@ -95,26 +99,7 @@
+       return NextResponse.json({ success: false, error: 'Thiếu thông tin bắt buộc' }, { status: 400 });
+     }
+ 
+-    // Đảm bảo user_id hợp lệ trong bảng users (phải là UUID v4)
+-    let finalUserId = user_id;
+-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(finalUserId || '');
+-    if (!isUuid) {
+-      // Tìm xem có user nào trong bảng users trùng email không
+-      const targetEmail = author_email || 'cozyhollys@gmail.com';
+-      const { data: matchedUser } = await supabase
+-        .from('users')
+-        .select('id')
+-        .eq('email', targetEmail)
+-        .maybeSingle();
+-
+-      if (matchedUser?.id) {
+-        finalUserId = matchedUser.id;
+-      } else {
+-        // Tìm 1 user đầu tiên có sẵn trong db làm author fallback
+-        const { data: firstUser } = await supabase.from('users').select('id').limit(1).maybeSingle();
+-        finalUserId = firstUser?.id || '08880538-c501-47ff-835f-63b7573b7577';
+-      }
+-    }
++    const finalUserId = user.id;
+ 
+     const pricePerM2 = Math.round(Number(price) / (Number(area) || 1));
+     const numLat = Number(lat);

@@ -15,6 +15,28 @@ import { auth as firebaseAuth } from '@/lib/firebase/config';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { parseLocationCoordinates } from '@/lib/utils';
 
+import {
+  getLocalListings,
+  saveLocalListings,
+  createListingRecord,
+  updateListingRecord,
+  approveListingRecord,
+  rejectListingRecord,
+  toggleHideListingRecord,
+  deleteListingRecord,
+  renewListingRecord,
+  toggleFeaturedListingRecord,
+  getListingExpiryInfo,
+  EVENT_LISTINGS_UPDATED,
+  TEST_SELLERS,
+  TEST_SELLERS_LIST,
+} from '@/lib/services/listing-service';
+import {
+  getPackageDefinition,
+  calculatePackageExpiry,
+  PackageTierId,
+} from '@/lib/packages/package-config';
+
 export interface ToastItem {
   id: string;
   message: string;
@@ -24,6 +46,9 @@ export interface ToastItem {
 interface AppContextType {
   user: typeof mockUser | null;
   setUser: React.Dispatch<React.SetStateAction<typeof mockUser | null>>;
+  upgradeUserPackage: (packageId: string, billing?: 'monthly' | 'yearly') => void;
+  incrementAiReportUsage: () => boolean;
+  incrementFeaturedUsage: () => boolean;
   listings: ListingItem[];
   setListings: React.Dispatch<React.SetStateAction<ListingItem[]>>;
   savedListingIds: string[];
@@ -38,7 +63,16 @@ interface AppContextType {
   addToast: (message: string, type?: ToastItem['type']) => void;
   removeToast: (id: string) => void;
   addNewListing: (listing: Partial<ListingItem>) => Promise<string>;
-  updateListingStatus: (id: string, status: 'active' | 'pending' | 'rejected', reason?: string) => Promise<void>;
+  updateListing: (id: string, updates: Partial<ListingItem>) => Promise<ListingItem | null>;
+  deleteListing: (id: string) => Promise<void>;
+  hideListing: (id: string, forceHidden?: boolean) => Promise<void>;
+  renewListing: (id: string, durationDays?: number) => void;
+  toggleFeaturedListing: (id: string, isFeatured?: boolean) => void;
+  updateListingStatus: (
+    id: string,
+    status: 'active' | 'pending' | 'rejected' | 'hidden' | 'expired' | 'sold',
+    reason?: string
+  ) => Promise<void>;
   refreshListings: () => Promise<void>;
   planningZones: PlanningZoneItem[];
   setPlanningZones: React.Dispatch<React.SetStateAction<PlanningZoneItem[]>>;
@@ -55,41 +89,142 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const USER_LISTINGS_STORAGE_KEY = 'hanoi_platform_user_listings';
 
 export const getStoredUserListings = (): ListingItem[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(USER_LISTINGS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return getLocalListings();
 };
 
 export const saveStoredUserListings = (items: ListingItem[]) => {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(USER_LISTINGS_STORAGE_KEY, JSON.stringify(items));
-  } catch (e) {
-    console.warn('Failed to save user listings to localStorage:', e);
-  }
+  saveLocalListings(items);
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<typeof mockUser | null>(null);
-  const [listings, setListings] = useState<ListingItem[]>(() => {
+  const [user, setUser] = useState<typeof mockUser | null>(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem(USER_LISTINGS_STORAGE_KEY);
-        if (stored) {
-          const parsed: ListingItem[] = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const parsedIds = new Set(parsed.map(p => p.id));
-            return [...parsed, ...mockListings.filter(m => !parsedIds.has(m.id))];
-          }
-        }
+        const stored = localStorage.getItem('hanoi_current_user');
+        if (stored) return JSON.parse(stored);
       } catch {}
     }
-    return mockListings;
+    const defaultSeller = TEST_SELLERS_LIST[0];
+    const defaultPkgDef = getPackageDefinition(defaultSeller.package || 'pro');
+    return {
+      id: defaultSeller.id,
+      name: defaultSeller.name,
+      email: defaultSeller.email,
+      phone: defaultSeller.phone,
+      role: 'agent',
+      package: defaultPkgDef.name,
+      packageExpiry: '2026-12-31',
+      aiReportsUsed: 3,
+      aiReportsLimit: defaultPkgDef.limits.aiReports,
+      listingsCount: 2,
+      listingsLimit: defaultPkgDef.limits.maxListings,
+      listingDurationDays: defaultPkgDef.limits.listingDurationDays,
+      featuredListingsUsed: 1,
+      featuredListingsLimit: defaultPkgDef.limits.featuredListings,
+      activeListings: 1,
+      avatar: defaultSeller.avatar,
+    };
   });
+
+  // Nâng cấp / Chuyển đổi gói cước hội viên và áp dụng tức thì
+  const upgradeUserPackage = (packageId: string, billing: 'monthly' | 'yearly' = 'monthly') => {
+    const pkgDef = getPackageDefinition(packageId);
+    const expiry = calculatePackageExpiry(billing);
+    setUser((prev) => {
+      const base = prev || {
+        id: 'u1',
+        name: 'Nguyễn Văn An',
+        email: 'an@example.com',
+        phone: '0988 123 456',
+        role: 'agent',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+        activeListings: 0,
+        listingsCount: 0,
+      };
+      const updated: typeof mockUser = {
+        ...base,
+        package: pkgDef.name,
+        packageExpiry: expiry,
+        listingsLimit: pkgDef.limits.maxListings,
+        listingDurationDays: pkgDef.limits.listingDurationDays,
+        featuredListingsLimit: pkgDef.limits.featuredListings,
+        featuredListingsUsed: 0,
+        aiReportsLimit: pkgDef.limits.aiReports,
+        aiReportsUsed: 0,
+      };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('hanoi_current_user', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
+
+  // Tiêu hao 1 lượt phân tích AI nếu còn hạn mức
+  const incrementAiReportUsage = (): boolean => {
+    if (!user) return false;
+    const pkgDef = getPackageDefinition(user.package);
+    const currentLimit = user.aiReportsLimit !== undefined ? user.aiReportsLimit : pkgDef.limits.aiReports;
+    if (user.aiReportsUsed >= currentLimit) {
+      return false;
+    }
+    const nextUsed = user.aiReportsUsed + 1;
+    const updated = { ...user, aiReportsUsed: nextUsed };
+    setUser(updated);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('hanoi_current_user', JSON.stringify(updated));
+      } catch {}
+    }
+    return true;
+  };
+
+  // Tiêu hao 1 suất tin nổi bật nếu còn hạn mức
+  const incrementFeaturedUsage = (): boolean => {
+    if (!user) return false;
+    const pkgDef = getPackageDefinition(user.package);
+    const currentLimit = user.featuredListingsLimit !== undefined ? user.featuredListingsLimit : pkgDef.limits.featuredListings;
+    const currentUsed = user.featuredListingsUsed || 0;
+    if (currentUsed >= currentLimit) {
+      return false;
+    }
+    const updated = { ...user, featuredListingsUsed: currentUsed + 1 };
+    setUser(updated);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('hanoi_current_user', JSON.stringify(updated));
+      } catch {}
+    }
+    return true;
+  };
+
+  // Tự động lưu user vào localStorage khi user thay đổi để duy trì session giữa các portal
+  useEffect(() => {
+    if (user && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('hanoi_current_user', JSON.stringify(user));
+      } catch {}
+    }
+  }, [user]);
+
+  const [listings, setListings] = useState<ListingItem[]>(() => {
+    return getLocalListings();
+  });
+
+  // Lắng nghe cập nhật real-time từ Single Source of Truth
+  useEffect(() => {
+    const handleSync = () => {
+      setListings(getLocalListings());
+    };
+    window.addEventListener(EVENT_LISTINGS_UPDATED, handleSync);
+    window.addEventListener('storage', (e) => {
+      if (e.key === USER_LISTINGS_STORAGE_KEY) handleSync();
+    });
+    return () => {
+      window.removeEventListener(EVENT_LISTINGS_UPDATED, handleSync);
+    };
+  }, []);
   const [savedListingIds, setSavedListingIds] = useState<string[]>(['1', '3']);
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
@@ -136,18 +271,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Gói dịch vụ: Mặc định luôn là 'Free'. Chỉ nhận gói cao hơn nếu user đã thanh toán trong DB hoặc là admin
       let userPackage = 'Free';
       let packageExpiry = 'Vĩnh viễn';
-      let aiReportsLimit = 1;
 
       if (userRole === 'admin') {
         userPackage = 'Agency';
         packageExpiry = '2026-12-31';
-        aiReportsLimit = 100;
       } else if (profile?.package && profile.package.toLowerCase() !== 'free') {
         userPackage = profile.package;
         packageExpiry = profile.package_expires_at || profile.packageExpiry || '2026-12-31';
-        const pkgLow = userPackage.toLowerCase();
-        aiReportsLimit = pkgLow === 'agency' ? 50 : pkgLow === 'pro' ? 20 : 5;
       }
+
+      const pkgDef = getPackageDefinition(userPackage);
 
       setUser({
         id: sessionUser.id,
@@ -156,12 +289,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         phone: profile?.phone || sessionUser.user_metadata?.phone || '',
         role: userRole,
         avatar: avatar,
-        package: userPackage,
+        package: pkgDef.name,
         packageExpiry: packageExpiry,
         listingsCount: 0,
+        listingsLimit: pkgDef.limits.maxListings,
+        listingDurationDays: pkgDef.limits.listingDurationDays,
+        featuredListingsUsed: 0,
+        featuredListingsLimit: pkgDef.limits.featuredListings,
         activeListings: 0,
         aiReportsUsed: 0,
-        aiReportsLimit: aiReportsLimit,
+        aiReportsLimit: pkgDef.limits.aiReports,
       });
 
       // Fetch saved listings from Supabase
@@ -187,12 +324,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       let userPackage = 'Free';
       let packageExpiry = 'Vĩnh viễn';
-      let aiReportsLimit = 1;
 
       if (userRole === 'admin') {
         userPackage = 'Agency';
         packageExpiry = '2026-12-31';
-        aiReportsLimit = 100;
       }
 
       // Đồng bộ thông tin người dùng lên bảng public.users của Supabase qua API an toàn
@@ -215,12 +350,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (userRole !== 'admin' && dbUser?.package && dbUser.package.toLowerCase() !== 'free') {
           userPackage = dbUser.package;
           packageExpiry = dbUser.package_expires_at || dbUser.packageExpiry || '2026-12-31';
-          const pkgLow = userPackage.toLowerCase();
-          aiReportsLimit = pkgLow === 'agency' ? 50 : pkgLow === 'pro' ? 20 : 5;
         }
       } catch (dbErr) {
         console.warn('Sync to Supabase users table notice:', dbErr);
       }
+
+      const fbPkgDef = getPackageDefinition(userPackage);
 
       setUser({
         id: fbUser.uid,
@@ -229,12 +364,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         phone: fbUser.phoneNumber || '',
         role: userRole,
         avatar: avatar,
-        package: userPackage,
+        package: fbPkgDef.name,
         packageExpiry: packageExpiry,
         listingsCount: 0,
+        listingsLimit: fbPkgDef.limits.maxListings,
+        listingDurationDays: fbPkgDef.limits.listingDurationDays,
+        featuredListingsUsed: 0,
+        featuredListingsLimit: fbPkgDef.limits.featuredListings,
         activeListings: 0,
         aiReportsUsed: 0,
-        aiReportsLimit: aiReportsLimit,
+        aiReportsLimit: fbPkgDef.limits.aiReports,
       });
     } catch (e) {
       console.error('Error syncing Firebase user:', e);
@@ -455,220 +594,92 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const addNewListing = async (newListingData: Partial<ListingItem>): Promise<string> => {
-    let newId = 'lst_' + Date.now();
-
-    const pricePerM2 = newListingData.pricePerM2 || (newListingData.price ? Math.round(newListingData.price / (newListingData.area || 50)) : 100000000);
-
-    const numLat = Number(newListingData.lat);
-    const numLng = Number(newListingData.lng);
-    const hasValidCoords = !isNaN(numLat) && !isNaN(numLng) && numLat >= -90 && numLat <= 90 && numLng >= -180 && numLng <= 180 && numLat !== 0 && numLng !== 0;
-    const fallbackCoords = parseLocationCoordinates(null, newListingData.district);
-    const finalLat = hasValidCoords ? numLat : fallbackCoords.lat;
-    const finalLng = hasValidCoords ? numLng : fallbackCoords.lng;
-
-    const pendingItem: ListingItem = {
-      id: newId,
-      ownerId: user?.id || 'anonymous_user',
-      createdBy: user?.id || 'anonymous_user',
-      title: newListingData.title || 'BĐS mới đăng tại Hà Nội',
-      price: newListingData.price || 5000000000,
-      pricePerM2,
-      area: newListingData.area || 50,
-      floors: newListingData.floors || 3,
-      bedrooms: newListingData.bedrooms || 3,
-      bathrooms: newListingData.bathrooms || 2,
-      address: newListingData.address || 'Hà Nội',
-      district: newListingData.district || 'Cầu Giấy',
-      ward: newListingData.ward || 'Dịch Vọng',
-      lat: finalLat,
-      lng: finalLng,
-      type: newListingData.type || 'house',
-      images: newListingData.images && newListingData.images.length > 0
-        ? newListingData.images
-        : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
-      status: 'pending', // Đánh dấu đang chờ duyệt
-      isFeatured: false,
-      views: 1,
-      createdAt: new Date().toISOString().split('T')[0],
-      planningZone: 'Đất ở đô thị',
-      planningYear: 2030,
-      legalStatus: newListingData.legalStatus || 'Sổ đỏ chính chủ',
-      direction: newListingData.direction || 'Đông Nam',
-      description: newListingData.description || 'Bất động sản vị trí đẹp.',
-      userId: user?.id,
-      authorName: newListingData.authorName || user?.name || 'Nguyễn Văn A',
-      authorEmail: newListingData.authorEmail || user?.email || 'nguyenvana@gmail.com',
-      authorPhone: newListingData.authorPhone || user?.phone || '0988 123 456',
-      authorAvatar: user?.avatar,
-      sellerType: newListingData.sellerType || 'Chính chủ',
-      companyName: newListingData.companyName,
-      contactAddress: newListingData.contactAddress,
-      showPhone: newListingData.showPhone !== undefined ? newListingData.showPhone : true,
-      allowEmailContact: newListingData.allowEmailContact !== undefined ? newListingData.allowEmailContact : true,
-      showCompany: newListingData.showCompany !== undefined ? newListingData.showCompany : false,
-      isPhoneVerified: newListingData.isPhoneVerified !== undefined ? newListingData.isPhoneVerified : false,
-      users: user ? {
-        full_name: newListingData.authorName || user.name,
-        avatar_url: user.avatar,
-        phone: newListingData.authorPhone || user.phone || '0988 123 456',
-        role: user.role,
-      } : undefined,
-    };
-
-    // 1. Lưu ngay vào localStorage để không bao giờ bị mất khi refresh hay chuyển trang
-    const currentStored = getStoredUserListings();
-    const updatedStored = [pendingItem, ...currentStored.filter(l => l.id !== newId)];
-    saveStoredUserListings(updatedStored);
-
-    // 2. Thêm ngay vào state của app để người dùng thấy ngay trên Dashboard cá nhân
-    setListings((prev) => [pendingItem, ...prev.filter(l => l.id !== newId)]);
-
-    // 3. Gửi lên Supabase API với status: 'pending' (Chờ Admin phê duyệt)
-    try {
-      const res = await fetch('/api/listings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user?.id,
-          author_email: user?.email || 'cozyhollys@gmail.com',
-          title: newListingData.title,
-          description: newListingData.description,
-          property_type: newListingData.type || 'house',
-          price: newListingData.price,
-          area: newListingData.area,
-          address: newListingData.address,
-          district: newListingData.district,
-          ward: newListingData.ward,
-          lat: finalLat,
-          lng: finalLng,
-          images: newListingData.images,
-        }),
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data?.id) {
-          const remoteId = json.data.id;
-          // Cập nhật lại ID chuẩn từ Supabase
-          const syncedStored = getStoredUserListings().map(l => l.id === newId ? { ...l, id: remoteId } : l);
-          saveStoredUserListings(syncedStored);
-          setListings((prev) => prev.map(l => l.id === newId ? { ...l, id: remoteId } : l));
-          newId = remoteId;
-        }
-      }
-    } catch (apiErr) {
-      console.warn('Sync to Supabase listings notice:', apiErr);
-    }
-
+    const created = await createListingRecord(newListingData, user);
+    setListings(getLocalListings());
     addToast('⏳ Tin đăng đã gửi thành công và đang chờ Admin kiểm duyệt!', 'info');
-    return newId;
+    return created.id;
   };
 
-  // Hàm cập nhật trạng thái tin đăng (Duyệt tin: 'active', Từ chối: 'rejected')
-  const updateListingStatus = async (id: string, status: 'active' | 'pending' | 'rejected', reason?: string) => {
-    // 1. Cập nhật state listings trong app
-    setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
-
-    // 2. Cập nhật localStorage
-    const currentStored = getStoredUserListings();
-    let targetItem: any = listings.find((l) => l.id === id) || currentStored.find((l) => l.id === id);
-    if (!targetItem) {
-      try {
-        const { mockAdminListings } = await import('@/lib/admin-data');
-        targetItem = mockAdminListings.find((l) => l.id === id);
-      } catch {}
-    }
-    let updatedStored = currentStored.map((l) => (l.id === id ? { ...l, status } : l));
-    if (!currentStored.some((l) => l.id === id)) {
-      if (targetItem) {
-        updatedStored = [{ ...targetItem, status }, ...updatedStored];
+  const updateListing = async (id: string, updates: Partial<ListingItem>): Promise<ListingItem | null> => {
+    const updated = await updateListingRecord(id, updates, user, user?.role === 'admin');
+    if (updated) {
+      setListings(getLocalListings());
+      if (updated.status === 'pending') {
+        addToast('Tin đăng đã được cập nhật và chuyển sang trạng thái Chờ duyệt lại', 'info');
+      } else {
+        addToast('Đã lưu thay đổi tin đăng thành công', 'success');
       }
     }
-    saveStoredUserListings(updatedStored);
+    return updated;
+  };
 
-    // 3. TẠO THÔNG BÁO CHO ĐÚNG CHỦ TÀI KHOẢN (listing.ownerId) - TUYỆT ĐỐI KHÔNG BROADCAST CHO USER KHÁC
-    if (typeof window !== 'undefined') {
-      try {
-        const STORAGE_KEY_NOTIFICATIONS = 'hanoi_realty_notifications';
-        const title = targetItem?.title || 'Bất động sản của bạn';
-        // Xác định chính xác ID người dùng sở hữu bài đăng
-        const recipientUserId = targetItem?.ownerId || targetItem?.userId || targetItem?.createdBy;
+  const deleteListing = async (id: string): Promise<void> => {
+    deleteListingRecord(id);
+    setListings(getLocalListings());
+    addToast('Đã xóa tin đăng thành công', 'info');
+  };
 
-        if (recipientUserId) {
-          if (status === 'active') {
-            const notifMsg = `Tin đăng "${title}" của bạn đã được Admin kiểm duyệt thành công và chính thức hiển thị trên bản đồ!`;
-            const newNotif = {
-              id: `notif-approved-${id}-${Date.now()}`,
-              recipientUserId, // CHỈ tài khoản này mới được nhận thông báo
-              type: 'listing_approved',
-              title: 'Tin đăng BĐS đã duyệt thành công',
-              message: notifMsg,
-              content: notifMsg,
-              listingId: id,
-              category: 'listing' as const,
-              createdAt: 'Vừa xong',
-              timestamp: Date.now(),
-              isRead: false,
-              link: `/listings/${id}`,
-              tag: 'Đã duyệt'
-            };
+  const hideListing = async (id: string, forceHidden?: boolean): Promise<void> => {
+    await toggleHideListingRecord(id, forceHidden);
+    setListings(getLocalListings());
+    addToast('Đã cập nhật trạng thái hiển thị của tin đăng', 'info');
+  };
 
-            const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
-            const existingNotifs = existingRaw ? JSON.parse(existingRaw) : [];
-            const updatedNotifs = [newNotif, ...existingNotifs.filter((n: any) => n.id !== newNotif.id)];
-            localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
+  const renewListing = (id: string, durationDays?: number) => {
+    const pkg = getPackageDefinition(user?.package);
+    const days = durationDays || pkg.limits.listingDurationDays || 30;
+    const updated = renewListingRecord(id, days);
+    if (updated) {
+      setListings(getLocalListings());
+      addToast(`🎉 Đã gia hạn tin đăng thành công thêm ${days} ngày! Tin đã được kích hoạt lại.`, 'success');
+    }
+  };
 
-            // Phát sự kiện toàn cục với chi tiết recipientUserId
-            window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
-            window.dispatchEvent(new Event('hanoi_notifications_updated'));
-          } else if (status === 'rejected') {
-            const rejectMsg = reason
-              ? `Tin "${title}" chưa được duyệt. Lý do: ${reason}`
-              : `Tin "${title}" chưa được duyệt. Vui lòng kiểm tra lại thông tin mô tả và hình ảnh.`;
+  const toggleFeaturedListing = (id: string, isFeatured?: boolean) => {
+    const pkg = getPackageDefinition(user?.package);
+    const badge = pkg.name.toUpperCase();
+    const currentList = getLocalListings();
+    const currentItem = currentList.find((l) => l.id === id);
+    const nextState = isFeatured !== undefined ? isFeatured : !currentItem?.isFeatured;
 
-            const newNotif = {
-              id: `notif-rejected-${id}-${Date.now()}`,
-              recipientUserId, // CHỈ chủ tin nhận được
-              type: 'listing_rejected',
-              rejectionReason: reason,
-              title: 'Tin đăng chưa được duyệt',
-              message: rejectMsg,
-              content: rejectMsg,
-              listingId: id,
-              category: 'listing' as const,
-              createdAt: 'Vừa xong',
-              timestamp: Date.now(),
-              isRead: false,
-              link: '/dashboard',
-              tag: 'Cần sửa'
-            };
-
-            const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
-            const existingNotifs = existingRaw ? JSON.parse(existingRaw) : [];
-            const updatedNotifs = [newNotif, ...existingNotifs.filter((n: any) => n.id !== newNotif.id)];
-            localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
-
-            window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
-            window.dispatchEvent(new Event('hanoi_notifications_updated'));
-          }
-        } else {
-          console.warn(`[Notification] Không tìm thấy ownerId cho listing ${id}. Không phát sinh thông báo cá nhân.`);
-        }
-      } catch (notifErr) {
-        console.warn('Lỗi ghi nhận thông báo duyệt tin:', notifErr);
+    if (nextState) {
+      if (pkg.limits.featuredListings <= 0) {
+        addToast(`Gói ${pkg.name} không hỗ trợ tính năng Tin Nổi Bật. Vui lòng nâng cấp Gói Basic trở lên để ghim tin Top 1!`, 'warning');
+        return;
+      }
+      const featuredUsed = currentList.filter((l) => l.ownerId === user?.id && l.isFeatured).length;
+      if (featuredUsed >= pkg.limits.featuredListings) {
+        addToast(`Hạn mức tin nổi bật của bạn đã đạt giới hạn (${featuredUsed}/${pkg.limits.featuredListings} tin). Nâng cấp gói để thêm lượt đẩy Top!`, 'warning');
+        return;
       }
     }
 
-    // 4. Gửi lệnh cập nhật lên Supabase Database
-    try {
-      await fetch('/api/listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status }),
-      });
-    } catch (err) {
-      console.warn('Lỗi đồng bộ trạng thái tin lên Supabase:', err);
+    const updated = toggleFeaturedListingRecord(id, nextState, badge);
+    if (updated) {
+      setListings(getLocalListings());
+      if (nextState) {
+        addToast(`⭐ Đã ghim tin lên TOP 1 Tìm kiếm thành công (Gói ${pkg.name})!`, 'success');
+      } else {
+        addToast('Đã tắt ghim nổi bật của tin đăng', 'info');
+      }
     }
+  };
+
+  const updateListingStatus = async (
+    id: string,
+    status: 'active' | 'pending' | 'rejected' | 'hidden' | 'expired' | 'sold',
+    reason?: string
+  ): Promise<void> => {
+    if (status === 'active') {
+      await approveListingRecord(id);
+    } else if (status === 'rejected') {
+      await rejectListingRecord(id, reason || 'Thông tin chưa đạt yêu cầu kiểm duyệt');
+    } else if (status === 'hidden') {
+      await toggleHideListingRecord(id, true);
+    } else {
+      await updateListingRecord(id, { status }, user, true);
+    }
+    setListings(getLocalListings());
   };
 
   // Load planning zones from Supabase (fallback to localStorage / DEFAULT_PLANNING_ZONES)
@@ -805,6 +816,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         user,
         setUser,
+        upgradeUserPackage,
+        incrementAiReportUsage,
+        incrementFeaturedUsage,
         listings,
         setListings,
         savedListingIds,
@@ -819,6 +833,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addToast,
         removeToast,
         addNewListing,
+        updateListing,
+        deleteListing,
+        hideListing,
+        renewListing,
+        toggleFeaturedListing,
         updateListingStatus,
         refreshListings,
         planningZones,

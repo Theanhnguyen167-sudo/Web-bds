@@ -18,10 +18,28 @@ export interface ListingItem {
   lng: number;
   type: "house" | "apartment" | "land" | "villa";
   images: string[];
-  status: "active" | "pending" | "sold" | "rejected" | "draft";
+  status: "active" | "pending" | "sold" | "rejected" | "draft" | "hidden" | "expired";
   isFeatured: boolean;
   views: number;
   createdAt: string;
+  updatedAt?: string;
+  publishedAt?: string | null;
+  rejectionReason?: string | null;
+  city?: string;
+  propertyType?: "house" | "apartment" | "land" | "villa";
+  appointments?: number;
+  seller?: {
+    fullName: string;
+    phone: string;
+    email?: string;
+    sellerType?: string;
+    companyName?: string;
+    contactAddress?: string;
+    showPhone?: boolean;
+    allowEmailContact?: boolean;
+    showCompany?: boolean;
+    isPhoneVerified?: boolean;
+  };
   planningZone: string;
   planningYear: number;
   legalStatus: string;
@@ -40,6 +58,9 @@ export interface ListingItem {
   allowEmailContact?: boolean;
   showCompany?: boolean;
   isPhoneVerified?: boolean;
+  expiresAt?: string;
+  durationDays?: number;
+  featuredBadge?: string;
   users?: {
     full_name?: string;
     avatar_url?: string;
@@ -405,6 +426,10 @@ export interface UserProfile {
   aiReportsUsed: number;
   aiReportsLimit: number;
   listingsCount: number;
+  listingsLimit?: number;
+  listingDurationDays?: number;
+  featuredListingsUsed?: number;
+  featuredListingsLimit?: number;
   activeListings: number;
   avatar: string;
 }
@@ -416,10 +441,14 @@ export const mockUser: UserProfile = {
   phone: "0988 123 456",
   role: "agent",
   package: "pro",
-  packageExpiry: "2025-09-15",
+  packageExpiry: "2026-12-31",
   aiReportsUsed: 8,
   aiReportsLimit: 30,
   listingsCount: 12,
+  listingsLimit: 50,
+  listingDurationDays: 60,
+  featuredListingsUsed: 2,
+  featuredListingsLimit: 10,
   activeListings: 8,
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
 };

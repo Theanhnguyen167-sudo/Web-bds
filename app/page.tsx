@@ -13,6 +13,7 @@ import { mockListings, ListingItem } from '@/lib/mock-data';
 import { useCountUp } from '@/lib/hooks/useScrollAnimation';
 import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
+import { sortListings } from '@/lib/search/filterListings';
 import {
   Search,
   MapPin,
@@ -509,10 +510,20 @@ export default function HomePage() {
     }
   };
 
-  // 8 Featured Listings mock
+  // Section 3: Featured Listings (Lọc bỏ tin hết hạn, ưu tiên tin VIP Top 1 lên đầu)
   const featuredListings = useMemo(() => {
-    return mockListings.slice(0, 8);
-  }, []);
+    const sourceList = listings && listings.length > 0 ? listings : mockListings;
+    const nowTime = Date.now();
+    const activeList = sourceList.filter((l) => {
+      if (l.status === 'expired' || l.status === 'hidden' || l.status === 'rejected' || l.status === 'draft') return false;
+      if (l.expiresAt) {
+        const expiry = new Date(l.expiresAt).setHours(23, 59, 59, 999);
+        if (nowTime > expiry) return false;
+      }
+      return true;
+    });
+    return sortListings(activeList, 'newest').slice(0, 10);
+  }, [listings]);
 
   // ── Section 4: District selection for Mini Map ──
   const [hoveredDistrict, setHoveredDistrict] = useState<string>('Đống Đa');
@@ -535,16 +546,27 @@ export default function HomePage() {
   const [personalFilter, setPersonalFilter] = useState<string>('all');
   const personalizedListings = useMemo(() => {
     const sourceList = listings && listings.length > 0 ? listings : mockListings;
+    const nowTime = Date.now();
+    const activeList = sourceList.filter((l) => {
+      if (l.status === 'expired' || l.status === 'hidden' || l.status === 'rejected' || l.status === 'draft') return false;
+      if (l.expiresAt) {
+        const expiry = new Date(l.expiresAt).setHours(23, 59, 59, 999);
+        if (nowTime > expiry) return false;
+      }
+      return true;
+    });
+
+    let filtered = activeList;
     if (personalFilter === 'price-3-5') {
-      return sourceList.filter((l) => l.price >= 3e9 && l.price <= 5.5e9);
+      filtered = activeList.filter((l) => l.price >= 3e9 && l.price <= 5.5e9);
+    } else if (personalFilter === 'dongda') {
+      filtered = activeList.filter((l) => l.district === 'Đống Đa');
+    } else if (personalFilter === 'metro') {
+      filtered = activeList.filter((l) => l.district === 'Đống Đa' || l.district === 'Cầu Giấy');
     }
-    if (personalFilter === 'dongda') {
-      return sourceList.filter((l) => l.district === 'Đống Đa');
-    }
-    if (personalFilter === 'metro') {
-      return sourceList.filter((l) => l.district === 'Đống Đa' || l.district === 'Cầu Giấy');
-    }
-    return sourceList;
+
+    // Đẩy các tin nổi bật đáp ứng đúng nhu cầu của khách lên Top 1
+    return sortListings(filtered, 'newest');
   }, [personalFilter, listings]);
 
   // ── Section 5: Personalized Recommendations Carousel Scroll ──
@@ -632,7 +654,7 @@ export default function HomePage() {
     const interval = setInterval(() => {
       setReviewDirection(1);
       setActiveReviewIdx((prev) => (prev + 1) % reviews.length);
-    }, 12000);
+    }, 18000);
     return () => clearInterval(interval);
   }, [isReviewPaused, reviews.length]);
 
@@ -2128,7 +2150,7 @@ export default function HomePage() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full flex flex-col items-center text-center"
               >
                 {/* Big Bold White Quote with Smart Quotes */}

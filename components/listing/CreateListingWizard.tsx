@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
@@ -43,6 +44,7 @@ import {
   isValidEmail,
   isCompanyRequired
 } from './wizard/PostingDataTypes';
+import { getPackageDefinition } from '@/lib/packages/package-config';
 import { Step5SellerInfo } from './wizard/Step5SellerInfo';
 import { Step6ReviewPublish } from './wizard/Step6ReviewPublish';
 import { PublishSuccessView } from './wizard/PublishSuccessView';
@@ -130,7 +132,18 @@ export const CreateListingWizard: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
-  const { user, addNewListing, addToast } = useApp();
+  const { user, listings, addNewListing, updateListing, addToast, incrementFeaturedUsage } = useApp();
+
+  const editId = searchParams?.get('editId') || searchParams?.get('id');
+  const isEditMode = Boolean(editId);
+
+  // Hạn mức và thông tin gói thành viên hiện tại
+  const pkgDef = getPackageDefinition(user?.package);
+  const userListings = listings.filter(
+    (l) => l.ownerId === user?.id || l.userId === user?.id || l.createdBy === user?.id
+  );
+  const maxListings = user?.listingsLimit ?? pkgDef.limits.maxListings;
+  const isOverLimit = !isEditMode && userListings.length >= maxListings;
 
   // Step state (1 to 6)
   const stepParamFromPath = params?.step as string | undefined;
@@ -163,7 +176,7 @@ export const CreateListingWizard: React.FC = () => {
 
   // UNIFIED POSTING DATA STATE DÙNG CHUNG CHO TOÀN BỘ FLOW (STEP 1 ĐẾN STEP 6)
   const [postingData, setPostingData] = useState<PostingData>(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !isEditMode) {
       try {
         const cached = localStorage.getItem('listing_wizard_draft');
         if (cached) {
@@ -217,9 +230,62 @@ export const CreateListingWizard: React.FC = () => {
     };
   });
 
-  // Tự động điền email và thông tin tài khoản nếu user đã đăng nhập
+  // Nếu là edit mode: load dữ liệu của tin cần chỉnh sửa
   useEffect(() => {
-    if (user) {
+    if (editId && listings.length > 0) {
+      const existing = listings.find((l) => l.id === editId);
+      if (existing) {
+        setPostingData({
+          propertyType: (existing.propertyType || existing.type || 'house') as any,
+          location: {
+            district: existing.district || 'Cầu Giấy',
+            ward: existing.ward || '',
+            street: existing.address || '',
+            addressNumber: '',
+            lat: existing.lat || 21.0315,
+            lng: existing.lng || 105.7825,
+            displayName: existing.address || '',
+          },
+          images: existing.images && existing.images.length > 0 ? existing.images : [],
+          price: existing.price,
+          area: existing.area,
+          floors: existing.floors || 1,
+          bedrooms: existing.bedrooms || 1,
+          bathrooms: existing.bathrooms || 1,
+          direction: existing.direction || 'Đông Nam',
+          legalStatus: existing.legalStatus || 'Sổ đỏ chính chủ',
+          title: existing.title || '',
+          description: existing.description || '',
+          seller: {
+            fullName: existing.seller?.fullName || existing.authorName || user?.name || 'Chủ nhà',
+            phone: existing.seller?.phone || existing.authorPhone || user?.phone || '0912 345 678',
+            email: existing.seller?.email || existing.authorEmail || user?.email || '',
+            sellerType: (existing.seller?.sellerType || (existing as any).sellerType || 'Chính chủ') as any,
+            companyName: existing.seller?.companyName || (existing as any).companyName || '',
+            contactAddress: existing.seller?.contactAddress || (existing as any).contactAddress || '',
+            showPhone: true,
+            allowEmailContact: true,
+            showCompany: Boolean(existing.seller?.companyName || (existing as any).companyName),
+            isPhoneVerified: true,
+          },
+          status: existing.status,
+        });
+        setPickedLocation({
+          lat: existing.lat || 21.0315,
+          lng: existing.lng || 105.7825,
+          displayName: existing.address || '',
+          district: existing.district || '',
+          ward: existing.ward || '',
+          road: '',
+          houseNumber: '',
+        });
+      }
+    }
+  }, [editId, listings]);
+
+  // Tự động điền email và thông tin tài khoản nếu user đã đăng nhập (chỉ khi không phải edit)
+  useEffect(() => {
+    if (user && !editId) {
       setPostingData((prev) => ({
         ...prev,
         seller: {
@@ -237,16 +303,16 @@ export const CreateListingWizard: React.FC = () => {
         },
       }));
     }
-  }, [user]);
+  }, [user, editId]);
 
-  // Lưu tự động dữ liệu vào localStorage để không bị mất khi refresh hay chuyển bước
+  // Lưu tự động dữ liệu vào localStorage để không bị mất khi refresh hay chuyển bước (chỉ khi tạo mới)
   useEffect(() => {
-    if (typeof window !== 'undefined' && !publishedListingId) {
+    if (typeof window !== 'undefined' && !publishedListingId && !editId) {
       try {
         localStorage.setItem('listing_wizard_draft', JSON.stringify(postingData));
       } catch {}
     }
-  }, [postingData, publishedListingId]);
+  }, [postingData, publishedListingId, editId]);
 
   const propertyTypes = [
     { id: 'house', title: 'Nhà phố / Nhà riêng', icon: Home, desc: 'Nhà liền kề, nhà phân lô, nhà mặt ngõ ô tô' },
@@ -488,43 +554,122 @@ export const CreateListingWizard: React.FC = () => {
       return;
     }
 
+    if (!isEditMode && isOverLimit) {
+      addToast(
+        `⚠️ Bạn đã đạt hạn mức tối đa ${maxListings} tin của Gói ${pkgDef.name}. Vui lòng nâng cấp gói để tiếp tục đăng tin mới!`,
+        'error'
+      );
+      router.push('/pricing');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const fullAddress = `${postingData.location.addressNumber} ${postingData.location.street}, ${postingData.location.ward}, ${postingData.location.district}, Hà Nội`;
+      const fullAddress = `${postingData.location.addressNumber ? `${postingData.location.addressNumber} ` : ''}${postingData.location.street}, ${postingData.location.ward}, ${postingData.location.district}, Hà Nội`;
       const finalTitle =
         postingData.title ||
         `Bán ${propertyTypes.find((t) => t.id === postingData.propertyType)?.title || 'BĐS'} ${postingData.area}m² tại ${postingData.location.district}`;
 
-      const newId = await addNewListing({
-        title: finalTitle,
-        description: postingData.description,
-        type: postingData.propertyType,
-        price: postingData.price,
-        area: postingData.area,
-        pricePerM2: postingData.price / postingData.area,
-        floors: postingData.floors,
-        bedrooms: postingData.bedrooms,
-        bathrooms: postingData.bathrooms,
-        direction: postingData.direction,
-        legalStatus: postingData.legalStatus,
-        address: fullAddress,
-        district: postingData.location.district,
-        ward: postingData.location.ward,
-        lat: postingData.location.lat,
-        lng: postingData.location.lng,
-        images: postingData.images,
-        authorName: postingData.seller.fullName,
-        authorPhone: postingData.seller.phone,
-        authorEmail: postingData.seller.email || undefined,
-        status: 'pending', // Luôn ở trạng thái Chờ duyệt
-        sellerType: postingData.seller.sellerType,
-        companyName: postingData.seller.companyName,
-        contactAddress: postingData.seller.contactAddress,
-        showPhone: postingData.seller.showPhone,
-        allowEmailContact: postingData.seller.allowEmailContact,
-        showCompany: postingData.seller.showCompany,
-        isPhoneVerified: postingData.seller.isPhoneVerified,
-      });
+      let resultId = editId;
+
+      if (isEditMode && editId) {
+        // CẬP NHẬT TIN ĐĂNG HIỆN TẠI (SECTION 11 & SECTION 12)
+        // Không tạo duplicate listing, giữ nguyên ID, kiểm tra đưa về pending nếu sửa trường quan trọng
+        const updated = await updateListing(editId, {
+          title: finalTitle,
+          description: postingData.description,
+          type: postingData.propertyType,
+          propertyType: postingData.propertyType,
+          price: postingData.price,
+          area: postingData.area,
+          pricePerM2: Math.round(postingData.price / (postingData.area || 1)),
+          floors: postingData.floors,
+          bedrooms: postingData.bedrooms,
+          bathrooms: postingData.bathrooms,
+          direction: postingData.direction,
+          legalStatus: postingData.legalStatus,
+          address: fullAddress,
+          district: postingData.location.district,
+          ward: postingData.location.ward,
+          lat: postingData.location.lat,
+          lng: postingData.location.lng,
+          images: postingData.images,
+          authorName: postingData.seller.fullName,
+          authorPhone: postingData.seller.phone,
+          authorEmail: postingData.seller.email || undefined,
+          seller: {
+            fullName: postingData.seller.fullName,
+            phone: postingData.seller.phone,
+            email: postingData.seller.email,
+            sellerType: postingData.seller.sellerType,
+            companyName: postingData.seller.companyName,
+            contactAddress: postingData.seller.contactAddress,
+          },
+          sellerType: postingData.seller.sellerType,
+          companyName: postingData.seller.companyName,
+          contactAddress: postingData.seller.contactAddress,
+          showPhone: postingData.seller.showPhone,
+          allowEmailContact: postingData.seller.allowEmailContact,
+          showCompany: postingData.seller.showCompany,
+          isPhoneVerified: postingData.seller.isPhoneVerified,
+        });
+
+        if (updated?.status === 'pending') {
+          addToast('🔄 Tin đã cập nhật và gửi tới Admin kiểm duyệt lại do thay đổi thông tin quan trọng!', 'info');
+        } else {
+          addToast('🎉 Đã cập nhật tin đăng thành công!', 'success');
+        }
+      } else {
+        // TẠO TIN ĐĂNG MỚI (SECTION 4 & SECTION 5)
+        const newId = await addNewListing({
+          title: finalTitle,
+          description: postingData.description,
+          type: postingData.propertyType,
+          propertyType: postingData.propertyType,
+          price: postingData.price,
+          area: postingData.area,
+          pricePerM2: Math.round(postingData.price / (postingData.area || 1)),
+          floors: postingData.floors,
+          bedrooms: postingData.bedrooms,
+          bathrooms: postingData.bathrooms,
+          direction: postingData.direction,
+          legalStatus: postingData.legalStatus,
+          address: fullAddress,
+          district: postingData.location.district,
+          ward: postingData.location.ward,
+          lat: postingData.location.lat,
+          lng: postingData.location.lng,
+          images: postingData.images,
+          authorName: postingData.seller.fullName,
+          authorPhone: postingData.seller.phone,
+          authorEmail: postingData.seller.email || undefined,
+          status: 'pending', // Luôn ở trạng thái Chờ duyệt ban đầu
+          isFeatured: Boolean(postingData.isFeatured),
+          durationDays: pkgDef.limits.listingDurationDays,
+          seller: {
+            fullName: postingData.seller.fullName,
+            phone: postingData.seller.phone,
+            email: postingData.seller.email,
+            sellerType: postingData.seller.sellerType,
+            companyName: postingData.seller.companyName,
+            contactAddress: postingData.seller.contactAddress,
+          },
+          sellerType: postingData.seller.sellerType,
+          companyName: postingData.seller.companyName,
+          contactAddress: postingData.seller.contactAddress,
+          showPhone: postingData.seller.showPhone,
+          allowEmailContact: postingData.seller.allowEmailContact,
+          showCompany: postingData.seller.showCompany,
+          isPhoneVerified: postingData.seller.isPhoneVerified,
+        });
+
+        if (postingData.isFeatured) {
+          incrementFeaturedUsage?.();
+        }
+
+        resultId = newId;
+        addToast('🎉 Đăng tin thành công! Tin đang chờ hệ thống kiểm duyệt.', 'success');
+      }
 
       if (typeof window !== 'undefined') {
         try {
@@ -532,12 +677,11 @@ export const CreateListingWizard: React.FC = () => {
         } catch {}
       }
 
-      setPublishedListingId(newId || 'lst_' + Date.now());
+      setPublishedListingId(resultId || 'lst_' + Date.now());
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      addToast('🎉 Đăng tin thành công! Tin đang chờ hệ thống kiểm duyệt.', 'success');
     } catch (e) {
-      console.error('Error publishing listing:', e);
-      addToast('Có lỗi xảy ra khi xuất bản tin đăng', 'error');
+      console.error('Error publishing/updating listing:', e);
+      addToast('Có lỗi xảy ra khi lưu tin đăng', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -545,7 +689,47 @@ export const CreateListingWizard: React.FC = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto py-8">
-      
+
+      {/* 🌟 BANNER HẠN MỨC GÓI ĐĂNG TIN THÀNH VIÊN 🌟 */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+            pkgDef.id === 'agency'
+              ? 'bg-[#0a1128] text-amber-300'
+              : pkgDef.id === 'pro'
+              ? 'bg-orange-500 text-white'
+              : pkgDef.id === 'basic'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-200 text-slate-700'
+          }`}>
+            Gói {pkgDef.name}
+          </span>
+          <span className="text-xs font-bold text-slate-700">
+            Hạn mức: <strong className={isOverLimit ? 'text-rose-600' : 'text-slate-900'}>{userListings.length}/{maxListings} tin</strong>
+            {' · '}Thời hạn hiển thị tin: <strong>{pkgDef.limits.listingDurationDays} ngày</strong>
+          </span>
+        </div>
+
+        {isOverLimit ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-rose-600">⚠️ Đã hết lượt đăng tin</span>
+            <Link
+              href="/pricing"
+              className="px-3 py-1 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs"
+            >
+              Nâng cấp gói ngay →
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href="/pricing"
+            className="text-xs font-bold text-orange-600 hover:underline inline-flex items-center gap-1"
+          >
+            Bảng giá & Hạn mức VIP →
+          </Link>
+        )}
+      </div>
+
       {/* 1. THANH TIẾN ĐỘ 6 BƯỚC CHUẨN */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">

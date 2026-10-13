@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useRef } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Printer, Download, Share2, Check, 
-  MapPin, ShieldCheck, Building2, Compass, QrCode, FileText
+  MapPin, ShieldCheck, Building2, Compass, QrCode, FileText,
+  Lock, Crown, Sparkles
 } from 'lucide-react';
 import { PlanningInspectionResult } from '@/lib/gis/planning-inspector';
 import { useApp } from '@/lib/context/AppContext';
+import { getPackageDefinition } from '@/lib/packages/package-config';
 
 interface PlanningReportModalProps {
   inspection: PlanningInspectionResult | null;
@@ -18,12 +21,17 @@ export const PlanningReportModal: React.FC<PlanningReportModalProps> = ({
   inspection,
   onClose,
 }) => {
-  const { addToast } = useApp();
+  const { user, addToast } = useApp();
+  const pkgDef = getPackageDefinition(user?.package);
   const printRef = useRef<HTMLDivElement>(null);
 
   if (!inspection) return null;
 
   const handlePrint = () => {
+    if (!pkgDef.features.canExportPDF) {
+      addToast?.('🔒 Xuất file báo cáo quy hoạch PDF là đặc quyền của Gói Basic trở lên. Bạn đang dùng Gói Free.', 'warning');
+      return;
+    }
     window.print();
   };
 
@@ -55,15 +63,20 @@ export const PlanningReportModal: React.FC<PlanningReportModalProps> = ({
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 bg-slate-950/80 shrink-0">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-orange-400" />
-              <span className="font-bold text-sm text-white">
-                Phiếu Trích Lục Thông Tin Quy Hoạch
-              </span>
+              <div>
+                <span className="font-bold text-sm text-white">
+                  Phiếu Trích Lục Thông Tin Quy Hoạch
+                </span>
+                <span className="hidden sm:inline-block ml-2 text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  Gói {pkgDef.name}
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopyLink}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
                 title="Sao chép link xem vị trí"
               >
                 <Share2 className="h-3.5 w-3.5" />
@@ -72,21 +85,47 @@ export const PlanningReportModal: React.FC<PlanningReportModalProps> = ({
 
               <button
                 onClick={handlePrint}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-bold text-white shadow-md shadow-orange-500/25 transition-all"
-                title="In hoặc Lưu thành file PDF"
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  pkgDef.features.canExportPDF
+                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/25'
+                    : 'bg-slate-800 text-amber-300 border border-amber-500/40 hover:bg-slate-700'
+                }`}
+                title={pkgDef.features.canExportPDF ? "In hoặc Lưu thành file PDF" : "Yêu cầu Gói Basic để xuất file PDF"}
               >
-                <Printer className="h-3.5 w-3.5" />
-                <span>In / Lưu PDF</span>
+                {pkgDef.features.canExportPDF ? (
+                  <Printer className="h-3.5 w-3.5" />
+                ) : (
+                  <Lock className="h-3.5 w-3.5 text-amber-400" />
+                )}
+                <span>{pkgDef.features.canExportPDF ? 'In / Lưu PDF' : 'Khóa Xuất PDF (Cần Basic)'}</span>
               </button>
 
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
           </div>
+
+          {/* BANNER NẾU GÓI FREE */}
+          {!pkgDef.features.canExportPDF && (
+            <div className="bg-amber-950/80 border-b border-amber-600/40 px-5 py-2.5 flex items-center justify-between gap-3 text-xs text-amber-200 shrink-0">
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4 text-amber-400 shrink-0" />
+                <span>
+                  Tài khoản <strong>Gói Free</strong> đang ở chế độ xem trước trực tuyến. Nâng cấp <strong>Gói Basic (399.000 đ/tháng)</strong> để xuất file PDF trích lục và in ấn pháp lý!
+                </span>
+              </div>
+              <Link
+                href="/payment/checkout?packageId=basic&billing=monthly"
+                className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold whitespace-nowrap text-xs transition-colors shrink-0"
+              >
+                Nâng cấp Basic →
+              </Link>
+            </div>
+          )}
 
           {/* PRINTABLE SHEET CONTAINER (A4 FORMAT) */}
           <div className="p-4 sm:p-8 overflow-y-auto flex-1 bg-white text-slate-900 font-sans print:p-0 print:m-0" ref={printRef}>
@@ -222,6 +261,48 @@ export const PlanningReportModal: React.FC<PlanningReportModalProps> = ({
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            {/* CON DẤU XÁC THỰC THEO HẠNG GÓI */}
+            <div className="mt-4 p-3 rounded-xl border bg-slate-50 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                {pkgDef.id === 'agency' ? (
+                  <div className="w-8 h-8 rounded-lg bg-indigo-900 text-amber-400 flex items-center justify-center font-black">
+                    <Crown className="h-4 w-4" />
+                  </div>
+                ) : pkgDef.id === 'pro' ? (
+                  <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                )}
+                <div>
+                  <p className="font-bold text-slate-900">
+                    {pkgDef.id === 'agency'
+                      ? 'CHỨNG THƯ BẢO CHỨNG SÀN GIAO DỊCH (GÓI AGENCY)'
+                      : pkgDef.id === 'pro'
+                        ? 'TRÍCH LỤC QUY HOẠCH VIP 2030 (GÓI PRO)'
+                        : pkgDef.id === 'basic'
+                          ? 'BÁO CÁO TRÍCH LỤC TIÊU CHUẨN (GÓI BASIC)'
+                          : 'BẢN XEM TRƯỚC TRỰC TUYẾN (GÓI FREE)'}
+                  </p>
+                  <p className="text-[10px] text-slate-500">
+                    Hội viên: <span className="font-semibold text-slate-800">{user?.name || 'Khách hàng'}</span> • Mã xác thực: {user?.id}
+                  </p>
+                </div>
+              </div>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                pkgDef.id === 'agency'
+                  ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                  : pkgDef.id === 'pro'
+                    ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                    : 'bg-blue-100 text-blue-900 border border-blue-200'
+              }`}>
+                {pkgDef.badgeLabel}
+              </span>
             </div>
 
             {/* DẤU XÁC NHẬN SỐ HÓA & QR CODE */}

@@ -32,6 +32,26 @@ export interface Listing {
   expires_at: string;
   created_at: string;
   updated_at: string;
+  // Fields required by Single Source of Truth
+  ownerId?: string;
+  city?: string;
+  seller?: SellerSnapshot;
+  rejectionReason?: string | null;
+  publishedAt?: string | null;
+  appointments?: number;
+}
+
+export interface SellerSnapshot {
+  fullName: string;
+  phone: string;
+  email?: string;
+  sellerType?: string;
+  companyName?: string;
+  contactAddress?: string;
+  showPhone?: boolean;
+  allowEmailContact?: boolean;
+  showCompany?: boolean;
+  isPhoneVerified?: boolean;
 }
 
 export interface ListingFilterParams {

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { PlanningInspectionResult } from '@/lib/gis/planning-inspector';
 import { useApp } from '@/lib/context/AppContext';
+import { getPackageDefinition } from '@/lib/packages/package-config';
 
 interface PlanningInspectorDrawerProps {
   inspection: PlanningInspectionResult | null;
@@ -21,7 +22,8 @@ export const PlanningInspectorDrawer: React.FC<PlanningInspectorDrawerProps> = (
   onClose,
   onOpenReport,
 }) => {
-  const { addToast } = useApp();
+  const { user, addToast } = useApp();
+  const pkgDef = getPackageDefinition(user?.package);
   const [copiedCoords, setCopiedCoords] = useState(false);
 
   if (!inspection) return null;
@@ -205,10 +207,12 @@ export const PlanningInspectorDrawer: React.FC<PlanningInspectorDrawerProps> = (
             onClick={() => onOpenReport?.(inspection)}
             className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl 
                        bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 
-                       text-white text-xs font-bold shadow-lg shadow-orange-500/25 transition-all"
+                       text-white text-xs font-bold shadow-lg shadow-orange-500/25 transition-all cursor-pointer"
           >
             <FileText className="h-4 w-4" />
-            <span>Xuất Phiếu Tra Cứu Quy Hoạch PDF</span>
+            <span>
+              {pkgDef.features.canExportPDF ? 'Xuất Phiếu Tra Cứu Quy Hoạch PDF' : 'Xem Trước Phiếu Trích Lục (Free)'}
+            </span>
           </button>
 
           {/* Tìm BĐS xung quanh */}

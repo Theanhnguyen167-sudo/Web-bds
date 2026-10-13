@@ -384,9 +384,18 @@ export function SearchContent({
                   onMarkerHover={setHoveredListingId}
                   showPlanningLayer={filters.planningZone.length > 0}
                   onLocationSelect={(loc) => {
-                    if (loc.category === 'district' && loc.district) {
-                      handleFilterUpdate({ district: loc.district });
+                    const update: Partial<SearchFilters> = {};
+                    if (loc.district) {
+                      update.district = loc.district;
                     }
+                    if (loc.category === 'street' || loc.category === 'address') {
+                      if (loc.street) update.street = loc.street;
+                      update.keyword = loc.name;
+                    } else if (loc.category === 'project') {
+                      update.keyword = loc.name;
+                    }
+                    handleFilterUpdate(update);
+                    setSidebarTab('listings');
                   }}
                   onFilterNearLocation={(coords, radiusKm, label) => {
                     handleFilterUpdate({ keyword: label });

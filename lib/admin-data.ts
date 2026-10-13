@@ -14,29 +14,20 @@ export interface AdminUser {
   lastActive: string;
 }
 
-export interface AdminListing {
+import { ListingItem } from '@/lib/mock-data';
+
+export type AdminListing = Partial<ListingItem> & {
   id: string;
-  ownerId?: string;
-  createdBy?: string;
   title: string;
   price: number;
   area: number;
-  type: 'house' | 'apartment' | 'land' | 'villa';
-  district: string;
-  address: string;
-  authorName: string;
-  authorPhone: string;
-  authorAvatar?: string;
-  status: 'pending' | 'active' | 'expired' | 'rejected' | 'sold';
-  createdAt: string;
-  expiresAt: string;
-  images: string[];
-  views: number;
-  planningZone: string;
-  isFeatured: boolean;
-  lat?: number;
-  lng?: number;
-}
+  status: any;
+  type?: any;
+  district?: string;
+  address?: string;
+  expiresAt?: string;
+  createdAt?: string;
+};
 
 export interface AdminTransaction {
   id: string;
