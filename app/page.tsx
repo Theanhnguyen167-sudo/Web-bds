@@ -2308,10 +2308,10 @@ export default function HomePage() {
 
                 {/* Description — Supporting Text (Nhẹ hơn heading) */}
                 <p className="text-sm sm:text-base text-slate-300 font-normal mt-2 sm:mt-2.5 leading-relaxed max-w-xl">
-                  Tiếp cận hàng nghìn khách mua tiềm năng mỗi ngày. Đăng tin miễn phí, định vị toạ độ chính xác trên bản đồ.
+                  Đăng tin nhanh chóng, ghim toạ độ trực quan trên bản đồ và kết nối trực tiếp với người tìm nhà tại Hà Nội.
                 </p>
 
-                {/* Trust / Benefit Checkpoints */}
+                {/* Trust / Benefit Checkpoints (Chỉ giữ tính năng có dữ liệu và chức năng thực tế hỗ trợ) */}
                 <div className="flex flex-wrap items-center gap-y-2 gap-x-4 pt-3.5 text-xs sm:text-sm font-normal text-slate-300">
                   <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -2320,12 +2320,12 @@ export default function HomePage() {
                   <span className="text-slate-600 hidden sm:inline">•</span>
                   <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    Hiển thị ngay trên bản đồ GIS
+                    Ghim toạ độ trên bản đồ tìm kiếm
                   </span>
                   <span className="text-slate-600 hidden sm:inline">•</span>
                   <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    Tự động thẩm định AI
+                    Quản lý tin đăng thuận tiện
                   </span>
                 </div>
               </div>
