@@ -522,21 +522,26 @@ export default function HomePage() {
   }, [listings]);
 
   // ── Section 4: District selection for Mini Map ──
-  const [hoveredDistrict, setHoveredDistrict] = useState<string>('Đống Đa');
+  const [hoveredDistrict, setHoveredDistrict] = useState<string>('Cầu Giấy');
+  const [showAllDistricts, setShowAllDistricts] = useState<boolean>(false);
 
-  // Popular Districts for Section 4
+  // Popular Districts for Section 4 (Ưu tiên các quận có dữ liệu nguồn cung dồi dào nhất)
   const popularDistricts = useMemo(() => [
-    { name: 'Đống Đa', count: 1234, avgPrice: '~85tr/m²' },
-    { name: 'Hoàn Kiếm', count: 891, avgPrice: '~120tr/m²' },
     { name: 'Cầu Giấy', count: 2102, avgPrice: '~65tr/m²' },
-    { name: 'Tây Hồ', count: 567, avgPrice: '~95tr/m²' },
-    { name: 'Ba Đình', count: 743, avgPrice: '~110tr/m²' },
-    { name: 'Hai Bà Trưng', count: 1089, avgPrice: '~72tr/m²' },
-    { name: 'Hoàng Mai', count: 1456, avgPrice: '~45tr/m²' },
-    { name: 'Long Biên', count: 892, avgPrice: '~38tr/m²' },
-    { name: 'Nam Từ Liêm', count: 1234, avgPrice: '~42tr/m²' },
     { name: 'Hà Đông', count: 2001, avgPrice: '~35tr/m²' },
+    { name: 'Hoàng Mai', count: 1456, avgPrice: '~45tr/m²' },
+    { name: 'Đống Đa', count: 1234, avgPrice: '~85tr/m²' },
+    { name: 'Nam Từ Liêm', count: 1234, avgPrice: '~42tr/m²' },
+    { name: 'Hai Bà Trưng', count: 1089, avgPrice: '~72tr/m²' },
+    { name: 'Long Biên', count: 892, avgPrice: '~38tr/m²' },
+    { name: 'Hoàn Kiếm', count: 891, avgPrice: '~120tr/m²' },
+    { name: 'Ba Đình', count: 743, avgPrice: '~110tr/m²' },
+    { name: 'Tây Hồ', count: 567, avgPrice: '~95tr/m²' },
   ], []);
+
+  const displayedDistricts = useMemo(() => {
+    return showAllDistricts ? popularDistricts : popularDistricts.slice(0, 5);
+  }, [showAllDistricts, popularDistricts]);
 
   // ── Section 5: Personalized Filter Pill ──
   const [personalFilter, setPersonalFilter] = useState<string>('all');
