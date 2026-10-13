@@ -1267,12 +1267,14 @@ export default function HomePage() {
                     Khu vực
                   </span>
                   <span className="col-span-3 text-center">Nguồn cung</span>
-                  <span className="col-span-4 text-right">Đơn giá TB</span>
+                  <span className="col-span-4 text-right" title="Đơn giá trung bình tham khảo theo m²">
+                    Đơn giá TB*
+                  </span>
                 </div>
 
-                {/* Scrollable District Rows */}
-                <div className="overflow-y-auto flex-1 divide-y divide-slate-100 p-1.5 sm:p-2 scrollbar-thin scrollbar-thumb-slate-200">
-                  {popularDistricts.map((d) => {
+                {/* District Rows - Rút gọn 5 quận ban đầu, loại bỏ thanh cuộn lồng nhau */}
+                <div className={`flex-1 divide-y divide-slate-100 p-1.5 sm:p-2 ${showAllDistricts ? 'overflow-y-auto max-h-[290px] scrollbar-thin scrollbar-thumb-slate-200' : 'overflow-hidden'}`}>
+                  {displayedDistricts.map((d) => {
                     const isSelected = hoveredDistrict === d.name;
                     return (
                       <div
@@ -1326,24 +1328,41 @@ export default function HomePage() {
                     );
                   })}
                 </div>
+
+                {/* Bottom Bar: Mở rộng / Thu gọn danh sách quận & Chú thích đơn giá */}
+                <div className="border-t border-slate-100 bg-slate-50/70 px-2 py-1.5 flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllDistricts((prev) => !prev)}
+                    className="w-full py-1 px-3 rounded-xl text-xs font-bold text-slate-600 hover:text-orange-600 hover:bg-orange-50/60 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>{showAllDistricts ? 'Thu gọn danh sách quận' : `Xem tất cả ${popularDistricts.length} quận`}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAllDistricts ? 'rotate-180' : ''}`} />
+                  </button>
+                  <p className="text-[10px] text-slate-400 italic text-center">
+                    *Đơn giá TB tham khảo mặt bằng thị trường theo m²
+                  </p>
+                </div>
               </div>
 
-              {/* Action Buttons - Identical Height h-11 */}
+              {/* Action Buttons - Phân biệt rõ xem tin theo quận vs tra cứu bản đồ quy hoạch */}
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <Link
                   href={`/search?district=${encodeURIComponent(hoveredDistrict)}`}
                   className="h-11 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/25 transition-all px-2.5"
+                  title={`Xem toàn bộ tin đăng tại Quận ${hoveredDistrict}`}
                 >
                   <MapPin className="h-4 w-4 shrink-0" />
-                  <span className="truncate">Xem tin {hoveredDistrict}</span>
+                  <span className="truncate">Xem tin Quận {hoveredDistrict}</span>
                 </Link>
 
                 <Link
                   href="/planning"
                   className="h-11 rounded-xl border border-slate-700 bg-slate-800/90 hover:bg-slate-700 text-slate-100 hover:text-white active:scale-[0.98] font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all px-2.5"
+                  title="Tra cứu bản đồ quy hoạch phân khu TP. Hà Nội"
                 >
                   <Layers className="h-4 w-4 text-orange-400 shrink-0" />
-                  <span className="truncate">Bản đồ quy hoạch</span>
+                  <span className="truncate">Bản đồ quy hoạch phân khu</span>
                 </Link>
               </div>
             </div>
