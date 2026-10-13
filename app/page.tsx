@@ -1384,16 +1384,19 @@ export default function HomePage() {
       <section id="roadmap" className="bg-slate-50/70 py-10 sm:py-12 lg:py-14 border-b border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 gap-3">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 gap-4">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-orange-600 font-extrabold text-xs tracking-wider uppercase bg-orange-50 px-3.5 py-1.5 rounded-full border border-orange-200/80 shadow-xs">
+              {/* Eyebrow — Uppercase Tracking-Widest Accent */}
+              <div className="inline-flex items-center gap-1.5 text-orange-600 font-bold text-[11px] sm:text-xs tracking-widest uppercase mb-2">
                 <Sparkles className="h-3.5 w-3.5 text-orange-500" />
                 <span>GỢI Ý THÔNG MINH</span>
-              </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] mt-2 tracking-tight leading-tight">
+              </div>
+              {/* Heading — Primary Information (Nổi bật nhất) */}
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] tracking-tight leading-tight">
                 Bất động sản phù hợp với bạn
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
+              {/* Description — Supporting Text (Nhẹ hơn heading) */}
+              <p className="text-sm sm:text-base text-slate-500 font-normal mt-2 sm:mt-2.5 max-w-xl leading-relaxed">
                 Được AI tính toán dựa trên tiềm năng đầu tư, vị trí và pháp lý an toàn
               </p>
             </div>
@@ -1871,15 +1874,18 @@ export default function HomePage() {
       <section id="market-updates" className="bg-white py-12 sm:py-16 lg:py-20 border-b border-slate-200/80 text-slate-900 relative overflow-hidden scroll-mt-0">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
             <div>
-              <span className="text-orange-600 font-extrabold text-[11px] sm:text-xs tracking-wider uppercase block mb-1">
+              {/* Eyebrow — Uppercase Tracking-Widest Accent */}
+              <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">
                 TIN TỨC & KIẾN THỨC
               </span>
+              {/* Heading — Primary Information (Nổi bật nhất) */}
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] leading-tight tracking-tight">
                 Cập nhật thị trường BĐS Hà Nội
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+              {/* Description — Supporting Text (Nhẹ hơn heading) */}
+              <p className="text-sm sm:text-base text-slate-500 font-normal mt-2 sm:mt-2.5 max-w-xl leading-relaxed">
                 Phân tích chuyên sâu từ đội ngũ chuyên gia quy hoạch và định giá
               </p>
             </div>
