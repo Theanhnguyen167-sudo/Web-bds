@@ -152,23 +152,23 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
 
         {/* Content Details */}
         <div className="flex flex-1 flex-col p-3.5">
-          {/* Title — Secondary Information (text-slate-800, hover orange) */}
+          {/* Title — Card Title khoảng 18-20px (text-base lg:text-[18px]) */}
           <Link
             href={`/listings/${listing.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="line-clamp-2 text-xs font-bold leading-snug text-slate-800 hover:text-orange-600 transition-colors block cursor-pointer"
+            className="line-clamp-2 text-base sm:text-[17px] lg:text-[18px] font-bold leading-snug text-slate-900 hover:text-orange-600 transition-colors block cursor-pointer"
           >
             {listing.title}
           </Link>
 
-          {/* Address — Secondary Information (text-slate-500 font-normal) */}
-          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-500 font-normal">
+          {/* Address — Metadata / Supporting khoảng 12-14px (text-xs sm:text-[13px]) */}
+          <div className="mt-2 flex items-center gap-1.5 text-xs sm:text-[13px] text-slate-500 font-normal">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500" />
             <span className="truncate">{listing.ward ? `${listing.ward}, ` : ''}{listing.district}, Hà Nội</span>
           </div>
 
-          {/* Specs Row — Metadata (text-slate-400 font-normal, nhỏ và ít nổi bật hơn Title & Location) */}
-          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[10px] sm:text-[11px] text-slate-400 font-normal">
+          {/* Specs Row — Metadata khoảng 12-14px (text-xs sm:text-[13px]) */}
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs sm:text-[13px] text-slate-400 font-normal">
             <div className="flex items-center gap-1">
               <Maximize2 className="h-3.5 w-3.5 text-slate-400" />
               <span className="font-medium text-slate-600">{listing.area} m²</span>
