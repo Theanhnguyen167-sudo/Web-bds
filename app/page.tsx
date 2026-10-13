@@ -378,10 +378,10 @@ function CategoryCarousel() {
             <span className="text-2xl sm:text-3xl mb-2.5 sm:mb-3 group-hover/item:scale-115 group-hover/item:-translate-y-0.5 transition-transform duration-300 inline-block leading-none">
               {cat.icon}
             </span>
-            <span className="font-bold text-xs sm:text-[13px] lg:text-sm text-[#0a1128] group-hover/item:text-orange-500 transition-colors whitespace-nowrap leading-tight tracking-tight">
+            <span className="font-bold text-sm sm:text-[15px] lg:text-base text-[#0a1128] group-hover/item:text-orange-500 transition-colors whitespace-nowrap leading-tight tracking-tight">
               {cat.name}
             </span>
-            <span className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 group-hover/item:text-orange-500 font-normal transition-colors whitespace-nowrap leading-none">
+            <span className="text-xs sm:text-[13px] text-slate-400 mt-1.5 group-hover/item:text-orange-500 font-normal transition-colors whitespace-nowrap leading-none">
               {cat.count}
             </span>
           </Link>
@@ -701,18 +701,18 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Dóng cột 1 -> 5, thu gọn 5-10% chiều rộng để không che ảnh */}
-            <div className="w-full md:w-[330px] lg:w-[340px] xl:w-[355px] lg:col-start-1 lg:col-end-5 lg:row-start-1 z-20 mt-4 lg:mt-0">
+            {/* 2. CARD TRẮNG NỔI BÊN TRÁI: Dóng cột 1 -> 5, cân bằng tỷ lệ với ảnh */}
+            <div className="w-full md:w-[350px] lg:w-[370px] xl:w-[395px] lg:col-start-1 lg:col-end-5 lg:row-start-1 z-20 mt-4 lg:mt-0">
               <motion.div
                 initial={{ opacity: 0, x: -25 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full"
               >
-                <div className="bg-white/98 backdrop-blur-md rounded-2xl sm:rounded-[24px] p-4 sm:p-4.5 shadow-[0_16px_40px_rgba(10,17,40,0.10)] border border-slate-200/90 flex flex-col justify-between">
+                <div className="bg-white/98 backdrop-blur-md rounded-2xl sm:rounded-[24px] p-4.5 sm:p-5 shadow-[0_16px_40px_rgba(10,17,40,0.10)] border border-slate-200/90 flex flex-col justify-between">
 
-                  {/* H1 Title: Tìm ngôi nhà mơ ước tại Hà Nội */}
-                  <h1 className="text-base sm:text-lg lg:text-[20px] font-black text-[#0a1128] leading-[1.25] tracking-tight mb-2 sm:mb-2.5">
+                  {/* H1 Title: Hero H1 dẫn đầu hệ thống typography desktop */}
+                  <h1 className="text-2xl sm:text-3xl lg:text-[34px] xl:text-[38px] font-black text-[#0a1128] leading-[1.15] tracking-tight mb-3">
                     Tìm ngôi nhà mơ ước <br className="hidden sm:inline" />
                     <span className="text-orange-500">tại Hà Nội</span>
                   </h1>
@@ -1290,8 +1290,8 @@ export default function HomePage() {
 
               {/* District Table Panel - Structured 3-column scan */}
               <div className="rounded-2xl sm:rounded-[20px] border border-slate-200/90 bg-white shadow-2xl flex-1 my-3 sm:my-3.5 overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
-                {/* Column Headers for Easy Scanning */}
-                <div className="grid grid-cols-12 px-3 sm:px-4 py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-semibold tracking-wider text-slate-400 uppercase border-b border-slate-100 bg-slate-50/90 select-none">
+                {/* Column Headers for Easy Scanning (Chuẩn metadata 12-14px) */}
+                <div className="grid grid-cols-12 px-3 sm:px-4 py-2 sm:py-2.5 text-xs font-semibold tracking-wider text-slate-400 uppercase border-b border-slate-100 bg-slate-50/90 select-none">
                   <span className="col-span-5 flex items-center gap-1.5">
                     Khu vực
                   </span>
@@ -1321,7 +1321,7 @@ export default function HomePage() {
                               isSelected ? 'text-white' : 'text-orange-500'
                             }`}
                           />
-                          <span className="font-bold text-xs sm:text-[13px] truncate">
+                          <span className="font-bold text-xs sm:text-sm truncate">
                             Quận {d.name}
                           </span>
                         </div>
@@ -1329,9 +1329,9 @@ export default function HomePage() {
                         {/* Supply Count Badge */}
                         <div className="col-span-3 text-center">
                           <span
-                            className={`inline-block px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold transition-colors ${
+                            className={`inline-block px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-normal transition-colors ${
                               isSelected
-                                ? 'bg-white/20 text-white'
+                                ? 'bg-white/20 text-white font-medium'
                                 : 'bg-slate-100 text-slate-600'
                             }`}
                           >
@@ -1342,7 +1342,7 @@ export default function HomePage() {
                         {/* Avg Price per m² */}
                         <div className="col-span-4 text-right">
                           <span
-                            className={`font-mono font-bold text-xs sm:text-[13px] transition-colors ${
+                            className={`font-mono font-bold text-xs sm:text-sm transition-colors ${
                               isSelected
                                 ? 'text-yellow-200 drop-shadow-xs'
                                 : 'text-orange-600'
@@ -1945,17 +1945,20 @@ export default function HomePage() {
 
                 <div className="p-4 sm:p-5 lg:p-6 space-y-1.5 sm:space-y-2 flex-1 flex flex-col justify-center">
                   <div className="space-y-1 sm:space-y-1.5">
-                    <h3 className="text-sm sm:text-base lg:text-lg font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
+                    {/* Card Title khoảng 18-20px */}
+                    <h3 className="text-base sm:text-lg lg:text-[20px] font-bold text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
                       Thị trường BĐS Hà Nội Q4/2025: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức khởi công
                     </h3>
-                    <p className="text-xs sm:text-sm lg:text-base text-slate-500 font-normal line-clamp-2 leading-relaxed">
+                    {/* Body text khoảng 14-16px */}
+                    <p className="text-sm sm:text-[15px] lg:text-base text-slate-500 font-normal line-clamp-2 leading-relaxed">
                       Sự kết nối giữa các trục giao thông hướng tâm và đường vành đai đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố trung tâm và ven đô.
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-100 text-[10px] sm:text-xs text-slate-400 font-normal">
+                  {/* Metadata khoảng 12-14px */}
+                  <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-100 text-xs sm:text-[13px] text-slate-400 font-normal">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500/20 text-orange-600 font-bold flex items-center justify-center text-[10px] sm:text-xs">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500/20 text-orange-600 font-bold flex items-center justify-center text-xs">
                         HR
                       </div>
                       <span className="font-medium text-slate-600">Ban biên tập HaNoi Realty</span>
@@ -2001,13 +2004,13 @@ export default function HomePage() {
                     />
                   </div>
                   <div>
-                    <span className="text-[9px] sm:text-[10px] font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
                       {article.category}
                     </span>
-                    <h4 className="font-bold text-[10px] sm:text-xs text-[#0a1128] group-hover:text-orange-600 transition-colors line-clamp-2 mt-1 leading-snug">
+                    <h4 className="font-bold text-xs sm:text-[13px] lg:text-sm text-[#0a1128] group-hover:text-orange-600 transition-colors line-clamp-2 mt-1 leading-snug">
                       {article.title}
                     </h4>
-                    <p className="text-[10px] text-slate-400 mt-1 font-normal">{article.date}</p>
+                    <p className="text-xs text-slate-400 mt-1 font-normal">{article.date}</p>
                   </div>
                 </Link>
               ))}
@@ -2017,7 +2020,7 @@ export default function HomePage() {
 
           {/* Market Mini Dashboard Row */}
           <div className="mt-2 sm:mt-3 bg-white rounded-3xl p-3 sm:p-4 border border-slate-200/90 shadow-2xl">
-            <h4 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
               <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               <span>Chỉ số thị trường tuần này</span>
             </h4>
@@ -2064,12 +2067,12 @@ export default function HomePage() {
 
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
 
-          {/* Header chuẩn Hình 1 */}
+          {/* Header chuẩn PropTech Platform chuyên nghiệp, giảm visual weight không phô trương */}
           <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
-            <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest text-orange-400 uppercase mb-2">
+            <span className="inline-block text-xs font-semibold tracking-widest text-orange-400/90 uppercase mb-2">
               ⭐ ĐÁNH GIÁ TỪ NGƯỜI DÙNG
             </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-bold text-white tracking-tight leading-snug">
               Khách hàng nói gì về HaNoi Realty?
             </h2>
           </div>
@@ -2078,51 +2081,51 @@ export default function HomePage() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-xl mx-auto mb-10 sm:mb-12 shadow-2xl border border-white/20 flex flex-col sm:flex-row items-center justify-between gap-6 text-[#0a1128]">
             <div className="text-center sm:text-left shrink-0">
               <div className="flex items-baseline justify-center sm:justify-start gap-1">
-                <span className="text-5xl font-black text-[#0a1128] tracking-tight">4.8</span>
-                <span className="text-lg text-slate-400 font-bold">/ 5.0</span>
+                <span className="text-4xl sm:text-5xl font-black text-[#0a1128] tracking-tight">4.8</span>
+                <span className="text-base sm:text-lg text-slate-400 font-bold">/ 5.0</span>
               </div>
               <div className="flex text-amber-400 text-lg my-1.5 justify-center sm:justify-start tracking-wider">
                 ★★★★★
               </div>
-              <p className="text-xs text-slate-400 font-normal">Dựa trên 1,247 đánh giá đã kiểm thực</p>
+              <p className="text-xs sm:text-[13px] text-slate-400 font-normal">Dựa trên 1,247 đánh giá đã kiểm thực</p>
             </div>
 
-            {/* Bars */}
-            <div className="space-y-1.5 w-full sm:w-64 text-xs font-semibold text-slate-600">
+            {/* Bars (Chuẩn metadata 12-14px) */}
+            <div className="space-y-1.5 w-full sm:w-64 text-xs font-medium text-slate-600">
               <div className="flex items-center gap-2">
-                <span className="w-5 text-slate-500 font-medium">5★</span>
+                <span className="w-5 text-slate-400 font-normal">5★</span>
                 <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-amber-400 rounded-full w-[82%]" />
                 </div>
-                <span className="w-8 text-right font-bold text-slate-700">82%</span>
+                <span className="w-8 text-right font-semibold text-slate-700">82%</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-5 text-slate-500 font-medium">4★</span>
+                <span className="w-5 text-slate-400 font-normal">4★</span>
                 <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-amber-400 rounded-full w-[12%]" />
                 </div>
-                <span className="w-8 text-right font-bold text-slate-700">12%</span>
+                <span className="w-8 text-right font-semibold text-slate-700">12%</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-5 text-slate-500 font-medium">3★</span>
+                <span className="w-5 text-slate-400 font-normal">3★</span>
                 <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-amber-400 rounded-full w-[4%]" />
                 </div>
-                <span className="w-8 text-right font-bold text-slate-700">4%</span>
+                <span className="w-8 text-right font-semibold text-slate-700">4%</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-5 text-slate-500 font-medium">2★</span>
+                <span className="w-5 text-slate-400 font-normal">2★</span>
                 <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-amber-400 rounded-full w-[1%]" />
                 </div>
-                <span className="w-8 text-right font-bold text-slate-700">1%</span>
+                <span className="w-8 text-right font-semibold text-slate-700">1%</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-5 text-slate-500 font-medium">1★</span>
+                <span className="w-5 text-slate-400 font-normal">1★</span>
                 <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-amber-400 rounded-full w-[1%]" />
                 </div>
-                <span className="w-8 text-right font-bold text-slate-700">1%</span>
+                <span className="w-8 text-right font-semibold text-slate-700">1%</span>
               </div>
             </div>
           </div>
@@ -2153,13 +2156,13 @@ export default function HomePage() {
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full flex flex-col items-center text-center"
               >
-                {/* Big Bold White Quote with Smart Quotes */}
-                <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl font-bold text-white leading-snug sm:leading-tight tracking-tight max-w-4xl mx-auto px-2">
+                {/* Elegant White Quote: Giảm visual weight thanh lịch, trang nhã */}
+                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-[24px] font-normal text-slate-100 leading-relaxed max-w-3xl mx-auto px-2">
                   “{reviews[activeReviewIdx].content}”
                 </h3>
 
                 {/* Author Info matching Image 1: [K] Katrina · Chief of Staff */}
-                <div className="flex items-center justify-center gap-2.5 mt-8 sm:mt-10">
+                <div className="flex items-center justify-center gap-2.5 mt-6 sm:mt-8">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-md shadow-orange-500/30 overflow-hidden">
                     {reviews[activeReviewIdx].avatar ? (
                       <img src={reviews[activeReviewIdx].avatar} alt={reviews[activeReviewIdx].name} className="w-full h-full object-cover" />
@@ -2168,9 +2171,9 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 text-xs sm:text-sm">
-                    <span className="text-white font-medium">{reviews[activeReviewIdx].name}</span>
+                    <span className="text-white font-semibold">{reviews[activeReviewIdx].name}</span>
                     <span className="text-slate-400">·</span>
-                    <span className="text-slate-400">{reviews[activeReviewIdx].role}</span>
+                    <span className="text-slate-300">{reviews[activeReviewIdx].role}</span>
                   </div>
                 </div>
               </motion.div>
