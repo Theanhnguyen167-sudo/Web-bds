@@ -114,9 +114,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,backdrop-filter,border-color,box-shadow] duration-200 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,backdrop-filter,border-color,box-shadow,color] duration-200 ease-in-out ${
         isScrolled
-          ? 'bg-[#0a1128]/95 supports-[backdrop-filter]:bg-[#0a1128]/80 backdrop-blur-[14px] shadow-md shadow-black/20 border-b border-white/[0.08] text-white'
+          ? 'bg-white/90 supports-[backdrop-filter]:bg-white/75 backdrop-blur-[14px] shadow-sm shadow-slate-900/[0.04] border-b border-slate-200/70 text-slate-800'
           : 'bg-[#0a1128] shadow-xs border-b border-slate-800/80 text-white'
       }`}
     >
@@ -132,10 +132,14 @@ export const Navbar: React.FC = () => {
               <Home className="h-4.5 w-4.5" />
             </motion.div>
             <div className="flex flex-col">
-              <span className="font-extrabold tracking-tight flex items-center gap-1 text-white text-base lg:text-[17px] leading-tight transition-colors group-hover:text-white whitespace-nowrap">
+              <span className={`font-extrabold tracking-tight flex items-center gap-1 text-base lg:text-[17px] leading-tight transition-colors whitespace-nowrap ${
+                isScrolled ? 'text-slate-900 group-hover:text-slate-900' : 'text-white group-hover:text-white'
+              }`}>
                 HaNoi <span className="text-accent font-black">Realty</span>
               </span>
-              <span className="text-[10px] font-medium uppercase tracking-widest text-slate-300 -mt-0.5 leading-none whitespace-nowrap">
+              <span className={`text-[10px] font-medium uppercase tracking-widest -mt-0.5 leading-none whitespace-nowrap transition-colors ${
+                isScrolled ? 'text-slate-500' : 'text-slate-300'
+              }`}>
                 PropTech & Quy Hoạch
               </span>
             </div>
@@ -155,8 +159,12 @@ export const Navbar: React.FC = () => {
                 href={link.href}
                 className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2 xl:px-2.5 py-1.5 ${
                   isActive
-                    ? 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                    ? isScrolled
+                      ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
+                      : 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
+                    : isScrolled
+                      ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <span className="whitespace-nowrap">{link.name}</span>
@@ -170,7 +178,11 @@ export const Navbar: React.FC = () => {
           {/* Quick Search Shortcut */}
           <Link
             href="/search"
-            className="h-9 w-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200 border border-transparent hover:border-white/10 shrink-0"
+            className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 border shrink-0 ${
+              isScrolled
+                ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border-transparent hover:border-slate-200'
+                : 'text-slate-300 hover:text-white hover:bg-white/10 border-transparent hover:border-white/10'
+            }`}
             title="Tìm kiếm BĐS"
           >
             <Search className="h-4 w-4 shrink-0" />
@@ -180,10 +192,10 @@ export const Navbar: React.FC = () => {
           {user?.role === 'admin' && (
             <Link
               href="/admin"
-              className="h-9 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white transition-all shadow-xs whitespace-nowrap shrink-0"
+              className="h-9 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 text-xs font-bold text-orange-600 hover:bg-orange-500 hover:text-white transition-all shadow-xs whitespace-nowrap shrink-0"
               title="Chuyển sang trang Quản trị Admin"
             >
-              <ShieldCheck className="h-4 w-4 text-orange-400 shrink-0" />
+              <ShieldCheck className="h-4 w-4 text-orange-600 shrink-0" />
               <span className="hidden xl:inline">Vào </span>
               <span>Admin Portal</span>
             </Link>
@@ -208,7 +220,11 @@ export const Navbar: React.FC = () => {
                 setNotifOpen(false);
                 setUserDropdownOpen(!userDropdownOpen);
               }}
-              className="h-9 relative flex items-center gap-2 rounded-xl bg-white/5 hover:bg-white/10 px-2.5 text-white transition-all border border-white/10 hover:border-white/20 cursor-pointer shrink-0 whitespace-nowrap"
+              className={`h-9 relative flex items-center gap-2 rounded-xl px-2.5 transition-all border cursor-pointer shrink-0 whitespace-nowrap ${
+                isScrolled
+                  ? 'bg-slate-100/80 hover:bg-slate-200/70 text-slate-800 border-slate-200/80 hover:border-slate-300'
+                  : 'bg-white/5 hover:bg-white/10 text-white border-white/10 hover:border-white/20'
+              }`}
             >
               <div className="relative shrink-0">
                 {user ? (
@@ -223,15 +239,19 @@ export const Navbar: React.FC = () => {
                   </div>
                 )}
                 {unreadNotifCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-accent px-0.5 text-[8px] font-extrabold text-white shadow-md ring-2 ring-[#0a1128]">
+                  <span className={`absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-accent px-0.5 text-[8px] font-extrabold text-white shadow-md ring-2 ${
+                    isScrolled ? 'ring-white' : 'ring-[#0a1128]'
+                  }`}>
                     {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
                   </span>
                 )}
               </div>
-              <span className="text-xs font-semibold max-w-[110px] xl:max-w-[140px] truncate text-slate-200">
+              <span className={`text-xs font-semibold max-w-[110px] xl:max-w-[140px] truncate ${
+                isScrolled ? 'text-slate-800' : 'text-slate-200'
+              }`}>
                 {user ? user.name : 'Tài khoản'}
               </span>
-              <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <ChevronDown className={`h-3.5 w-3.5 shrink-0 ${isScrolled ? 'text-slate-500' : 'text-slate-400'}`} />
             </button>
 
             {/* User Account Dropdown Menu */}
@@ -369,7 +389,11 @@ export const Navbar: React.FC = () => {
         <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
           <Link
             href="/search"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+              isScrolled
+                ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                : 'text-slate-300 hover:text-white hover:bg-white/10'
+            }`}
             title="Tìm kiếm BĐS"
           >
             <Search className="h-4 w-4" />
@@ -386,13 +410,17 @@ export const Navbar: React.FC = () => {
             title="Thông báo tài khoản"
             className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all cursor-pointer shrink-0 ${
               notifOpen
-                ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40'
-                : 'text-slate-300 hover:text-white hover:bg-white/10'
+                ? 'bg-orange-500/20 text-orange-500 border border-orange-500/40'
+                : isScrolled
+                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
           >
             <Bell className="h-4.5 w-4.5" />
             {unreadNotifCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-extrabold text-white shadow-md ring-2 ring-[#0a1128]">
+              <span className={`absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-extrabold text-white shadow-md ring-2 ${
+                isScrolled ? 'ring-white' : 'ring-[#0a1128]'
+              }`}>
                 {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
               </span>
             )}
@@ -413,12 +441,16 @@ export const Navbar: React.FC = () => {
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
             title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
-            className="relative flex items-center justify-center p-1 text-white hover:text-orange-400 active:scale-90 transition-all cursor-pointer shrink-0"
+            className={`relative flex items-center justify-center p-1 active:scale-90 transition-all cursor-pointer shrink-0 ${
+              isScrolled
+                ? 'text-slate-800 hover:text-orange-500'
+                : 'text-white hover:text-orange-400'
+            }`}
           >
             {mobileMenuOpen ? (
-              <X className="h-7 w-7 stroke-[2.5] text-orange-400" />
+              <X className="h-7 w-7 stroke-[2.5] text-orange-500" />
             ) : (
-              <Menu className="h-7 w-7 stroke-[2.5] text-white hover:text-orange-400 transition-colors" />
+              <Menu className="h-7 w-7 stroke-[2.5]" />
             )}
           </button>
         </div>
@@ -442,7 +474,11 @@ export const Navbar: React.FC = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.22, ease: 'easeInOut' }}
-            className="lg:hidden border-t border-white/10 bg-[#0a1128]/98 backdrop-blur-xl px-4 py-4 text-white shadow-2xl overflow-hidden"
+            className={`lg:hidden border-t px-4 py-4 shadow-2xl overflow-hidden ${
+              isScrolled
+                ? 'border-slate-200/80 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-xl text-slate-800'
+                : 'border-white/10 bg-[#0a1128]/98 backdrop-blur-xl text-white'
+            }`}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {navLinks.map((link) => {
@@ -457,75 +493,101 @@ export const Navbar: React.FC = () => {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
                       isActive
-                        ? 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
-                        : 'hover:bg-white/10 text-slate-200'
+                        ? isScrolled
+                          ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
+                          : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
+                        : isScrolled
+                          ? 'hover:bg-slate-100 text-slate-700'
+                          : 'hover:bg-white/10 text-slate-200'
                     }`}
                   >
                     <span>{link.name}</span>
-                    {isActive && <span className="h-2 w-2 rounded-full bg-orange-500" />}
+                    {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
                   </Link>
                 );
               })}
             </div>
 
-              <div className="border-t border-slate-700 pt-3 mt-3 flex flex-col gap-2">
-                {user ? (
-                  <>
-                    {user.role === 'admin' && (
-                      <Link
-                        href="/admin"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-lg bg-orange-500/20 border border-orange-500/40 text-orange-400 px-3 py-2 text-xs font-bold"
-                      >
-                        <ShieldCheck className="h-4 w-4" />
-                        <span>🛡️ Vào trang Quản trị (Admin)</span>
-                      </Link>
-                    )}
+            <div className={`border-t pt-3 mt-3 flex flex-col gap-2 ${
+              isScrolled ? 'border-slate-200' : 'border-slate-700'
+            }`}>
+              {user ? (
+                <>
+                  {user.role === 'admin' && (
                     <Link
-                      href="/dashboard"
+                      href="/admin"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-2 rounded-lg bg-primary-light/60 px-3 py-2 text-xs font-semibold"
+                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${
+                        isScrolled
+                          ? 'bg-orange-50 border-orange-200 text-orange-600'
+                          : 'bg-orange-500/20 border-orange-500/40 text-orange-400'
+                      }`}
                     >
-                      <LayoutDashboard className="h-4 w-4 text-accent" />
-                      <span>Dashboard ({user.name})</span>
+                      <ShieldCheck className="h-4 w-4" />
+                      <span>🛡️ Vào trang Quản trị (Admin)</span>
                     </Link>
-                    <Link
-                      href="/dashboard?tab=saved"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center justify-between rounded-lg bg-primary-light/60 px-3 py-2 text-xs font-semibold"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Heart className="h-4 w-4 text-red-400 fill-red-400" />
-                        <span>Tin đã lưu</span>
-                      </div>
-                      {savedListingIds.length > 0 && (
-                        <span className="rounded-full bg-red-500/20 text-red-300 px-2 py-0.5 text-[10px] font-extrabold">
-                          {savedListingIds.length}
-                        </span>
-                      )}
-                    </Link>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setMobileMenuOpen(false);
-                      }}
-                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-danger"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Đăng xuất</span>
-                    </button>
-                  </>
-                ) : (
+                  )}
                   <Link
-                    href="/login"
+                    href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 rounded-lg bg-primary-light px-3 py-2 text-xs font-semibold"
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${
+                      isScrolled
+                        ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                        : 'bg-primary-light/60 hover:bg-primary-light text-white'
+                    }`}
                   >
-                    <User className="h-4 w-4" />
-                    <span>Đăng nhập / Đăng ký</span>
+                    <LayoutDashboard className="h-4 w-4 text-accent" />
+                    <span>Dashboard ({user.name})</span>
                   </Link>
-                )}
-              </div>
+                  <Link
+                    href="/dashboard?tab=saved"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold ${
+                      isScrolled
+                        ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                        : 'bg-primary-light/60 hover:bg-primary-light text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                      <span>Tin đã lưu</span>
+                    </div>
+                    {savedListingIds.length > 0 && (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                        isScrolled
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-red-500/20 text-red-300'
+                      }`}>
+                        {savedListingIds.length}
+                      </span>
+                    )}
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-danger cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Đăng xuất</span>
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${
+                    isScrolled
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                      : 'bg-primary-light hover:bg-primary-light/80 text-white'
+                  }`}
+                >
+                  <User className="h-4 w-4" />
+                  <span>Đăng nhập / Đăng ký</span>
+                </Link>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
