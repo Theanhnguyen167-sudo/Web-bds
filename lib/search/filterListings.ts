@@ -4,6 +4,7 @@ import { HANOI_METRO_STATIONS } from '@/lib/leaflet/hanoi-data';
 export interface SearchFilters {
   // Basic
   keyword: string;
+  categoryKeyword?: string;
   type: string; // 'all' | 'house' | 'apartment' | 'land' | 'villa' | 'commercial' | 'project'
   listingType: 'sale' | 'rent';
 
@@ -61,6 +62,7 @@ export interface SearchFilters {
 
 export const DEFAULT_SEARCH_FILTERS: SearchFilters = {
   keyword: '',
+  categoryKeyword: '',
   type: 'all',
   listingType: 'sale',
   district: '',
@@ -138,6 +140,16 @@ export function filterListings(
       if (nowTime > expiryTimestamp) {
         return false;
       }
+    }
+
+    // Category keyword constraint (e.g. 'mặt phố' or 'penthouse')
+    if (filters.categoryKeyword && filters.categoryKeyword.trim()) {
+      const catKw = filters.categoryKeyword.trim().toLowerCase();
+      const matchCat =
+        listing.title.toLowerCase().includes(catKw) ||
+        listing.address.toLowerCase().includes(catKw) ||
+        (listing.description && listing.description.toLowerCase().includes(catKw));
+      if (!matchCat) return false;
     }
 
     // 1. Keyword search (title, address, district, description)

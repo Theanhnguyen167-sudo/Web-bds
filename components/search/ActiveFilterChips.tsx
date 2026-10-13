@@ -11,6 +11,8 @@ interface ActiveFilterChipsProps {
   onRemove: (key: keyof SearchFilters, value?: any) => void;
   onReset: () => void;
   count: number;
+  initialType?: string;
+  initialKeyword?: string;
 }
 
 export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
@@ -18,18 +20,20 @@ export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
   onRemove,
   onReset,
   count,
+  initialType,
+  initialKeyword,
 }) => {
   if (count === 0) return null;
 
   const chips: { key: keyof SearchFilters; label: string; value?: any }[] = [];
 
-  // Keyword
-  if (filters.keyword.trim()) {
+  // Keyword (chỉ hiển thị nếu khác keyword ban đầu của category)
+  if (filters.keyword.trim() && filters.keyword !== (initialKeyword || '')) {
     chips.push({ key: 'keyword', label: `🔍 "${filters.keyword}"` });
   }
 
-  // Type
-  if (filters.type !== 'all') {
+  // Type (chỉ hiển thị nếu khác type ban đầu của category)
+  if (filters.type !== 'all' && filters.type !== (initialType || 'all')) {
     const typeLabels: Record<string, string> = {
       house: '🏠 Nhà phố',
       apartment: '🏢 Chung cư',

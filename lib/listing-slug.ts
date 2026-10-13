@@ -5,7 +5,7 @@ import { ListingItem, mockListings } from '@/lib/mock-data';
  */
 export const PROPERTY_TYPE_SLUG_MAP: Record<string, string> = {
   house: 'nha-pho',
-  apartment: 'can-ho-chung-cu',
+  apartment: 'chung-cu',
   land: 'dat-nen',
   villa: 'biet-thu',
   commercial: 'thuong-mai',
@@ -24,6 +24,8 @@ export const SLUG_TO_PROPERTY_TYPE_MAP: Record<string, string> = {
   'biet-thu': 'villa',
   'thuong-mai': 'commercial',
   'du-an': 'project',
+  'nha-mat-pho': 'house',
+  'penthouse': 'apartment',
 };
 
 /**
@@ -47,13 +49,6 @@ export const CATEGORY_MAP: Record<string, CategoryRouteConfig> = {
     description: 'Mua bán nhà phố, nhà riêng chính chủ, vị trí đẹp tại Hà Nội',
   },
   'chung-cu': {
-    slug: 'chung-cu',
-    name: 'Mua bán Chung cư',
-    type: 'apartment',
-    purpose: 'sale',
-    description: 'Mua bán căn hộ chung cư cao cấp, dự án mới nhất tại Hà Nội',
-  },
-  'can-ho-chung-cu': {
     slug: 'chung-cu',
     name: 'Mua bán Chung cư',
     type: 'apartment',
@@ -99,6 +94,30 @@ export const RENT_CATEGORY_CONFIG: CategoryRouteConfig = {
   purpose: 'rent',
   description: 'Cho thuê nhà đất, căn hộ chung cư, văn phòng tại Hà Nội',
 };
+
+/**
+ * Lấy URL chuẩn SEO cho từng category bất động sản
+ */
+export function getCategoryUrl(categorySlug: string): string {
+  if (categorySlug === 'cho-thue') {
+    return '/cho-thue';
+  }
+  if (CATEGORY_MAP[categorySlug]) {
+    return `/mua-ban/${categorySlug}`;
+  }
+  return '/search';
+}
+
+/**
+ * Kiểm tra và chuẩn hóa slug category
+ */
+export function normalizeCategorySlug(slug: string): string | null {
+  if (slug === 'cho-thue') return 'cho-thue';
+  if (CATEGORY_MAP[slug]) return slug;
+  if (slug === 'can-ho-chung-cu') return 'chung-cu';
+  if (slug === 'nha-rieng') return 'nha-pho';
+  return null;
+}
 
 /**
  * Xóa dấu tiếng Việt chuẩn W3C / Unicode Normalization

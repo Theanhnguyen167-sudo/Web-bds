@@ -35,6 +35,7 @@ export interface SearchContentProps {
   initialType?: string;
   initialPurpose?: 'sale' | 'rent';
   initialKeyword?: string;
+  categoryKeyword?: string;
   categoryTitle?: string;
   enableCanonicalMeta?: boolean;
 }
@@ -43,6 +44,7 @@ export function SearchContent({
   initialType,
   initialPurpose,
   initialKeyword = '',
+  categoryKeyword,
   categoryTitle,
   enableCanonicalMeta = false,
 }: SearchContentProps) {
@@ -55,6 +57,7 @@ export function SearchContent({
   const [filters, setFilters] = useState<SearchFilters>(() => {
     return {
       keyword: searchParams.get('q') || searchParams.get('search') || initialKeyword,
+      categoryKeyword: categoryKeyword || '',
       type: searchParams.get('type') || initialType || 'all',
       listingType: (searchParams.get('purpose') as any) || initialPurpose || 'sale',
       district: searchParams.get('district') || '',
@@ -171,10 +174,11 @@ export function SearchContent({
     setFilters({
       ...DEFAULT_SEARCH_FILTERS,
       type: initialType || 'all',
+      categoryKeyword: categoryKeyword || '',
       listingType: initialPurpose || 'sale',
       keyword: initialKeyword || '',
     });
-  }, [initialType, initialPurpose, initialKeyword]);
+  }, [initialType, initialPurpose, initialKeyword, categoryKeyword]);
 
   // ── REMOVE INDIVIDUAL FILTER CHIP ──
   const handleRemoveChip = useCallback((key: keyof SearchFilters, value?: any) => {
@@ -187,10 +191,18 @@ export function SearchContent({
       }
       return {
         ...prev,
-        [key]: DEFAULT_SEARCH_FILTERS[key],
+        [key]: key === 'type'
+          ? (initialType || 'all')
+          : key === 'keyword'
+          ? (initialKeyword || '')
+          : key === 'listingType'
+          ? (initialPurpose || 'sale')
+          : key === 'categoryKeyword'
+          ? (categoryKeyword || '')
+          : DEFAULT_SEARCH_FILTERS[key],
       };
     });
-  }, []);
+  }, [initialType, initialKeyword, initialPurpose, categoryKeyword]);
 
   // ── UPDATE PARTIAL FILTER STATE ──
   const handleFilterUpdate = useCallback(
@@ -293,6 +305,8 @@ export function SearchContent({
           onRemove={handleRemoveChip}
           onReset={handleResetFilters}
           count={activeFilterCount}
+          initialType={initialType}
+          initialKeyword={initialKeyword}
         />
       </div>
 
