@@ -163,6 +163,7 @@ export async function reverseGeocode(
 }
 
 export interface SearchResultItem {
+  id: string;
   lat: number;
   lng: number;
   displayName: string;
@@ -185,9 +186,13 @@ export interface DetailedAddressSearchResult {
   suggestedChips: SearchResultItem[];
 }
 
-function mapStreetToResultItem(item: HanoiStreetInfo): SearchResultItem {
+function mapStreetToResultItem(item: HanoiStreetInfo, index: number = 0): SearchResultItem {
   const distTitle = formatDistrictName(item.district);
+  const cleanName = item.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  const generatedId = `loc-${cleanName}-${Math.round(item.lat * 1000)}-${Math.round(item.lng * 1000)}-${index}`;
+
   return {
+    id: item.id || generatedId,
     lat: item.lat,
     lng: item.lng,
     displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${distTitle}, Hà Nội`,
@@ -210,10 +215,10 @@ function mapStreetToResultItem(item: HanoiStreetInfo): SearchResultItem {
 export function searchAddressWithSuggestions(query: string): DetailedAddressSearchResult {
   const smartRes = searchHanoiLocationsSmart(query);
   return {
-    directMatches: smartRes.directMatches.map(mapStreetToResultItem),
-    similarMatches: smartRes.similarMatches.map(mapStreetToResultItem),
+    directMatches: smartRes.directMatches.map((item, idx) => mapStreetToResultItem(item, idx)),
+    similarMatches: smartRes.similarMatches.map((item, idx) => mapStreetToResultItem(item, idx + 100)),
     detectedDistrict: smartRes.detectedDistrict,
-    suggestedChips: smartRes.suggestedChips.map(mapStreetToResultItem),
+    suggestedChips: smartRes.suggestedChips.map((item, idx) => mapStreetToResultItem(item, idx + 200)),
   };
 }
 
@@ -247,6 +252,7 @@ export async function searchAddress(query: string): Promise<SearchResultItem[]> 
     const data = await res.json();
 
     const onlineResults: SearchResultItem[] = data.map((item: any) => ({
+      id: `osm-${item.place_id || Math.random().toString(36).slice(2, 8)}`,
       lat: parseFloat(item.lat),
       lng: parseFloat(item.lon),
       displayName: item.display_name,

@@ -1,4 +1,5 @@
 export interface HanoiStreetInfo {
+  id?: string;
   name: string;
   district: string;
   ward?: string;

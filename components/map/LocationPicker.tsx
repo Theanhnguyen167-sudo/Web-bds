@@ -423,7 +423,7 @@ export default function LocationPicker({
                   <div className="divide-y divide-gray-50 dark:divide-gray-700/40">
                     {directMatches.map((result, idx) => (
                       <button
-                        key={`direct-${idx}`}
+                        key={result.id || `direct-${idx}`}
                         type="button"
                         onClick={() => handleSelectResult(result)}
                         className="w-full flex items-start gap-3 px-4 py-2.5 text-left 
@@ -470,14 +470,14 @@ export default function LocationPicker({
                   <div className="divide-y divide-amber-100/50 dark:divide-amber-900/20">
                     {similarMatches.map((result, idx) => (
                       <button
-                        key={`similar-${idx}`}
+                        key={result.id || `similar-${idx}`}
                         type="button"
                         onClick={() => handleSelectResult(result)}
                         className="w-full flex items-start gap-3 px-4 py-2.5 text-left 
                                    hover:bg-amber-100/60 dark:hover:bg-amber-950/30 
                                    transition-colors group bg-amber-50/30 dark:bg-amber-950/10"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-amber-200/70 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                        <div className="w-7 h-7 rounded-lg bg-amber-200/70 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
                           <Compass size={13} />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -511,7 +511,7 @@ export default function LocationPicker({
             </span>
             {suggestedChips.map((chip, idx) => (
               <button
-                key={`chip-${idx}`}
+                key={chip.id || `chip-${idx}`}
                 type="button"
                 onClick={() => handleSelectResult(chip)}
                 className={`shrink-0 text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border flex items-center gap-1 shadow-2xs ${
