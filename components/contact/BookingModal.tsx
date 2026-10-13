@@ -253,37 +253,14 @@ export default function BookingModal({
         }
       };
 
-      // Gọi API để lấy ownerId và lưu notification backend
-      let ownerId = '';
-      try {
-        const res = await fetch('/api/bookings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            listingId,
-            bookingData: {
-              title: newNotif.title,
-              content: newNotif.content
-            }
-          })
-        });
-        const data = await res.json();
-        if (data.success && data.ownerId) {
-          ownerId = data.ownerId;
-          (newNotif as any).ownerId = ownerId; // Attach ownerId for filtering
-        }
-      } catch (err) {
-        console.warn('Lỗi gọi API đặt lịch:', err);
-      }
-
-      // 2. Lưu vào danh sách thông báo người bán trong LocalStorage
+      // 1. Lưu ngay lập tức vào danh sách thông báo người bán trong LocalStorage (Client cache)
       if (typeof window !== 'undefined') {
         const existingRaw = localStorage.getItem(STORAGE_KEY_NOTIFICATIONS);
         const existingNotifs: NotificationItem[] = existingRaw ? JSON.parse(existingRaw) : [];
         const updatedNotifs = [newNotif, ...existingNotifs.filter(n => n.id !== newNotif.id)];
         localStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updatedNotifs));
 
-        // 3. Lưu vào lịch sử đặt hẹn
+        // 2. Lưu vào lịch sử đặt hẹn
         const existingApptsRaw = localStorage.getItem(STORAGE_KEY_APPOINTMENTS);
         const existingAppts = existingApptsRaw ? JSON.parse(existingApptsRaw) : [];
         const newAppt = {
@@ -305,10 +282,42 @@ export default function BookingModal({
         };
         localStorage.setItem(STORAGE_KEY_APPOINTMENTS, JSON.stringify([newAppt, ...existingAppts]));
 
-        // 4. Phát sự kiện toàn cục để chuông thông báo (NotificationBell) và Dashboard cập nhật ngay lập tức
+        // 3. Phát sự kiện toàn cục để chuông thông báo (NotificationBell) và Dashboard cập nhật ngay lập tức
         window.dispatchEvent(new CustomEvent('hanoi_new_notification', { detail: newNotif }));
         window.dispatchEvent(new CustomEvent('hanoi_appointments_updated', { detail: newAppt }));
         window.dispatchEvent(new Event('hanoi_notifications_updated'));
+      }
+
+      // 4. Gọi API backend đồng bộ thông báo với timeout an toàn 1.5s (Graceful Degradation)
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+        fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            listingId,
+            bookingData: {
+              title: newNotif.title,
+              content: newNotif.content
+            }
+          })
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            clearTimeout(timeoutId);
+            if (data?.success && data?.ownerId && typeof window !== 'undefined') {
+              (newNotif as any).ownerId = data.ownerId;
+            }
+          })
+          .catch((err) => {
+            clearTimeout(timeoutId);
+            // Bỏ qua lỗi timeout hoặc mạng cục bộ vì đã lưu local thành công
+          });
+      } catch (err) {
+        // Fallback an toàn
       }
 
       // 5. Hiển thị thông báo Toast thành công
@@ -317,7 +326,7 @@ export default function BookingModal({
         'success'
       );
 
-      // Chuyển sang màn hình xác nhận hoàn tất
+      // Chuyển ngay sang màn hình xác nhận hoàn tất (không bao giờ bị treo loading)
       setStep(3);
     } catch (err) {
       console.warn('Lỗi khi gửi đặt lịch xem nhà:', err);

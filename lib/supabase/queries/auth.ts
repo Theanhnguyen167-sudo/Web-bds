@@ -1,28 +1,45 @@
 import { createClient } from '@/lib/supabase/client';
 
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
-  const supabase = createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: fullName } }
-  });
-
-  if (data.user) {
-    await (supabase.from('users') as any).insert({
-      id: data.user.id,
+  try {
+    const supabase = createClient();
+    const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
+      setTimeout(() => reject(new Error('Supabase Auth timeout')), 2000)
+    );
+    const authPromise = supabase.auth.signUp({
       email,
-      full_name: fullName,
-      role: 'user'
+      password,
+      options: { data: { full_name: fullName } }
     });
-  }
 
-  return { data, error };
+    const { data, error } = (await Promise.race([authPromise, timeoutPromise])) as any;
+
+    if (data?.user) {
+      await (supabase.from('users') as any).insert({
+        id: data.user.id,
+        email,
+        full_name: fullName,
+        role: 'user'
+      }).catch(() => {});
+    }
+
+    return { data, error };
+  } catch (err: any) {
+    return { data: null, error: err };
+  }
 }
 
 export async function signInWithEmail(email: string, password: string) {
-  const supabase = createClient();
-  return supabase.auth.signInWithPassword({ email, password });
+  try {
+    const supabase = createClient();
+    const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
+      setTimeout(() => reject(new Error('Supabase Auth timeout')), 2000)
+    );
+    const authPromise = supabase.auth.signInWithPassword({ email, password });
+    return (await Promise.race([authPromise, timeoutPromise])) as any;
+  } catch (err: any) {
+    return { data: null, error: err };
+  }
 }
 
 export async function signInWithGoogle() {

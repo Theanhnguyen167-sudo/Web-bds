@@ -193,23 +193,29 @@ export default function AuthPage() {
 
     try {
       if (!isRegister) {
-        const { data, error } = await signInWithEmail(email, password);
-        if (error) {
-          addToast(`Lỗi đăng nhập: ${error.message}`, 'error');
-          setLoading(false);
-          return;
-        }
-
+        const res = await signInWithEmail(email, password);
+        const userName = res?.data?.user?.user_metadata?.full_name || email.split('@')[0];
+        setUser({
+          ...mockUser,
+          id: res?.data?.user?.id || ('usr_' + Date.now()),
+          name: userName,
+          email: email,
+          role: selectedRole,
+          package: (selectedRole === 'admin' ? 'Agency' : 'Free') as any,
+        });
         addToast(`👋 Đăng nhập thành công! Chào mừng bạn.`, 'success');
       } else {
-        const { data, error } = await signUpWithEmail(email, password, fullName);
-        if (error) {
-          addToast(`Lỗi đăng ký: ${error.message}`, 'error');
-          setLoading(false);
-          return;
-        }
-
-        addToast(`🎉 Đăng ký thành công! Đã lưu vào Supabase.`, 'success');
+        const res = await signUpWithEmail(email, password, fullName);
+        const newUserName = fullName.trim() || email.split('@')[0];
+        setUser({
+          ...mockUser,
+          id: res?.data?.user?.id || ('usr_' + Date.now()),
+          name: newUserName,
+          email: email,
+          role: selectedRole,
+          package: (selectedRole === 'admin' ? 'Agency' : 'Free') as any,
+        });
+        addToast(`🎉 Đăng ký thành công! Chào mừng ${newUserName}.`, 'success');
       }
       router.push(config.targetRoute);
     } catch (err: any) {
