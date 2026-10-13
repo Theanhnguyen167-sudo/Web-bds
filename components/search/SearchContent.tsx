@@ -36,6 +36,7 @@ export interface SearchContentProps {
   initialPurpose?: 'sale' | 'rent';
   initialKeyword?: string;
   categoryKeyword?: string;
+  initialDistrict?: string;
   categoryTitle?: string;
   enableCanonicalMeta?: boolean;
 }
@@ -45,6 +46,7 @@ export function SearchContent({
   initialPurpose,
   initialKeyword = '',
   categoryKeyword,
+  initialDistrict,
   categoryTitle,
   enableCanonicalMeta = false,
 }: SearchContentProps) {
@@ -60,7 +62,7 @@ export function SearchContent({
       categoryKeyword: categoryKeyword || '',
       type: searchParams.get('type') || initialType || 'all',
       listingType: (searchParams.get('purpose') as any) || initialPurpose || 'sale',
-      district: searchParams.get('district') || '',
+      district: searchParams.get('district') || initialDistrict || '',
       ward: searchParams.get('ward') || '',
       street: searchParams.get('street') || '',
       minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : null,
@@ -121,7 +123,9 @@ export function SearchContent({
       params.set('purpose', filters.listingType);
     }
 
-    if (filters.district) params.set('district', filters.district);
+    if (filters.district && filters.district !== (initialDistrict || '')) {
+      params.set('district', filters.district);
+    }
     if (filters.ward) params.set('ward', filters.ward);
     if (filters.street) params.set('street', filters.street);
     if (filters.minPrice !== null) params.set('minPrice', filters.minPrice.toString());
@@ -135,7 +139,7 @@ export function SearchContent({
 
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [filters, viewMode, pathname, router, initialKeyword, initialType, initialPurpose]);
+  }, [filters, viewMode, pathname, router, initialKeyword, initialType, initialPurpose, initialDistrict]);
 
   useEffect(() => {
     const timer = setTimeout(updateURL, 500);
@@ -154,7 +158,7 @@ export function SearchContent({
     if (filters.keyword.trim() && filters.keyword !== initialKeyword) count++;
     if (filters.type !== 'all' && filters.type !== initialType) count++;
     if (filters.listingType !== (initialPurpose || 'sale')) count++;
-    if (filters.district) count++;
+    if (filters.district && filters.district !== (initialDistrict || '')) count++;
     if (filters.ward) count++;
     if (filters.street) count++;
     if (filters.minPrice !== null || filters.maxPrice !== null) count++;
@@ -167,7 +171,7 @@ export function SearchContent({
     if (filters.featuredOnly) count++;
     if (filters.nearMetro) count++;
     return count;
-  }, [filters, initialKeyword, initialType, initialPurpose]);
+  }, [filters, initialKeyword, initialType, initialPurpose, initialDistrict]);
 
   // ── RESET ALL FILTERS ──
   const handleResetFilters = useCallback(() => {
@@ -175,10 +179,11 @@ export function SearchContent({
       ...DEFAULT_SEARCH_FILTERS,
       type: initialType || 'all',
       categoryKeyword: categoryKeyword || '',
+      district: initialDistrict || '',
       listingType: initialPurpose || 'sale',
       keyword: initialKeyword || '',
     });
-  }, [initialType, initialPurpose, initialKeyword, categoryKeyword]);
+  }, [initialType, initialPurpose, initialKeyword, categoryKeyword, initialDistrict]);
 
   // ── REMOVE INDIVIDUAL FILTER CHIP ──
   const handleRemoveChip = useCallback((key: keyof SearchFilters, value?: any) => {
@@ -199,10 +204,12 @@ export function SearchContent({
           ? (initialPurpose || 'sale')
           : key === 'categoryKeyword'
           ? (categoryKeyword || '')
+          : key === 'district'
+          ? (initialDistrict || '')
           : DEFAULT_SEARCH_FILTERS[key],
       };
     });
-  }, [initialType, initialKeyword, initialPurpose, categoryKeyword]);
+  }, [initialType, initialKeyword, initialPurpose, categoryKeyword, initialDistrict]);
 
   // ── UPDATE PARTIAL FILTER STATE ──
   const handleFilterUpdate = useCallback(
@@ -307,6 +314,7 @@ export function SearchContent({
           count={activeFilterCount}
           initialType={initialType}
           initialKeyword={initialKeyword}
+          initialDistrict={initialDistrict}
         />
       </div>
 

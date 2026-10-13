@@ -1,4 +1,6 @@
 import { ListingItem, mockListings } from '@/lib/mock-data';
+import { HANOI_DISTRICTS_HUB_DATA } from '@/lib/data/hanoi-districts-hub';
+import { HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
 
 /**
  * Bảng ánh xạ loại bất động sản sang slug URL thân thiện với SEO
@@ -159,6 +161,110 @@ export function getDistrictSlug(district?: string): string {
   if (!district) return 'ha-noi';
   const cleanDistrict = district.replace(/^(Quận|Huyện|Thị xã)\s+/i, '').trim();
   return toSlug(cleanDistrict);
+}
+
+/**
+ * Lấy tên chuẩn có dấu của Quận/Huyện từ slug
+ * Ví dụ: 'dong-da' -> 'Đống Đa', 'cau-giay' -> 'Cầu Giấy'
+ */
+export function getDistrictNameFromSlug(slug: string): string | null {
+  if (!slug) return null;
+  const targetSlug = slug.toLowerCase().trim();
+
+  // 1. Tìm trong HANOI_DISTRICTS_HUB_DATA
+  if (HANOI_DISTRICTS_HUB_DATA[targetSlug]) {
+    return HANOI_DISTRICTS_HUB_DATA[targetSlug].shortName;
+  }
+
+  // 2. Tìm trong danh sách toạ độ các quận/huyện
+  for (const districtName of Object.keys(HANOI_DISTRICT_COORDINATES)) {
+    if (getDistrictSlug(districtName) === targetSlug) {
+      return districtName;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Lọc danh sách tin đăng thực tế thuộc category và district
+ * Chỉ lấy tin có status === 'active' và purpose phù hợp
+ */
+export function getActiveListingsForCategoryAndDistrict(
+  categorySlug: string,
+  districtSlug: string,
+  listingPool?: ListingItem[]
+): ListingItem[] {
+  const pool = listingPool || mockListings;
+  const category = CATEGORY_MAP[categorySlug];
+  if (!category) return [];
+
+  const targetDistrictSlug = districtSlug.toLowerCase().trim();
+
+  return pool.filter((item) => {
+    // 1. Chỉ lấy tin đang active (không lấy expired, rejected, draft, hidden)
+    if (item.status && item.status !== 'active') return false;
+
+    // 2. Kiểm tra type
+    if (category.type !== 'all' && item.type !== category.type) return false;
+
+    // 3. Kiểm tra purpose (sale vs rent)
+    const itemPurpose = item.purpose || 'sale';
+    if (itemPurpose !== category.purpose) return false;
+
+    // 4. Kiểm tra category keyword nếu có (VD: 'mặt phố', 'penthouse')
+    if (category.keyword) {
+      const kw = category.keyword.toLowerCase();
+      const matchKw =
+        (item.title && item.title.toLowerCase().includes(kw)) ||
+        (item.address && item.address.toLowerCase().includes(kw)) ||
+        (item.description && item.description.toLowerCase().includes(kw));
+      if (!matchKw) return false;
+    }
+
+    // 5. Kiểm tra khu vực (district)
+    const itemDistrictSlug = getDistrictSlug(item.district);
+    return itemDistrictSlug === targetDistrictSlug;
+  });
+}
+
+/**
+ * Lấy danh sách tất cả các cặp (propertyType, district) thực sự có dữ liệu listing
+ * Phục vụ generateStaticParams() chống sinh trang rỗng
+ */
+export function getValidCategoryDistrictPairs(
+  listingPool?: ListingItem[]
+): Array<{ propertyType: string; district: string }> {
+  const pool = (listingPool || mockListings).filter(
+    (l) => l.status === 'active' && (!l.purpose || l.purpose === 'sale')
+  );
+
+  const validPairs = new Set<string>();
+
+  for (const catSlug of Object.keys(CATEGORY_MAP)) {
+    const category = CATEGORY_MAP[catSlug];
+    for (const listing of pool) {
+      if (category.type !== 'all' && listing.type !== category.type) continue;
+      if (category.keyword) {
+        const kw = category.keyword.toLowerCase();
+        const match =
+          (listing.title && listing.title.toLowerCase().includes(kw)) ||
+          (listing.address && listing.address.toLowerCase().includes(kw)) ||
+          (listing.description && listing.description.toLowerCase().includes(kw));
+        if (!match) continue;
+      }
+
+      const dSlug = getDistrictSlug(listing.district);
+      if (dSlug) {
+        validPairs.add(`${catSlug}:${dSlug}`);
+      }
+    }
+  }
+
+  return Array.from(validPairs).map((pair) => {
+    const [propertyType, district] = pair.split(':');
+    return { propertyType, district };
+  });
 }
 
 /**

@@ -13,6 +13,7 @@ interface ActiveFilterChipsProps {
   count: number;
   initialType?: string;
   initialKeyword?: string;
+  initialDistrict?: string;
 }
 
 export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
@@ -22,6 +23,7 @@ export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
   count,
   initialType,
   initialKeyword,
+  initialDistrict,
 }) => {
   if (count === 0) return null;
 
@@ -45,8 +47,13 @@ export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
     chips.push({ key: 'type', label: typeLabels[filters.type] || filters.type });
   }
 
-  // District
-  if (filters.district && filters.district !== 'Tất cả quận' && filters.district !== 'all') {
+  // District (chỉ hiển thị nếu khác district ban đầu của category silo)
+  if (
+    filters.district &&
+    filters.district !== 'Tất cả quận' &&
+    filters.district !== 'all' &&
+    filters.district !== (initialDistrict || '')
+  ) {
     chips.push({ key: 'district', label: `📍 Quận ${filters.district}` });
   }
 
