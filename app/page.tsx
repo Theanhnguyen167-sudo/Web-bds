@@ -154,7 +154,7 @@ function CodiStatCounter({
           />
         ))}
       </div>
-      <span className="text-[11px] sm:text-xs md:text-sm text-slate-500 font-medium mt-1.5 sm:mt-2 text-center leading-snug">
+      <span className="text-[11px] sm:text-xs md:text-sm text-slate-500 font-normal mt-1.5 sm:mt-2 text-center leading-snug">
         {label}
       </span>
     </div>
@@ -380,7 +380,7 @@ function CategoryCarousel() {
             <span className="font-bold text-xs sm:text-[13px] lg:text-sm text-[#0a1128] group-hover/item:text-orange-500 transition-colors whitespace-nowrap leading-tight tracking-tight">
               {cat.name}
             </span>
-            <span className="text-[10px] sm:text-[11px] text-slate-500 mt-1.5 group-hover/item:text-orange-500 font-medium transition-colors whitespace-nowrap leading-none">
+            <span className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 group-hover/item:text-orange-500 font-normal transition-colors whitespace-nowrap leading-none">
               {cat.count}
             </span>
           </Link>
@@ -970,16 +970,16 @@ export default function HomePage() {
 
         {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Nền trung tính nhẹ #F8FAFC, liền mạch với Hero & Stats) */}
         <section id="categories" className="bg-slate-50/70 py-8 sm:py-10 lg:py-12 relative text-slate-900 flex flex-col justify-center">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
-                <span className="text-orange-600 font-extrabold text-xs tracking-wider uppercase block mb-1">
+                <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">
                   KHÁM PHÁ THEO NHU CẦU
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#0a1128] leading-tight tracking-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] leading-tight tracking-tight">
                   Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
                 </h2>
-                <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-500 font-normal mt-2 sm:mt-2.5 max-w-xl leading-relaxed">
                   Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
                 </p>
               </div>
@@ -1008,23 +1008,23 @@ export default function HomePage() {
       <section id="featured" className="bg-white py-10 sm:py-12 lg:py-14 overflow-hidden relative border-b border-slate-200/80">
 
         {/* ── PHẦN CHỮ Ở TRÊN (CĂN THEO GRID CHUẨN MAX-W-7XL + NÚT ĐIỀU HƯỚNG HEADER) ── */}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 sm:mb-6">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              {/* Top Badge — Primary Highlight */}
-              <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200/80 text-orange-600 font-extrabold text-[11px] px-3.5 py-1 rounded-full mb-2.5 shadow-xs">
-                <Flame className="h-3.5 w-3.5 fill-orange-500" />
+              {/* Eyebrow — Uppercase Tracking-Widest Accent */}
+              <div className="inline-flex items-center gap-1.5 text-orange-600 font-bold text-[11px] sm:text-xs tracking-widest uppercase mb-2">
+                <Flame className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />
                 <span>HOT · ĐƯỢC XEM NHIỀU NHẤT</span>
               </div>
 
-              {/* Heading — Primary Information */}
+              {/* Heading — Primary Information (Nổi bật nhất) */}
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] tracking-tight leading-tight">
                 Bất động sản, <span className="text-orange-500">nổi bật nhất tuần</span>
               </h2>
 
-              {/* Subtitle — Supporting Text */}
-              <p className="text-slate-600 text-xs sm:text-sm mt-1.5 max-w-2xl leading-relaxed">
-                Cho dù bạn đang tìm kiếm không gian để <strong>an cư dài lâu</strong>, <strong>nghỉ dưỡng tinh hoa</strong> hay <strong>đầu tư sinh lời vượt trội</strong>, luôn có một bất động sản hoàn hảo dành riêng cho bạn tại Hà Nội.
+              {/* Description — Supporting Text (Nhẹ hơn heading) */}
+              <p className="text-sm sm:text-base text-slate-500 font-normal mt-2 sm:mt-2.5 max-w-2xl leading-relaxed">
+                Cho dù bạn đang tìm kiếm không gian để <strong className="font-semibold text-slate-700">an cư dài lâu</strong>, <strong className="font-semibold text-slate-700">nghỉ dưỡng tinh hoa</strong> hay <strong className="font-semibold text-slate-700">đầu tư sinh lời vượt trội</strong>, luôn có một bất động sản hoàn hảo dành riêng cho bạn tại Hà Nội.
               </p>
             </div>
 
@@ -1254,14 +1254,14 @@ export default function HomePage() {
             <div className="lg:col-span-5 flex flex-col justify-between lg:h-[520px] xl:h-[540px]">
               {/* Section Header */}
               <div>
-                <span className="inline-flex items-center gap-1.5 text-orange-400 font-extrabold text-[11px] sm:text-xs tracking-wider uppercase bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1.5 text-orange-400 font-bold text-[11px] sm:text-xs tracking-widest uppercase mb-2">
                   <Compass className="w-3.5 h-3.5 text-orange-400" />
                   <span>KHÁM PHÁ THEO KHU VỰC</span>
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-white mt-2 leading-tight tracking-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
                   Tìm nhà trên bản đồ Hà Nội
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-300 font-normal mt-2 sm:mt-2.5 leading-relaxed">
                   Rê chuột vào quận để xem vị trí trực quan hoặc nhấp để lọc tin đăng chính xác
                 </p>
               </div>
@@ -1269,7 +1269,7 @@ export default function HomePage() {
               {/* District Table Panel - Structured 3-column scan */}
               <div className="rounded-2xl sm:rounded-[20px] border border-slate-200/90 bg-white shadow-2xl flex-1 my-3 sm:my-3.5 overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
                 {/* Column Headers for Easy Scanning */}
-                <div className="grid grid-cols-12 px-3 sm:px-4 py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-500 uppercase border-b border-slate-100 bg-slate-50/90 select-none">
+                <div className="grid grid-cols-12 px-3 sm:px-4 py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-semibold tracking-wider text-slate-400 uppercase border-b border-slate-100 bg-slate-50/90 select-none">
                   <span className="col-span-5 flex items-center gap-1.5">
                     Khu vực
                   </span>
