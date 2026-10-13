@@ -2375,7 +2375,7 @@ export default function HomePage() {
                 </Link>
 
                 <p className="text-xs sm:text-[13px] text-slate-400 leading-relaxed mt-4 max-w-[280px] sm:max-w-xs font-normal">
-                  Nền tảng BĐS thông minh nhất Hà Nội. Tiên phong ứng dụng dữ liệu quy hoạch và định giá AI.
+                  Nền tảng công nghệ bất động sản Hà Nội, cung cấp dữ liệu quy hoạch minh bạch và hỗ trợ giao dịch nhà đất tin cậy.
                 </p>
               </div>
 
@@ -2426,14 +2426,16 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link href="/pricing" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
-                    Gói thành viên
+                    Bảng giá dịch vụ
                   </Link>
                 </li>
-                <li>
-                  <Link href="/admin" className="text-orange-400 hover:text-orange-300 font-bold hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
-                    🛡️ Admin Portal
-                  </Link>
-                </li>
+                {user?.role === 'admin' && (
+                  <li>
+                    <Link href="/admin" className="text-orange-400 hover:text-orange-300 font-bold hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
+                      🛡️ Admin Portal
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
 
@@ -2450,7 +2452,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link href="/about#team" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
-                    Đội ngũ
+                    Đội ngũ phát triển
                   </Link>
                 </li>
                 <li>
@@ -2460,12 +2462,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link href="/news" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
-                    Blog & Tin tức
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dashboard" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
-                    Liên hệ
+                    Tin tức thị trường
                   </Link>
                 </li>
               </ul>
