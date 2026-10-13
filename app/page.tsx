@@ -1926,17 +1926,17 @@ export default function HomePage() {
                     <h3 className="text-sm sm:text-base lg:text-lg font-black text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
                       Thị trường BĐS Hà Nội Q4/2025: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức khởi công
                     </h3>
-                    <p className="text-xs sm:text-sm lg:text-base text-slate-600 line-clamp-2 leading-relaxed">
+                    <p className="text-xs sm:text-sm lg:text-base text-slate-500 font-normal line-clamp-2 leading-relaxed">
                       Sự kết nối giữa các trục giao thông hướng tâm và đường vành đai đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố trung tâm và ven đô.
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-100 text-[10px] sm:text-xs text-slate-500 font-medium">
+                  <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-100 text-[10px] sm:text-xs text-slate-400 font-normal">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500/20 text-orange-600 font-bold flex items-center justify-center text-[10px] sm:text-xs">
                         HR
                       </div>
-                      <span className="font-semibold text-slate-700">Ban biên tập HaNoi Realty</span>
+                      <span className="font-medium text-slate-600">Ban biên tập HaNoi Realty</span>
                     </div>
                     <span>8 phút đọc</span>
                   </div>
@@ -1985,7 +1985,7 @@ export default function HomePage() {
                     <h4 className="font-bold text-[10px] sm:text-xs text-[#0a1128] group-hover:text-orange-600 transition-colors line-clamp-2 mt-1 leading-snug">
                       {article.title}
                     </h4>
-                    <p className="text-[10px] text-slate-400 mt-1 font-medium">{article.date}</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-normal">{article.date}</p>
                   </div>
                 </Link>
               ))}
@@ -1995,28 +1995,28 @@ export default function HomePage() {
 
           {/* Market Mini Dashboard Row */}
           <div className="mt-2 sm:mt-3 bg-white rounded-3xl p-3 sm:p-4 border border-slate-200/90 shadow-2xl">
-            <h4 className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <h4 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
               <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               <span>Chỉ số thị trường tuần này</span>
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
               <div className="p-2">
-                <p className="text-xs sm:text-sm text-slate-500 font-medium">Giá TB Đống Đa</p>
+                <p className="text-xs sm:text-sm text-slate-500 font-normal">Giá TB Đống Đa</p>
                 <p className="text-xl sm:text-2xl font-black text-[#0a1128] mt-0.5">85 tr/m²</p>
                 <span className="text-emerald-600 font-bold text-xs sm:text-sm">▲ +2.3% so tháng trước</span>
               </div>
               <div className="p-2 sm:pl-6">
-                <p className="text-xs sm:text-sm text-slate-500 font-medium">Giá TB Cầu Giấy</p>
+                <p className="text-xs sm:text-sm text-slate-500 font-normal">Giá TB Cầu Giấy</p>
                 <p className="text-xl sm:text-2xl font-black text-[#0a1128] mt-0.5">65 tr/m²</p>
                 <span className="text-emerald-600 font-bold text-xs sm:text-sm">▲ +1.8% so tháng trước</span>
               </div>
               <div className="p-2 sm:pl-6">
-                <p className="text-xs sm:text-sm text-slate-500 font-medium">Tin đăng mới hôm nay</p>
+                <p className="text-xs sm:text-sm text-slate-500 font-normal">Tin đăng mới hôm nay</p>
                 <p className="text-xl sm:text-2xl font-black text-[#0a1128] mt-0.5">127 tin</p>
                 <span className="text-emerald-600 font-bold text-xs sm:text-sm">▲ +34 so hôm qua</span>
               </div>
               <div className="p-2 sm:pl-6">
-                <p className="text-xs sm:text-sm text-slate-500 font-medium">Giao dịch tháng này</p>
+                <p className="text-xs sm:text-sm text-slate-500 font-normal">Giao dịch tháng này</p>
                 <p className="text-xl sm:text-2xl font-black text-[#0a1128] mt-0.5">89 căn</p>
                 <span className="text-emerald-600 font-bold text-xs sm:text-sm">▲ +12% hoàn thành</span>
               </div>
@@ -2044,7 +2044,7 @@ export default function HomePage() {
 
           {/* Header chuẩn Hình 1 */}
           <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
-            <span className="text-orange-400 font-extrabold text-xs uppercase tracking-wider block mb-2">
+            <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest text-orange-400 uppercase mb-2">
               ⭐ ĐÁNH GIÁ TỪ NGƯỜI DÙNG
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
@@ -2062,7 +2062,7 @@ export default function HomePage() {
               <div className="flex text-amber-400 text-lg my-1.5 justify-center sm:justify-start tracking-wider">
                 ★★★★★
               </div>
-              <p className="text-xs text-slate-500 font-medium">Dựa trên 1,247 đánh giá đã kiểm thực</p>
+              <p className="text-xs text-slate-400 font-normal">Dựa trên 1,247 đánh giá đã kiểm thực</p>
             </div>
 
             {/* Bars */}
@@ -2196,8 +2196,8 @@ export default function HomePage() {
           📌 SECTION 9 — ĐỐI TÁC & THƯƠNG HIỆU (Marquee — Nền trung tính dịu mắt)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section className="bg-slate-50/70 py-12 sm:py-14 overflow-hidden border-b border-slate-200/80">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-7 text-center">
-          <span className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-slate-500">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-7 text-center">
+          <span className="inline-block text-[11px] sm:text-xs font-bold uppercase tracking-widest text-slate-400">
             ĐỐI TÁC CHIẾN LƯỢC & THƯƠNG HIỆU ĐỒNG HÀNH
           </span>
         </div>
@@ -2235,7 +2235,7 @@ export default function HomePage() {
         </div>
 
         {/* Trust Badges */}
-        <div className="container max-w-5xl mx-auto px-4 mt-8 pt-6 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-semibold text-slate-600">
+        <div className="container max-w-5xl mx-auto px-4 mt-8 pt-6 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-medium text-slate-500">
           <span className="flex items-center gap-2">
             <Award className="h-4 w-4 text-orange-500" />
             Top 10 Startup VN 2024
@@ -2275,22 +2275,25 @@ export default function HomePage() {
             <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 lg:gap-12">
 
               {/* Left Column: Heading & Value Proposition */}
-              <div className="space-y-3.5 max-w-2xl text-left">
-                <span className="inline-flex items-center gap-1.5 text-orange-400 font-extrabold text-[11px] sm:text-xs tracking-wider uppercase bg-orange-500/10 border border-orange-500/20 px-3.5 py-1 rounded-full">
+              <div className="max-w-2xl text-left">
+                {/* Eyebrow — Uppercase Tracking-Widest Accent */}
+                <div className="inline-flex items-center gap-1.5 text-orange-400 font-bold text-[11px] sm:text-xs tracking-widest uppercase mb-2">
                   <Sparkles className="w-3.5 h-3.5 text-orange-400" />
                   <span>DÀNH CHO CHỦ NHÀ & MÔI GIỚI</span>
-                </span>
+                </div>
 
+                {/* Section Heading — Primary Information (Nổi bật nhất) */}
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
                   Bạn muốn đăng tin bán hoặc cho thuê nhà?
                 </h2>
 
-                <p className="text-sm sm:text-base text-slate-300 font-normal leading-relaxed max-w-xl">
+                {/* Description — Supporting Text (Nhẹ hơn heading) */}
+                <p className="text-sm sm:text-base text-slate-300 font-normal mt-2 sm:mt-2.5 leading-relaxed max-w-xl">
                   Tiếp cận hàng nghìn khách mua tiềm năng mỗi ngày. Đăng tin miễn phí, định vị toạ độ chính xác trên bản đồ.
                 </p>
 
                 {/* Trust / Benefit Checkpoints */}
-                <div className="flex flex-wrap items-center gap-y-2 gap-x-4 pt-2 text-xs sm:text-sm font-medium text-slate-300">
+                <div className="flex flex-wrap items-center gap-y-2 gap-x-4 pt-3.5 text-xs sm:text-sm font-normal text-slate-300">
                   <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     Miễn phí không cần thẻ
