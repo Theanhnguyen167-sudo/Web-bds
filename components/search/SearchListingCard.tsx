@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ListingItem } from '@/lib/mock-data';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { MapPin, Heart, Bed, Sparkles, Eye, ArrowRight } from 'lucide-react';
+import { getListingUrl } from '@/lib/listing-slug';
 
 interface SearchListingCardProps {
   listing: ListingItem;
@@ -26,6 +27,8 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
   onClick,
   onSaveToggle,
 }) => {
+  const listingUrl = getListingUrl(listing);
+
   return (
     <motion.div
       id={`listing-card-${listing.id}`}
@@ -46,7 +49,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
     >
       {/* Thumbnail Left (80x80px) */}
       <Link
-        href={`/listings/${listing.id}`}
+        href={listingUrl}
         onClick={(e) => e.stopPropagation()}
         className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 block group/thumb cursor-pointer"
         title="Xem chi tiết bài viết"
@@ -78,7 +81,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
 
           {/* Title */}
           <Link
-            href={`/listings/${listing.id}`}
+            href={listingUrl}
             onClick={(e) => e.stopPropagation()}
             className="block cursor-pointer mt-0.5"
             title={listing.title}
@@ -103,7 +106,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
           </div>
 
           <Link
-            href={`/listings/${listing.id}`}
+            href={listingUrl}
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center gap-1 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 hover:bg-orange-500 hover:text-white font-bold px-2 py-0.5 transition-all text-[10px]"
           >

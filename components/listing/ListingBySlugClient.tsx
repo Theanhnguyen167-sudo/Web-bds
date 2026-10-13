@@ -10,6 +10,7 @@ interface ListingBySlugClientProps {
   district: string;
   slug: string;
   initialListingId?: string;
+  transactionType?: 'mua-ban' | 'cho-thue';
 }
 
 export function ListingBySlugClient({
@@ -17,6 +18,7 @@ export function ListingBySlugClient({
   district,
   slug,
   initialListingId,
+  transactionType = 'mua-ban',
 }: ListingBySlugClientProps) {
   const { listings } = useApp();
 
@@ -24,7 +26,7 @@ export function ListingBySlugClient({
   // 2. Nếu server chưa có (listing mới tạo trên trình duyệt lưu localStorage), client tìm trong useApp().listings
   const targetListing = initialListingId
     ? listings.find((l) => l.id === initialListingId) || { id: initialListingId }
-    : findListingBySlug(slug, propertyType, district, listings);
+    : findListingBySlug(slug, propertyType, district, listings, transactionType);
 
   const listingId = targetListing?.id || initialListingId || '1';
 

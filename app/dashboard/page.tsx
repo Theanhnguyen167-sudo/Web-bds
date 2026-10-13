@@ -60,6 +60,8 @@ import {
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
 import { TEST_SELLERS_LIST, DemoSeller, getListingExpiryInfo } from '@/lib/services/listing-service';
+import { getListingUrl } from '@/lib/listing-slug';
+import { mockListings } from '@/lib/mock-data';
 import { Pencil } from 'lucide-react';
 import {
   getPackageDefinition,
@@ -789,7 +791,7 @@ function DashboardContent() {
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                               <div className="flex items-center gap-3.5">
                                 <Link
-                                  href={`/listings/${listing.id}`}
+                                  href={getListingUrl(listing)}
                                   className="shrink-0 block relative"
                                 >
                                   <img
@@ -862,7 +864,7 @@ function DashboardContent() {
                                   </div>
 
                                   <Link
-                                    href={`/listings/${listing.id}`}
+                                    href={getListingUrl(listing)}
                                     className="text-xs font-bold text-text-primary hover:text-accent transition-colors line-clamp-1 mt-1 block cursor-pointer"
                                   >
                                     {listing.title}
@@ -1557,15 +1559,18 @@ function DashboardContent() {
                                   </button>
                                 )}
 
-                                {appt.listingId && (
-                                  <Link
-                                    href={`/listings/${appt.listingId}`}
-                                    className="rounded-xl border border-slate-200 bg-white hover:border-accent hover:text-accent p-2 text-text-muted transition-colors"
-                                    title="Xem tin đăng BĐS"
-                                  >
-                                    <ExternalLink className="h-4 w-4" />
-                                  </Link>
-                                )}
+                                {appt.listingId && (() => {
+                                  const apptListing = (userListings || []).find((l: any) => l.id === appt.listingId) || mockListings.find((l) => l.id === appt.listingId);
+                                  return (
+                                    <Link
+                                      href={apptListing ? getListingUrl(apptListing) : `/listings/${appt.listingId}`}
+                                      className="rounded-xl border border-slate-200 bg-white hover:border-accent hover:text-accent p-2 text-text-muted transition-colors"
+                                      title="Xem tin đăng BĐS"
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                    </Link>
+                                  );
+                                })()}
                               </div>
                             </div>
                           </div>
@@ -1637,7 +1642,7 @@ function DashboardContent() {
                       {savedListings.map((listing) => (
                         <div
                           key={listing.id}
-                          onClick={() => router.push(`/listings/${listing.id}`)}
+                          onClick={() => router.push(getListingUrl(listing))}
                           className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm hover:shadow-md hover:border-accent/60 transition-all cursor-pointer"
                         >
                           {/* Card Thumbnail */}
@@ -1687,7 +1692,7 @@ function DashboardContent() {
                           <div className="flex flex-1 flex-col p-4">
                             {/* Title */}
                             <Link
-                              href={`/listings/${listing.id}`}
+                              href={getListingUrl(listing)}
                               onClick={(e) => e.stopPropagation()}
                               className="text-xs sm:text-sm font-bold leading-snug text-text-primary hover:text-accent transition-colors line-clamp-2 block cursor-pointer"
                             >

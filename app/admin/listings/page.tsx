@@ -19,6 +19,7 @@ import {
   EVENT_LISTINGS_UPDATED,
 } from '@/lib/services/listing-service';
 import { ListingItem } from '@/lib/mock-data';
+import { getListingUrl } from '@/lib/listing-slug';
 import {
   Search,
   PlusCircle,
@@ -512,7 +513,7 @@ export default function AdminListingsPage() {
               )}
 
               <Link
-                href={`/listings/${listing.id}`}
+                href={getListingUrl(listing)}
                 target="_blank"
                 className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-orange-500 transition-colors"
                 title="Xem tin đăng trên trang người dùng"

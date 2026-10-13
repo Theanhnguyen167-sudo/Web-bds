@@ -18,6 +18,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { useApp } from '@/lib/context/AppContext';
+import { getListingUrl } from '@/lib/listing-slug';
 import { NotificationItem } from '@/types/notification';
 
 export interface BookingModalProps {
@@ -233,7 +234,7 @@ export default function BookingModal({
         createdAt: 'Vừa xong',
         timestamp: Date.now(),
         isRead: false,
-        link: `/listings/${listingId}`,
+        link: targetListing ? getListingUrl(targetListing) : `/listings/${listingId}`,
         tag: 'Hẹn xem nhà',
         listingId: listingId,
         appointmentId: apptId,

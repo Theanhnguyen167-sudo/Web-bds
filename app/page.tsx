@@ -13,6 +13,7 @@ import { mockListings, ListingItem } from '@/lib/mock-data';
 import { useCountUp } from '@/lib/hooks/useScrollAnimation';
 import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
+import { getListingUrl } from '@/lib/listing-slug';
 import { sortListings } from '@/lib/search/filterListings';
 import {
   Search,
@@ -1133,7 +1134,7 @@ export default function HomePage() {
                         {/* Title — Secondary Information (text-slate-800, hover orange) */}
                         <div className="h-10 sm:h-11 flex items-start mb-1.5">
                           <Link
-                            href={`/listings/${listing.id}`}
+                            href={getListingUrl(listing)}
                             onClick={(e) => e.stopPropagation()}
                             className="line-clamp-2 text-xs sm:text-[13px] font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
                             title={listing.title}
@@ -1184,7 +1185,7 @@ export default function HomePage() {
                             <span>Xem chi tiết</span>
                           </button>
                           <Link
-                            href={`/listings/${listing.id}`}
+                            href={getListingUrl(listing)}
                             onClick={(e) => e.stopPropagation()}
                             className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors shrink-0"
                             title="Mở toàn bộ trang chi tiết riêng"
@@ -1381,7 +1382,10 @@ export default function HomePage() {
                 <MiniSearchMap
                   listings={mockListings as any}
                   targetDistrict={hoveredDistrict}
-                  onMarkerClick={(id) => router.push(`/listings/${id}`)}
+                  onMarkerClick={(id) => {
+                    const item = mockListings.find((l) => l.id === id);
+                    router.push(item ? getListingUrl(item) : `/listings/${id}`);
+                  }}
                 />
               </div>
             </div>
@@ -1547,7 +1551,7 @@ export default function HomePage() {
                         {/* Title: Cố định 2 dòng, line-clamp-2, không làm xô lệch chiều cao */}
                         <div className="h-10 sm:h-11 flex items-start mb-1.5">
                           <Link
-                            href={`/listings/${listing.id}`}
+                            href={getListingUrl(listing)}
                             onClick={(e) => e.stopPropagation()}
                             className="line-clamp-2 text-xs sm:text-[13px] font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
                             title={listing.title}
@@ -1598,7 +1602,7 @@ export default function HomePage() {
                             <span>Xem chi tiết</span>
                           </button>
                           <Link
-                            href={`/listings/${listing.id}`}
+                            href={getListingUrl(listing)}
                             onClick={(e) => e.stopPropagation()}
                             className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors shrink-0"
                             title="Mở toàn bộ trang chi tiết riêng"
@@ -1845,14 +1849,13 @@ export default function HomePage() {
                     </button>
 
                     <Link
-                      href={`/listings/${selectedListingDetail.id}`}
+                      href={getListingUrl(selectedListingDetail)}
                       onClick={(e) => {
                         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
                           return;
                         }
                         e.preventDefault();
-                        const targetId = selectedListingDetail.id;
-                        router.push(`/listings/${targetId}`);
+                        router.push(getListingUrl(selectedListingDetail));
                         handleCloseDetailModal();
                       }}
                       className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all hover:scale-105 cursor-pointer"

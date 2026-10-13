@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { findListingBySlug } from '@/lib/listing-slug';
+import { findListingBySlug, getValidListingSlugParams } from '@/lib/listing-slug';
 import { ListingBySlugClient } from '@/components/listing/ListingBySlugClient';
 
 interface ListingSlugPageProps {
@@ -10,11 +10,15 @@ interface ListingSlugPageProps {
   };
 }
 
+export function generateStaticParams() {
+  return getValidListingSlugParams('mua-ban');
+}
+
 export default function ListingSlugPage({ params }: ListingSlugPageProps) {
   const { propertyType, district, slug } = params;
 
   // Tra cứu listing từ mock-data / database server-side
-  const listing = findListingBySlug(slug, propertyType, district);
+  const listing = findListingBySlug(slug, propertyType, district, undefined, 'mua-ban');
 
   return (
     <ListingBySlugClient
@@ -22,6 +26,7 @@ export default function ListingSlugPage({ params }: ListingSlugPageProps) {
       district={district}
       slug={slug}
       initialListingId={listing?.id}
+      transactionType="mua-ban"
     />
   );
 }

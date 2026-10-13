@@ -16,6 +16,7 @@
  */
 
 import { ListingItem, mockListings } from '@/lib/mock-data';
+import { getListingUrl } from '@/lib/listing-slug';
 import { NotificationItem } from '@/types/notification';
 import { parseLocationCoordinates } from '@/lib/utils';
 
@@ -458,7 +459,7 @@ export async function approveListingRecord(id: string): Promise<ListingItem | nu
     listingId: id,
     category: 'listing',
     tag: 'Đã duyệt',
-    link: `/listings/${id}`,
+    link: getListingUrl(listing),
   });
 
   // Đồng bộ qua API

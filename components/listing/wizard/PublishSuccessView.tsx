@@ -15,6 +15,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import { formatCurrencyVND } from '@/lib/utils';
+import { getListingUrl } from '@/lib/listing-slug';
 import { PostingData } from './PostingDataTypes';
 
 interface PublishSuccessViewProps {
@@ -29,6 +30,15 @@ export const PublishSuccessView: React.FC<PublishSuccessViewProps> = ({
   const displayTitle =
     data.title ||
     `Bán ${data.propertyType === 'house' ? 'Nhà riêng' : data.propertyType === 'apartment' ? 'Chung cư' : data.propertyType === 'land' ? 'Đất nền' : 'Biệt thự'} ${data.area}m² tại ${data.location.district}`;
+
+  const listingUrl = getListingUrl({
+    id: listingId,
+    title: displayTitle,
+    type: data.propertyType,
+    district: data.location?.district,
+    ward: data.location?.ward,
+    purpose: 'sale',
+  });
 
   return (
     <motion.div
@@ -116,7 +126,7 @@ export const PublishSuccessView: React.FC<PublishSuccessViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
         {/* 1. Xem tin đăng */}
         <Link
-          href={`/listings/${listingId}`}
+          href={listingUrl}
           className="flex items-center justify-center gap-1.5 rounded-xl bg-accent px-4 py-3 text-xs font-bold text-white shadow-md shadow-accent/20 hover:bg-accent-hover transition-all text-center"
         >
           <ExternalLink className="h-4 w-4" />

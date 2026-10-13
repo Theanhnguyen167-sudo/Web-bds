@@ -14,6 +14,7 @@ import { useApp } from '@/lib/context/AppContext'
 import { MapLocationSearch } from './MapLocationSearch'
 import { HanoiLocationItem } from '@/lib/data/hanoi-locations'
 import { haversineDistance } from '@/lib/search/filterListings'
+import { getListingUrl } from '@/lib/listing-slug'
 
 // ── Types ──
 export interface SearchMapListing {
@@ -966,7 +967,7 @@ export default function SearchMap({
 
             {/* Image */}
             <Link
-              href={`/listings/${popupListing.id}`}
+              href={getListingUrl(popupListing)}
               onClick={(e) => e.stopPropagation()}
               className="relative block h-[140px] bg-gray-100 dark:bg-gray-700 overflow-hidden group cursor-pointer"
             >
@@ -1007,7 +1008,7 @@ export default function SearchMap({
 
               {/* Title */}
               <Link
-                href={`/listings/${popupListing.id}`}
+                href={getListingUrl(popupListing)}
                 onClick={(e) => e.stopPropagation()}
                 className="text-sm font-bold text-navy dark:text-white line-clamp-1 mb-2 hover:text-orange-500 transition-colors block cursor-pointer"
               >
@@ -1022,7 +1023,7 @@ export default function SearchMap({
 
               {/* Action */}
               <Link
-                href={`/listings/${popupListing.id}`}
+                href={getListingUrl(popupListing)}
                 className="flex items-center justify-center gap-2 w-full 
                            bg-orange-500 hover:bg-orange-600 text-white text-sm 
                            font-semibold py-2.5 rounded-xl transition-colors shadow-sm cursor-pointer"
@@ -1131,7 +1132,7 @@ export default function SearchMap({
                   Đóng
                 </button>
                 <Link
-                  href={`/listings/${popupListing.id}`}
+                  href={getListingUrl(popupListing)}
                   className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs text-center shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
                 >
                   <Eye size={14} />

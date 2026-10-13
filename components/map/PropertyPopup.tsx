@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ListingItem } from '@/lib/mock-data';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { X, MapPin, Maximize2, Bed, Bath, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { getListingUrl } from '@/lib/listing-slug';
 
 interface PropertyPopupProps {
   listing: ListingItem;
@@ -94,7 +95,7 @@ export const PropertyPopup: React.FC<PropertyPopupProps> = ({ listing, onClose }
           </Link>
 
           <Link
-            href={`/listings/${listing.id}`}
+            href={getListingUrl(listing)}
             className="flex items-center justify-center gap-1 rounded-lg bg-accent hover:bg-accent-hover px-2.5 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors"
           >
             <span>Xem chi tiết</span>

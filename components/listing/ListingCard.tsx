@@ -21,6 +21,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { LightboxModal } from '@/components/home/LightboxModal';
+import { getListingUrl } from '@/lib/listing-slug';
 
 interface ListingCardProps {
   listing: ListingItem;
@@ -29,6 +30,7 @@ interface ListingCardProps {
 
 export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick }) => {
   const router = useRouter();
+  const listingUrl = getListingUrl(listing);
   const {
     activeListingId,
     setActiveListingId,
@@ -53,7 +55,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
   };
 
   const handleCardClick = () => {
-    router.push(`/listings/${listing.id}`);
+    router.push(listingUrl);
   };
 
   return (
@@ -154,7 +156,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
         <div className="flex flex-1 flex-col p-3.5">
           {/* Title — Card Title khoảng 18-20px (text-base lg:text-[18px]) */}
           <Link
-            href={`/listings/${listing.id}`}
+            href={listingUrl}
             onClick={(e) => e.stopPropagation()}
             className="line-clamp-2 text-base sm:text-[17px] lg:text-[18px] font-bold leading-snug text-slate-900 hover:text-orange-600 transition-colors block cursor-pointer"
           >

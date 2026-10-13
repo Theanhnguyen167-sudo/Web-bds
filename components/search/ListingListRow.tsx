@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ListingItem } from '@/lib/mock-data';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { MapPin, Bed, Bath, Layers, Sparkles, Heart, ArrowRight, ShieldCheck, Maximize2 } from 'lucide-react';
+import { getListingUrl } from '@/lib/listing-slug';
 
 interface ListingListRowProps {
   listing: ListingItem;
@@ -20,6 +21,8 @@ export const ListingListRow: React.FC<ListingListRowProps> = ({
   isSaved,
   onSaveToggle,
 }) => {
+  const listingUrl = getListingUrl(listing);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -29,7 +32,7 @@ export const ListingListRow: React.FC<ListingListRowProps> = ({
     >
       {/* Image Left */}
       <div className="relative sm:w-56 h-48 sm:h-auto overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
-        <Link href={`/listings/${listing.id}`}>
+        <Link href={listingUrl}>
           <img
             src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'}
             alt={listing.title}
@@ -68,7 +71,7 @@ export const ListingListRow: React.FC<ListingListRowProps> = ({
             <span className="text-slate-500">{listing.legalStatus}</span>
           </div>
 
-          <Link href={`/listings/${listing.id}`}>
+          <Link href={listingUrl}>
             <h3 className="text-sm sm:text-base font-extrabold text-navy dark:text-white group-hover:text-orange-600 transition-colors line-clamp-1 mt-1">
               {listing.title}
             </h3>
@@ -126,7 +129,7 @@ export const ListingListRow: React.FC<ListingListRowProps> = ({
           </Link>
 
           <Link
-            href={`/listings/${listing.id}`}
+            href={listingUrl}
             className="w-full py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors shadow-sm"
           >
             <span>Chi tiết</span>

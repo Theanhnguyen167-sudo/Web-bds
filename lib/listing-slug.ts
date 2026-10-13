@@ -412,8 +412,134 @@ export function generateListingSlug(
 }
 
 /**
- * Tạo URL SEO hoàn chỉnh theo cấu trúc:
- * /mua-ban/[loai-bat-dong-san]/[khu-vuc]/[listing-slug]
+ * Thông tin định danh chi tiết của Listing trong Semantic Silo
+ */
+export interface ListingSiloData {
+  transactionType: 'mua-ban' | 'cho-thue';
+  transactionName: string;
+  propertyTypeSlug: string;
+  propertyTypeName: string;
+  city: string;
+  citySlug: string;
+  district: string;
+  districtSlug: string;
+  ward?: string;
+  wardSlug?: string;
+  slug: string;
+  siloCategoryUrl: string;
+  url: string;
+}
+
+/**
+ * Xác định toàn bộ thông tin Semantic Silo cho từng listing:
+ * - Loại giao dịch: mua bán / cho thuê
+ * - Loại BĐS: nha-pho, chung-cu, dat-nen, biet-thu, nha-mat-pho, penthouse
+ * - Thành phố: Hà Nội (ha-noi)
+ * - Quận/huyện: Đống Đa (dong-da), Cầu Giấy (cau-giay),...
+ * - Phường nếu có: Ô Chợ Dừa (o-cho-dua),...
+ * - Slug listing
+ * - Silo category: /mua-ban/nha-pho/dong-da/ (hoặc /cho-thue/...)
+ * - Listing URL: /mua-ban/nha-pho/dong-da/[listing-slug]
+ */
+export function getListingSiloData(
+  listing: {
+    id?: string;
+    title: string;
+    slug?: string;
+    type?: string;
+    propertyType?: string;
+    district?: string;
+    city?: string;
+    ward?: string;
+    purpose?: 'sale' | 'rent';
+  },
+  existingListings?: Array<{
+    id: string;
+    title: string;
+    slug?: string;
+    district?: string;
+    type?: string;
+    propertyType?: string;
+    purpose?: 'sale' | 'rent';
+  }>
+): ListingSiloData {
+  // 1. Loại giao dịch: mua bán / cho thuê
+  const isRent = listing.purpose === 'rent';
+  const transactionType: 'mua-ban' | 'cho-thue' = isRent ? 'cho-thue' : 'mua-ban';
+  const transactionName = isRent ? 'Cho thuê' : 'Mua bán';
+
+  // 2. Loại BĐS: nha-pho, chung-cu, dat-nen, biet-thu, nha-mat-pho, penthouse,...
+  let propertyTypeSlug = 'nha-pho';
+  const rawType = (listing.propertyType || listing.type || 'house').toLowerCase();
+  const titleLower = (listing.title || '').toLowerCase();
+
+  if (PROPERTY_TYPE_SLUG_MAP[rawType]) {
+    propertyTypeSlug = PROPERTY_TYPE_SLUG_MAP[rawType];
+  } else if (CATEGORY_MAP[rawType]) {
+    propertyTypeSlug = rawType;
+  } else if (SLUG_TO_PROPERTY_TYPE_MAP[rawType]) {
+    propertyTypeSlug = rawType;
+  }
+
+  // Nhận diện category chuyên biệt nếu tiêu đề chứa từ khóa (Nhà mặt phố, Penthouse)
+  if (propertyTypeSlug === 'nha-pho' && titleLower.includes('mặt phố')) {
+    propertyTypeSlug = 'nha-mat-pho';
+  } else if (propertyTypeSlug === 'chung-cu' && titleLower.includes('penthouse')) {
+    propertyTypeSlug = 'penthouse';
+  }
+
+  const PROPERTY_TYPE_NAME_MAP: Record<string, string> = {
+    'nha-pho': 'Nhà phố',
+    'chung-cu': 'Chung cư',
+    'dat-nen': 'Đất nền',
+    'biet-thu': 'Biệt thự',
+    'nha-mat-pho': 'Nhà mặt phố',
+    'penthouse': 'Penthouse',
+    'thuong-mai': 'Thương mại',
+    'du-an': 'Dự án',
+  };
+  const propertyTypeName = PROPERTY_TYPE_NAME_MAP[propertyTypeSlug] || 'Nhà phố';
+
+  // 3. Thành phố
+  const city = listing.city || 'Hà Nội';
+  const citySlug = toSlug(city) || 'ha-noi';
+
+  // 4. Quận/Huyện
+  const district = listing.district || 'Hà Nội';
+  const districtSlug = getDistrictSlug(district);
+
+  // 5. Phường nếu có
+  const ward = listing.ward || undefined;
+  const wardSlug = ward ? toSlug(ward.replace(/^(Phường|Xã|Thị trấn)\s+/i, '')) : undefined;
+
+  // 6. Slug định danh duy nhất của listing
+  const slug = generateUniqueSlug(listing, existingListings);
+
+  // 7. Cấu trúc URL Semantic Silo
+  const siloCategoryUrl = `/${transactionType}/${propertyTypeSlug}/${districtSlug}`;
+  const url = `${siloCategoryUrl}/${slug}`;
+
+  return {
+    transactionType,
+    transactionName,
+    propertyTypeSlug,
+    propertyTypeName,
+    city,
+    citySlug,
+    district,
+    districtSlug,
+    ward,
+    wardSlug,
+    slug,
+    siloCategoryUrl,
+    url,
+  };
+}
+
+/**
+ * Tạo URL SEO hoàn chỉnh theo đúng Semantic Silo:
+ * - Mua bán: /mua-ban/[loai-bat-dong-san]/[khu-vuc]/[listing-slug]
+ * - Cho thuê: /cho-thue/[loai-bat-dong-san]/[khu-vuc]/[listing-slug]
  * Ví dụ:
  * /mua-ban/nha-pho/dong-da/nha-pho-5-tang-mat-tien-6m-gan-van-mieu
  */
@@ -423,7 +549,11 @@ export function getListingUrl(
     title: string;
     slug?: string;
     type?: string;
+    propertyType?: string;
     district?: string;
+    city?: string;
+    ward?: string;
+    purpose?: 'sale' | 'rent';
   },
   existingListings?: Array<{
     id: string;
@@ -431,64 +561,112 @@ export function getListingUrl(
     slug?: string;
     district?: string;
     type?: string;
+    propertyType?: string;
+    purpose?: 'sale' | 'rent';
   }>
 ): string {
-  const typeSlug = getPropertyTypeSlug(listing.type);
-  const districtSlug = getDistrictSlug(listing.district);
-  const itemSlug = generateUniqueSlug(listing, existingListings);
-
-  return `/mua-ban/${typeSlug}/${districtSlug}/${itemSlug}`;
+  return getListingSiloData(listing, existingListings).url;
 }
 
 /**
- * Tìm listing bằng slug kết hợp typeSlug và districtSlug
+ * Lấy danh sách params động (propertyType, district, slug) cho SSG
+ */
+export function getValidListingSlugParams(
+  transactionType: 'mua-ban' | 'cho-thue' = 'mua-ban',
+  listingPool?: ListingItem[]
+): Array<{ propertyType: string; district: string; slug: string }> {
+  const pool = (listingPool || mockListings).filter((l) => l.status === 'active');
+  const params: Array<{ propertyType: string; district: string; slug: string }> = [];
+
+  for (const item of pool) {
+    const silo = getListingSiloData(item, pool);
+    if (silo.transactionType === transactionType) {
+      params.push({
+        propertyType: silo.propertyTypeSlug,
+        district: silo.districtSlug,
+        slug: silo.slug,
+      });
+    }
+  }
+
+  return params;
+}
+
+/**
+ * Tìm listing bằng slug kết hợp typeSlug, districtSlug và transactionType
  * Hỗ trợ tra cứu ID nguyên bản từ database/mock data
  */
 export function findListingBySlug(
   slug: string,
   propertyTypeSlug?: string,
   districtSlug?: string,
-  listingPool?: ListingItem[]
+  listingPool?: ListingItem[],
+  transactionType?: 'mua-ban' | 'cho-thue'
 ): ListingItem | undefined {
   const pool = listingPool || mockListings;
   if (!slug) return undefined;
 
   const targetSlug = slug.toLowerCase();
 
+  const matchesFilter = (item: ListingItem) => {
+    // 1. Kiểm tra transactionType (purpose)
+    if (transactionType) {
+      const isRent = item.purpose === 'rent';
+      if (transactionType === 'cho-thue' && !isRent) return false;
+      if (transactionType === 'mua-ban' && isRent) return false;
+    }
+
+    // 2. Kiểm tra district
+    if (districtSlug) {
+      const itemDistrictSlug = getDistrictSlug(item.district);
+      if (itemDistrictSlug !== districtSlug.toLowerCase()) return false;
+    }
+
+    // 3. Kiểm tra propertyType
+    if (propertyTypeSlug) {
+      const normProp = propertyTypeSlug.toLowerCase();
+      const mappedType = SLUG_TO_PROPERTY_TYPE_MAP[normProp] || normProp;
+      const itemType = (item.type || '').toLowerCase();
+      const itemSlugType = getPropertyTypeSlug(itemType);
+
+      const isMatch =
+        itemType === mappedType ||
+        itemSlugType === normProp ||
+        (normProp === 'nha-mat-pho' && itemType === 'house') ||
+        (normProp === 'penthouse' && itemType === 'apartment') ||
+        (normProp === 'nha-pho' && itemType === 'house') ||
+        (normProp === 'chung-cu' && itemType === 'apartment');
+
+      if (!isMatch) return false;
+    }
+
+    return true;
+  };
+
   // 1. Khớp chính xác trường slug đã lưu trữ
   const directSlugMatch = pool.find((item) => {
     if (!item.slug) return false;
-    const matchesSlug = item.slug.toLowerCase() === targetSlug;
-    const matchesType = !propertyTypeSlug || getPropertyTypeSlug(item.type) === propertyTypeSlug;
-    const matchesDistrict = !districtSlug || getDistrictSlug(item.district) === districtSlug;
-    return matchesSlug && matchesType && matchesDistrict;
+    return item.slug.toLowerCase() === targetSlug && matchesFilter(item);
   });
   if (directSlugMatch) return directSlugMatch;
 
   // 2. Khớp theo unique slug tính toán từ pool
   const computedMatch = pool.find((item) => {
     const itemUniqueSlug = generateUniqueSlug(item, pool);
-    const itemTypeSlug = getPropertyTypeSlug(item.type);
-    const itemDistrictSlug = getDistrictSlug(item.district);
-
-    const matchesSlug = itemUniqueSlug === targetSlug;
-    const matchesType = !propertyTypeSlug || itemTypeSlug === propertyTypeSlug;
-    const matchesDistrict = !districtSlug || itemDistrictSlug === districtSlug;
-
-    return matchesSlug && matchesType && matchesDistrict;
+    return itemUniqueSlug === targetSlug && matchesFilter(item);
   });
   if (computedMatch) return computedMatch;
 
   // 3. Khớp theo base slug (nếu không có hậu tố)
   const baseMatch = pool.find((item) => {
     const itemBase = generateBaseSlug(item);
-    return itemBase === targetSlug;
+    return itemBase === targetSlug && matchesFilter(item);
   });
   if (baseMatch) return baseMatch;
 
   // 4. Fallback: Nếu slug trùng với ID nguyên bản (backward compatibility)
   const idMatch = pool.find((item) => item.id === slug);
-  if (idMatch) return idMatch;
+  if (idMatch && matchesFilter(idMatch)) return idMatch;
 
   return undefined;
 }

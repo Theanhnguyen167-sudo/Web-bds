@@ -18,6 +18,7 @@ import {
   deleteListingRecord,
 } from '@/lib/services/listing-service';
 import { ListingItem } from '@/lib/mock-data';
+import { getListingUrl } from '@/lib/listing-slug';
 import {
   ArrowLeft,
   Save,
@@ -306,7 +307,7 @@ export default function AdminListingDetailPage() {
 
           <div className="flex items-center gap-2 flex-wrap">
             <Link
-              href={`/listings/${listing.id}`}
+              href={getListingUrl(listing)}
               target="_blank"
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors"
             >

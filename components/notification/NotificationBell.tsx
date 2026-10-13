@@ -28,6 +28,8 @@ import {
   User
 } from 'lucide-react';
 import { useApp } from '@/lib/context/AppContext';
+import { getListingUrl } from '@/lib/listing-slug';
+import { mockListings } from '@/lib/mock-data';
 import { NotificationItem, NotificationCategory, NotificationPreferences, AppointmentData } from '@/types/notification';
 
 const STORAGE_KEY_NOTIFICATIONS = 'hanoi_realty_notifications';
@@ -56,7 +58,7 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
     createdAt: '25 phút trước',
     timestamp: Date.now() - 25 * 60 * 1000,
     isRead: false,
-    link: '/listings/1',
+    link: '/mua-ban/nha-pho/dong-da/nha-pho-5-tang-mat-tien-6m-gan-van-mieu',
     tag: 'Hẹn xem nhà',
     listingId: '1',
     appointmentData: {
@@ -1258,7 +1260,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                     onClick={() => {
                       setSelectedAppointment(null);
                       setIsOpen(false);
-                      router.push(`/listings/${selectedAppointment.listingId}`);
+                      const foundListing = mockListings.find((l) => l.id === selectedAppointment.listingId);
+                      router.push(foundListing ? getListingUrl(foundListing) : `/listings/${selectedAppointment.listingId}`);
                     }}
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-400 hover:underline pt-1 cursor-pointer"
                   >

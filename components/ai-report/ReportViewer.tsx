@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockListings, ListingItem } from '@/lib/mock-data';
+import { getListingUrl } from '@/lib/listing-slug';
 import { getAIReportForListing, PropertyAIReport } from '@/lib/ai/report-service';
 import { formatCurrencyVND } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
@@ -200,7 +201,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ listingId }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
           <Link
-            href={`/listings/${listing.id}`}
+            href={getListingUrl(listing)}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline mb-2"
           >
             <ArrowLeft className="h-4 w-4" />

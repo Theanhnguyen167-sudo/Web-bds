@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Layers, Satellite, Map, Eye, EyeOff, Palette, X } from 'lucide-react'
 import L from 'leaflet'
 import LassoSearch from './LassoSearch'
+import { getListingUrl } from '@/lib/listing-slug'
 
 // Fix Leaflet default marker icon for Next.js
 if (typeof window !== 'undefined') {
@@ -307,7 +308,7 @@ export default function HybridMap({
                   <span>📍 {listing.district}</span>
                 </div>
                 <a 
-                  href={`/listings/${listing.id}`}
+                  href={getListingUrl(listing)}
                   className="block w-full bg-orange-500 text-white text-xs 
                              text-center py-2 rounded-lg font-medium 
                              hover:bg-orange-600 transition-colors"
