@@ -17,8 +17,8 @@ export async function POST(req: Request) {
     // 2. Thử truy vấn Supabase có timeout tối đa 1.2s (Graceful Degradation)
     try {
       const supabase = createServerSupabaseClient();
-      const sbQuery = supabase
-        .from('listings')
+      const sbQuery = (supabase
+        .from('listings') as any)
         .select('user_id')
         .eq('id', listingId)
         .single();

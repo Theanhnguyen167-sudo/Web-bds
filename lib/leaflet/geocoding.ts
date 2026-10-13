@@ -1,4 +1,9 @@
-import { searchHanoiAddressOffline, POPULAR_HANOI_LOCATIONS } from './hanoi-streets';
+import {
+  searchHanoiAddressOffline,
+  searchHanoiLocationsSmart,
+  POPULAR_HANOI_LOCATIONS,
+  HanoiStreetInfo,
+} from './hanoi-streets';
 
 // Nominatim geocoding
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
@@ -52,9 +57,13 @@ export async function geocodeAddress(
     const query = `${address}, Hà Nội, Việt Nam`;
     const url = `${NOMINATIM_BASE}/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=vn`;
 
-    const res = await fetchWithTimeout(url, {
-      headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'vi' },
-    }, 4000);
+    const res = await fetchWithTimeout(
+      url,
+      {
+        headers: { 'Accept-Language': 'vi' },
+      },
+      3000
+    );
 
     if (!res.ok) return null;
     const data = await res.json();
@@ -72,7 +81,22 @@ export async function geocodeAddress(
   }
 }
 
-// Tìm điểm đường/phố gần nhất từ toạ độ nếu mạng chậm
+function formatDistrictName(district: string): string {
+  if (!district) return '';
+  if (district.startsWith('Quận') || district.startsWith('Huyện') || district.startsWith('Thị xã')) {
+    return district;
+  }
+  const innerDistricts = [
+    'Đống Đa', 'Hoàn Kiếm', 'Cầu Giấy', 'Tây Hồ', 'Ba Đình',
+    'Hai Bà Trưng', 'Hoàng Mai', 'Long Biên', 'Nam Từ Liêm', 'Bắc Từ Liêm',
+    'Hà Đông', 'Thanh Xuân'
+  ];
+  if (innerDistricts.includes(district)) return `Quận ${district}`;
+  if (district === 'Sơn Tây') return 'Thị xã Sơn Tây';
+  return `Huyện ${district}`;
+}
+
+// Tìm điểm đường/phố/xã gần nhất từ toạ độ nếu mạng chậm hoặc offline
 function findNearestHanoiStreet(lat: number, lng: number) {
   let nearest = POPULAR_HANOI_LOCATIONS[0];
   let minDistance = 999999;
@@ -85,8 +109,10 @@ function findNearestHanoiStreet(lat: number, lng: number) {
     }
   }
 
+  const distTitle = formatDistrictName(nearest.district);
+
   return {
-    displayName: `${nearest.name}, ${nearest.ward ? nearest.ward + ', ' : ''}Quận ${nearest.district}, Hà Nội`,
+    displayName: `${nearest.name}, ${nearest.ward ? nearest.ward + ', ' : ''}${distTitle}, Hà Nội`,
     district: nearest.district,
     ward: nearest.ward || '',
     road: nearest.name,
@@ -108,18 +134,25 @@ export async function reverseGeocode(
     await rateLimit();
     const url = `${NOMINATIM_BASE}/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=vi`;
 
-    const res = await fetchWithTimeout(url, {
-      headers: { 'User-Agent': USER_AGENT },
-    }, 3500);
+    const res = await fetchWithTimeout(
+      url,
+      {
+        headers: { 'Accept-Language': 'vi' },
+      },
+      3000
+    );
 
     if (!res.ok) throw new Error('Geocoding failed');
     const data = await res.json();
 
     const addr = data.address || {};
+    const rawDistrict = addr.city_district || addr.suburb || addr.district || '';
+    const cleanDistrict = rawDistrict.replace(/^(Quận|Huyện|Thị xã)\s+/i, '').trim();
+
     return {
       displayName: data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-      district: addr.city_district || addr.suburb || addr.district || '',
-      ward: addr.quarter || addr.neighbourhood || '',
+      district: cleanDistrict || rawDistrict,
+      ward: addr.quarter || addr.neighbourhood || addr.suburb || '',
       road: addr.road || addr.pedestrian || '',
       houseNumber: addr.house_number || '',
     };
@@ -129,42 +162,91 @@ export async function reverseGeocode(
   }
 }
 
-export async function searchAddress(query: string): Promise<
-  Array<{
-    lat: number;
-    lng: number;
-    displayName: string;
-    shortName: string;
-    district?: string;
-    ward?: string;
-    road?: string;
-    houseNumber?: string;
-  }>
-> {
+export interface SearchResultItem {
+  lat: number;
+  lng: number;
+  displayName: string;
+  shortName: string;
+  district: string;
+  ward?: string;
+  road?: string;
+  houseNumber?: string;
+  category?: string;
+  isSimilar?: boolean;
+  similarReason?: string;
+  badge?: string;
+  description?: string;
+}
+
+export interface DetailedAddressSearchResult {
+  directMatches: SearchResultItem[];
+  similarMatches: SearchResultItem[];
+  detectedDistrict?: string;
+  suggestedChips: SearchResultItem[];
+}
+
+function mapStreetToResultItem(item: HanoiStreetInfo): SearchResultItem {
+  const distTitle = formatDistrictName(item.district);
+  return {
+    lat: item.lat,
+    lng: item.lng,
+    displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${distTitle}, Hà Nội`,
+    shortName: item.name,
+    district: item.district,
+    ward: item.ward || '',
+    road: item.name,
+    houseNumber: '',
+    category: item.category,
+    isSimilar: item.isSimilar,
+    similarReason: item.similarReason,
+    badge: item.badge,
+    description: item.description,
+  };
+}
+
+/**
+ * Tìm kiếm địa chỉ thông minh phân loại kết quả trực tiếp và khu vực tương tự lân cận
+ */
+export function searchAddressWithSuggestions(query: string): DetailedAddressSearchResult {
+  const smartRes = searchHanoiLocationsSmart(query);
+  return {
+    directMatches: smartRes.directMatches.map(mapStreetToResultItem),
+    similarMatches: smartRes.similarMatches.map(mapStreetToResultItem),
+    detectedDistrict: smartRes.detectedDistrict,
+    suggestedChips: smartRes.suggestedChips.map(mapStreetToResultItem),
+  };
+}
+
+export async function searchAddress(query: string): Promise<SearchResultItem[]> {
   if (!query || query.trim().length < 2) return [];
 
   // 1. Tìm kiếm tức thì trong kho dữ liệu phố phường Hà Nội
-  const localResults = searchHanoiAddressOffline(query);
+  const smart = searchAddressWithSuggestions(query);
+  const localResults = [...smart.directMatches, ...smart.similarMatches];
 
-  // 2. Nếu có kết quả nội bộ đủ nhiều (>=3), trả về ngay lập tức không cần đợi mạng
-  if (localResults.length >= 3) {
+  // Nếu có kết quả nội bộ (thậm chí 1 kết quả), trả về ngay tức thì để UI phản hồi 0ms
+  if (localResults.length > 0) {
     return localResults;
   }
 
-  // 3. Thử tìm kiếm mở rộng trực tuyến qua Nominatim
+  // 2. Thử tìm kiếm mở rộng trực tuyến qua Nominatim nếu từ khoá rất đặc thù (ngõ, số nhà cụ thể...)
   try {
     await rateLimit();
     const q = `${query}, Hà Nội, Việt Nam`;
     const url = `${NOMINATIM_BASE}/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=vn&addressdetails=1`;
 
-    const res = await fetchWithTimeout(url, {
-      headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'vi' },
-    }, 3000);
+    const res = await fetchWithTimeout(
+      url,
+      {
+        headers: { 'Accept-Language': 'vi' },
+      },
+      2500
+    );
 
     if (!res.ok) return localResults;
     const data = await res.json();
 
-    const onlineResults = data.map((item: any) => ({
+    const onlineResults: SearchResultItem[] = data.map((item: any) => ({
       lat: parseFloat(item.lat),
       lng: parseFloat(item.lon),
       displayName: item.display_name,
@@ -173,17 +255,10 @@ export async function searchAddress(query: string): Promise<
       ward: item.address?.quarter || item.address?.neighbourhood || '',
       road: item.address?.road || '',
       houseNumber: item.address?.house_number || '',
+      category: 'street',
     }));
 
-    // Gộp và loại trùng
-    const combined = [...localResults];
-    for (const online of onlineResults) {
-      if (!combined.some(c => Math.abs(c.lat - online.lat) < 0.002 && Math.abs(c.lng - online.lng) < 0.002)) {
-        combined.push(online);
-      }
-    }
-
-    return combined.slice(0, 6);
+    return onlineResults.slice(0, 6);
   } catch {
     return localResults;
   }

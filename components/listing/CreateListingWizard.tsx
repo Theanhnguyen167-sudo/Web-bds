@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND, formatPricePerM2, HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
 import type { LocationData } from '@/components/map/LocationPicker';
+import { POPULAR_HANOI_LOCATIONS } from '@/lib/leaflet/hanoi-streets';
 import {
   Home,
   Building2,
@@ -115,17 +116,36 @@ const LocationPicker = dynamic(
 );
 
 const HANOI_DISTRICTS = [
-  'Đống Đa',
-  'Hoàn Kiếm',
+  'Quốc Oai',
+  'Hoài Đức',
+  'Thạch Thất',
+  'Đông Anh',
+  'Gia Lâm',
   'Cầu Giấy',
+  'Nam Từ Liêm',
+  'Bắc Từ Liêm',
+  'Hà Đông',
+  'Thanh Xuân',
+  'Đống Đa',
+  'Ba Đình',
+  'Hoàn Kiếm',
   'Tây Hồ',
   'Long Biên',
-  'Nam Từ Liêm',
-  'Ba Đình',
-  'Thanh Xuân',
-  'Hai Bà Trưng',
-  'Hà Đông',
   'Hoàng Mai',
+  'Hai Bà Trưng',
+  'Thanh Trì',
+  'Sơn Tây',
+  'Ba Vì',
+  'Đan Phượng',
+  'Chương Mỹ',
+  'Thanh Oai',
+  'Thường Tín',
+  'Phú Xuyên',
+  'Ứng Hòa',
+  'Mỹ Đức',
+  'Phúc Thọ',
+  'Mê Linh',
+  'Sóc Sơn',
 ];
 
 export const CreateListingWizard: React.FC = () => {
@@ -930,6 +950,14 @@ export const CreateListingWizard: React.FC = () => {
                       onChange={(e) => {
                         const newDistrict = e.target.value;
                         const districtCenter = HANOI_DISTRICT_COORDINATES[newDistrict];
+                        const distTitle = newDistrict.includes('Thị xã') || newDistrict.includes('Quận') || newDistrict.includes('Huyện')
+                          ? newDistrict
+                          : ['Đống Đa', 'Hoàn Kiếm', 'Cầu Giấy', 'Tây Hồ', 'Ba Đình', 'Hai Bà Trưng', 'Hoàng Mai', 'Long Biên', 'Nam Từ Liêm', 'Bắc Từ Liêm', 'Hà Đông', 'Thanh Xuân'].includes(newDistrict)
+                            ? `Quận ${newDistrict}`
+                            : newDistrict === 'Sơn Tây'
+                              ? 'Thị xã Sơn Tây'
+                              : `Huyện ${newDistrict}`;
+
                         setPostingData((prev) => ({
                           ...prev,
                           location: {
@@ -943,7 +971,7 @@ export const CreateListingWizard: React.FC = () => {
                           setPickedLocation({
                             lat: districtCenter.lat,
                             lng: districtCenter.lng,
-                            displayName: `Quận ${newDistrict}, Hà Nội`,
+                            displayName: `${distTitle}, Hà Nội`,
                             district: newDistrict,
                             ward: '',
                             road: '',
@@ -959,6 +987,68 @@ export const CreateListingWizard: React.FC = () => {
                         </option>
                       ))}
                     </select>
+
+                    {/* Gợi ý các vị trí tiêu biểu của quận/huyện đã chọn */}
+                    {(() => {
+                      const currentDist = postingData.location.district;
+                      const popularInDistrict = POPULAR_HANOI_LOCATIONS.filter(
+                        (l) => l.district.toLowerCase() === currentDist.toLowerCase()
+                      ).slice(0, 4);
+
+                      if (popularInDistrict.length === 0) return null;
+
+                      return (
+                        <div className="mt-2">
+                          <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                            <Sparkles size={11} className="text-orange-500" />
+                            <span>Gợi ý tại {currentDist}:</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {popularInDistrict.map((item, pIdx) => (
+                              <button
+                                key={`dist-sugg-${pIdx}`}
+                                type="button"
+                                onClick={() => {
+                                  const distTitle = item.district.includes('Thị xã') || item.district.includes('Quận') || item.district.includes('Huyện')
+                                    ? item.district
+                                    : ['Đống Đa', 'Hoàn Kiếm', 'Cầu Giấy', 'Tây Hồ', 'Ba Đình', 'Hai Bà Trưng', 'Hoàng Mai', 'Long Biên', 'Nam Từ Liêm', 'Bắc Từ Liêm', 'Hà Đông', 'Thanh Xuân'].includes(item.district)
+                                      ? `Quận ${item.district}`
+                                      : item.district === 'Sơn Tây'
+                                        ? 'Thị xã Sơn Tây'
+                                        : `Huyện ${item.district}`;
+
+                                  setPostingData((prev) => ({
+                                    ...prev,
+                                    location: {
+                                      ...prev.location,
+                                      district: item.district,
+                                      ward: item.ward || prev.location.ward,
+                                      street: item.name,
+                                      lat: item.lat,
+                                      lng: item.lng,
+                                      displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${distTitle}, Hà Nội`,
+                                    },
+                                  }));
+                                  setPickedLocation({
+                                    lat: item.lat,
+                                    lng: item.lng,
+                                    displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${distTitle}, Hà Nội`,
+                                    district: item.district,
+                                    ward: item.ward || '',
+                                    road: item.name,
+                                    houseNumber: '',
+                                  });
+                                  addToast(`📍 Đã định vị nhanh: ${item.name}`, 'success');
+                                }}
+                                className="text-[10px] font-medium bg-page-bg hover:bg-orange-50 dark:hover:bg-orange-950/30 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 px-2 py-0.5 rounded-md border border-input transition-colors"
+                              >
+                                {item.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   <div>
