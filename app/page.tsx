@@ -683,7 +683,7 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="hero"
-        className="relative flex flex-col justify-between overflow-hidden bg-slate-50 text-slate-900 pt-[78px] sm:pt-[82px] lg:pt-[86px] pb-3 sm:pb-4 border-b border-slate-200/80"
+        className="relative flex flex-col justify-between overflow-hidden bg-slate-50 text-slate-900 pt-[78px] sm:pt-[82px] lg:pt-[86px] pb-6 sm:pb-8 lg:pb-10 border-b border-slate-200/80"
       >
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex-1 flex flex-col justify-between">
 
@@ -930,45 +930,6 @@ export default function HomePage() {
               </motion.div>
             </div>
 
-          </div>
-
-          {/* 3. DẢI ĐỐI TÁC HỆ SINH THÁI (Thu gọn vừa vặn để thấy trọn vẹn trong first viewport) */}
-          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100 overflow-hidden bg-white rounded-t-3xl w-[100vw] relative left-1/2 -translate-x-1/2 px-4 sm:px-6 lg:px-8 xl:px-10 shadow-sm">
-            <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)] py-1.5 sm:py-2">
-              <div className="flex gap-10 sm:gap-14 md:gap-18 w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] items-center text-slate-400 select-none">
-                {[
-                  { name: 'VINHOMES', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
-                  { name: 'MASTERISE HOMES', className: 'font-serif font-bold tracking-wider text-base sm:text-lg md:text-xl' },
-                  { name: 'ecopark', className: 'font-black italic tracking-tight text-lg sm:text-xl md:text-2xl' },
-                  { name: 'SỞ QHKT HÀ NỘI', className: 'font-bold tracking-tight text-base sm:text-lg md:text-xl' },
-                  { name: 'TECHCOMBANK', className: 'font-black tracking-tighter text-base sm:text-lg md:text-xl uppercase' },
-                  { name: 'Vietcombank', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
-                  { name: 'CEN LAND', className: 'font-black tracking-wider text-base sm:text-lg md:text-xl uppercase' },
-                  { name: 'Batdongsan.com.vn', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
-                  // Lặp lại
-                  { name: 'VINHOMES', className: 'font-black tracking-tight text-lg sm:text-xl md:text-2xl' },
-                  { name: 'MASTERISE HOMES', className: 'font-serif font-bold tracking-wider text-base sm:text-lg md:text-xl' },
-                  { name: 'ecopark', className: 'font-black italic tracking-tight text-lg sm:text-xl md:text-2xl' },
-                  { name: 'SỞ QHKT HÀ NỘI', className: 'font-bold tracking-tight text-base sm:text-lg md:text-xl' },
-                  { name: 'TECHCOMBANK', className: 'font-black tracking-tighter text-base sm:text-lg md:text-xl uppercase' },
-                  { name: 'Vietcombank', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
-                  { name: 'CEN LAND', className: 'font-black tracking-wider text-base sm:text-lg md:text-xl uppercase' },
-                  { name: 'Batdongsan.com.vn', className: 'font-black tracking-tight text-base sm:text-lg md:text-xl' },
-                ].map((brand, idx) => (
-                  <span
-                    key={`${brand.name}-${idx}`}
-                    className={`${brand.className} hover:text-slate-700 transition-colors cursor-default whitespace-nowrap`}
-                  >
-                    {brand.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Dòng mô tả nhỏ căn giữa chuẩn ảnh 2 */}
-            <p className="text-xs text-slate-400 font-medium text-center mt-1.5 sm:mt-2">
-              Được tin tưởng bởi các đơn vị phát triển BĐS và hơn 10.000+ khách hàng tại 29 quận, huyện Hà Nội
-            </p>
           </div>
 
         </div>
@@ -2222,17 +2183,21 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section className="bg-slate-50/70 py-12 sm:py-14 overflow-hidden border-b border-slate-200/80">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-7 text-center">
-          <span className="inline-block text-[11px] sm:text-xs font-bold uppercase tracking-widest text-slate-400">
+          <span className="inline-block text-xs font-bold uppercase tracking-widest text-slate-400">
             ĐỐI TÁC CHIẾN LƯỢC & THƯƠNG HIỆU ĐỒNG HÀNH
           </span>
+          <p className="text-xs sm:text-[13px] text-slate-500 font-normal mt-1.5 max-w-xl mx-auto">
+            Được tin tưởng bởi các đơn vị phát triển BĐS và hơn 10.000+ khách hàng tại 29 quận, huyện Hà Nội
+          </p>
         </div>
 
-        {/* Marquee Row 1 (Developers) */}
+        {/* Marquee Row 1 (Developers & Real Estate Platforms) */}
         <div className="flex gap-4 w-max animate-[marquee_35s_linear_infinite] hover:[animation-play-state:paused] mb-4">
           {[
             'Vinhomes', 'Ecopark Group', 'Sun Group', 'Masterise Homes',
-            'Nam Long', 'Hưng Thịnh Corp', 'Novaland', 'CapitaLand',
+            'Nam Long', 'Hưng Thịnh Corp', 'Novaland', 'CapitaLand', 'CEN LAND', 'Batdongsan.com.vn',
             'Vinhomes', 'Ecopark Group', 'Sun Group', 'Masterise Homes',
+            'Nam Long', 'Hưng Thịnh Corp', 'Novaland', 'CapitaLand', 'CEN LAND', 'Batdongsan.com.vn',
           ].map((brand, idx) => (
             <div
               key={idx}
