@@ -1916,7 +1916,7 @@ export default function HomePage() {
             {/* Big Featured Article (Top 100%) */}
             <div className="w-full flex flex-col">
               <Link
-                href="/streets"
+                href="/news"
                 className="group flex flex-col sm:flex-row bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-2xl hover:shadow-orange-500/10 hover:border-orange-400 transition-all duration-300 sm:h-[180px] lg:h-[200px]"
               >
                 <div className="relative w-full sm:w-5/12 h-[140px] sm:h-full overflow-hidden bg-slate-900 shrink-0">
@@ -1929,7 +1929,7 @@ export default function HomePage() {
                     🔥 Nổi bật tuần
                   </span>
                   <span className="absolute top-3.5 right-3.5 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full font-medium">
-                    22/08/2025
+                    28/09/2025
                   </span>
                 </div>
 
@@ -1937,11 +1937,11 @@ export default function HomePage() {
                   <div className="space-y-1 sm:space-y-1.5">
                     {/* Card Title khoảng 18-20px */}
                     <h3 className="text-base sm:text-lg lg:text-[20px] font-bold text-[#0a1128] group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
-                      Thị trường BĐS Hà Nội Q4/2025: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức khởi công
+                      Thị trường BĐS Hà Nội: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức tăng tốc thi công
                     </h3>
-                    {/* Body text khoảng 14-16px */}
-                    <p className="text-sm sm:text-[15px] lg:text-base text-slate-500 font-normal line-clamp-2 leading-relaxed">
-                      Sự kết nối giữa các trục giao thông hướng tâm và đường vành đai đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố trung tâm và ven đô.
+                    {/* Body text khoảng 14-16px - Rút gọn 1 câu súc tích */}
+                    <p className="text-sm sm:text-[15px] lg:text-base text-slate-500 font-normal line-clamp-1 leading-relaxed">
+                      Sự kết nối giữa các trục giao thông hướng tâm và đường vành đai đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố.
                     </p>
                   </div>
 
@@ -1965,25 +1965,25 @@ export default function HomePage() {
                 {
                   title: 'Quy hoạch Vành đai 4: Cơ hội vàng cho nhà đầu tư BĐS ven đô',
                   category: 'Quy hoạch',
-                  date: '20/08/2025',
+                  date: '25/09/2025',
                   image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&auto=format&fit=crop&q=80',
                 },
                 {
-                  title: 'Top 5 phường có giá đất tăng mạnh nhất quận Đống Đa 2025',
+                  title: 'Top 5 phường có giá đất tăng mạnh nhất quận Đống Đa: Phân tích thực tế',
                   category: 'Giá đất',
-                  date: '19/08/2025',
+                  date: '22/09/2025',
                   image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80',
                 },
                 {
-                  title: 'Lãi suất ngân hàng giảm: Tác động tích cực thế nào đến lực cầu BĐS?',
+                  title: 'Lãi suất vay mua nhà giảm sâu: Thời điểm thích hợp để sở hữu BĐS an cư?',
                   category: 'Tài chính',
-                  date: '17/08/2025',
+                  date: '15/09/2025',
                   image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&auto=format&fit=crop&q=80',
                 },
               ].map((article, idx) => (
                 <Link
                   key={idx}
-                  href="/streets"
+                  href="/news"
                   className="group bg-white rounded-2xl p-2 border border-slate-200/90 shadow-md hover:shadow-xl hover:border-orange-400 transition-all flex flex-col justify-between"
                 >
                   <div className="h-[65px] sm:h-[80px] rounded-xl overflow-hidden mb-1.5 bg-slate-100">
@@ -2008,12 +2008,23 @@ export default function HomePage() {
 
           </div>
 
-          {/* Market Mini Dashboard Row */}
+          {/* Market Mini Dashboard Row — Có thời điểm cập nhật và liên kết sang Báo cáo AI chuyên sâu */}
           <div className="mt-2 sm:mt-3 bg-white rounded-3xl p-3 sm:p-4 border border-slate-200/90 shadow-2xl">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Chỉ số thị trường tuần này</span>
-            </h4>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1.5">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Chỉ số thị trường Hà Nội (Cập nhật: Q3/2025)</span>
+              </h4>
+              <Link
+                href="/reports"
+                className="text-xs font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 transition-colors group"
+                title="Xem phân tích chuyên sâu tại trang Báo cáo AI"
+              >
+                <span>Xem báo cáo AI chuyên sâu</span>
+                <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
               <div className="p-2">
                 <p className="text-xs sm:text-sm text-slate-500 font-normal">Giá TB Đống Đa</p>
@@ -2036,6 +2047,10 @@ export default function HomePage() {
                 <span className="text-emerald-600 font-bold text-xs sm:text-sm">▲ +12% hoàn thành</span>
               </div>
             </div>
+
+            <p className="text-[11px] text-slate-400 mt-2 text-right italic font-normal">
+              *Nguồn dữ liệu: Tổng hợp niêm yết và giao dịch thực tế trên hệ thống HaNoi Realty
+            </p>
           </div>
 
         </div>
