@@ -21,7 +21,8 @@ import {
   ChevronDown,
   ShieldCheck,
   Heart,
-  Bell
+  Bell,
+  Download
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
@@ -587,6 +588,23 @@ export const Navbar: React.FC = () => {
                   <span>Đăng nhập / Đăng ký</span>
                 </Link>
               )}
+
+              {/* Nút Cài đặt ứng dụng PWA */}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.dispatchEvent(new CustomEvent('open_pwa_install'));
+                }}
+                className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all border ${
+                  isScrolled
+                    ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
+                    : 'bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border-orange-500/30'
+                }`}
+              >
+                <Download className="h-4 w-4 text-orange-500" />
+                <span>📲 Cài đặt App HaNoi Realty (PWA)</span>
+              </button>
             </div>
           </motion.div>
         )}

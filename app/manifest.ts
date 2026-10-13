@@ -1,0 +1,80 @@
+import { MetadataRoute } from 'next';
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'HaNoi Realty - Nền tảng BĐS & Quy hoạch Hà Nội',
+    short_name: 'HaNoi Realty',
+    description: 'Nền tảng tìm kiếm BĐS thông minh, tra cứu quy hoạch đất Hà Nội 2030-2045 và thẩm định AI chuyên sâu.',
+    start_url: '/',
+    id: '/',
+    scope: '/',
+    display: 'standalone',
+    orientation: 'portrait-primary',
+    background_color: '#0f172a',
+    theme_color: '#ea580c',
+    lang: 'vi',
+    dir: 'ltr',
+    categories: ['real estate', 'utilities', 'productivity', 'business'],
+    icons: [
+      {
+        src: '/icons/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-maskable-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/icons/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-maskable-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/icons/icon.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
+      },
+    ],
+    shortcuts: [
+      {
+        name: 'Tra cứu Quy hoạch',
+        short_name: 'Quy hoạch',
+        description: 'Bản đồ quy hoạch phân khu & chức năng sử dụng đất Hà Nội',
+        url: '/planning',
+        icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }],
+      },
+      {
+        name: 'Tìm kiếm BĐS',
+        short_name: 'Tìm nhà',
+        description: 'Bộ lọc BĐS bản đồ GIS thông minh',
+        url: '/search',
+        icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }],
+      },
+      {
+        name: 'Đăng tin Nhà đất',
+        short_name: 'Đăng tin',
+        description: 'Đăng tin bán / cho thuê BĐS Hà Nội',
+        url: '/post-property',
+        icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }],
+      },
+      {
+        name: 'Dashboard Quản lý',
+        short_name: 'Quản lý',
+        description: 'Bảng điều khiển tin đăng & gói dịch vụ',
+        url: '/dashboard',
+        icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }],
+      },
+    ],
+  };
+}
