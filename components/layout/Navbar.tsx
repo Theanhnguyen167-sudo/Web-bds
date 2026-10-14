@@ -397,11 +397,11 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile Right Actions (Tablet & Mobile < lg) - Thứ tự: Đăng tin, Tìm kiếm, Thông báo, Tài khoản (icon người), 3 gạch */}
-        <div className="flex lg:hidden items-center gap-1 min-[360px]:gap-1 min-[375px]:gap-1.5 sm:gap-2 shrink-0 flex-nowrap">
+        <div className="flex lg:hidden items-center gap-0.5 sm:gap-1 shrink-0 flex-nowrap">
           {/* 1. Nút Đăng tin: Nút màu cam nổi bật, kích thước gọn gàng, bo góc tinh tế */}
           <button
             onClick={handlePostListingClick}
-            className="h-7.5 min-[360px]:h-8 sm:h-8.5 flex items-center justify-center rounded-lg sm:rounded-xl bg-accent hover:bg-accent-hover active:scale-95 px-2 min-[360px]:px-2.5 sm:px-3 text-[11px] min-[360px]:text-[11.5px] sm:text-xs font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
+            className="h-7.5 sm:h-8 flex items-center justify-center rounded-lg bg-accent hover:bg-accent-hover active:scale-95 px-2 sm:px-2.5 text-[11px] sm:text-xs font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
           >
             Đăng tin
           </button>
@@ -409,7 +409,7 @@ export const Navbar: React.FC = () => {
           {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}
           <Link
             href="/search"
-            className={`flex h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-lg sm:rounded-xl transition-all shrink-0 active:scale-95 ${
+            className={`flex h-7.5 w-6.5 sm:w-7 items-center justify-center rounded-lg transition-all shrink-0 active:scale-95 ${
               isScrolled
                 ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
                 : 'text-slate-200 hover:text-white hover:bg-white/10'
@@ -426,7 +426,7 @@ export const Navbar: React.FC = () => {
               onOpenChange={(open) => {
                 if (open) setMobileMenuOpen(false);
               }}
-              triggerClassName={`relative flex h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-lg sm:rounded-xl transition-all cursor-pointer shrink-0 active:scale-95 ${
+              triggerClassName={`relative flex h-7.5 w-6.5 sm:w-7 items-center justify-center rounded-lg transition-all cursor-pointer shrink-0 active:scale-95 ${
                 isScrolled
                   ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
                   : 'text-slate-200 hover:text-white hover:bg-white/10'
@@ -439,7 +439,7 @@ export const Navbar: React.FC = () => {
             href={user ? '/dashboard' : '/login'}
             aria-label="Tài khoản người dùng"
             title={user ? `Quản lý tài khoản: ${user.name}` : 'Đăng nhập / Đăng ký'}
-            className={`flex h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-lg sm:rounded-xl transition-all shrink-0 active:scale-95 ${
+            className={`flex h-7.5 w-6.5 sm:w-7 items-center justify-center rounded-lg transition-all shrink-0 active:scale-95 ${
               isScrolled
                 ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
                 : 'text-slate-200 hover:text-white hover:bg-white/10'
@@ -449,7 +449,7 @@ export const Navbar: React.FC = () => {
               <img
                 src={user.avatar}
                 alt={user.name}
-                className="h-5 w-5 sm:h-5.5 sm:w-5.5 rounded-full object-cover ring-1.5 ring-accent"
+                className="h-5 w-5 rounded-full object-cover ring-1.5 ring-accent"
               />
             ) : (
               <User className="h-4 w-4" />
@@ -466,16 +466,16 @@ export const Navbar: React.FC = () => {
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
             title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu hệ thống'}
-            className={`relative flex h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-8.5 sm:w-8.5 items-center justify-center p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 ${
+            className={`relative flex h-7.5 w-6.5 sm:w-7 items-center justify-center p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 ${
               isScrolled
                 ? 'text-slate-800 hover:text-orange-500'
                 : 'text-white hover:text-orange-400'
             }`}
           >
             {mobileMenuOpen ? (
-              <X className="h-5.5 w-5.5 sm:h-6 sm:w-6 stroke-[2.4] text-orange-500" />
+              <X className="h-5 w-5 sm:h-5.5 sm:w-5.5 stroke-[2.4] text-orange-500" />
             ) : (
-              <Menu className="h-5.5 w-5.5 sm:h-6 sm:w-6 stroke-[2.4]" />
+              <Menu className="h-5 w-5 sm:h-5.5 sm:w-5.5 stroke-[2.4]" />
             )}
           </button>
         </div>
