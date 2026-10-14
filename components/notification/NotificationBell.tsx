@@ -92,7 +92,7 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
     category: 'listing',
     createdAt: '3 giờ trước',
     timestamp: Date.now() - 3 * 3600 * 1000,
-    isRead: true,
+    isRead: false,
     link: '/search',
     tag: 'Thị trường'
   },

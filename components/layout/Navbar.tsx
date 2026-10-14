@@ -121,24 +121,28 @@ export const Navbar: React.FC = () => {
           : 'bg-[#0a1128] shadow-xs border-b border-slate-800/80 text-white'
       }`}
     >
-      <div className="header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 sm:h-[68px]">
+      <div
+        className={`header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-2.5 min-[375px]:px-3 sm:px-6 lg:px-8 transition-all duration-300 flex-nowrap ${
+          isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
+        }`}
+      >
         {/* 1. LOGO */}
         <div className="logo shrink-0 flex items-center">
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+          <Link href="/" className="flex items-center gap-1.5 min-[360px]:gap-2 sm:gap-2.5 group shrink-0">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20 h-9 w-9 shrink-0 transition-all duration-300"
+              className="flex items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20 h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-9 sm:w-9 shrink-0 transition-all duration-300"
             >
-              <Home className="h-4.5 w-4.5" />
+              <Home className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
             </motion.div>
             <div className="flex flex-col">
-              <span className={`font-extrabold tracking-tight flex items-center gap-1 text-base lg:text-[17px] leading-tight transition-colors whitespace-nowrap ${
+              <span className={`font-extrabold tracking-tight flex items-center gap-1 text-[13.5px] min-[360px]:text-[14.5px] sm:text-base lg:text-[17px] leading-tight transition-colors whitespace-nowrap ${
                 isScrolled ? 'text-slate-900 group-hover:text-slate-900' : 'text-white group-hover:text-white'
               }`}>
                 HaNoi <span className="text-accent font-black">Realty</span>
               </span>
-              <span className={`text-[10px] font-medium uppercase tracking-widest -mt-0.5 leading-none whitespace-nowrap transition-colors ${
+              <span className={`text-[8px] min-[360px]:text-[8.5px] sm:text-[10px] font-medium uppercase tracking-wider sm:tracking-widest -mt-0.5 leading-none whitespace-nowrap transition-colors ${
                 isScrolled ? 'text-slate-500' : 'text-slate-300'
               }`}>
                 PropTech & Quy Hoạch
@@ -392,36 +396,67 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Right Actions (Tablet & Mobile < lg) */}
-        <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
+        {/* Mobile Right Actions (Tablet & Mobile < lg) - Thứ tự: Đăng tin, Tìm kiếm, Thông báo, Tài khoản (icon người), 3 gạch */}
+        <div className="flex lg:hidden items-center gap-1 min-[360px]:gap-1 min-[375px]:gap-1.5 sm:gap-2 shrink-0 flex-nowrap">
+          {/* 1. Nút Đăng tin: Nút màu cam nổi bật, kích thước gọn gàng, bo góc tinh tế */}
+          <button
+            onClick={handlePostListingClick}
+            className="h-7.5 min-[360px]:h-8 sm:h-8.5 flex items-center justify-center rounded-lg sm:rounded-xl bg-accent hover:bg-accent-hover active:scale-95 px-2 min-[360px]:px-2.5 sm:px-3 text-[11px] min-[360px]:text-[11.5px] sm:text-xs font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
+          >
+            Đăng tin
+          </button>
+
+          {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}
           <Link
             href="/search"
-            className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+            className={`flex h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-lg sm:rounded-xl transition-all shrink-0 active:scale-95 ${
               isScrolled
-                ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
-                : 'text-slate-300 hover:text-white hover:bg-white/10'
+                ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                : 'text-slate-200 hover:text-white hover:bg-white/10'
             }`}
-            title="Tìm kiếm BĐS"
+            title="Tìm kiếm BĐS nhanh"
           >
             <Search className="h-4 w-4" />
           </Link>
 
-          {/* Nút Chuông Thông Báo Mobile */}
+          {/* 3. Nút Thông báo: Icon chuông <Bell /> kèm huy hiệu hiển thị số lượng thông báo mới */}
           <div className="relative shrink-0">
             <NotificationBell
               isScrolled={isScrolled}
               onOpenChange={(open) => {
                 if (open) setMobileMenuOpen(false);
               }}
+              triggerClassName={`relative flex h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-lg sm:rounded-xl transition-all cursor-pointer shrink-0 active:scale-95 ${
+                isScrolled
+                  ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                  : 'text-slate-200 hover:text-white hover:bg-white/10'
+              }`}
             />
           </div>
 
-          <button
-            onClick={handlePostListingClick}
-            className="h-9 flex items-center justify-center rounded-xl bg-accent hover:bg-accent-hover px-2.5 sm:px-3 text-xs font-bold text-white shadow-sm transition-colors whitespace-nowrap cursor-pointer"
+          {/* 4. Icon hình người (Tài khoản đăng nhập): Biểu tượng <User /> hoặc avatar */}
+          <Link
+            href={user ? '/dashboard' : '/login'}
+            aria-label="Tài khoản người dùng"
+            title={user ? `Quản lý tài khoản: ${user.name}` : 'Đăng nhập / Đăng ký'}
+            className={`flex h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-lg sm:rounded-xl transition-all shrink-0 active:scale-95 ${
+              isScrolled
+                ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                : 'text-slate-200 hover:text-white hover:bg-white/10'
+            }`}
           >
-            Đăng tin
-          </button>
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="h-5 w-5 sm:h-5.5 sm:w-5.5 rounded-full object-cover ring-1.5 ring-accent"
+              />
+            ) : (
+              <User className="h-4 w-4" />
+            )}
+          </Link>
+
+          {/* 5. Nút 3 dấu gạch (Menu): 3 thanh ngang rõ nét, không viền, nằm ở góc ngoài cùng bên phải */}
           <button
             type="button"
             onClick={() => {
@@ -430,17 +465,17 @@ export const Navbar: React.FC = () => {
             }}
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
-            title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
-            className={`relative flex items-center justify-center p-1 active:scale-90 transition-all cursor-pointer shrink-0 ${
+            title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu hệ thống'}
+            className={`relative flex h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-8.5 sm:w-8.5 items-center justify-center p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 ${
               isScrolled
                 ? 'text-slate-800 hover:text-orange-500'
                 : 'text-white hover:text-orange-400'
             }`}
           >
             {mobileMenuOpen ? (
-              <X className="h-7 w-7 stroke-[2.5] text-orange-500" />
+              <X className="h-5.5 w-5.5 sm:h-6 sm:w-6 stroke-[2.4] text-orange-500" />
             ) : (
-              <Menu className="h-7 w-7 stroke-[2.5]" />
+              <Menu className="h-5.5 w-5.5 sm:h-6 sm:w-6 stroke-[2.4]" />
             )}
           </button>
         </div>
