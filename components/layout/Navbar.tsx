@@ -115,7 +115,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,backdrop-filter,border-color,box-shadow,color] duration-200 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 z-[100] transition-[background-color,backdrop-filter,border-color,box-shadow,color] duration-200 ease-in-out ${
         isScrolled
           ? 'bg-white/90 supports-[backdrop-filter]:bg-white/75 backdrop-blur-[14px] shadow-sm shadow-slate-900/[0.04] border-b border-slate-200/70 text-slate-800'
           : 'bg-[#0a1128] shadow-xs border-b border-slate-800/80 text-white'
@@ -256,7 +256,7 @@ export const Navbar: React.FC = () => {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 10 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 text-text-primary shadow-xl z-50"
+                  className="absolute right-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 text-text-primary shadow-xl z-[110]"
                 >
                   {user ? (
                     <div className="px-3 py-2 border-b border-slate-100 mb-1">

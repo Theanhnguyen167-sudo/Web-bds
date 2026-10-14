@@ -12,7 +12,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div 
         className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}

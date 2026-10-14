@@ -388,7 +388,7 @@ export default function LocationPicker({
   return (
     <div className="flex flex-col gap-3">
       {/* ── Search Bar & Khu vực đề xuất ── */}
-      <div ref={searchContainerRef} className="relative z-[650]">
+      <div ref={searchContainerRef} className="relative z-30">
         <div className="flex items-center gap-2 bg-white dark:bg-gray-800 
                         border-2 border-gray-200 dark:border-gray-600 
                         rounded-xl px-4 py-3 focus-within:border-orange-500 
@@ -449,7 +449,7 @@ export default function LocationPicker({
               transition={{ duration: 0.15 }}
               className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-gray-800 
                          border border-gray-200 dark:border-gray-700 rounded-2xl 
-                         shadow-2xl z-[700] overflow-hidden max-h-[380px] overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700/60"
+                         shadow-2xl z-40 overflow-hidden max-h-[380px] overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700/60"
             >
               {/* Phân vùng 1: Vị trí phù hợp nhất */}
               {directMatches.length > 0 && (
@@ -605,7 +605,7 @@ export default function LocationPicker({
       </div>
 
       {/* ── Map Container ── */}
-      <div className="relative rounded-2xl overflow-hidden border-2 border-gray-200 
+      <div className="relative z-10 rounded-2xl overflow-hidden border-2 border-gray-200 
                       dark:border-gray-700 focus-within:border-orange-500 
                       transition-colors shadow-sm"
         style={{ height }}>
