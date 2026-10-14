@@ -11,6 +11,8 @@ export interface HanoiStreetInfo {
   isSimilar?: boolean;
   similarReason?: string;
   badge?: string;
+  houseNumber?: string;
+  road?: string;
 }
 
 export interface DistrictRelation {
@@ -959,6 +961,20 @@ export const POPULAR_HANOI_LOCATIONS: HanoiStreetInfo[] = [
   { name: 'Thị trấn Thường Tín', district: 'Thường Tín', ward: 'TT Thường Tín', lat: 20.8685, lng: 105.8685, category: 'town', description: 'Trung tâm huyện làng nghề Thường Tín', aliases: ['thuong tin'] },
   { name: 'Thị trấn Vân Đình (Ứng Hòa)', district: 'Ứng Hòa', ward: 'TT Vân Đình', lat: 20.7285, lng: 105.7685, category: 'town', description: 'Trung tâm thương mại ẩm thực huyện Ứng Hòa', aliases: ['van dinh', 'ung hoa'] },
   { name: 'Khu danh thắng Chùa Hương (Mỹ Đức)', district: 'Mỹ Đức', ward: 'Hương Sơn', lat: 20.6185, lng: 105.7525, category: 'landmark', description: 'Quần thể danh thắng tâm linh Chùa Hương', aliases: ['chua huong', 'my duc'] },
+
+  // Bổ sung các tuyến phố & KĐT quan trọng nội đô để tìm kiếm siêu nhạy
+  { name: 'Phố Dịch Vọng', district: 'Cầu Giấy', ward: 'Dịch Vọng', lat: 21.0345, lng: 105.7925, category: 'street', description: 'Khu phố trung tâm quận Cầu Giấy gần công viên', aliases: ['dich vong', 'pho dich vong'] },
+  { name: 'Phố Trần Đăng Ninh', district: 'Cầu Giấy', ward: 'Dịch Vọng', lat: 21.0385, lng: 105.7945, category: 'street', description: 'Trục đường ẩm thực & dịch vụ Dịch Vọng', aliases: ['tran dang ninh'] },
+  { name: 'Phố Nguyễn Phong Sắc', district: 'Cầu Giấy', ward: 'Dịch Vọng Hậu', lat: 21.0395, lng: 105.7895, category: 'street', description: 'Trục đường lớn nối Xuân Thủy và Hoàng Quốc Việt', aliases: ['nguyen phong sac'] },
+  { name: 'Phố Nguyễn Khánh Toàn', district: 'Cầu Giấy', ward: 'Quan Hoa', lat: 21.0385, lng: 105.8015, category: 'street', description: 'Phố tài chính, ngân hàng và nhà hàng cao cấp', aliases: ['nguyen khanh toan'] },
+  { name: 'Phố Tô Hiệu (Cầu Giấy)', district: 'Cầu Giấy', ward: 'Nghĩa Tân', lat: 21.0425, lng: 105.7935, category: 'street', description: 'Thiên đường ẩm thực khu Nghĩa Tân', aliases: ['to hieu', 'to hieu cau giay'] },
+  { name: 'KĐT Mễ Trì Hạ', district: 'Nam Từ Liêm', ward: 'Mễ Trì', lat: 21.0145, lng: 105.7815, category: 'project', description: 'Khu đô thị đối diện Keangnam Landmark 72', aliases: ['me tri ha'] },
+  { name: 'Đường Phạm Hùng', district: 'Nam Từ Liêm', ward: 'Mỹ Đình 1', lat: 21.0255, lng: 105.7785, category: 'street', description: 'Trục Vành đai 3 xuyên suốt phía Tây', aliases: ['pham hung', 'vanh dai 3'] },
+  { name: 'Đường Tố Hữu (Nam Từ Liêm)', district: 'Nam Từ Liêm', ward: 'Trung Văn', lat: 20.9985, lng: 105.7825, category: 'street', description: 'Trục đường cao ốc chung cư & văn phòng', aliases: ['to huu nam tu liem'] },
+  { name: 'KĐT Gamuda City', district: 'Hoàng Mai', ward: 'Trần Phú', lat: 20.9715, lng: 105.8655, category: 'project', description: 'Quần thể đô thị sinh thái xanh 500ha ven Công viên Yên Sở', aliases: ['gamuda', 'gamuda city', 'yen so'] },
+  { name: 'Bán đảo Linh Đàm (KĐT Linh Đàm)', district: 'Hoàng Mai', ward: 'Hoàng Liệt', lat: 20.9655, lng: 105.8285, category: 'project', description: 'Khu đô thị kiểu mẫu hồ nước bao quanh', aliases: ['linh dam', 'ban dao linh dam'] },
+  { name: 'KĐT Vinhomes Riverside', district: 'Long Biên', ward: 'Phúc Đồng', lat: 21.0485, lng: 105.9085, category: 'project', description: 'Đại đô thị sinh thái biệt thự ven sông đẳng cấp', aliases: ['vinhomes riverside', 'riverside'] },
+  { name: 'KĐT Vinhomes Ocean Park 1', district: 'Gia Lâm', ward: 'Đa Tốn', lat: 20.9945, lng: 105.9465, category: 'project', description: 'Thành phố biển hồ 420ha', aliases: ['ocean park', 'vinhomes ocean park'] },
 ];
 
 /**
@@ -977,7 +993,6 @@ export function normalizeQuery(text: string): string {
 
 /**
  * Xóa các từ phụ BĐS để trích xuất địa danh cốt lõi
- * Ví dụ: "bán đất quốc oai" -> "quoc oai"
  */
 export function extractCoreLocationQuery(query: string): string {
   let cleaned = normalizeQuery(query);
@@ -994,11 +1009,7 @@ export function extractCoreLocationQuery(query: string): string {
     'can ban',
     'tim dat',
     'vi tri',
-    'lo',
-    'dat',
-    'nha',
     'bds',
-    'khu',
     'tai',
     'gan',
   ];
@@ -1011,6 +1022,111 @@ export function extractCoreLocationQuery(query: string): string {
   return cleaned.replace(/\s+/g, ' ').trim();
 }
 
+export interface ParsedAddress {
+  raw: string;
+  housePrefix?: string;      // "Số 18", "Ngõ 12", "Ngách 5/18", "Lô BT02"
+  houseNumber?: string;      // "18", "12", "5/18", "BT02"
+  streetQuery: string;       // Cụm từ tìm đường sau khi tách số nhà
+  detectedDistrict?: string; // Tên quận/huyện nhận diện được
+  isDistrictOnly: boolean;   // Người dùng chỉ gõ tên quận/huyện
+}
+
+/**
+ * Bộ phân tích địa chỉ Việt Nam thông minh (Smart Vietnamese Address Parser)
+ * Tách biệt số nhà, ngõ/ngách/hẻm, tên đường và quận/huyện
+ */
+export function parseVietnameseAddress(rawInput: string): ParsedAddress {
+  const raw = (rawInput || '').trim();
+  if (!raw) {
+    return { raw: '', streetQuery: '', isDistrictOnly: false };
+  }
+
+  let houseNumber: string | undefined;
+  let housePrefix: string | undefined;
+  let remaining = raw;
+
+  // Pattern 1: Bắt đầu bằng số nhà: "18 Duy Tân", "Số 18 Duy Tân", "18A Phố Duy Tân", "18/4 Hoàng Quốc Việt"
+  const housePattern = /^(?:số\s+)?(\d+[a-zA-Z]?(?:\/[\d\w]+)?)\s*(?:,\s*|\s+)?(?:đường|phố)?\s*(.+)$/i;
+  // Pattern 2: Bắt đầu bằng ngõ/ngách: "Ngõ 12 Dịch Vọng", "Ngách 45/2 Cầu Giấy"
+  const alleyPattern = /^(ngõ|ngách|hẻm|kiệt)\s*(\d+[a-zA-Z]?(?:\/[\d\w]+)?)\s*(?:,\s*|\s+)?(?:đường|phố)?\s*(.+)$/i;
+  // Pattern 3: Bắt đầu bằng Lô / Thửa / Căn: "Lô BT02 Nam An Khánh", "Căn 1205 Vinhomes Smart City"
+  const plotPattern = /^(lô|thửa|căn|căn hộ|toà|tòa)\s*([\w\d.-]+)\s*(?:,\s*|\s+)?(.+)$/i;
+
+  let m = raw.match(alleyPattern);
+  if (m) {
+    const alleyType = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();
+    houseNumber = `${m[1]} ${m[2]}`;
+    housePrefix = `${alleyType} ${m[2]}`;
+    remaining = m[3].trim();
+  } else {
+    m = raw.match(housePattern);
+    if (m) {
+      houseNumber = m[1];
+      housePrefix = `Số ${m[1]}`;
+      remaining = m[2].trim();
+    } else {
+      m = raw.match(plotPattern);
+      if (m) {
+        const plotType = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();
+        houseNumber = `${m[1]} ${m[2]}`;
+        housePrefix = `${plotType} ${m[2]}`;
+        remaining = m[3].trim();
+      }
+    }
+  }
+
+  // Tinh chỉnh remaining: loại bỏ các tiền tố loại hình BĐS không cần thiết
+  remaining = remaining
+    .replace(/^(đường|phố|tại|ở|khu\s+đô\s+thị|khu\s+do\s+thi|khu\s+dân\s+cư|khu\s+dan\s+cu|kđt|kdt|khu|dự\s+án|du\s+an|chung\s+cư|cc|toà|tòa|thị\s+trấn|tt|xã|xa|phường|phuong)\s+/i, '')
+    .trim();
+
+  // Nhận diện Quận / Huyện từ chuỗi
+  const cleanQ = normalizeQuery(remaining || raw);
+  let detectedDistrict: string | undefined;
+  let isDistrictOnly = false;
+
+  for (const [distName, config] of Object.entries(HANOI_ALL_DISTRICTS_CONFIG)) {
+    const distNorm = normalizeQuery(distName);
+    const aliases = config.aliases.map(normalizeQuery);
+    const allMatches = [distNorm, ...aliases];
+
+    for (const dMatch of allMatches) {
+      // Trường hợp 1: Người dùng CHỈ gõ tên quận (vd "quoc oai", "cau giay", "huyen hoai duc")
+      if (cleanQ === dMatch || cleanQ === `quan ${dMatch}` || cleanQ === `huyen ${dMatch}`) {
+        detectedDistrict = distName;
+        isDistrictOnly = true;
+        break;
+      }
+
+      // Trường hợp 2: Chuỗi chứa tên quận ở cuối hoặc có dấu phẩy (vd "Duy Tân, Cầu Giấy" hoặc "Duy Tân Cầu Giấy")
+      if (cleanQ.endsWith(` ${dMatch}`) || cleanQ.includes(`, ${dMatch}`) || cleanQ.includes(`,${dMatch}`)) {
+        detectedDistrict = distName;
+        // Bỏ tên quận ra khỏi chuỗi tìm đường
+        remaining = remaining
+          .replace(new RegExp(`[,\\s]+(Quận|Huyện|Thị xã)?\\s*${distName}\\b`, 'gi'), '')
+          .replace(new RegExp(`[,\\s]+${dMatch}\\b`, 'gi'), '')
+          .trim();
+        break;
+      }
+    }
+    if (detectedDistrict) break;
+  }
+
+  // Nếu sau khi bỏ quận mà remaining rỗng thì là district-only
+  if (detectedDistrict && (!remaining || remaining.length < 2)) {
+    isDistrictOnly = true;
+  }
+
+  return {
+    raw,
+    housePrefix,
+    houseNumber,
+    streetQuery: remaining || raw,
+    detectedDistrict,
+    isDistrictOnly,
+  };
+}
+
 export interface SmartSearchResult {
   directMatches: HanoiStreetInfo[];
   similarMatches: HanoiStreetInfo[];
@@ -1020,10 +1136,10 @@ export interface SmartSearchResult {
 
 /**
  * Tìm kiếm thông minh địa chỉ tại Hà Nội kết hợp đề xuất khu vực tương tự / lân cận
+ * Áp dụng thuật toán Relevance Scoring và Semantic Address Parsing chuẩn xác
  */
 export function searchHanoiLocationsSmart(rawQuery: string): SmartSearchResult {
   if (!rawQuery || rawQuery.trim().length < 2) {
-    // Trả về top địa điểm phổ biến
     const defaultChips = POPULAR_HANOI_LOCATIONS.slice(0, 8);
     return {
       directMatches: defaultChips,
@@ -1032,65 +1148,180 @@ export function searchHanoiLocationsSmart(rawQuery: string): SmartSearchResult {
     };
   }
 
-  const cleanQ = normalizeQuery(rawQuery);
-  const coreQ = extractCoreLocationQuery(rawQuery) || cleanQ;
-  const terms = coreQ.split(/\s+/).filter(Boolean);
+  const parsed = parseVietnameseAddress(rawQuery);
+  const detectedDistrictName = parsed.detectedDistrict;
 
-  // 1. Nhận diện xem người dùng có đang tìm theo Quận/Huyện cụ thể không
-  let detectedDistrictName: string | undefined;
-  for (const [distName, config] of Object.entries(HANOI_ALL_DISTRICTS_CONFIG)) {
-    const distNorm = normalizeQuery(distName);
-    const matchesAlias = config.aliases.some((al) => {
-      const normAl = normalizeQuery(al);
-      return cleanQ.includes(normAl) || coreQ.includes(normAl);
-    });
+  // ── TRƯỜNG HỢP 1: NGƯỜI DÙNG CHỈ GÕ TÊN QUẬN / HUYỆN (VD: "Quốc Oai", "Hoài Đức", "Cầu Giấy") ──
+  if (parsed.isDistrictOnly && detectedDistrictName) {
+    const inDistrict = POPULAR_HANOI_LOCATIONS.filter(
+      (loc) => loc.district.toLowerCase() === detectedDistrictName.toLowerCase()
+    );
 
-    if (distNorm.includes(coreQ) || coreQ.includes(distNorm) || matchesAlias) {
-      detectedDistrictName = distName;
-      break;
+    // Ưu tiên đưa trung tâm quận / huyện lên đầu
+    const centerMatch = inDistrict.find((l) => l.category === 'district' || l.category === 'town') || inDistrict[0];
+    const otherInDistrict = inDistrict.filter((l) => l !== centerMatch);
+
+    const directMatches: HanoiStreetInfo[] = [
+      ...(centerMatch ? [{ ...centerMatch, badge: 'Trung tâm hành chính' }] : []),
+      ...otherInDistrict.slice(0, 8).map((l) => ({
+        ...l,
+        badge: l.category === 'project' ? 'Dự án' : l.category === 'town' ? 'Thị trấn' : l.category === 'ward_commune' ? 'Xã/Phường' : undefined,
+      })),
+    ];
+
+    // Lấy các khu vực tương tự & lân cận giáp ranh
+    const similarMatches: HanoiStreetInfo[] = [];
+    const distConfig = HANOI_ALL_DISTRICTS_CONFIG[detectedDistrictName];
+    if (distConfig) {
+      for (const rel of distConfig.similarDistricts) {
+        for (const area of rel.keyAreas) {
+          similarMatches.push({
+            name: area.name,
+            district: rel.district,
+            ward: area.ward || '',
+            lat: area.lat,
+            lng: area.lng,
+            category: 'project',
+            description: area.desc || `Khu vực lân cận giáp ranh ${detectedDistrictName}`,
+            isSimilar: true,
+            similarReason: rel.reason,
+            badge: `Lân cận ${rel.district}`,
+          });
+        }
+      }
     }
+
+    const suggestedChips: HanoiStreetInfo[] = [
+      ...directMatches.slice(0, 5),
+      ...similarMatches.slice(0, 3),
+    ];
+
+    return {
+      directMatches,
+      similarMatches: similarMatches.slice(0, 8),
+      detectedDistrict: detectedDistrictName,
+      suggestedChips,
+    };
   }
 
-  // 2. Tìm các kết quả phù hợp trực tiếp (Direct Matches)
-  const directMatches: HanoiStreetInfo[] = [];
+  // ── TRƯỜNG HỢP 2: TÌM THEO TÊN ĐƯỜNG / SỐ NHÀ / DỰ ÁN CỤ THỂ ──
+  // Loại bỏ các từ stopWords BĐS phụ khi so sánh token
+  const searchStreetNorm = normalizeQuery(parsed.streetQuery);
+  const terms = searchStreetNorm
+    .split(/\s+/)
+    .filter((t) => t.length > 0 && !['kdt', 'kđt', 'khu', 'do', 'thi', 'pho', 'duong', 'tai', 'o'].includes(t));
+
+  interface ScoredItem {
+    item: HanoiStreetInfo;
+    score: number;
+  }
+
+  const scoredList: ScoredItem[] = [];
+
   for (const item of POPULAR_HANOI_LOCATIONS) {
     const itemNameNorm = normalizeQuery(item.name);
-    const itemDistNorm = normalizeQuery(item.district);
     const itemWardNorm = item.ward ? normalizeQuery(item.ward) : '';
-    const aliasesNorm = (item.aliases || []).map(normalizeQuery).join(' ');
-    const fullTarget = `${itemNameNorm} ${itemDistNorm} ${itemWardNorm} ${aliasesNorm}`;
+    const itemDistNorm = normalizeQuery(item.district);
+    const aliasesNorm = (item.aliases || []).map(normalizeQuery);
 
-    let isMatch = false;
+    let score = 0;
 
-    // Nếu đã nhận diện được quận và item thuộc quận đó
-    if (detectedDistrictName && item.district.toLowerCase() === detectedDistrictName.toLowerCase()) {
-      isMatch = true;
-    } else if (terms.every((term) => fullTarget.includes(term))) {
-      isMatch = true;
-    } else if (coreQ.length >= 3 && fullTarget.includes(coreQ)) {
-      isMatch = true;
+    // 1. Khớp chính xác hoàn toàn tên đường / dự án
+    if (itemNameNorm === searchStreetNorm || aliasesNorm.includes(searchStreetNorm)) {
+      score += 350;
+    }
+    // 2. Tên đường bắt đầu bằng từ khóa tìm kiếm
+    else if (itemNameNorm.startsWith(searchStreetNorm)) {
+      score += 220;
+    }
+    // 3. Tên đường chứa trọn vẹn cụm từ tìm kiếm
+    else if (itemNameNorm.includes(searchStreetNorm)) {
+      score += 160;
+    }
+    // 4. Các từ khóa đều xuất hiện trong tên đường
+    else if (terms.length > 0 && terms.every((t) => itemNameNorm.includes(t))) {
+      score += 140;
+    }
+    // 5. Khớp trong các tên gọi khác (aliases)
+    else if (terms.length > 0 && aliasesNorm.some((al) => terms.every((t) => al.includes(t)))) {
+      score += 120;
+    }
+    // 6. Khớp trong tên Phường / Xã
+    else if (itemWardNorm && terms.length > 0 && terms.every((t) => itemWardNorm.includes(t))) {
+      score += 90;
+    }
+    // 7. Khớp một phần các từ quan trọng (>= 50% số từ hoặc >= 2 từ khớp)
+    else {
+      let matchedTermCount = 0;
+      for (const t of terms) {
+        if (t.length >= 2 && (itemNameNorm.includes(t) || itemWardNorm.includes(t) || aliasesNorm.some(a => a.includes(t)))) {
+          matchedTermCount++;
+        }
+      }
+      if (terms.length > 0 && (matchedTermCount >= 2 || matchedTermCount / terms.length >= 0.5)) {
+        score += (matchedTermCount / terms.length) * 110;
+      }
     }
 
-    if (isMatch) {
-      directMatches.push({
-        ...item,
-        badge: item.category === 'project' ? 'Dự án' : item.category === 'town' ? 'Thị trấn' : item.category === 'district' ? 'Quận/Huyện' : undefined,
+    // ĐIỂM THƯỞNG: Nếu người dùng có kèm theo tên Quận và item này đúng quận đó
+    // (CHÚ Ý: Chỉ cộng thưởng khi tên đường đã khớp tối thiểu một phần, tuyệt đối KHÔNG match bừa bãi toàn bộ quận)
+    if (score >= 40 && detectedDistrictName) {
+      if (item.district.toLowerCase() === detectedDistrictName.toLowerCase()) {
+        score += 80;
+      } else {
+        score -= 30; // Giảm ưu tiên nếu người dùng ghi rõ quận này nhưng item thuộc quận khác
+      }
+    }
+
+    if (score >= 50) {
+      scoredList.push({ item, score });
+    }
+  }
+
+  // Sắp xếp giảm dần theo điểm số Relevance Score
+  scoredList.sort((a, b) => b.score - a.score);
+
+  const topDirectMatches: HanoiStreetInfo[] = [];
+
+  // Nếu người dùng có nhập số nhà / ngõ, tự động sinh kết quả số 1 có số nhà chính xác!
+  if (parsed.houseNumber && scoredList.length > 0) {
+    const topMatch = scoredList[0].item;
+    const customName = `${parsed.housePrefix} ${topMatch.name}`;
+    topDirectMatches.push({
+      id: `custom-house-${Math.round(topMatch.lat * 1000)}-${Math.round(topMatch.lng * 1000)}`,
+      name: customName,
+      district: topMatch.district,
+      ward: topMatch.ward,
+      lat: topMatch.lat,
+      lng: topMatch.lng,
+      category: 'street',
+      houseNumber: parsed.houseNumber,
+      road: topMatch.name,
+      description: `Vị trí chính xác: ${parsed.housePrefix} ${topMatch.name}, ${topMatch.ward ? topMatch.ward + ', ' : ''}${topMatch.district}`,
+      badge: 'Số nhà chính xác',
+    });
+  }
+
+  // Thêm các kết quả phù hợp tiếp theo
+  for (const s of scoredList) {
+    // Tránh trùng lặp tên
+    if (!topDirectMatches.some((m) => m.name.toLowerCase() === s.item.name.toLowerCase())) {
+      topDirectMatches.push({
+        ...s.item,
+        badge: s.item.badge || (s.item.category === 'project' ? 'Dự án' : s.item.category === 'town' ? 'Thị trấn' : undefined),
       });
     }
+    if (topDirectMatches.length >= 8) break;
   }
 
-  // Nếu tìm theo quận mà chưa nhận diện được trực tiếp thì lấy từ item đầu tiên
-  if (!detectedDistrictName && directMatches.length > 0) {
-    detectedDistrictName = directMatches[0].district;
-  }
+  // Xác định quận tham chiếu để tìm khu vực lân cận
+  const effectiveDistrict = detectedDistrictName || (topDirectMatches[0] ? topDirectMatches[0].district : undefined);
 
   // 3. Đề xuất các khu vực tương tự & lân cận (Similar & Neighboring Matches)
   const similarMatches: HanoiStreetInfo[] = [];
-
-  if (detectedDistrictName && HANOI_ALL_DISTRICTS_CONFIG[detectedDistrictName]) {
-    const distConfig = HANOI_ALL_DISTRICTS_CONFIG[detectedDistrictName];
+  if (effectiveDistrict && HANOI_ALL_DISTRICTS_CONFIG[effectiveDistrict]) {
+    const distConfig = HANOI_ALL_DISTRICTS_CONFIG[effectiveDistrict];
     for (const relation of distConfig.similarDistricts) {
-      // Thêm các khu vực tiêu biểu của quận lân cận
       for (const area of relation.keyAreas) {
         similarMatches.push({
           name: area.name,
@@ -1099,7 +1330,7 @@ export function searchHanoiLocationsSmart(rawQuery: string): SmartSearchResult {
           lat: area.lat,
           lng: area.lng,
           category: 'project',
-          description: area.desc || `Khu vực lân cận giáp ranh ${detectedDistrictName}`,
+          description: area.desc || `Khu vực lân cận giáp ranh ${effectiveDistrict}`,
           isSimilar: true,
           similarReason: relation.reason,
           badge: `Lân cận ${relation.district}`,
@@ -1108,22 +1339,26 @@ export function searchHanoiLocationsSmart(rawQuery: string): SmartSearchResult {
     }
   }
 
-  // Loại trùng giữa direct và similar
+  // Lọc trùng giữa directMatches và similarMatches
   const filteredSimilar = similarMatches.filter((sim) => {
-    return !directMatches.some((dm) => dm.name.toLowerCase() === sim.name.toLowerCase() || (Math.abs(dm.lat - sim.lat) < 0.003 && Math.abs(dm.lng - sim.lng) < 0.003));
+    return !topDirectMatches.some(
+      (dm) =>
+        dm.name.toLowerCase() === sim.name.toLowerCase() ||
+        (Math.abs(dm.lat - sim.lat) < 0.003 && Math.abs(dm.lng - sim.lng) < 0.003)
+    );
   });
 
-  // 4. Tạo thanh Chips gợi ý nhanh (kết hợp các vị trí hot nhất của khu vực đang tìm + 2-3 vị trí lân cận)
+  // Tạo thanh gợi ý nhanh (Chips)
   const suggestedChips: HanoiStreetInfo[] = [
-    ...directMatches.slice(0, 5),
-    ...filteredSimilar.slice(0, 4),
+    ...topDirectMatches.slice(0, 5),
+    ...filteredSimilar.slice(0, 3),
   ];
 
   return {
-    directMatches: directMatches.slice(0, 10),
-    similarMatches: filteredSimilar.slice(0, 8),
-    detectedDistrict: detectedDistrictName,
-    suggestedChips: suggestedChips.slice(0, 8),
+    directMatches: topDirectMatches,
+    similarMatches: filteredSimilar.slice(0, 6),
+    detectedDistrict: effectiveDistrict,
+    suggestedChips,
   };
 }
 
@@ -1136,7 +1371,11 @@ export function searchHanoiAddressOffline(query: string) {
   return combined.map((item) => ({
     lat: item.lat,
     lng: item.lng,
-    displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${item.district.includes('Thị xã') || item.district.includes('Quận') || item.district.includes('Huyện') ? item.district : 'Quận ' + item.district}, Hà Nội`,
+    displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${
+      item.district.includes('Thị xã') || item.district.includes('Quận') || item.district.includes('Huyện')
+        ? item.district
+        : 'Quận ' + item.district
+    }, Hà Nội`,
     shortName: item.name,
     district: item.district,
     ward: item.ward || '',
@@ -1147,3 +1386,4 @@ export function searchHanoiAddressOffline(query: string) {
     similarReason: item.similarReason,
   }));
 }
+

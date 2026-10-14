@@ -921,7 +921,11 @@ export const CreateListingWizard: React.FC = () => {
                             district: matchedDistrict || prev.location.district,
                             ward: loc.ward || prev.location.ward,
                             street: loc.road || prev.location.street,
-                            addressNumber: loc.houseNumber ? `Số ${loc.houseNumber}` : prev.location.addressNumber,
+                            addressNumber: loc.houseNumber
+                              ? (/^(số|ngõ|ngách|hẻm|lô|thửa|căn)\s+/i.test(loc.houseNumber)
+                                  ? loc.houseNumber
+                                  : `Số ${loc.houseNumber}`)
+                              : prev.location.addressNumber,
                             lat: loc.lat,
                             lng: loc.lng,
                             displayName: loc.displayName || prev.location.displayName,

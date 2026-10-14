@@ -189,18 +189,18 @@ export interface DetailedAddressSearchResult {
 function mapStreetToResultItem(item: HanoiStreetInfo, index: number = 0): SearchResultItem {
   const distTitle = formatDistrictName(item.district);
   const cleanName = item.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-  const generatedId = `loc-${cleanName}-${Math.round(item.lat * 1000)}-${Math.round(item.lng * 1000)}-${index}`;
+  const generatedId = item.id || `loc-${cleanName}-${Math.round(item.lat * 1000)}-${Math.round(item.lng * 1000)}-${index}`;
 
   return {
-    id: item.id || generatedId,
+    id: generatedId,
     lat: item.lat,
     lng: item.lng,
     displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${distTitle}, Hà Nội`,
     shortName: item.name,
     district: item.district,
     ward: item.ward || '',
-    road: item.name,
-    houseNumber: '',
+    road: item.road || item.name,
+    houseNumber: item.houseNumber || '',
     category: item.category,
     isSimilar: item.isSimilar,
     similarReason: item.similarReason,

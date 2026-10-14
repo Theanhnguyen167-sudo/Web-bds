@@ -76,6 +76,7 @@ export default function LocationPicker({
   const [suggestedChips, setSuggestedChips] = useState<SearchResultItem[]>([])
   const [detectedDistrict, setDetectedDistrict] = useState<string | undefined>()
   const [showSearchResults, setShowSearchResults] = useState(false)
+  const [activeResultIndex, setActiveResultIndex] = useState<number>(-1)
   const [geocodeError, setGeocodeError] = useState<string | null>(null)
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(
     value ? [value.lat, value.lng] : null
@@ -261,6 +262,7 @@ export default function LocationPicker({
   // ── TÌM KIẾM ĐỊA CHỈ & KHU VỰC TƯƠNG TỰ (TỨC THÌ 0MS) ──
   const handleSearchChange = useCallback((query: string) => {
     setSearchQuery(query)
+    setActiveResultIndex(-1)
 
     if (!query || query.trim().length === 0) {
       const initial = searchAddressWithSuggestions('')
@@ -289,6 +291,7 @@ export default function LocationPicker({
 
     setSearchQuery(result.shortName)
     setShowSearchResults(false)
+    setActiveResultIndex(-1)
 
     // Di chuyển map tới địa chỉ đã chọn mượt mà
     map.flyTo([result.lat, result.lng], 16, { duration: 0.8 })
@@ -312,6 +315,45 @@ export default function LocationPicker({
 
     await placePin(L, map, result.lat, result.lng, false)
   }, [placePin, onChange])
+
+  // ── ĐIỀU HƯỚNG BẰNG BÀN PHÍM (Arrow Up / Down / Enter) ──
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    const totalCount = directMatches.length + similarMatches.length
+    if (!showSearchResults || totalCount === 0) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        const results = searchAddressWithSuggestions(searchQuery)
+        if (results.directMatches.length > 0) {
+          handleSelectResult(results.directMatches[0])
+        }
+      }
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveResultIndex(prev => (prev + 1 < totalCount ? prev + 1 : 0))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveResultIndex(prev => (prev - 1 >= 0 ? prev - 1 : totalCount - 1))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (activeResultIndex >= 0 && activeResultIndex < totalCount) {
+        if (activeResultIndex < directMatches.length) {
+          handleSelectResult(directMatches[activeResultIndex])
+        } else {
+          handleSelectResult(similarMatches[activeResultIndex - directMatches.length])
+        }
+      } else if (directMatches.length > 0) {
+        handleSelectResult(directMatches[0])
+      } else if (similarMatches.length > 0) {
+        handleSelectResult(similarMatches[0])
+      }
+    } else if (e.key === 'Escape') {
+      setShowSearchResults(false)
+      setActiveResultIndex(-1)
+    }
+  }, [showSearchResults, directMatches, similarMatches, activeResultIndex, searchQuery, handleSelectResult])
 
   // ── LẤY VỊ TRÍ GPS HIỆN TẠI ──
   const handleLocateMe = useCallback(async () => {
@@ -355,9 +397,10 @@ export default function LocationPicker({
           <Search size={16} className="text-orange-500 flex-shrink-0" />
           <input
             type="text"
-            placeholder="🔍 Nhập vị trí (VD: Quốc Oai, Hoài Đức, Cầu Giấy, Nam Từ Liêm...)"
+            placeholder="Nhập địa chỉ, số nhà, ngõ, tên đường hoặc KĐT (VD: 18 Duy Tân, Sunny Garden Quốc Oai...)"
             value={searchQuery}
             onChange={e => handleSearchChange(e.target.value)}
+            onKeyDown={handleKeyDown}
             onFocus={() => {
               const res = searchAddressWithSuggestions(searchQuery || value?.district || '')
               setDirectMatches(res.directMatches)
@@ -375,6 +418,7 @@ export default function LocationPicker({
                 onClick={() => {
                   setSearchQuery('')
                   setShowSearchResults(false)
+                  setActiveResultIndex(-1)
                 }}
                 whileTap={{ scale: 0.9 }}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -421,35 +465,40 @@ export default function LocationPicker({
                   </div>
 
                   <div className="divide-y divide-gray-50 dark:divide-gray-700/40">
-                    {directMatches.map((result, idx) => (
-                      <button
-                        key={result.id || `direct-${idx}`}
-                        type="button"
-                        onClick={() => handleSelectResult(result)}
-                        className="w-full flex items-start gap-3 px-4 py-2.5 text-left 
-                                   hover:bg-orange-50/70 dark:hover:bg-orange-950/20 
-                                   transition-colors group"
-                      >
-                        <div className="w-7 h-7 rounded-lg bg-orange-100/80 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
-                          <MapPin size={13} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-bold text-navy dark:text-white line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                              {result.shortName}
-                            </p>
-                            {result.badge && (
-                              <span className="text-[9px] font-bold bg-orange-100 dark:bg-orange-900/60 text-orange-700 dark:text-orange-300 px-1.5 py-0.2 rounded">
-                                {result.badge}
-                              </span>
-                            )}
+                    {directMatches.map((result, idx) => {
+                      const isSelected = activeResultIndex === idx
+                      return (
+                        <button
+                          key={result.id || `direct-${idx}`}
+                          type="button"
+                          onClick={() => handleSelectResult(result)}
+                          className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors group ${
+                            isSelected
+                              ? 'bg-orange-100/80 dark:bg-orange-950/40 border-l-4 border-orange-500 pl-3'
+                              : 'hover:bg-orange-50/70 dark:hover:bg-orange-950/20'
+                          }`}
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-orange-100/80 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                            <MapPin size={13} />
                           </div>
-                          <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
-                            {result.description || result.displayName}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-xs font-bold text-navy dark:text-white line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                                {result.shortName}
+                              </p>
+                              {result.badge && (
+                                <span className="text-[9px] font-bold bg-orange-100 dark:bg-orange-900/60 text-orange-700 dark:text-orange-300 px-1.5 py-0.2 rounded">
+                                  {result.badge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
+                              {result.description || result.displayName}
+                            </p>
+                          </div>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -468,36 +517,54 @@ export default function LocationPicker({
                   </div>
 
                   <div className="divide-y divide-amber-100/50 dark:divide-amber-900/20">
-                    {similarMatches.map((result, idx) => (
-                      <button
-                        key={result.id || `similar-${idx}`}
-                        type="button"
-                        onClick={() => handleSelectResult(result)}
-                        className="w-full flex items-start gap-3 px-4 py-2.5 text-left 
-                                   hover:bg-amber-100/60 dark:hover:bg-amber-950/30 
-                                   transition-colors group bg-amber-50/30 dark:bg-amber-950/10"
-                      >
-                        <div className="w-7 h-7 rounded-lg bg-amber-200/70 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
-                          <Compass size={13} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-bold text-navy dark:text-white line-clamp-1 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
-                              {result.shortName}
-                            </p>
-                            <span className="text-[9px] font-bold bg-amber-200/80 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.2 rounded">
-                              {result.badge || 'Lân cận'}
-                            </span>
+                    {similarMatches.map((result, idx) => {
+                      const isSelected = activeResultIndex === (directMatches.length + idx)
+                      return (
+                        <button
+                          key={result.id || `similar-${idx}`}
+                          type="button"
+                          onClick={() => handleSelectResult(result)}
+                          className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors group bg-amber-50/30 dark:bg-amber-950/10 ${
+                            isSelected
+                              ? 'bg-amber-200/70 dark:bg-amber-900/40 border-l-4 border-amber-500 pl-3'
+                              : 'hover:bg-amber-100/60 dark:hover:bg-amber-950/30'
+                          }`}
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-amber-200/70 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                            <Compass size={13} />
                           </div>
-                          <p className="text-[11px] text-amber-700/80 dark:text-amber-400 line-clamp-1 mt-0.5 font-medium">
-                            {result.similarReason || result.description}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-xs font-bold text-navy dark:text-white line-clamp-1 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
+                                {result.shortName}
+                              </p>
+                              <span className="text-[9px] font-bold bg-amber-200/80 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.2 rounded">
+                                {result.badge || 'Lân cận'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-amber-700/80 dark:text-amber-400 line-clamp-1 mt-0.5 font-medium">
+                              {result.similarReason || result.description}
+                            </p>
+                          </div>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}
+
+              {/* Gợi ý phím tắt điều hướng */}
+              <div className="px-3.5 py-1.5 bg-gray-50/90 dark:bg-gray-800/90 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400">
+                <span className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[9px] shadow-2xs font-mono font-bold">↑</kbd>
+                  <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[9px] shadow-2xs font-mono font-bold">↓</kbd>
+                  để duyệt
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-[9px] shadow-2xs font-mono font-bold">Enter</kbd>
+                  để ghim vị trí
+                </span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
