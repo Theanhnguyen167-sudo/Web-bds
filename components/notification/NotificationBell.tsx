@@ -643,7 +643,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
           {/* Unread Counter Badge */}
           {unreadCount > 0 && (
             <span
-              className={`absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-extrabold text-white shadow-md shadow-accent/40 ring-2 ${
+              className={`absolute -top-1 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-extrabold text-white shadow-md shadow-accent/40 ring-2 ${
                 isScrolled ? 'ring-white' : 'ring-[#0a1128]'
               }`}
             >
@@ -653,7 +653,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
           {/* Subtle Pulse Ring when unread exists */}
           {unreadCount > 0 && !isOpen && (
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent/40 animate-ping pointer-events-none" />
+            <span className="absolute -top-1 -right-0.5 h-4 w-4 rounded-full bg-accent/40 animate-ping pointer-events-none" />
           )}
         </button>
       )}

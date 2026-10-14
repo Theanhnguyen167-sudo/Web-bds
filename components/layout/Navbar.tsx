@@ -397,11 +397,11 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile Right Actions (Tablet & Mobile < lg) - Thứ tự: Đăng tin, Tìm kiếm, Thông báo, Tài khoản (icon người), 3 gạch */}
-        <div className="flex lg:hidden items-center gap-0.5 sm:gap-1 shrink-0 flex-nowrap">
-          {/* 1. Nút Đăng tin: Nút màu cam nổi bật, kích thước gọn gàng, bo góc tinh tế */}
+        <div className="flex lg:hidden items-center gap-[15px] shrink-0 flex-nowrap ml-auto">
+          {/* 1. Nút Đăng tin: Nút pill màu cam nổi bật, bo tròn tinh tế */}
           <button
             onClick={handlePostListingClick}
-            className="h-7.5 sm:h-8 flex items-center justify-center rounded-lg bg-accent hover:bg-accent-hover active:scale-95 px-2 sm:px-2.5 text-[11px] sm:text-xs font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
+            className="h-7.5 flex items-center justify-center rounded-full bg-accent hover:bg-accent-hover active:scale-95 px-2.5 text-[11px] font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
           >
             Đăng tin
           </button>
@@ -409,14 +409,14 @@ export const Navbar: React.FC = () => {
           {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}
           <Link
             href="/search"
-            className={`flex h-7.5 w-6.5 sm:w-7 items-center justify-center rounded-lg transition-all shrink-0 active:scale-95 ${
+            className={`flex h-7.5 w-6 items-center justify-center transition-all shrink-0 active:scale-95 ${
               isScrolled
-                ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                : 'text-slate-200 hover:text-white hover:bg-white/10'
+                ? 'text-slate-700 hover:text-slate-900'
+                : 'text-slate-200 hover:text-white'
             }`}
             title="Tìm kiếm BĐS nhanh"
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-4.5 w-4.5 stroke-[2.2]" />
           </Link>
 
           {/* 3. Nút Thông báo: Icon chuông <Bell /> kèm huy hiệu hiển thị số lượng thông báo mới */}
@@ -426,10 +426,10 @@ export const Navbar: React.FC = () => {
               onOpenChange={(open) => {
                 if (open) setMobileMenuOpen(false);
               }}
-              triggerClassName={`relative flex h-7.5 w-6.5 sm:w-7 items-center justify-center rounded-lg transition-all cursor-pointer shrink-0 active:scale-95 ${
+              triggerClassName={`relative flex h-7.5 w-6 items-center justify-center transition-all cursor-pointer shrink-0 active:scale-95 ${
                 isScrolled
-                  ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                  : 'text-slate-200 hover:text-white hover:bg-white/10'
+                  ? 'text-slate-700 hover:text-slate-900'
+                  : 'text-slate-200 hover:text-white'
               }`}
             />
           </div>
@@ -439,24 +439,24 @@ export const Navbar: React.FC = () => {
             href={user ? '/dashboard' : '/login'}
             aria-label="Tài khoản người dùng"
             title={user ? `Quản lý tài khoản: ${user.name}` : 'Đăng nhập / Đăng ký'}
-            className={`flex h-7.5 w-6.5 sm:w-7 items-center justify-center rounded-lg transition-all shrink-0 active:scale-95 ${
+            className={`flex h-7.5 w-6 items-center justify-center transition-all shrink-0 active:scale-95 ${
               isScrolled
-                ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                : 'text-slate-200 hover:text-white hover:bg-white/10'
+                ? 'text-slate-700 hover:text-slate-900'
+                : 'text-slate-200 hover:text-white'
             }`}
           >
             {user?.avatar ? (
               <img
                 src={user.avatar}
                 alt={user.name}
-                className="h-5 w-5 rounded-full object-cover ring-1.5 ring-accent"
+                className="h-5.5 w-5.5 rounded-full object-cover ring-1.5 ring-accent"
               />
             ) : (
-              <User className="h-4 w-4" />
+              <User className="h-4.5 w-4.5" />
             )}
           </Link>
 
-          {/* 5. Nút 3 dấu gạch (Menu): 3 thanh ngang rõ nét, không viền, nằm ở góc ngoài cùng bên phải */}
+          {/* 5. Nút 3 dấu gạch (Menu): Được tách ra xa hơn người đăng nhập với khoảng cách rộng hơn (ml-[11px] + gap 15px = ~26px) */}
           <button
             type="button"
             onClick={() => {
@@ -466,16 +466,16 @@ export const Navbar: React.FC = () => {
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
             title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu hệ thống'}
-            className={`relative flex h-7.5 w-6.5 sm:w-7 items-center justify-center p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 ${
+            className={`relative flex h-7.5 w-6 items-center justify-center ml-[11px] p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 ${
               isScrolled
                 ? 'text-slate-800 hover:text-orange-500'
                 : 'text-white hover:text-orange-400'
             }`}
           >
             {mobileMenuOpen ? (
-              <X className="h-5 w-5 sm:h-5.5 sm:w-5.5 stroke-[2.4] text-orange-500" />
+              <X className="h-5.5 w-5.5 stroke-[2.4] text-orange-500" />
             ) : (
-              <Menu className="h-5 w-5 sm:h-5.5 sm:w-5.5 stroke-[2.4]" />
+              <Menu className="h-5.5 w-5.5 stroke-[2.4]" />
             )}
           </button>
         </div>
