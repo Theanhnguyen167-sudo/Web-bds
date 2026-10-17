@@ -397,9 +397,16 @@ export default function NewsPage() {
       </section>
 
       {/* ── 4. CATEGORY NAVIGATION (Horizontal Pills, Clean White, Orange Active) ── */}
-      <section className="bg-white border-b border-[#E5E7EB] sticky top-16 sm:top-20 z-30 shadow-xs">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+      <section
+        className="w-full bg-[#ffffff] border-b border-slate-200 sticky top-16 sm:top-[70px] z-[99] shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-200"
+        style={{
+          backgroundColor: '#ffffff',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          zIndex: 99,
+        }}
+      >
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 bg-[#ffffff]">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 bg-[#ffffff]">
             {CATEGORIES.map((cat) => {
               const isActive = selectedCategory === cat.id;
               return (
@@ -409,7 +416,7 @@ export default function NewsPage() {
                   className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
                     isActive
                       ? 'bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/20'
-                      : 'bg-white text-slate-600 border-[#E5E7EB] hover:border-slate-300 hover:text-slate-900 hover:bg-slate-50'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
                   {cat.label}
