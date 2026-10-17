@@ -222,6 +222,11 @@ const DISTRICT_PRICE_STATS = [
   { name: 'Long Biên', price: '68 tr/m²', change: '+9.3%' },
 ];
 
+const formatReadTime = (readTime?: string): string => {
+  if (!readTime) return '5 phút đọc';
+  return readTime.includes('đọc') ? readTime : `${readTime} đọc`;
+};
+
 export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -478,17 +483,14 @@ export default function NewsPage() {
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-semibold text-slate-700">{featuredArticle.author}</span>
-                        <span>•</span>
-                        <span>{featuredArticle.date}</span>
-                        <span>•</span>
-                        <span>{featuredArticle.readTime}</span>
-                      </div>
-                      <span className="inline-flex items-center gap-1 font-bold text-orange-600 group-hover:translate-x-1 transition-transform">
-                        Đọc toàn văn <ArrowRight className="h-3.5 w-3.5" />
-                      </span>
+                    <div className="pt-3.5 sm:pt-4 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                      {featuredArticle.author && (
+                        <>
+                          <span className="font-medium text-slate-700">{featuredArticle.author}</span>
+                          <span className="mx-2 text-slate-300">•</span>
+                        </>
+                      )}
+                      <span>{featuredArticle.date} • {formatReadTime(featuredArticle.readTime)}</span>
                     </div>
                   </div>
                 </div>
@@ -529,11 +531,8 @@ export default function NewsPage() {
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 pt-1.5 border-t border-slate-100">
-                        <span>{article.date} · {article.readTime}</span>
-                        <span className="font-semibold text-orange-600 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-                          Chi tiết <ChevronRight className="h-3 w-3" />
-                        </span>
+                      <div className="flex items-center text-[12px] text-[#6B7280] pt-2 border-t border-slate-100/80">
+                        <span>{article.date} • {formatReadTime(article.readTime)}</span>
                       </div>
                     </div>
                   </div>
@@ -616,7 +615,7 @@ export default function NewsPage() {
                         </div>
 
                         {/* Nội dung card */}
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 sm:p-5 space-y-2">
                           <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
                             {article.categoryLabel}
                           </div>
@@ -632,11 +631,8 @@ export default function NewsPage() {
                       </div>
 
                       {/* Footer card */}
-                      <div className="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                        <span>{article.date} · {article.readTime}</span>
-                        <span className="font-semibold text-orange-600 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-                          Đọc tiếp <ChevronRight className="h-3 w-3" />
-                        </span>
+                      <div className="px-4.5 pb-4 sm:px-5 sm:pb-4.5 pt-3 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                        <span>{article.date} • {formatReadTime(article.readTime)}</span>
                       </div>
                     </article>
                   ))}
@@ -794,7 +790,7 @@ export default function NewsPage() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
-                      <div className="p-4 space-y-2">
+                      <div className="p-4 sm:p-5 space-y-2">
                         <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
                           {article.categoryLabel}
                         </div>
@@ -806,11 +802,8 @@ export default function NewsPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                      <span>{article.date} · {article.readTime}</span>
-                      <span className="font-semibold text-orange-600 flex items-center gap-0.5">
-                        Đọc tiếp <ChevronRight className="h-3 w-3" />
-                      </span>
+                    <div className="px-4.5 pb-4 sm:px-5 sm:pb-4.5 pt-3 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                      <span>{article.date} • {formatReadTime(article.readTime)}</span>
                     </div>
                   </article>
                 ))}
@@ -852,7 +845,7 @@ export default function NewsPage() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
-                      <div className="p-4 space-y-2">
+                      <div className="p-4 sm:p-5 space-y-2">
                         <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
                           {article.categoryLabel}
                         </div>
@@ -864,11 +857,8 @@ export default function NewsPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                      <span>{article.date} · {article.readTime}</span>
-                      <span className="font-semibold text-orange-600 flex items-center gap-0.5">
-                        Đọc tiếp <ChevronRight className="h-3 w-3" />
-                      </span>
+                    <div className="px-4.5 pb-4 sm:px-5 sm:pb-4.5 pt-3 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                      <span>{article.date} • {formatReadTime(article.readTime)}</span>
                     </div>
                   </article>
                 ))}
