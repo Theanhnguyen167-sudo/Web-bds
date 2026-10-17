@@ -863,10 +863,217 @@ export default function NewsPage() {
                 </>
               )}
 
+              {/* ── 12. TOPIC SECTIONS (Thị trường BĐS & Quy hoạch Hạ tầng - Nằm trong cột chính cạnh Sidebar bám dính) ── */}
+              {selectedCategory === 'all' && !searchQuery && (
+                <div className="space-y-10 sm:space-y-12 pt-8 sm:pt-10 border-t border-slate-200/80">
+                  
+                  {/* Chuyên đề 1: Thị trường BĐS (1 bài lớn bên trái + 4 bài danh sách ngang bên phải) */}
+                  <section className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 uppercase tracking-wider mb-1">
+                          <TrendingUp className="h-4 w-4" />
+                          <span>Tiêu điểm kinh tế đô thị</span>
+                        </div>
+                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                          Thị trường Bất động sản
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Phân tích biến động giá đất, dòng vốn đầu tư và chu kỳ thanh khoản tại Thủ đô
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedCategory('pricing')}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors shrink-0"
+                      >
+                        <span>Xem tất cả bài viết thị trường</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    {leadMarketArticle && (
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+                        {/* Cột trái: 1 Bài viết lớn tiêu điểm (Lead Card - 7 cột) */}
+                        <div className="md:col-span-7 flex flex-col">
+                          <article
+                            onClick={() => setSelectedArticle(leadMarketArticle)}
+                            className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
+                          >
+                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
+                              <img
+                                src={leadMarketArticle.image}
+                                alt={leadMarketArticle.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute top-4 left-4">
+                                <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
+                                  {leadMarketArticle.categoryLabel}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-3.5">
+                              <div className="space-y-2">
+                                <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
+                                  {leadMarketArticle.categoryLabel}
+                                </div>
+                                <h4 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug">
+                                  {leadMarketArticle.title}
+                                </h4>
+                                <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                                  {leadMarketArticle.summary}
+                                </p>
+                              </div>
+
+                              <div className="pt-3.5 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                                <span>{leadMarketArticle.date} • {formatReadTime(leadMarketArticle.readTime)}</span>
+                              </div>
+                            </div>
+                          </article>
+                        </div>
+
+                        {/* Cột phải: 4 bài danh sách ngang (Horizontal List Cards - 5 cột) */}
+                        <div className="md:col-span-5 flex flex-col justify-between gap-3">
+                          {secondaryMarketArticles.map((article) => (
+                            <article
+                              key={article.id}
+                              onClick={() => setSelectedArticle(article)}
+                              className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-3 sm:p-3.5 flex flex-row items-center gap-3.5 flex-1 cursor-pointer"
+                            >
+                              <div className="relative aspect-square w-16 sm:w-20 rounded-xl overflow-hidden bg-slate-900 shrink-0">
+                                <img
+                                  src={article.image}
+                                  alt={article.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              </div>
+
+                              <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1 h-full">
+                                <div>
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 block mb-0.5">
+                                    {article.categoryLabel}
+                                  </span>
+                                  <h5 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
+                                    {article.title}
+                                  </h5>
+                                </div>
+
+                                <div className="text-[12px] text-[#6B7280] pt-1">
+                                  <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                                </div>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* Chuyên đề 2: Quy hoạch & Hạ tầng (Card ngang kèm bản đồ thu nhỏ và badge tiến độ) */}
+                  <section className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                          <Compass className="h-4 w-4" />
+                          <span>Dữ liệu không gian &amp; đồ án đô thị</span>
+                        </div>
+                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                          Quy hoạch &amp; Hạ tầng
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Bản đồ số hóa quy hoạch phân khu, tiến độ thi công các trục vành đai và mạng lưới Metro
+                        </p>
+                      </div>
+                      <Link
+                        href="/planning"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors shrink-0"
+                      >
+                        <MapPin className="h-3.5 w-3.5" />
+                        <span>Mở bản đồ quy hoạch số</span>
+                        <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
+                      </Link>
+                    </div>
+
+                    {/* Lưới 2 cột Card ngang rộng rãi */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5">
+                      {planningTopicArticles.map((article) => {
+                        const progress = getPlanningProgress(article.title, article.summary);
+
+                        return (
+                          <article
+                            key={article.id}
+                            onClick={() => setSelectedArticle(article)}
+                            className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col sm:flex-row cursor-pointer"
+                          >
+                            {/* Ảnh + Bản đồ thu nhỏ GIS badge */}
+                            <div className="relative sm:w-44 md:w-48 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900 shrink-0">
+                              <img
+                                src={article.image}
+                                alt={article.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent sm:hidden" />
+
+                              {/* Bản đồ thu nhỏ GIS badge */}
+                              <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-slate-900/85 backdrop-blur-md text-emerald-300 px-2 py-0.5 rounded-lg border border-emerald-500/30 text-[9px] font-bold shadow-md">
+                                <Compass className="h-3 w-3 text-emerald-400" />
+                                <span>Bản đồ QH 1/2000</span>
+                              </div>
+
+                              {/* Tag danh mục */}
+                              <div className="absolute top-2 left-2">
+                                <span className="bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow">
+                                  {article.categoryLabel}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Nội dung + Badge tiến độ */}
+                            <div className="p-3.5 sm:p-4 flex flex-col justify-between flex-1 min-w-0 space-y-2">
+                              <div className="space-y-1.5">
+                                {/* Badge tiến độ dự án */}
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${progress.badgeColor}`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${progress.dotColor}`} />
+                                    {progress.label}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 hidden sm:inline">•</span>
+                                  <span className="text-[10px] text-slate-500 hidden sm:inline">Hà Nội 2030</span>
+                                </div>
+
+                                <h4 className="text-[14px] sm:text-[15px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-2 leading-snug">
+                                  {article.title}
+                                </h4>
+
+                                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                                  {article.summary}
+                                </p>
+                              </div>
+
+                              {/* Footer card */}
+                              <div className="pt-2 border-t border-slate-100/80 flex items-center justify-between text-[12px] text-[#6B7280]">
+                                <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                                <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 group-hover:underline">
+                                  <MapPin className="h-3 w-3" /> Xem bản đồ
+                                </span>
+                              </div>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </section>
+
+                </div>
+              )}
+
             </div>
 
-            {/* Cột Phải (Sidebar: lg:col-span-4 ~30%) - Tinh gọn đúng 3 module quan trọng */}
-            <aside className="lg:col-span-4 space-y-6">
+            {/* Cột Phải (Sidebar: lg:col-span-4 ~30%) - Tinh gọn đúng 3 module quan trọng, bám dính khi cuộn */}
+            <aside
+              className="lg:col-span-4 space-y-6 sticky top-[90px] self-start"
+              style={{ position: 'sticky', top: '90px' }}
+            >
 
               {/* Module 1: Biến động thị trường */}
               <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E5E7EB] shadow-xs space-y-4">
@@ -974,210 +1181,6 @@ export default function NewsPage() {
 
           </div>
         </section>
-
-        {/* ── 12. TOPIC SECTIONS (Thị trường BĐS & Quy hoạch Hạ tầng) ── */}
-        {selectedCategory === 'all' && !searchQuery && (
-          <div className="space-y-12 sm:space-y-16 pt-4 border-t border-slate-200/80">
-            
-            {/* Chuyên đề 1: Thị trường BĐS (1 bài lớn bên trái + 4 bài danh sách ngang bên phải) */}
-            <section className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 uppercase tracking-wider mb-1">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Tiêu điểm kinh tế đô thị</span>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Thị trường Bất động sản
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Phân tích biến động giá đất, dòng vốn đầu tư và chu kỳ thanh khoản tại Thủ đô
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSelectedCategory('pricing')}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors shrink-0"
-                >
-                  <span>Xem tất cả bài viết thị trường</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
-
-              {leadMarketArticle && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                  {/* Cột trái: 1 Bài viết lớn tiêu điểm (Lead Card - 7 cột) */}
-                  <div className="lg:col-span-7 flex flex-col">
-                    <article
-                      onClick={() => setSelectedArticle(leadMarketArticle)}
-                      className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
-                    >
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
-                        <img
-                          src={leadMarketArticle.image}
-                          alt={leadMarketArticle.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-4 left-4">
-                          <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
-                            {leadMarketArticle.categoryLabel}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-3.5">
-                        <div className="space-y-2">
-                          <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
-                            {leadMarketArticle.categoryLabel}
-                          </div>
-                          <h4 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug">
-                            {leadMarketArticle.title}
-                          </h4>
-                          <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
-                            {leadMarketArticle.summary}
-                          </p>
-                        </div>
-
-                        <div className="pt-3.5 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
-                          <span>{leadMarketArticle.date} • {formatReadTime(leadMarketArticle.readTime)}</span>
-                        </div>
-                      </div>
-                    </article>
-                  </div>
-
-                  {/* Cột phải: 4 bài danh sách ngang (Horizontal List Cards - 5 cột) */}
-                  <div className="lg:col-span-5 flex flex-col justify-between gap-3 sm:gap-3.5">
-                    {secondaryMarketArticles.map((article) => (
-                      <article
-                        key={article.id}
-                        onClick={() => setSelectedArticle(article)}
-                        className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-3 sm:p-3.5 flex flex-row items-center gap-3.5 flex-1 cursor-pointer"
-                      >
-                        <div className="relative aspect-square w-20 sm:w-24 rounded-xl overflow-hidden bg-slate-900 shrink-0">
-                          <img
-                            src={article.image}
-                            alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-
-                        <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1 h-full">
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 block mb-0.5">
-                              {article.categoryLabel}
-                            </span>
-                            <h5 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
-                              {article.title}
-                            </h5>
-                          </div>
-
-                          <div className="text-[12px] text-[#6B7280] pt-1">
-                            <span>{article.date} • {formatReadTime(article.readTime)}</span>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
-
-            {/* Chuyên đề 2: Quy hoạch & Hạ tầng (Card ngang kèm bản đồ thu nhỏ và badge tiến độ) */}
-            <section className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
-                    <Compass className="h-4 w-4" />
-                    <span>Dữ liệu không gian &amp; đồ án đô thị</span>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Quy hoạch &amp; Hạ tầng
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Bản đồ số hóa quy hoạch phân khu, tiến độ thi công các trục vành đai và mạng lưới Metro
-                  </p>
-                </div>
-                <Link
-                  href="/planning"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors shrink-0"
-                >
-                  <MapPin className="h-3.5 w-3.5" />
-                  <span>Mở bản đồ quy hoạch số</span>
-                  <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
-                </Link>
-              </div>
-
-              {/* Lưới 2 cột Card ngang rộng rãi */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {planningTopicArticles.map((article) => {
-                  const progress = getPlanningProgress(article.title, article.summary);
-
-                  return (
-                    <article
-                      key={article.id}
-                      onClick={() => setSelectedArticle(article)}
-                      className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col sm:flex-row cursor-pointer"
-                    >
-                      {/* Ảnh + Bản đồ thu nhỏ GIS badge */}
-                      <div className="relative sm:w-48 md:w-56 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900 shrink-0">
-                        <img
-                          src={article.image}
-                          alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent sm:hidden" />
-
-                        {/* Bản đồ thu nhỏ GIS badge */}
-                        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-500/30 text-[10px] font-bold shadow-md">
-                          <Compass className="h-3 w-3 text-emerald-400" />
-                          <span>Bản đồ QH 1/2000</span>
-                        </div>
-
-                        {/* Tag danh mục */}
-                        <div className="absolute top-2.5 left-2.5">
-                          <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
-                            {article.categoryLabel}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Nội dung + Badge tiến độ */}
-                      <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 min-w-0 space-y-2.5">
-                        <div className="space-y-2">
-                          {/* Badge tiến độ dự án */}
-                          <div className="flex items-center gap-2">
-                            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${progress.badgeColor}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${progress.dotColor}`} />
-                              {progress.label}
-                            </span>
-                            <span className="text-[11px] text-slate-400 hidden sm:inline">•</span>
-                            <span className="text-[11px] text-slate-500 hidden sm:inline">Hà Nội 2030</span>
-                          </div>
-
-                          <h4 className="text-[15px] sm:text-[16px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-2 leading-snug">
-                            {article.title}
-                          </h4>
-
-                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                            {article.summary}
-                          </p>
-                        </div>
-
-                        {/* Footer card */}
-                        <div className="pt-2.5 border-t border-slate-100/80 flex items-center justify-between text-[12px] text-[#6B7280]">
-                          <span>{article.date} • {formatReadTime(article.readTime)}</span>
-                          <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 group-hover:underline">
-                            <MapPin className="h-3 w-3" /> Xem bản đồ
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-
-          </div>
-        )}
 
       </div>
 
