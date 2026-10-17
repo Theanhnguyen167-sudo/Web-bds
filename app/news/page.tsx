@@ -15,6 +15,8 @@ import {
   Search,
   ArrowRight,
   ChevronRight,
+  ChevronLeft,
+  MapPin,
   Layers,
   Compass,
   FileText,
@@ -31,7 +33,7 @@ export interface NewsArticle {
   id: string;
   title: string;
   summary: string;
-  category: 'planning' | 'pricing' | 'policy' | 'project' | 'investment';
+  category: 'planning' | 'pricing' | 'policy' | 'project' | 'investment' | 'market' | 'analysis' | 'hanoi' | 'legal';
   categoryLabel: string;
   categoryColor: string;
   image: string;
@@ -200,6 +202,91 @@ const NEWS_ARTICLES: NewsArticle[] = [
     content: [
       'Môi trường kinh doanh ổn định và cơ chế mở theo Luật Thủ đô mới đang gia tăng sức hấp dẫn mạnh mẽ cho các nhà đầu tư tổ chức quốc tế.'
     ]
+  },
+  {
+    id: 'dong-anh-me-linh-quy-hoach-thanh-pho-bac-song-hong',
+    title: 'Quy hoạch trục đô thị Bắc sông Hồng: Đông Anh và Mê Linh hướng tới mô hình thành phố thông minh',
+    summary: 'Đồ án quy hoạch chung xây dựng Thủ đô xác định khu vực phía Bắc sông Hồng sẽ trở thành trung tâm dịch vụ tài chính, thương mại giao thương quốc tế mới.',
+    category: 'planning',
+    categoryLabel: 'Quy hoạch & Hạ tầng',
+    categoryColor: 'bg-emerald-500 text-white',
+    image: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80',
+    date: '28/08/2025',
+    author: 'KTS. Lê Quang Minh',
+    readTime: '6 phút đọc',
+    views: 2640,
+    tags: ['Đông Anh', 'Mê Linh', 'Bắc Sông Hồng', 'Quy hoạch 2045'],
+    content: [
+      'Với quy mô hàng nghìn hecta quỹ đất sạch cùng trục giao thông cầu Nhật Tân - sân bay Nội Bài, khu vực phía Bắc đang đón đầu các đại dự án thành phố thông minh và trung tâm hội chợ triển lãm quốc gia.'
+    ]
+  },
+  {
+    id: 'gia-thue-mat-bang-pho-co-ha-noi-2026',
+    title: 'Thị trường mặt bằng bán lẻ phố cổ Hà Nội: Giá thuê phục hồi 95% thời kỳ hoàng kim',
+    summary: 'Sự bùng nổ của du lịch quốc tế và các chuỗi F&B cao cấp giúp tỷ lệ lấp đầy các căn nhà phố thương mại Hoàn Kiếm và Ba Đình đạt mức cao kỷ lục.',
+    category: 'pricing',
+    categoryLabel: 'Biến động giá đất',
+    categoryColor: 'bg-orange-500 text-white',
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80',
+    date: '25/08/2025',
+    author: 'Ban Nghiên cứu Thị trường',
+    readTime: '4 phút đọc',
+    views: 3120,
+    tags: ['Mặt bằng phố cổ', 'Hoàn Kiếm', 'Giá thuê shophouse', 'BĐS thương mại'],
+    content: [
+      'Ghi nhận tại các tuyến phố Hàng Bông, Tràng Tiền, Cầu Gỗ, giá thuê mặt bằng tầng 1 diện tích 40-70m² hiện dao động từ 120 đến 250 triệu đồng/tháng.'
+    ]
+  },
+  {
+    id: 'do-thi-ve-tinh-hoa-lac-dau-tu-ha-tang',
+    title: 'Đô thị vệ tinh Hòa Lạc: Đẩy mạnh giải ngân vốn đầu tư công và hạ tầng công nghệ cao',
+    summary: 'Quy hoạch mở rộng Đại lộ Thăng Long kéo dài kết nối Hòa Bình cùng mạng lưới xe buýt nhanh BRT đang rút ngắn thời gian di chuyển từ trung tâm Hà Nội về Hòa Lạc.',
+    category: 'project',
+    categoryLabel: 'Dự án & Quy hoạch',
+    categoryColor: 'bg-teal-600 text-white',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
+    date: '22/08/2025',
+    author: 'ThS. Nguyễn Hoàng Nam',
+    readTime: '7 phút đọc',
+    views: 2150,
+    tags: ['Hòa Lạc', 'Đô thị vệ tinh', 'Công nghệ cao', 'Đại lộ Thăng Long'],
+    content: [
+      'Hòa Lạc đang chuyển mình mạnh mẽ với sự dịch chuyển của các trường đại học lớn và trung tâm dữ liệu AI của các tập đoàn công nghệ hàng đầu.'
+    ]
+  },
+  {
+    id: 'dong-tien-nha-dau-tu-tay-ha-noi-2026',
+    title: 'Dòng tiền dịch chuyển về phía Tây Hà Nội: Lợi thế từ hạ tầng giao thông đa tầng',
+    summary: 'Hệ thống hầm chui Lê Văn Lương, đường Vành đai 3 trên cao và tuyến Metro Nhổn - Ga Hà Nội vận hành thương mại giúp thanh khoản căn hộ khu Tây tăng vượt bậc.',
+    category: 'investment',
+    categoryLabel: 'Tài chính & Đầu tư',
+    categoryColor: 'bg-purple-600 text-white',
+    image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop&q=80',
+    date: '18/08/2025',
+    author: 'Chuyên gia Đầu tư BĐS',
+    readTime: '5 phút đọc',
+    views: 2890,
+    tags: ['Khu vực phía Tây', 'Thanh khoản căn hộ', 'Metro Nhổn - Ga Hà Nội'],
+    content: [
+      'Hạ tầng đồng bộ biến khu vực Mỹ Đình - Cầu Giấy thành trung tâm tài chính và thương mại năng động bậc nhất Thủ đô.'
+    ]
+  },
+  {
+    id: 'quy-hoach-san-bay-thu-2-ha-noi-nam-phu-xuyen',
+    title: 'Quy hoạch sân bay thứ 2 Vùng Thủ đô tại phía Nam: Động lực bứt phá cho Phú Xuyên - Ứng Hòa',
+    summary: 'Phương án bố trí cảng hàng không quốc tế thứ 2 với công suất 50 triệu khách/năm mở ra triển vọng hình thành cực tăng trưởng công nghiệp và logistics phía Nam.',
+    category: 'planning',
+    categoryLabel: 'Quy hoạch & Hạ tầng',
+    categoryColor: 'bg-emerald-500 text-white',
+    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&auto=format&fit=crop&q=80',
+    date: '15/08/2025',
+    author: 'Viện Quy hoạch Xây dựng Hà Nội',
+    readTime: '8 phút đọc',
+    views: 3500,
+    tags: ['Sân bay thứ 2', 'Phú Xuyên', 'Ứng Hòa', 'Quy hoạch vùng Thủ đô'],
+    content: [
+      'Cảng hàng không thứ 2 kết nối cao tốc Pháp Vân - Cầu Giẽ và đường sắt tốc độ cao Bắc - Nam sẽ tạo lực đẩy chuyển dịch cơ cấu kinh tế mạnh mẽ cho các huyện ngoại thành phía Nam.'
+    ]
   }
 ];
 
@@ -227,11 +314,55 @@ const formatReadTime = (readTime?: string): string => {
   return readTime.includes('đọc') ? readTime : `${readTime} đọc`;
 };
 
+const getPlanningProgress = (title: string, summary: string) => {
+  const text = (title + ' ' + summary).toLowerCase();
+  if (text.includes('thi công') || text.includes('tăng tốc') || text.includes('tiến độ')) {
+    return {
+      label: 'Đang thi công',
+      badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      dotColor: 'bg-emerald-500',
+    };
+  }
+  if (text.includes('vành đai') || text.includes('giải phóng') || text.includes('mặt bằng')) {
+    return {
+      label: 'Giải phóng mặt bằng',
+      badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
+      dotColor: 'bg-amber-500',
+    };
+  }
+  if (text.includes('sông hồng') || text.includes('phê duyệt') || text.includes('luật')) {
+    return {
+      label: 'Đã phê duyệt QH',
+      badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
+      dotColor: 'bg-blue-500',
+    };
+  }
+  if (text.includes('cầu') || text.includes('khởi công') || text.includes('sân bay')) {
+    return {
+      label: 'Chuẩn bị khởi công',
+      badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
+      dotColor: 'bg-purple-500',
+    };
+  }
+  return {
+    label: 'Đồ án phân khu',
+    badgeColor: 'bg-teal-50 text-teal-700 border-teal-200',
+    dotColor: 'bg-teal-500',
+  };
+};
+
 export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [allNews, setAllNews] = useState<NewsArticle[]>(NEWS_ARTICLES);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 6;
+
+  // Khi thay đổi bộ lọc chuyên mục hoặc từ khóa tìm kiếm, tự động reset về trang 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
 
   useEffect(() => {
     try {
@@ -242,7 +373,7 @@ export default function NewsPage() {
           id: a.id,
           title: a.title,
           summary: a.excerpt || a.seoDescription || '',
-          category: (['planning', 'pricing', 'policy', 'project', 'investment'].includes(a.category)
+          category: (['planning', 'pricing', 'policy', 'project', 'investment', 'market', 'analysis', 'hanoi', 'legal'].includes(a.category)
             ? a.category
             : 'planning') as any,
           categoryLabel: a.categoryLabel || 'Tin tức',
@@ -276,7 +407,7 @@ export default function NewsPage() {
       if (selectedCategory === 'all') {
         matchCategory = true;
       } else if (selectedCategory === 'market') {
-        matchCategory = article.category === 'pricing' || article.category === 'investment' || article.category === 'project';
+        matchCategory = article.category === 'pricing' || article.category === 'investment' || article.category === 'project' || article.category === 'market';
       } else {
         matchCategory = article.category === selectedCategory;
       }
@@ -309,36 +440,63 @@ export default function NewsPage() {
     return heroArticles.map((a) => a.id);
   }, [heroArticles]);
 
-  // 2. Khối Tin mới nhất: Tự động loại trừ các bài viết đã xuất hiện ở phần Hero
-  const latestArticles = useMemo(() => {
+  // 2. Khối Tin mới nhất:
+  // Lấy pool bài viết đã loại trừ các bài viết ở phần Hero (nếu đang ở trang all)
+  const latestPool = useMemo(() => {
     if (selectedCategory === 'all' && !searchQuery) {
       return getArticlesForBlock(allNews, {
         exclude_ids: heroExcludeIds,
-        limit: 6,
       });
     }
     return filteredArticles;
   }, [allNews, heroExcludeIds, selectedCategory, searchQuery, filteredArticles]);
 
+  const totalPages = Math.max(1, Math.ceil(latestPool.length / PAGE_SIZE));
+
+  const latestArticles = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return latestPool.slice(start, start + PAGE_SIZE);
+  }, [latestPool, currentPage, PAGE_SIZE]);
+
   // 3. Khối Chuyên đề Thị trường BĐS:
-  // Tự động truyền mảng exclude_ids gồm các bài viết đã xuất hiện ở phần Hero và khối Tin mới nhất
+  // Cấu trúc: 1 bài lớn bên trái + 4 bài danh sách ngang bên phải (5 bài)
   const marketTopicArticles = useMemo(() => {
-    return getArticlesForBlock(allNews, {
+    const list = getArticlesForBlock(allNews, {
       previousBlocks: [heroArticles, latestArticles],
-      category: ['pricing', 'investment'],
-      limit: 3,
+      category: ['pricing', 'investment', 'policy'],
+      limit: 5,
     });
-  }, [allNews, heroArticles, latestArticles]);
+    if (list.length < 5) {
+      const extra = allNews.filter(
+        (a) => !heroExcludeIds.includes(a.id) && !list.some((item) => item.id === a.id)
+      );
+      return [...list, ...extra].slice(0, 5);
+    }
+    return list;
+  }, [allNews, heroArticles, latestArticles, heroExcludeIds]);
+
+  const leadMarketArticle = marketTopicArticles[0];
+  const secondaryMarketArticles = marketTopicArticles.slice(1, 5);
 
   // 4. Khối Chuyên đề Quy hoạch & Hạ tầng:
-  // Tự động truyền mảng exclude_ids gồm các bài viết đã xuất hiện ở phần Hero, khối Tin mới nhất và khối Thị trường BĐS
+  // Cấu trúc: Bố cục 4 Card ngang có kèm bản đồ thu nhỏ và badge tiến độ
   const planningTopicArticles = useMemo(() => {
-    return getArticlesForBlock(allNews, {
+    const list = getArticlesForBlock(allNews, {
       previousBlocks: [heroArticles, latestArticles, marketTopicArticles],
       category: ['planning', 'project'],
-      limit: 3,
+      limit: 4,
     });
-  }, [allNews, heroArticles, latestArticles, marketTopicArticles]);
+    if (list.length < 4) {
+      const extra = allNews.filter(
+        (a) =>
+          !heroExcludeIds.includes(a.id) &&
+          !marketTopicArticles.some((m) => m.id === a.id) &&
+          !list.some((p) => p.id === a.id)
+      );
+      return [...list, ...extra].slice(0, 4);
+    }
+    return list;
+  }, [allNews, heroArticles, latestArticles, marketTopicArticles, heroExcludeIds]);
 
   // 5. Widget "Đọc nhiều" ở Sidebar:
   // Lọc DISTINCT theo bài viết để mỗi bài chỉ đứng 1 vị trí thứ hạng duy nhất
@@ -576,7 +734,7 @@ export default function NewsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Cột Trái (Main Content: lg:col-span-8 ~70%) */}
-            <div className="lg:col-span-8 space-y-6">
+            <div id="news-content-grid" className="lg:col-span-8 space-y-6">
               
               {latestArticles.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-3">
@@ -596,47 +754,113 @@ export default function NewsPage() {
                   </button>
                 </div>
               ) : (
-                /* Grid 3 cột trên desktop chuẩn Section 7 */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {latestArticles.map((article) => (
-                    <article
-                      key={article.id}
-                      onClick={() => setSelectedArticle(article)}
-                      className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between cursor-pointer"
-                    >
-                      <div>
-                        {/* Ảnh tỷ lệ 16:9 đồng nhất */}
-                        <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
-                          <img
-                            src={article.image}
-                            alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-
-                        {/* Nội dung card */}
-                        <div className="p-4 sm:p-5 space-y-2">
-                          <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
-                            {article.categoryLabel}
+                <>
+                  {/* Grid 3 cột trên desktop chuẩn Section 7 */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {latestArticles.map((article) => (
+                      <article
+                        key={article.id}
+                        onClick={() => setSelectedArticle(article)}
+                        className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between cursor-pointer"
+                      >
+                        <div>
+                          {/* Ảnh tỷ lệ 16:9 đồng nhất */}
+                          <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
+                            <img
+                              src={article.image}
+                              alt={article.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
                           </div>
 
-                          <h3 className="text-[15px] sm:text-[16px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
-                            {article.title}
-                          </h3>
+                          {/* Nội dung card */}
+                          <div className="p-4 sm:p-5 space-y-2">
+                            <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
+                              {article.categoryLabel}
+                            </div>
 
-                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                            {article.summary}
-                          </p>
+                            <h3 className="text-[15px] sm:text-[16px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
+                              {article.title}
+                            </h3>
+
+                            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                              {article.summary}
+                            </p>
+                          </div>
                         </div>
+
+                        {/* Footer card */}
+                        <div className="px-4.5 pb-4 sm:px-5 sm:pb-4.5 pt-3 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                          <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+
+                  {/* Thanh Phân trang (Pagination Bar) rõ ràng - Giữ cho footer không bị đẩy quá xa */}
+                  {totalPages > 1 && (
+                    <div className="pt-6 sm:pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="text-xs text-slate-500 font-medium">
+                        Hiển thị <span className="font-bold text-slate-800">{(currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, latestPool.length)}</span> trên tổng số <span className="font-bold text-slate-800">{latestPool.length}</span> bài viết
                       </div>
 
-                      {/* Footer card */}
-                      <div className="px-4.5 pb-4 sm:px-5 sm:pb-4.5 pt-3 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
-                        <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            if (currentPage > 1) {
+                              setCurrentPage((prev) => prev - 1);
+                              document.getElementById('news-content-grid')?.scrollIntoView({ behavior: 'smooth' });
+                            }
+                          }}
+                          disabled={currentPage === 1}
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors ${
+                            currentPage === 1
+                              ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50'
+                              : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                          }`}
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                          <span>Trang trước</span>
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                          <button
+                            key={pageNum}
+                            onClick={() => {
+                              setCurrentPage(pageNum);
+                              document.getElementById('news-content-grid')?.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                            className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
+                              currentPage === pageNum
+                                ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/30'
+                                : 'border border-slate-200 text-slate-700 hover:bg-slate-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        ))}
+
+                        <button
+                          onClick={() => {
+                            if (currentPage < totalPages) {
+                              setCurrentPage((prev) => prev + 1);
+                              document.getElementById('news-content-grid')?.scrollIntoView({ behavior: 'smooth' });
+                            }
+                          }}
+                          disabled={currentPage === totalPages}
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors ${
+                            currentPage === totalPages
+                              ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50'
+                              : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                          }`}
+                        >
+                          <span>Trang sau</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
                       </div>
-                    </article>
-                  ))}
-                </div>
+                    </div>
+                  )}
+                </>
               )}
 
             </div>
@@ -755,113 +979,200 @@ export default function NewsPage() {
         {selectedCategory === 'all' && !searchQuery && (
           <div className="space-y-12 sm:space-y-16 pt-4 border-t border-slate-200/80">
             
-            {/* Chuyên đề 1: Thị trường BĐS */}
-            <section className="space-y-5">
+            {/* Chuyên đề 1: Thị trường BĐS (1 bài lớn bên trái + 4 bài danh sách ngang bên phải) */}
+            <section className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
                 <div>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                    Thị trường BĐS
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 uppercase tracking-wider mb-1">
+                    <TrendingUp className="h-4 w-4" />
+                    <span>Tiêu điểm kinh tế đô thị</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    Thị trường Bất động sản
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Phân tích biến động giá, thanh khoản và xu hướng dòng tiền đầu tư tại Hà Nội
+                    Phân tích biến động giá đất, dòng vốn đầu tư và chu kỳ thanh khoản tại Thủ đô
                   </p>
                 </div>
                 <button
                   onClick={() => setSelectedCategory('pricing')}
                   className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors shrink-0"
                 >
-                  <span>Xem tất cả</span>
+                  <span>Xem tất cả bài viết thị trường</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {marketTopicArticles.map((article) => (
-                  <article
-                    key={article.id}
-                    onClick={() => setSelectedArticle(article)}
-                    className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between cursor-pointer"
-                  >
-                    <div>
+              {leadMarketArticle && (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                  {/* Cột trái: 1 Bài viết lớn tiêu điểm (Lead Card - 7 cột) */}
+                  <div className="lg:col-span-7 flex flex-col">
+                    <article
+                      onClick={() => setSelectedArticle(leadMarketArticle)}
+                      className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
+                    >
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
                         <img
-                          src={article.image}
-                          alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          src={leadMarketArticle.image}
+                          alt={leadMarketArticle.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                      </div>
-                      <div className="p-4 sm:p-5 space-y-2">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
-                          {article.categoryLabel}
+                        <div className="absolute top-4 left-4">
+                          <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
+                            {leadMarketArticle.categoryLabel}
+                          </span>
                         </div>
-                        <h4 className="text-[15px] sm:text-[16px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
-                          {article.title}
-                        </h4>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                          {article.summary}
-                        </p>
                       </div>
-                    </div>
-                    <div className="px-4.5 pb-4 sm:px-5 sm:pb-4.5 pt-3 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
-                      <span>{article.date} • {formatReadTime(article.readTime)}</span>
-                    </div>
-                  </article>
-                ))}
-              </div>
+
+                      <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-3.5">
+                        <div className="space-y-2">
+                          <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
+                            {leadMarketArticle.categoryLabel}
+                          </div>
+                          <h4 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug">
+                            {leadMarketArticle.title}
+                          </h4>
+                          <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                            {leadMarketArticle.summary}
+                          </p>
+                        </div>
+
+                        <div className="pt-3.5 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                          <span>{leadMarketArticle.date} • {formatReadTime(leadMarketArticle.readTime)}</span>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+
+                  {/* Cột phải: 4 bài danh sách ngang (Horizontal List Cards - 5 cột) */}
+                  <div className="lg:col-span-5 flex flex-col justify-between gap-3 sm:gap-3.5">
+                    {secondaryMarketArticles.map((article) => (
+                      <article
+                        key={article.id}
+                        onClick={() => setSelectedArticle(article)}
+                        className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-3 sm:p-3.5 flex flex-row items-center gap-3.5 flex-1 cursor-pointer"
+                      >
+                        <div className="relative aspect-square w-20 sm:w-24 rounded-xl overflow-hidden bg-slate-900 shrink-0">
+                          <img
+                            src={article.image}
+                            alt={article.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+
+                        <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1 h-full">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 block mb-0.5">
+                              {article.categoryLabel}
+                            </span>
+                            <h5 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
+                              {article.title}
+                            </h5>
+                          </div>
+
+                          <div className="text-[12px] text-[#6B7280] pt-1">
+                            <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              )}
             </section>
 
-            {/* Chuyên đề 2: Quy hoạch & Hạ tầng */}
-            <section className="space-y-5">
+            {/* Chuyên đề 2: Quy hoạch & Hạ tầng (Card ngang kèm bản đồ thu nhỏ và badge tiến độ) */}
+            <section className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
                 <div>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                    <Compass className="h-4 w-4" />
+                    <span>Dữ liệu không gian &amp; đồ án đô thị</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     Quy hoạch &amp; Hạ tầng
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Tiến độ các tuyến vành đai, metro và đồ án phân khu đô thị mới nhất
+                    Bản đồ số hóa quy hoạch phân khu, tiến độ thi công các trục vành đai và mạng lưới Metro
                   </p>
                 </div>
-                <button
-                  onClick={() => setSelectedCategory('planning')}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors shrink-0"
+                <Link
+                  href="/planning"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors shrink-0"
                 >
-                  <span>Xem tất cả</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span>Mở bản đồ quy hoạch số</span>
+                  <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
+                </Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {planningTopicArticles.map((article) => (
-                  <article
-                    key={article.id}
-                    onClick={() => setSelectedArticle(article)}
-                    className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between cursor-pointer"
-                  >
-                    <div>
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
+              {/* Lưới 2 cột Card ngang rộng rãi */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {planningTopicArticles.map((article) => {
+                  const progress = getPlanningProgress(article.title, article.summary);
+
+                  return (
+                    <article
+                      key={article.id}
+                      onClick={() => setSelectedArticle(article)}
+                      className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col sm:flex-row cursor-pointer"
+                    >
+                      {/* Ảnh + Bản đồ thu nhỏ GIS badge */}
+                      <div className="relative sm:w-48 md:w-56 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900 shrink-0">
                         <img
                           src={article.image}
                           alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                      </div>
-                      <div className="p-4 sm:p-5 space-y-2">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
-                          {article.categoryLabel}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent sm:hidden" />
+
+                        {/* Bản đồ thu nhỏ GIS badge */}
+                        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-500/30 text-[10px] font-bold shadow-md">
+                          <Compass className="h-3 w-3 text-emerald-400" />
+                          <span>Bản đồ QH 1/2000</span>
                         </div>
-                        <h4 className="text-[15px] sm:text-[16px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
-                          {article.title}
-                        </h4>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                          {article.summary}
-                        </p>
+
+                        {/* Tag danh mục */}
+                        <div className="absolute top-2.5 left-2.5">
+                          <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
+                            {article.categoryLabel}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="px-4.5 pb-4 sm:px-5 sm:pb-4.5 pt-3 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
-                      <span>{article.date} • {formatReadTime(article.readTime)}</span>
-                    </div>
-                  </article>
-                ))}
+
+                      {/* Nội dung + Badge tiến độ */}
+                      <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 min-w-0 space-y-2.5">
+                        <div className="space-y-2">
+                          {/* Badge tiến độ dự án */}
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${progress.badgeColor}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${progress.dotColor}`} />
+                              {progress.label}
+                            </span>
+                            <span className="text-[11px] text-slate-400 hidden sm:inline">•</span>
+                            <span className="text-[11px] text-slate-500 hidden sm:inline">Hà Nội 2030</span>
+                          </div>
+
+                          <h4 className="text-[15px] sm:text-[16px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-2 leading-snug">
+                            {article.title}
+                          </h4>
+
+                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                            {article.summary}
+                          </p>
+                        </div>
+
+                        {/* Footer card */}
+                        <div className="pt-2.5 border-t border-slate-100/80 flex items-center justify-between text-[12px] text-[#6B7280]">
+                          <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                          <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 group-hover:underline">
+                            <MapPin className="h-3 w-3" /> Xem bản đồ
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
 
