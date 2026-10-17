@@ -398,3 +398,110 @@ export function toggleArticleStatus(id: string, newStatus: ArticleStatus): void 
   });
   saveStoredArticles(updatedList);
 }
+
+/**
+ * Tuỳ chọn truy vấn bài viết cho khối hiển thị mới, tự động loại trừ các bài viết
+ * đã xuất hiện ở phần Hero hoặc các khối hiển thị trước đó.
+ */
+export interface GetArticlesForBlockOptions<T = Article> {
+  exclude_ids?: string[];
+  previousBlocks?: Array<T[] | string[]>;
+  category?: string | string[];
+  status?: ArticleStatus;
+  limit?: number;
+  predicate?: (article: T) => boolean;
+}
+
+/**
+ * Lấy danh sách bài viết cho khối mới, tự động hỗ trợ exclude_ids và tổng hợp
+ * ID từ các khối hiển thị trước đó (previousBlocks) để chống trùng lặp.
+ */
+export function getArticlesForBlock<T extends { id: string; category?: string; status?: string }>(
+  articles: T[],
+  options: GetArticlesForBlockOptions<T> = {}
+): T[] {
+  const { exclude_ids = [], previousBlocks = [], category, status, limit, predicate } = options;
+
+  // Gom toàn bộ ID từ exclude_ids và các khối trước đó vào 1 Set duy nhất
+  const excludeSet = new Set<string>(exclude_ids);
+  for (const block of previousBlocks) {
+    if (Array.isArray(block)) {
+      for (const item of block) {
+        if (typeof item === 'string') {
+          excludeSet.add(item);
+        } else if (item && typeof item === 'object' && 'id' in item) {
+          excludeSet.add((item as { id: string }).id);
+        }
+      }
+    }
+  }
+
+  const result = articles.filter((article) => {
+    // 1. Loại trừ nếu ID bài viết đã xuất hiện trong exclude_ids
+    if (excludeSet.has(article.id)) return false;
+
+    // 2. Lọc theo trạng thái xuất bản nếu có chỉ định
+    if (status && article.status && article.status !== status) return false;
+
+    // 3. Lọc theo danh mục
+    if (category && article.category) {
+      if (Array.isArray(category)) {
+        if (!category.includes(article.category)) return false;
+      } else if (category !== 'all' && article.category !== category) {
+        return false;
+      }
+    }
+
+    // 4. Lọc theo predicate tuỳ biến
+    if (predicate && !predicate(article)) return false;
+
+    return true;
+  });
+
+  return typeof limit === 'number' && limit > 0 ? result.slice(0, limit) : result;
+}
+
+/**
+ * Lọc danh sách bài viết phổ biến (Đọc nhiều nhất / Top Views) đảm bảo DISTINCT:
+ * Mỗi bài viết chỉ xuất hiện tại đúng 1 vị trí thứ hạng duy nhất, loại bỏ trùng lặp theo ID và tiêu đề.
+ */
+export function getDistinctPopularArticles<T extends { id: string; title: string; views?: number; slug?: string }>(
+  articles: T[],
+  limit: number = 5
+): T[] {
+  const sorted = [...articles].sort((a, b) => (b.views || 0) - (a.views || 0));
+  const seenIds = new Set<string>();
+  const seenTitles = new Set<string>();
+  const distinctList: T[] = [];
+
+  const normalizeTitle = (title: string) =>
+    title
+      .toLowerCase()
+      .replace(/[.,:;!?'"“”‘’\(\)\[\]\-–—]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  for (const article of sorted) {
+    const idKey = article.id?.trim();
+    const titleKey = article.title ? normalizeTitle(article.title) : '';
+
+    // Nếu bài viết đã xuất hiện ở thứ hạng cao hơn thì bỏ qua
+    if (
+      (idKey && seenIds.has(idKey)) ||
+      (titleKey && seenTitles.has(titleKey))
+    ) {
+      continue;
+    }
+
+    if (idKey) seenIds.add(idKey);
+    if (titleKey) seenTitles.add(titleKey);
+
+    distinctList.push(article);
+
+    if (distinctList.length >= limit) {
+      break;
+    }
+  }
+
+  return distinctList;
+}

@@ -9,5 +9,8 @@
   "files.associations": {
     "*.css": "tailwindcss"
   },
-  "git.useEditorAsCommitInput": false
+  "git.useEditorAsCommitInput": false,
+  "git.path": "C:\\Program Files\\Git\\cmd\\git.exe",
+  "git.enabled": true,
+  "git.autoRepositoryDetection": true
 }

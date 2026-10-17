@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { AboutFooter } from '@/components/about/AboutFooter';
-import { getStoredArticles } from '@/lib/article-data';
+import { getStoredArticles, getArticlesForBlock, getDistinctPopularArticles } from '@/lib/article-data';
 import {
   Newspaper,
   TrendingUp,
@@ -252,7 +252,11 @@ export default function NewsPage() {
         }));
 
         const existingIds = new Set(mapped.map((m) => m.id));
-        const combined = [...mapped, ...NEWS_ARTICLES.filter((na) => !existingIds.has(na.id))];
+        const existingTitles = new Set(mapped.map((m) => m.title?.trim().toLowerCase()).filter(Boolean));
+        const nonDuplicateMock = NEWS_ARTICLES.filter(
+          (na) => !existingIds.has(na.id) && !existingTitles.has(na.title?.trim().toLowerCase())
+        );
+        const combined = [...mapped, ...nonDuplicateMock];
         setAllNews(combined);
       }
     } catch (e) {
@@ -282,7 +286,7 @@ export default function NewsPage() {
     });
   }, [allNews, selectedCategory, searchQuery]);
 
-  // Featured articles selection
+  // 1. Featured articles selection (Phần Hero & Tiêu điểm)
   const featuredArticle = useMemo(() => {
     return allNews.find((a) => a.featured) || allNews[0];
   }, [allNews]);
@@ -291,32 +295,50 @@ export default function NewsPage() {
     return allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 2);
   }, [allNews, featuredArticle]);
 
-  // Latest articles (excluding featured and secondary when in 'all' view with no search)
+  // Danh sách các bài viết đã xuất hiện tại khối Hero
+  const heroArticles = useMemo(() => {
+    return [featuredArticle, ...secondaryArticles].filter(Boolean);
+  }, [featuredArticle, secondaryArticles]);
+
+  const heroExcludeIds = useMemo(() => {
+    return heroArticles.map((a) => a.id);
+  }, [heroArticles]);
+
+  // 2. Khối Tin mới nhất: Tự động loại trừ các bài viết đã xuất hiện ở phần Hero
   const latestArticles = useMemo(() => {
     if (selectedCategory === 'all' && !searchQuery) {
-      const excludedIds = new Set([featuredArticle.id, ...secondaryArticles.map((s) => s.id)]);
-      const remaining = allNews.filter((a) => !excludedIds.has(a.id));
-      return remaining.slice(0, 6);
+      return getArticlesForBlock(allNews, {
+        exclude_ids: heroExcludeIds,
+        limit: 6,
+      });
     }
     return filteredArticles;
-  }, [allNews, featuredArticle, secondaryArticles, selectedCategory, searchQuery, filteredArticles]);
+  }, [allNews, heroExcludeIds, selectedCategory, searchQuery, filteredArticles]);
 
-  // Topic sections data
+  // 3. Khối Chuyên đề Thị trường BĐS:
+  // Tự động truyền mảng exclude_ids gồm các bài viết đã xuất hiện ở phần Hero và khối Tin mới nhất
   const marketTopicArticles = useMemo(() => {
-    return allNews
-      .filter((a) => a.category === 'pricing' || a.category === 'investment')
-      .slice(0, 3);
-  }, [allNews]);
+    return getArticlesForBlock(allNews, {
+      previousBlocks: [heroArticles, latestArticles],
+      category: ['pricing', 'investment'],
+      limit: 3,
+    });
+  }, [allNews, heroArticles, latestArticles]);
 
+  // 4. Khối Chuyên đề Quy hoạch & Hạ tầng:
+  // Tự động truyền mảng exclude_ids gồm các bài viết đã xuất hiện ở phần Hero, khối Tin mới nhất và khối Thị trường BĐS
   const planningTopicArticles = useMemo(() => {
-    return allNews
-      .filter((a) => a.category === 'planning' || a.category === 'project')
-      .slice(0, 3);
-  }, [allNews]);
+    return getArticlesForBlock(allNews, {
+      previousBlocks: [heroArticles, latestArticles, marketTopicArticles],
+      category: ['planning', 'project'],
+      limit: 3,
+    });
+  }, [allNews, heroArticles, latestArticles, marketTopicArticles]);
 
-  // Top 5 popular articles for sidebar
+  // 5. Widget "Đọc nhiều" ở Sidebar:
+  // Lọc DISTINCT theo bài viết để mỗi bài chỉ đứng 1 vị trí thứ hạng duy nhất
   const popularArticles = useMemo(() => {
-    return [...allNews].sort((a, b) => b.views - a.views).slice(0, 5);
+    return getDistinctPopularArticles(allNews, 5);
   }, [allNews]);
 
   return (
