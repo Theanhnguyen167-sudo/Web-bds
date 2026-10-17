@@ -443,18 +443,19 @@ export default function NewsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
               
-              {/* Bên trái: 1 Bài viết nổi bật lớn (Editorial Lead - 8 cols) */}
-              <div className="lg:col-span-8 flex flex-col">
+              {/* Bên trái: 1 Bài viết nổi bật lớn (Editorial Lead - 7 cols) với tỉ lệ ảnh 16:9 chuẩn */}
+              <div className="lg:col-span-7 flex flex-col">
                 <div
                   onClick={() => setSelectedArticle(featuredArticle)}
                   className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
                 >
-                  {/* Ảnh 16:9 đồng nhất */}
+                  {/* Ảnh 16:9 ngang chuẩn */}
                   <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
                     <img
                       src={featuredArticle.image}
                       alt={featuredArticle.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      style={{ aspectRatio: '16/9', objectFit: 'cover' }}
                     />
                     <div className="absolute top-4 left-4">
                       <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
@@ -464,21 +465,21 @@ export default function NewsPage() {
                   </div>
 
                   {/* Text bên dưới ảnh */}
-                  <div className="p-6 sm:p-7 flex flex-col justify-between flex-1 space-y-4">
-                    <div className="space-y-2.5">
+                  <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-3.5">
+                    <div className="space-y-2">
                       <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
                         {featuredArticle.categoryLabel}
                       </div>
-                      <h2 className="text-xl sm:text-2xl lg:text-[28px] font-black text-slate-900 group-hover:text-orange-600 transition-colors leading-snug">
+                      <h2 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-900 group-hover:text-orange-600 transition-colors leading-snug">
                         {featuredArticle.title}
                       </h2>
-                      <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
                         {featuredArticle.summary}
                       </p>
                     </div>
 
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <span className="font-semibold text-slate-700">{featuredArticle.author}</span>
                         <span>•</span>
                         <span>{featuredArticle.date}</span>
@@ -493,40 +494,44 @@ export default function NewsPage() {
                 </div>
               </div>
 
-              {/* Bên phải: 2 Bài viết phụ (Secondary News #2 & #3 - 4 cols) */}
-              <div className="lg:col-span-4 flex flex-col justify-between gap-6">
+              {/* Bên phải: 2 Bài viết phụ dạng thẻ ngang (Horizontal List Card - 5 cols) cân bằng chiều cao */}
+              <div className="lg:col-span-5 flex flex-col justify-between gap-4 sm:gap-5">
                 {secondaryArticles.map((article) => (
                   <div
                     key={article.id}
                     onClick={() => setSelectedArticle(article)}
-                    className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
+                    className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 p-3.5 sm:p-4 flex flex-row items-center gap-3.5 sm:gap-4 flex-1 cursor-pointer"
                   >
-                    {/* Ảnh 16:9 chiều cao cân đối */}
-                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
+                    {/* Ảnh nhỏ vuông 1:1 nằm bên trái */}
+                    <div className="relative aspect-square w-24 sm:w-28 md:w-32 rounded-xl overflow-hidden bg-slate-900 shrink-0">
                       <img
                         src={article.image}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        style={{ aspectRatio: '1/1', objectFit: 'cover' }}
                       />
-                      <span className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                      <span className="absolute top-2 left-2 bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                         {article.categoryLabel}
                       </span>
                     </div>
 
-                    {/* Nội dung gọn gàng để scan nhanh */}
-                    <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 space-y-2">
+                    {/* Tiêu đề và ngày tháng nằm bên phải */}
+                    <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1.5 h-full">
                       <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 block mb-0.5">
                           {article.categoryLabel}
                         </span>
-                        <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug mt-1">
+                        <h3 className="text-xs sm:text-[14px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
                           {article.title}
                         </h3>
+                        <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed hidden sm:block">
+                          {article.summary}
+                        </p>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+                      <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 pt-1.5 border-t border-slate-100">
                         <span>{article.date} · {article.readTime}</span>
-                        <span className="font-semibold text-orange-600 flex items-center gap-0.5">
+                        <span className="font-semibold text-orange-600 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
                           Chi tiết <ChevronRight className="h-3 w-3" />
                         </span>
                       </div>
