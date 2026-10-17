@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -35,6 +35,27 @@ export const Navbar: React.FC = () => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [expandedMobileNavs, setExpandedMobileNavs] = useState<Record<string, boolean>>({});
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = (name: string) => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    setOpenDropdown(name);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpenDropdown(null);
+    }, 180);
+  };
+
+  const toggleMobileNav = (name: string) => {
+    setExpandedMobileNavs((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  };
 
   // Đồng bộ số lượng thông báo chưa đọc của riêng tài khoản đang đăng nhập
   useEffect(() => {
@@ -78,16 +99,71 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setOpenDropdown(null);
   }, [pathname]);
 
   const navLinks = [
-    { name: 'Trang chủ', href: '/' },
-    { name: 'Tìm kiếm', href: '/search' },
-    { name: 'Quy hoạch', href: '/planning' },
-    { name: 'Tin tức', href: '/news' },
-    { name: 'Báo cáo AI', href: '/reports' },
-    { name: 'Bảng giá', href: '/pricing' },
-    { name: 'Về chúng tôi', href: '/about' },
+    {
+      name: 'Trang chủ',
+      href: '/',
+    },
+    {
+      name: 'Nhà đất bán',
+      href: '/mua-ban',
+      children: [
+        { title: 'Bán căn hộ chung cư', href: '/mua-ban/chung-cu' },
+        { title: 'Bán nhà riêng, nhà phố', href: '/mua-ban/nha-pho' },
+        { title: 'Bán nhà biệt thự, liền kề', href: '/mua-ban/biet-thu' },
+        { title: 'Bán nhà mặt phố', href: '/mua-ban/nha-mat-pho' },
+        { title: 'Bán đất nền dự án, thổ cư', href: '/mua-ban/dat-nen' },
+        { title: 'Bán căn hộ Penthouse cao cấp', href: '/mua-ban/penthouse' },
+        { title: 'Xem tất cả nhà đất bán', href: '/mua-ban' },
+      ],
+    },
+    {
+      name: 'Nhà đất cho thuê',
+      href: '/cho-thue',
+      children: [
+        { title: 'Cho thuê căn hộ chung cư', href: '/cho-thue/chung-cu' },
+        { title: 'Cho thuê chung cư mini, căn hộ dịch vụ', href: '/cho-thue/can-ho-dich-vu' },
+        { title: 'Cho thuê nhà riêng', href: '/cho-thue/nha-pho' },
+        { title: 'Cho thuê nhà biệt thự, liền kề', href: '/cho-thue/biet-thu' },
+        { title: 'Cho thuê nhà mặt phố', href: '/cho-thue/nha-mat-pho' },
+        { title: 'Cho thuê shophouse, nhà phố thương mại', href: '/cho-thue/shophouse' },
+        { title: 'Cho thuê nhà trọ, phòng trọ', href: '/cho-thue/phong-tro' },
+        { title: 'Cho thuê văn phòng', href: '/cho-thue/van-phong' },
+        { title: 'Cho thuê, sang nhượng cửa hàng, ki ốt', href: '/cho-thue/mat-bang' },
+        { title: 'Cho thuê kho, nhà xưởng, đất', href: '/cho-thue/kho-xuong' },
+        { title: 'Xem tất cả BĐS cho thuê', href: '/cho-thue' },
+      ],
+    },
+    {
+      name: 'Quy hoạch',
+      href: '/planning',
+      children: [
+        { title: 'Bản đồ quy hoạch phân khu 2030 - 2045', href: '/planning' },
+        { title: 'Danh mục tuyến đường & Tuyến Metro', href: '/streets' },
+        { title: 'Bản đồ số định vị không gian GIS', href: '/search' },
+        { title: 'Quy hoạch quận Cầu Giấy', href: '/khu-vuc/cau-giay' },
+        { title: 'Quy hoạch quận Đống Đa', href: '/khu-vuc/dong-da' },
+        { title: 'Quy hoạch quận Nam Từ Liêm', href: '/khu-vuc/nam-tu-liem' },
+      ],
+    },
+    {
+      name: 'Tin tức & Wiki',
+      href: '/news',
+      children: [
+        { title: 'Tin thị trường BĐS mới nhất', href: '/news' },
+        { title: 'Tiến độ Quy hoạch & Hạ tầng', href: '/news?category=planning' },
+        { title: 'Biến động bảng giá đất Hà Nội', href: '/news?category=pricing' },
+        { title: 'Chính sách & Pháp lý sổ đỏ', href: '/news?category=policy' },
+        { title: 'Báo cáo Thẩm định AI chuyên sâu', href: '/reports' },
+      ],
+    },
+    {
+      name: 'Bảng giá VIP',
+      href: '/pricing',
+    },
   ];
 
   const handleLogout = async () => {
@@ -152,28 +228,91 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* 2. MAIN NAVIGATION (Desktop lg+) */}
-        <nav className="main-navigation hidden lg:flex items-center gap-3.5 xl:gap-5 2xl:gap-7 shrink-0 transition-all duration-200">
+        <nav className="main-navigation hidden lg:flex items-center gap-1 xl:gap-2 2xl:gap-3.5 shrink-0 transition-all duration-200">
           {navLinks.map((link) => {
+            const isChildActive = link.children?.some(
+              (c) => pathname === c.href || (c.href !== '/' && pathname.startsWith(c.href))
+            );
             const isActive =
               link.href === '/'
                 ? pathname === '/'
-                : pathname === link.href || pathname.startsWith(link.href + '/');
+                : pathname === link.href || pathname.startsWith(link.href + '/') || isChildActive;
+
+            const hasChildren = Boolean(link.children && link.children.length > 0);
+            const isOpen = openDropdown === link.name;
+
             return (
-              <Link
+              <div
                 key={link.name}
-                href={link.href}
-                className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2 xl:px-2.5 py-1.5 ${
-                  isActive
-                    ? isScrolled
-                      ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
-                      : 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
-                    : isScrolled
-                      ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
+                className="relative py-2"
+                onMouseEnter={() => hasChildren && handleMouseEnter(link.name)}
+                onMouseLeave={() => hasChildren && handleMouseLeave()}
               >
-                <span className="whitespace-nowrap">{link.name}</span>
-              </Link>
+                <Link
+                  href={link.href}
+                  onClick={() => setOpenDropdown(null)}
+                  className={`flex items-center gap-1 rounded-xl text-xs xl:text-[13px] font-semibold tracking-wide whitespace-nowrap shrink-0 transition-all duration-150 px-2 xl:px-2.5 py-1.5 ${
+                    isActive
+                      ? isScrolled
+                        ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
+                        : 'text-orange-400 font-bold bg-orange-500/15 border border-orange-500/30 shadow-xs'
+                      : isScrolled
+                        ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/80'
+                        : 'text-slate-200 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <span className="whitespace-nowrap">{link.name}</span>
+                  {hasChildren && (
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-orange-500' : 'opacity-60'
+                      }`}
+                    />
+                  )}
+                </Link>
+
+                {/* Dropdown Menu Mục Lục Xổ Xuống Chuẩn Batdongsan */}
+                {hasChildren && (
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                        transition={{ duration: 0.16, ease: 'easeOut' }}
+                        className="absolute top-full left-0 z-[120] mt-0.5 w-64 xl:w-72 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100"
+                        style={{
+                          backgroundColor: '#ffffff',
+                          boxShadow: '0 16px 40px -6px rgba(15, 23, 42, 0.18), 0 6px 16px -3px rgba(15, 23, 42, 0.08)',
+                        }}
+                      >
+                        <div className="py-1 space-y-0.5 max-h-[420px] overflow-y-auto no-scrollbar">
+                          {link.children!.map((subItem) => {
+                            const isSubActive = pathname === subItem.href;
+                            return (
+                              <Link
+                                key={subItem.title}
+                                href={subItem.href}
+                                onClick={() => setOpenDropdown(null)}
+                                className={`flex items-center justify-between rounded-xl px-3.5 py-2 text-[12.5px] xl:text-[13px] font-medium transition-all ${
+                                  isSubActive
+                                    ? 'bg-orange-50 text-orange-600 font-bold'
+                                    : 'text-slate-700 hover:text-orange-600 hover:bg-slate-50'
+                                }`}
+                              >
+                                <span className="truncate">{subItem.title}</span>
+                                {isSubActive && (
+                                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500 shrink-0" />
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                )}
+              </div>
             );
           })}
         </nav>
@@ -496,30 +635,74 @@ export const Navbar: React.FC = () => {
                 : 'border-white/10 bg-[#0a1128]/98 backdrop-blur-xl text-white'
             }`}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-1 gap-1.5">
               {navLinks.map((link) => {
+                const isChildActive = link.children?.some((c) => pathname === c.href);
                 const isActive =
                   link.href === '/'
                     ? pathname === '/'
-                    : pathname === link.href || pathname.startsWith(link.href + '/');
+                    : pathname === link.href || pathname.startsWith(link.href + '/') || isChildActive;
+                const hasChildren = Boolean(link.children && link.children.length > 0);
+                const isExpanded = Boolean(expandedMobileNavs[link.name]);
+
                 return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
-                      isActive
-                        ? isScrolled
-                          ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
-                          : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
-                        : isScrolled
-                          ? 'hover:bg-slate-100 text-slate-700'
-                          : 'hover:bg-white/10 text-slate-200'
-                    }`}
-                  >
-                    <span>{link.name}</span>
-                    {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
-                  </Link>
+                  <div key={link.name} className="flex flex-col">
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={link.href}
+                        onClick={() => {
+                          if (!hasChildren) setMobileMenuOpen(false);
+                        }}
+                        className={`flex-1 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
+                          isActive
+                            ? isScrolled
+                              ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
+                              : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
+                            : isScrolled
+                              ? 'hover:bg-slate-100 text-slate-700'
+                              : 'hover:bg-white/10 text-slate-200'
+                        }`}
+                      >
+                        <span>{link.name}</span>
+                      </Link>
+                      {hasChildren && (
+                        <button
+                          type="button"
+                          onClick={() => toggleMobileNav(link.name)}
+                          className={`p-2.5 rounded-xl transition-colors ${
+                            isScrolled ? 'text-slate-500 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/10'
+                          }`}
+                        >
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform duration-200 ${
+                              isExpanded ? 'rotate-180 text-orange-500' : ''
+                            }`}
+                          />
+                        </button>
+                      )}
+                    </div>
+
+                    {hasChildren && isExpanded && (
+                      <div className="pl-3 pr-1 py-1 space-y-1 mt-0.5 border-l-2 border-orange-400/40 ml-3">
+                        {link.children!.map((subItem) => (
+                          <Link
+                            key={subItem.title}
+                            href={subItem.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={`block rounded-lg px-3 py-1.5 text-[11.5px] font-medium transition-colors ${
+                              pathname === subItem.href
+                                ? 'bg-orange-50 text-orange-600 font-bold'
+                                : isScrolled
+                                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+                            }`}
+                          >
+                            {subItem.title}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
