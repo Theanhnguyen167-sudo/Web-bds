@@ -665,11 +665,12 @@ function NewsContent() {
                 >
                   {/* Ảnh 16:9 ngang chuẩn */}
                   <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
-                    <img
+                    <ArticleImage
                       src={featuredArticle.image}
                       alt={featuredArticle.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      style={{ aspectRatio: '16/9', objectFit: 'cover' }}
+                      category={featuredArticle.category}
+                      className="group-hover:scale-105 transition-transform duration-500"
+                      style={{ aspectRatio: '16/9' }}
                     />
                     <div className="absolute top-4 left-4">
                       <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
@@ -715,11 +716,12 @@ function NewsContent() {
                   >
                     {/* Ảnh nhỏ vuông 1:1 nằm bên trái */}
                     <div className="relative aspect-square w-24 sm:w-28 md:w-32 rounded-xl overflow-hidden bg-slate-900 shrink-0">
-                      <img
+                      <ArticleImage
                         src={article.image}
                         alt={article.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        style={{ aspectRatio: '1/1', objectFit: 'cover' }}
+                        category={article.category}
+                        className="group-hover:scale-105 transition-transform duration-500"
+                        style={{ aspectRatio: '1/1' }}
                       />
                       <span className="absolute top-2 left-2 bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                         {article.categoryLabel}
@@ -817,10 +819,11 @@ function NewsContent() {
                         <div>
                           {/* Ảnh tỷ lệ 16:9 đồng nhất */}
                           <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
-                            <img
+                            <ArticleImage
                               src={article.image}
                               alt={article.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              category={article.category}
+                              className="group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
 
@@ -951,10 +954,11 @@ function NewsContent() {
                             className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
                           >
                             <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
-                              <img
+                              <ArticleImage
                                 src={leadMarketArticle.image}
                                 alt={leadMarketArticle.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                category={leadMarketArticle.category}
+                                className="group-hover:scale-105 transition-transform duration-500"
                               />
                               <div className="absolute top-4 left-4">
                                 <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
@@ -992,10 +996,11 @@ function NewsContent() {
                               className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-3 sm:p-3.5 flex flex-row items-center gap-3.5 flex-1 cursor-pointer"
                             >
                               <div className="relative aspect-square w-16 sm:w-20 rounded-xl overflow-hidden bg-slate-900 shrink-0">
-                                <img
+                                <ArticleImage
                                   src={article.image}
                                   alt={article.title}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  category={article.category}
+                                  className="group-hover:scale-105 transition-transform duration-300"
                                 />
                               </div>
 
@@ -1058,10 +1063,11 @@ function NewsContent() {
                           >
                             {/* Ảnh + Bản đồ thu nhỏ GIS badge */}
                             <div className="relative sm:w-44 md:w-48 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900 shrink-0">
-                              <img
+                              <ArticleImage
                                 src={article.image}
                                 alt={article.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                category={article.category}
+                                className="group-hover:scale-105 transition-transform duration-500"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent sm:hidden" />
 
@@ -1248,10 +1254,10 @@ function NewsContent() {
             >
               {/* Header Image với tỷ lệ 16:9 sắc nét */}
               <div className="relative aspect-[16/9] w-full bg-slate-900 shrink-0">
-                <img
+                <ArticleImage
                   src={selectedArticle.image}
                   alt={selectedArticle.title}
-                  className="w-full h-full object-cover"
+                  category={selectedArticle.category}
                 />
                 <button
                   onClick={() => setSelectedArticle(null)}
