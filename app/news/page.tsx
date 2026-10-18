@@ -328,18 +328,14 @@ function NewsContent() {
     return filteredArticles;
   }, [allNews, heroExcludeIds, selectedCategory, searchQuery, filteredArticles]);
 
-  const totalPages = Math.max(1, Math.ceil(latestPool.length / PAGE_SIZE));
-
-  const latestArticles = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return latestPool.slice(start, start + PAGE_SIZE);
-  }, [latestPool, currentPage, PAGE_SIZE]);
+  const leadLatestArticle = latestPool[0];
+  const scrollableLatestArticles = latestPool.slice(1);
 
   // 3. Khối Chuyên đề Thị trường BĐS:
   // Cấu trúc: 1 bài lớn bên trái + 4 bài danh sách ngang bên phải (5 bài)
   const marketTopicArticles = useMemo(() => {
     const list = getArticlesForBlock(allNews, {
-      previousBlocks: [heroArticles, latestArticles],
+      previousBlocks: [heroArticles, latestPool.slice(0, 5)],
       category: ['pricing', 'investment', 'policy'],
       limit: 5,
     });
@@ -350,7 +346,7 @@ function NewsContent() {
       return [...list, ...extra].slice(0, 5);
     }
     return list;
-  }, [allNews, heroArticles, latestArticles, heroExcludeIds]);
+  }, [allNews, heroArticles, latestPool, heroExcludeIds]);
 
   const leadMarketArticle = marketTopicArticles[0];
   const secondaryMarketArticles = marketTopicArticles.slice(1, 5);
@@ -632,27 +628,27 @@ function NewsContent() {
                 </div>
               ) : (
                 <>
-                  {/* Bố cục Tin mới nhất chuẩn Hình 3: 1 bài lớn bên trái (Lead Card) + 4 bài danh sách ngang bên phải (Horizontal List Cards) */}
-                  {latestArticles.length > 0 && (
+                  {/* Bố cục Tin mới nhất: 1 bài lớn bên trái (Lead Card) + danh sách bài viết ngang có thanh cuộn mượt mà bên phải */}
+                  {latestPool.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
                       
                       {/* Cột trái: 1 Bài viết lớn tiêu điểm (Lead Card - 7 cột) */}
-                      <div className={`${latestArticles.length > 1 ? 'md:col-span-7' : 'md:col-span-12'} flex flex-col`}>
+                      <div className={`${latestPool.length > 1 ? 'md:col-span-7' : 'md:col-span-12'} flex flex-col`}>
                         <article
-                          id={`article-${latestArticles[0].id}`}
-                          onClick={() => handleArticleClick(latestArticles[0])}
-                          className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
+                          id={`article-${latestPool[0].id}`}
+                          onClick={() => handleArticleClick(latestPool[0])}
+                          className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full md:max-h-[420px] cursor-pointer"
                         >
                           <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
                             <ArticleImage
-                              src={latestArticles[0].image}
-                              alt={latestArticles[0].title}
-                              category={latestArticles[0].category}
+                              src={latestPool[0].image}
+                              alt={latestPool[0].title}
+                              category={latestPool[0].category}
                               className="group-hover:scale-105 transition-transform duration-500"
                             />
                             <div className="absolute top-3 left-3">
                               <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
-                                {latestArticles[0].categoryLabel}
+                                {latestPool[0].categoryLabel}
                               </span>
                             </div>
                           </div>
@@ -660,7 +656,7 @@ function NewsContent() {
                           <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 space-y-2.5">
                             <div className="space-y-1.5">
                               <div className="text-[10px] font-bold uppercase tracking-wider text-orange-600">
-                                {latestArticles[0].categoryLabel}
+                                {latestPool[0].categoryLabel}
                               </div>
                               <h3
                                 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug"
@@ -673,31 +669,39 @@ function NewsContent() {
                                   overflowWrap: 'break-word',
                                 }}
                               >
-                                {latestArticles[0].title}
+                                {latestPool[0].title}
                               </h3>
-                              {latestArticles[0].summary && (
+                              {latestPool[0].summary && (
                                 <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                                  {latestArticles[0].summary}
+                                  {latestPool[0].summary}
                                 </p>
                               )}
                             </div>
 
                             <div className="pt-2 border-t border-slate-100/80 flex items-center text-[11px] text-[#6B7280]">
-                              <span>{latestArticles[0].date} • {formatReadTime(latestArticles[0].readTime)}</span>
+                              <span>{latestPool[0].date} • {formatReadTime(latestPool[0].readTime)}</span>
                             </div>
                           </div>
                         </article>
                       </div>
 
-                      {/* Cột phải: 4 bài danh sách ngang (Horizontal List Cards - 5 cột) với cỡ chữ tiêu đề vừa như Hình 2 */}
-                      {latestArticles.length > 1 && (
-                        <div className="md:col-span-5 flex flex-col justify-between gap-3">
-                          {latestArticles.slice(1, 5).map((article) => (
+                      {/* Cột phải: Danh sách các bài viết tiếp theo có thanh cuộn mượt mà bên phải (5 cột) */}
+                      {latestPool.length > 1 && (
+                        <div
+                          className="md:col-span-5 flex flex-col gap-2.5 overflow-y-auto pr-1.5 custom-hero-scrollbar"
+                          style={{
+                            maxHeight: '420px',
+                            overflowY: 'auto',
+                            scrollbarWidth: 'thin',
+                            scrollbarColor: '#CBD5E1 #F1F5F9',
+                          }}
+                        >
+                          {latestPool.slice(1).map((article) => (
                             <article
                               key={article.id}
                               id={`article-${article.id}`}
                               onClick={() => handleArticleClick(article)}
-                              className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-3 sm:p-3.5 flex flex-row items-center gap-3.5 flex-1 cursor-pointer"
+                              className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-2.5 sm:p-3 flex flex-row items-center gap-3 shrink-0 cursor-pointer"
                             >
                               <div className="relative aspect-square w-16 sm:w-20 rounded-xl overflow-hidden bg-slate-900 shrink-0">
                                 <ArticleImage
@@ -737,70 +741,6 @@ function NewsContent() {
                         </div>
                       )}
 
-                    </div>
-                  )}
-
-                  {/* Thanh Phân trang (Pagination Bar) rõ ràng - Giữ cho footer không bị đẩy quá xa */}
-                  {totalPages > 1 && (
-                    <div className="pt-6 sm:pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <div className="text-xs text-slate-500 font-medium">
-                        Hiển thị <span className="font-bold text-slate-800">{(currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, latestPool.length)}</span> trên tổng số <span className="font-bold text-slate-800">{latestPool.length}</span> bài viết
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => {
-                            if (currentPage > 1) {
-                              setCurrentPage((prev) => prev - 1);
-                              document.getElementById('news-content-grid')?.scrollIntoView({ behavior: 'smooth' });
-                            }
-                          }}
-                          disabled={currentPage === 1}
-                          className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors ${
-                            currentPage === 1
-                              ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50'
-                              : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
-                          }`}
-                        >
-                          <ChevronLeft className="h-3.5 w-3.5" />
-                          <span>Trang trước</span>
-                        </button>
-
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                          <button
-                            key={pageNum}
-                            onClick={() => {
-                              setCurrentPage(pageNum);
-                              document.getElementById('news-content-grid')?.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                            className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
-                              currentPage === pageNum
-                                ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/30'
-                                : 'border border-slate-200 text-slate-700 hover:bg-slate-100'
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        ))}
-
-                        <button
-                          onClick={() => {
-                            if (currentPage < totalPages) {
-                              setCurrentPage((prev) => prev + 1);
-                              document.getElementById('news-content-grid')?.scrollIntoView({ behavior: 'smooth' });
-                            }
-                          }}
-                          disabled={currentPage === totalPages}
-                          className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors ${
-                            currentPage === totalPages
-                              ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50'
-                              : 'border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
-                          }`}
-                        >
-                          <span>Trang sau</span>
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
                     </div>
                   )}
                 </>
