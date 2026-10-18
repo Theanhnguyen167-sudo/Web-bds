@@ -6,7 +6,12 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { AboutFooter } from '@/components/about/AboutFooter';
-import { getStoredArticles, getArticlesForBlock, getDistinctPopularArticles } from '@/lib/article-data';
+import {
+  getStoredArticles,
+  getArticlesForBlock,
+  getDistinctPopularArticles,
+  getCategoryFallbackImage
+} from '@/lib/article-data';
 import {
   Newspaper,
   TrendingUp,
@@ -29,6 +34,51 @@ import {
   Building2,
   Sparkles
 } from 'lucide-react';
+
+/**
+ * Component hình ảnh bài viết an toàn (Safe Article Image):
+ * - Tự động thiết lập ảnh placeholder chuẩn theo Category khi URL từ backend bị null, undefined hoặc rỗng.
+ * - Tự động bắt lỗi onError và chuyển sang fallback image chuẩn theo Category khi link bị 404/chết link.
+ * - Luôn tích hợp class CSS object-cover để bảo đảm tỉ lệ thẩm mỹ.
+ */
+interface ArticleImageProps {
+  src?: string | null;
+  alt: string;
+  category?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+const ArticleImage: React.FC<ArticleImageProps> = ({
+  src,
+  alt,
+  category,
+  className = '',
+  style,
+}) => {
+  const fallback = getCategoryFallbackImage(category);
+  const validSrc = src && typeof src === 'string' && src.trim() !== '' ? src : fallback;
+  const [currentSrc, setCurrentSrc] = useState<string>(validSrc);
+
+  useEffect(() => {
+    setCurrentSrc(validSrc);
+  }, [validSrc]);
+
+  return (
+    <img
+      src={currentSrc}
+      alt={alt}
+      className={`w-full h-full object-cover ${className}`}
+      style={style}
+      loading="lazy"
+      onError={() => {
+        if (currentSrc !== fallback) {
+          setCurrentSrc(fallback);
+        }
+      }}
+    />
+  );
+};
 
 export interface NewsArticle {
   id: string;
@@ -390,7 +440,7 @@ function NewsContent() {
             : 'planning') as any,
           categoryLabel: a.categoryLabel || 'Tin tức',
           categoryColor: a.categoryColor || 'bg-blue-500 text-white',
-          image: a.featuredImage || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80',
+          image: a.featuredImage?.trim() || getCategoryFallbackImage(a.category),
           date: a.createdAt ? new Date(a.createdAt).toLocaleDateString('vi-VN') : 'Mới cập nhật',
           author: a.authorName || 'Ban biên tập HaNoi Realty',
           readTime: a.readTime || '5 phút đọc',
