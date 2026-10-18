@@ -80,14 +80,79 @@ export const Navbar: React.FC = () => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  const navLinks = [
+  interface NavSubItem {
+    name: string;
+    href: string;
+  }
+
+  interface NavLinkItem {
+    name: string;
+    href: string;
+    subItems?: NavSubItem[];
+  }
+
+  const navLinks: NavLinkItem[] = [
     { name: 'Trang chủ', href: '/' },
-    { name: 'Tìm kiếm', href: '/search' },
-    { name: 'Quy hoạch', href: '/planning' },
-    { name: 'Tin tức', href: '/news' },
-    { name: 'Báo cáo AI', href: '/reports' },
-    { name: 'Bảng giá', href: '/pricing' },
-    { name: 'Về chúng tôi', href: '/about' },
+    {
+      name: 'Tìm kiếm',
+      href: '/search',
+      subItems: [
+        { name: 'Mua bán nhà đất', href: '/search?type=sale' },
+        { name: 'Cho thuê nhà đất', href: '/search?type=rent' },
+        { name: 'Dự án bất động sản', href: '/search?type=project' },
+        { name: 'Bản đồ tra cứu BĐS', href: '/search' },
+      ],
+    },
+    {
+      name: 'Quy hoạch',
+      href: '/planning',
+      subItems: [
+        { name: 'Bản đồ quy hoạch Hà Nội', href: '/planning' },
+        { name: 'Quy hoạch phân khu đô thị', href: '/planning' },
+        { name: 'Kế hoạch sử dụng đất', href: '/planning' },
+        { name: 'Tra cứu thửa đất theo toạ độ', href: '/planning' },
+      ],
+    },
+    {
+      name: 'Tin tức',
+      href: '/news',
+      subItems: [
+        { name: 'Tất cả tin tức', href: '/news' },
+        { name: 'Thị trường BĐS', href: '/news?category=market' },
+        { name: 'Quy hoạch & Hạ tầng', href: '/news?category=planning' },
+        { name: 'Biến động giá đất', href: '/news?category=pricing' },
+        { name: 'Chính sách & Pháp lý', href: '/news?category=policy' },
+        { name: 'Dự án & Quy hoạch', href: '/news?category=project' },
+        { name: 'Tài chính & Đầu tư', href: '/news?category=investment' },
+      ],
+    },
+    {
+      name: 'Báo cáo AI',
+      href: '/reports',
+      subItems: [
+        { name: 'Báo cáo thị trường BĐS', href: '/reports' },
+        { name: 'Định giá nhà đất tự động', href: '/reports' },
+        { name: 'Dự báo xu hướng giá', href: '/reports' },
+      ],
+    },
+    {
+      name: 'Bảng giá',
+      href: '/pricing',
+      subItems: [
+        { name: 'Bảng giá đất Hà Nội mới nhất', href: '/pricing' },
+        { name: 'Lịch sử biến động giá đất', href: '/pricing' },
+        { name: 'So sánh giá đất theo quận', href: '/pricing' },
+      ],
+    },
+    {
+      name: 'Về chúng tôi',
+      href: '/about',
+      subItems: [
+        { name: 'Giới thiệu Hanoi Realty', href: '/about' },
+        { name: 'Đội ngũ chuyên gia', href: '/about#team' },
+        { name: 'Liên hệ hợp tác', href: '/about#contact' },
+      ],
+    },
   ];
 
   const handleLogout = async () => {
@@ -152,28 +217,56 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* 2. MAIN NAVIGATION (Desktop lg+) */}
-        <nav className="main-navigation hidden lg:flex items-center gap-3.5 xl:gap-5 2xl:gap-7 shrink-0 transition-all duration-200">
+        <nav className="main-navigation hidden lg:flex items-center gap-2 xl:gap-3.5 2xl:gap-5 shrink-0 transition-all duration-200">
           {navLinks.map((link) => {
             const isActive =
               link.href === '/'
                 ? pathname === '/'
                 : pathname === link.href || pathname.startsWith(link.href + '/');
+            const hasSub = Boolean(link.subItems && link.subItems.length > 0);
+
             return (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2 xl:px-2.5 py-1.5 ${
-                  isActive
-                    ? isScrolled
-                      ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
-                      : 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
-                    : isScrolled
-                      ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <span className="whitespace-nowrap">{link.name}</span>
-              </Link>
+              <div key={link.name} className="relative group py-2">
+                <Link
+                  href={link.href}
+                  className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2 xl:px-2.5 py-1.5 flex items-center gap-1 ${
+                    isActive
+                      ? isScrolled
+                        ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
+                        : 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
+                      : isScrolled
+                        ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
+                        : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span className="whitespace-nowrap">{link.name}</span>
+                  {hasSub && (
+                    <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100 group-hover:rotate-180 transition-transform duration-200 shrink-0" />
+                  )}
+                </Link>
+
+                {/* Submenu Dropdown khi trỏ chuột vào */}
+                {hasSub && (
+                  <div className="invisible opacity-0 translate-y-1.5 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto absolute top-full left-1/2 -translate-x-1/2 pt-1.5 z-[110]">
+                    <div className="min-w-[210px] w-max max-w-[260px] rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-900/12 p-1.5 space-y-0.5">
+                      {link.subItems?.map((sub) => {
+                        return (
+                          <Link
+                            key={sub.name}
+                            href={sub.href}
+                            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-orange-600 hover:bg-orange-50/80 transition-all group/item"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover/item:bg-orange-500 group-hover/item:scale-125 transition-all" />
+                              <span className="whitespace-nowrap">{sub.name}</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
@@ -496,30 +589,51 @@ export const Navbar: React.FC = () => {
                 : 'border-white/10 bg-[#0a1128]/98 backdrop-blur-xl text-white'
             }`}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            <div className="flex flex-col gap-1.5 max-h-[65vh] overflow-y-auto no-scrollbar py-1">
               {navLinks.map((link) => {
                 const isActive =
                   link.href === '/'
                     ? pathname === '/'
                     : pathname === link.href || pathname.startsWith(link.href + '/');
                 return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
-                      isActive
-                        ? isScrolled
-                          ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
-                          : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
-                        : isScrolled
-                          ? 'hover:bg-slate-100 text-slate-700'
-                          : 'hover:bg-white/10 text-slate-200'
-                    }`}
-                  >
-                    <span>{link.name}</span>
-                    {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
-                  </Link>
+                  <div key={link.name} className="flex flex-col">
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
+                        isActive
+                          ? isScrolled
+                            ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
+                            : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
+                          : isScrolled
+                            ? 'hover:bg-slate-100 text-slate-700'
+                            : 'hover:bg-white/10 text-slate-200'
+                      }`}
+                    >
+                      <span>{link.name}</span>
+                      {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
+                    </Link>
+
+                    {/* SubItems trên Mobile nếu có */}
+                    {link.subItems && (
+                      <div className="pl-3 pr-1 py-1 flex flex-wrap gap-1">
+                        {link.subItems.map((sub) => (
+                          <Link
+                            key={sub.name}
+                            href={sub.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={`text-[11px] px-2.5 py-1 rounded-lg transition-colors ${
+                              isScrolled
+                                ? 'text-slate-600 hover:text-orange-600 hover:bg-orange-50'
+                                : 'text-slate-300 hover:text-white hover:bg-white/10'
+                            }`}
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>

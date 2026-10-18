@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { AboutFooter } from '@/components/about/AboutFooter';
@@ -351,13 +352,24 @@ const getPlanningProgress = (title: string, summary: string) => {
   };
 };
 
-export default function NewsPage() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+function NewsContent() {
+  const searchParams = useSearchParams();
+  const catParam = searchParams.get('category');
+  const [selectedCategory, setSelectedCategory] = useState(catParam || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [allNews, setAllNews] = useState<NewsArticle[]>(NEWS_ARTICLES);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 6;
+
+  // Tự động đồng bộ khi URL query param category thay đổi (ví dụ khi chọn từ menu điều hướng)
+  useEffect(() => {
+    if (catParam) {
+      setSelectedCategory(catParam);
+    } else {
+      setSelectedCategory('all');
+    }
+  }, [catParam]);
 
   // Khi thay đổi bộ lọc chuyên mục hoặc từ khóa tìm kiếm, tự động reset về trang 1
   useEffect(() => {
@@ -559,39 +571,28 @@ export default function NewsPage() {
         </div>
       </section>
 
-      {/* ── 4. CATEGORY NAVIGATION (Horizontal Pills, Clean White, Orange Active) ── */}
-      <section
-        className="w-full bg-[#ffffff] border-b border-slate-200 sticky top-16 sm:top-[70px] z-[99] shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-200"
-        style={{
-          backgroundColor: '#ffffff',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          zIndex: 99,
-        }}
-      >
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 bg-[#ffffff]">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 bg-[#ffffff]">
-            {CATEGORIES.map((cat) => {
-              const isActive = selectedCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
-                    isActive
-                      ? 'bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/20'
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* ── MAIN CONTENT CONTAINER (max-w 1280px, Spacing chuẩn) ── */}
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-12 sm:space-y-16">
+
+        {/* Chuyên mục đang chọn (Chỉ hiện khi lọc chuyên mục cụ thể, không còn dải dài treo) */}
+        {selectedCategory !== 'all' && (
+          <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs text-slate-500 font-medium">Chuyên mục đang chọn:</span>
+              <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-orange-500 text-white shadow-xs">
+                {CATEGORIES.find((c) => c.id === selectedCategory)?.label || selectedCategory}
+              </span>
+            </div>
+            <Link
+              href="/news"
+              onClick={() => setSelectedCategory('all')}
+              className="text-xs font-semibold text-orange-600 hover:text-orange-700 hover:underline flex items-center gap-1.5 group"
+            >
+              <span>Xem tất cả tin tức</span>
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        )}
 
         {/* ── 5 & 6. FEATURED NEWS (EDITORIAL 1 CHÍNH + 2 PHỤ) ── */}
         {selectedCategory === 'all' && !searchQuery && (
@@ -1348,5 +1349,13 @@ export default function NewsPage() {
       <AboutFooter />
 
     </div>
+  );
+}
+
+export default function NewsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8FAFC]" />}>
+      <NewsContent />
+    </Suspense>
   );
 }
