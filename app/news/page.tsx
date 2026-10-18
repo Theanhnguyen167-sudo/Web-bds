@@ -215,12 +215,12 @@ function NewsContent() {
   }, [allNews]);
 
   const secondaryArticles = useMemo(() => {
-    return allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 2);
+    return allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 6);
   }, [allNews, featuredArticle]);
 
-  // Danh sách các bài viết đã xuất hiện tại khối Hero
+  // Danh sách các bài viết đã xuất hiện tại khối Hero (loại trừ bài chính và 3 bài phụ đầu tiên để các khối dưới vẫn phong phú)
   const heroArticles = useMemo(() => {
-    return [featuredArticle, ...secondaryArticles].filter(Boolean);
+    return [featuredArticle, ...secondaryArticles.slice(0, 3)].filter(Boolean);
   }, [featuredArticle, secondaryArticles]);
 
   const heroExcludeIds = useMemo(() => {
@@ -432,17 +432,25 @@ function NewsContent() {
                 </div>
               </div>
 
-              {/* Bên phải: 2 Bài viết phụ dạng thẻ ngang (Horizontal List Card - 5 cols) cân bằng chiều cao */}
-              <div className="lg:col-span-5 flex flex-col justify-between gap-4 sm:gap-5">
+              {/* Bên phải: Danh sách bài viết phụ dạng thẻ ngang có thanh cuộn góc phải, hiển thị 3 bài đầu vừa vặn */}
+              <div
+                className="lg:col-span-5 flex flex-col gap-2.5 overflow-y-auto pr-1.5 custom-hero-scrollbar"
+                style={{
+                  maxHeight: '520px',
+                  overflowY: 'auto',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#CBD5E1 #F1F5F9',
+                }}
+              >
                 {secondaryArticles.map((article) => (
                   <div
                     key={article.id}
                     id={`article-${article.id}`}
                     onClick={() => handleArticleClick(article)}
-                    className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 p-3.5 sm:p-4 flex flex-row items-center gap-3.5 sm:gap-4 flex-1 cursor-pointer"
+                    className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-2.5 sm:p-3 flex flex-row items-center gap-3 shrink-0 cursor-pointer"
                   >
                     {/* Ảnh nhỏ vuông 1:1 nằm bên trái */}
-                    <div className="relative aspect-square w-24 sm:w-28 md:w-32 rounded-xl overflow-hidden bg-slate-900 shrink-0">
+                    <div className="relative aspect-square w-20 sm:w-22 md:w-24 rounded-xl overflow-hidden bg-slate-900 shrink-0">
                       <ArticleImage
                         src={article.image}
                         alt={article.title}
@@ -450,26 +458,26 @@ function NewsContent() {
                         className="group-hover:scale-105 transition-transform duration-500"
                         style={{ aspectRatio: '1/1' }}
                       />
-                      <span className="absolute top-2 left-2 bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                      <span className="absolute top-1.5 left-1.5 bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                         {article.categoryLabel}
                       </span>
                     </div>
 
-                    {/* Tiêu đề và ngày tháng nằm bên phải */}
-                    <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1.5 h-full">
+                    {/* Tiêu đề và ngày tháng nằm bên phải - Thu hẹp khoảng trống */}
+                    <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1 h-full">
                       <div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 block mb-0.5">
                           {article.categoryLabel}
                         </span>
-                        <h3 className="text-xs sm:text-[14px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
+                        <h3 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
                           {article.title}
                         </h3>
-                        <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed hidden sm:block">
+                        <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed hidden sm:block">
                           {article.summary}
                         </p>
                       </div>
 
-                      <div className="flex items-center text-[12px] text-[#6B7280] pt-2 border-t border-slate-100/80">
+                      <div className="flex items-center text-[11px] text-[#6B7280] pt-1.5 border-t border-slate-100/80 mt-0.5">
                         <span>{article.date} • {formatReadTime(article.readTime)}</span>
                       </div>
                     </div>
