@@ -36,6 +36,37 @@ export const Navbar: React.FC = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
+  // Quản lý mục lục đổ xuống với Chế độ trễ an toàn (Safe Delay) chống tắt khi lia chuột chéo
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const closeTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleMenuEnter = (menuName: string) => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setActiveDropdown(menuName);
+  };
+
+  const handleMenuLeave = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+    }
+    // Độ trễ an toàn 250ms: Giữ menu mở khi lia chuột chéo từ nút bấm sang bảng dropdown
+    closeTimerRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 250);
+  };
+
+  // Dọn dẹp timer khi component unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
+
   // Đồng bộ số lượng thông báo chưa đọc của riêng tài khoản đang đăng nhập
   useEffect(() => {
     const syncNotifCount = () => {
@@ -180,11 +211,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-[100] transition-[background-color,backdrop-filter,border-color,box-shadow,color] duration-200 ease-in-out ${
-        isScrolled
-          ? 'bg-white/90 supports-[backdrop-filter]:bg-white/75 backdrop-blur-[14px] shadow-sm shadow-slate-900/[0.04] border-b border-slate-200/70 text-slate-800'
-          : 'bg-[#0a1128] shadow-xs border-b border-slate-800/80 text-white'
-      }`}
+      className="fixed top-0 left-0 right-0 z-[100] bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-md border-b border-slate-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.06)] text-slate-800 transition-all duration-200"
     >
       <div
         className={`header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-2.5 min-[375px]:px-3 sm:px-6 lg:px-8 transition-all duration-300 flex-nowrap ${
@@ -202,14 +229,10 @@ export const Navbar: React.FC = () => {
               <Home className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
             </motion.div>
             <div className="flex flex-col">
-              <span className={`font-extrabold tracking-tight flex items-center gap-1 text-[13.5px] min-[360px]:text-[14.5px] sm:text-base lg:text-[17px] leading-tight transition-colors whitespace-nowrap ${
-                isScrolled ? 'text-slate-900 group-hover:text-slate-900' : 'text-white group-hover:text-white'
-              }`}>
+              <span className="font-extrabold tracking-tight flex items-center gap-1 text-[13.5px] min-[360px]:text-[14.5px] sm:text-base lg:text-[17px] leading-tight text-slate-900 group-hover:text-slate-900 transition-colors whitespace-nowrap">
                 HaNoi <span className="text-accent font-black">Realty</span>
               </span>
-              <span className={`text-[8px] min-[360px]:text-[8.5px] sm:text-[10px] font-medium uppercase tracking-wider sm:tracking-widest -mt-0.5 leading-none whitespace-nowrap transition-colors ${
-                isScrolled ? 'text-slate-500' : 'text-slate-300'
-              }`}>
+              <span className="text-[8px] min-[360px]:text-[8.5px] sm:text-[10px] font-medium uppercase tracking-wider sm:tracking-widest -mt-0.5 leading-none text-slate-500 whitespace-nowrap transition-colors">
                 PropTech & Quy Hoạch
               </span>
             </div>
@@ -217,43 +240,67 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* 2. MAIN NAVIGATION (Desktop lg+) */}
-        <nav className="main-navigation hidden lg:flex items-center gap-2 xl:gap-3.5 2xl:gap-5 shrink-0 transition-all duration-200">
+        <nav
+          className="main-navigation hidden lg:flex items-center gap-1.5 xl:gap-2.5 2xl:gap-3.5 shrink-0 transition-all duration-200"
+          onMouseLeave={handleMenuLeave}
+        >
           {navLinks.map((link) => {
             const isActive =
               link.href === '/'
                 ? pathname === '/'
                 : pathname === link.href || pathname.startsWith(link.href + '/');
             const hasSub = Boolean(link.subItems && link.subItems.length > 0);
+            const isOpen = activeDropdown === link.name;
 
             return (
-              <div key={link.name} className="relative group py-2">
+              <div
+                key={link.name}
+                className="relative py-2"
+                onMouseEnter={() => hasSub && handleMenuEnter(link.name)}
+                onMouseLeave={handleMenuLeave}
+              >
                 <Link
                   href={link.href}
-                  className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2 xl:px-2.5 py-1.5 flex items-center gap-1 ${
-                    isActive
-                      ? isScrolled
-                        ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
-                        : 'text-orange-400 font-bold bg-orange-500/10 border border-orange-500/25 shadow-xs'
-                      : isScrolled
-                        ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
-                        : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  onClick={() => setActiveDropdown(null)}
+                  className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2.5 py-1.5 flex items-center gap-1 ${
+                    isActive || isOpen
+                      ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
+                      : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/80'
                   }`}
                 >
                   <span className="whitespace-nowrap">{link.name}</span>
                   {hasSub && (
-                    <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100 group-hover:rotate-180 transition-transform duration-200 shrink-0" />
+                    <ChevronDown
+                      className={`h-3 w-3 opacity-60 transition-transform duration-200 shrink-0 ${
+                        isOpen ? 'rotate-180 opacity-100 text-accent' : 'hover:opacity-100'
+                      }`}
+                    />
                   )}
                 </Link>
 
-                {/* Submenu Dropdown khi trỏ chuột vào */}
-                {hasSub && (
-                  <div className="invisible opacity-0 translate-y-1.5 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto absolute top-full left-1/2 -translate-x-1/2 pt-1.5 z-[110]">
-                    <div className="min-w-[210px] w-max max-w-[260px] rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-900/12 p-1.5 space-y-0.5">
+                {/* Submenu Dropdown với Chế độ trễ an toàn & Cầu đệm vô hình chống tắt khi lia chuột chéo */}
+                {hasSub && isOpen && (
+                  <div
+                    className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-[110]"
+                    onMouseEnter={() => handleMenuEnter(link.name)}
+                    onMouseLeave={handleMenuLeave}
+                  >
+                    {/* Cầu đệm vô hình (Invisible Bridge): mở rộng vùng đón chuột khi lia chéo góc */}
+                    <div className="absolute -top-3 -left-12 -right-12 h-6 pointer-events-auto" />
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                      transition={{ duration: 0.16, ease: 'easeOut' }}
+                      className="min-w-[220px] w-max max-w-[280px] rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-[0_12px_30px_-6px_rgba(0,0,0,0.12),0_4px_12px_-2px_rgba(0,0,0,0.06)] p-1.5 space-y-0.5"
+                    >
                       {link.subItems?.map((sub) => {
                         return (
                           <Link
                             key={sub.name}
                             href={sub.href}
+                            onClick={() => setActiveDropdown(null)}
                             className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-orange-600 hover:bg-orange-50/80 transition-all group/item"
                           >
                             <div className="flex items-center gap-2">
@@ -263,7 +310,7 @@ export const Navbar: React.FC = () => {
                           </Link>
                         );
                       })}
-                    </div>
+                    </motion.div>
                   </div>
                 )}
               </div>
@@ -276,11 +323,7 @@ export const Navbar: React.FC = () => {
           {/* Quick Search Shortcut */}
           <Link
             href="/search"
-            className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 border shrink-0 ${
-              isScrolled
-                ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border-transparent hover:border-slate-200'
-                : 'text-slate-300 hover:text-white hover:bg-white/10 border-transparent hover:border-white/10'
-            }`}
+            className="h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 border border-slate-200/70 text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 hover:border-slate-300 shrink-0"
             title="Tìm kiếm BĐS"
           >
             <Search className="h-4 w-4 shrink-0" />
@@ -318,11 +361,7 @@ export const Navbar: React.FC = () => {
                 setNotifOpen(false);
                 setUserDropdownOpen(!userDropdownOpen);
               }}
-              className={`h-9 relative flex items-center gap-2 rounded-xl px-2.5 transition-all border cursor-pointer shrink-0 whitespace-nowrap ${
-                isScrolled
-                  ? 'bg-slate-100/80 hover:bg-slate-200/70 text-slate-800 border-slate-200/80 hover:border-slate-300'
-                  : 'bg-white/5 hover:bg-white/10 text-white border-white/10 hover:border-white/20'
-              }`}
+              className="h-9 relative flex items-center gap-2 rounded-xl px-2.5 transition-all border border-slate-200/80 hover:border-slate-300 bg-slate-100/80 hover:bg-slate-200/70 text-slate-800 cursor-pointer shrink-0 whitespace-nowrap"
             >
               <div className="relative shrink-0">
                 {user ? (
@@ -337,12 +376,10 @@ export const Navbar: React.FC = () => {
                   </div>
                 )}
               </div>
-              <span className={`text-xs font-semibold max-w-[110px] xl:max-w-[140px] truncate ${
-                isScrolled ? 'text-slate-800' : 'text-slate-200'
-              }`}>
+              <span className="text-xs font-semibold max-w-[110px] xl:max-w-[140px] truncate text-slate-800">
                 {user ? user.name : 'Tài khoản'}
               </span>
-              <ChevronDown className={`h-3.5 w-3.5 shrink-0 ${isScrolled ? 'text-slate-500' : 'text-slate-400'}`} />
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-500" />
             </button>
 
             {/* User Account Dropdown Menu */}
@@ -483,7 +520,7 @@ export const Navbar: React.FC = () => {
                 if (open) setUserDropdownOpen(false);
                 setNotifOpen(open);
               }}
-              isScrolled={isScrolled}
+              isScrolled={true}
               onUnreadCountChange={setUnreadNotifCount}
             />
           </div>
@@ -502,11 +539,7 @@ export const Navbar: React.FC = () => {
           {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}
           <Link
             href="/search"
-            className={`flex h-7.5 w-[22px] items-center justify-center transition-all shrink-0 active:scale-95 ${
-              isScrolled
-                ? 'text-slate-700 hover:text-slate-900'
-                : 'text-slate-200 hover:text-white'
-            }`}
+            className="flex h-7.5 w-[22px] items-center justify-center transition-all shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
             title="Tìm kiếm BĐS nhanh"
           >
             <Search className="w-[22px] h-[22px] stroke-[2.2]" />
@@ -515,15 +548,11 @@ export const Navbar: React.FC = () => {
           {/* 3. Nút Thông báo: Icon chuông <Bell /> kích cỡ chuẩn 22px đồng bộ */}
           <div className="relative shrink-0">
             <NotificationBell
-              isScrolled={isScrolled}
+              isScrolled={true}
               onOpenChange={(open) => {
                 if (open) setMobileMenuOpen(false);
               }}
-              triggerClassName={`relative flex h-7.5 w-[22px] items-center justify-center transition-all cursor-pointer shrink-0 active:scale-95 ${
-                isScrolled
-                  ? 'text-slate-700 hover:text-slate-900'
-                  : 'text-slate-200 hover:text-white'
-              }`}
+              triggerClassName="relative flex h-7.5 w-[22px] items-center justify-center transition-all cursor-pointer shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
               iconClassName="w-[22px] h-[22px] stroke-[2.2]"
             />
           </div>
@@ -533,11 +562,7 @@ export const Navbar: React.FC = () => {
             href={user ? '/dashboard' : '/login'}
             aria-label="Tài khoản người dùng"
             title={user ? `Quản lý tài khoản: ${user.name}` : 'Đăng nhập / Đăng ký'}
-            className={`flex h-7.5 w-[22px] items-center justify-center transition-all shrink-0 active:scale-95 ${
-              isScrolled
-                ? 'text-slate-700 hover:text-slate-900'
-                : 'text-slate-200 hover:text-white'
-            }`}
+            className="flex h-7.5 w-[22px] items-center justify-center transition-all shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
           >
             {user?.avatar ? (
               <img
@@ -560,11 +585,7 @@ export const Navbar: React.FC = () => {
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
             title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu hệ thống'}
-            className={`relative flex h-7.5 w-[22px] items-center justify-center p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 ${
-              isScrolled
-                ? 'text-slate-800 hover:text-orange-500'
-                : 'text-white hover:text-orange-400'
-            }`}
+            className="relative flex h-7.5 w-[22px] items-center justify-center p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 text-slate-800 hover:text-orange-500"
           >
             {mobileMenuOpen ? (
               <X className="w-[22px] h-[22px] stroke-[2.2] text-orange-500" />
