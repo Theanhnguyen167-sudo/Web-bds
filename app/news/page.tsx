@@ -827,7 +827,7 @@ function NewsContent() {
                             />
                           </div>
 
-                          {/* Nội dung card */}
+                          {/* Nội dung card - Chỉ giữ tag và tiêu đề lớn, loại bỏ tóm tắt theo yêu cầu */}
                           <div className="p-4 sm:p-5 space-y-2">
                             <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
                               {article.categoryLabel}
@@ -836,10 +836,6 @@ function NewsContent() {
                             <h3 className="text-[15px] sm:text-[16px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
                               {article.title}
                             </h3>
-
-                            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                              {article.summary}
-                            </p>
                           </div>
                         </div>
 
@@ -1188,8 +1184,18 @@ function NewsContent() {
                       <span className="text-lg sm:text-xl font-black text-slate-300 group-hover:text-orange-500 transition-colors shrink-0 w-6">
                         0{idx + 1}
                       </span>
-                      <div className="space-y-1">
-                        <h4 className="text-xs sm:text-[13px] font-bold text-slate-800 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <h4
+                          className="text-xs sm:text-[13px] font-bold text-slate-800 group-hover:text-orange-600 transition-colors leading-snug"
+                          style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            wordBreak: 'normal',
+                            overflowWrap: 'break-word',
+                          }}
+                        >
                           {article.title}
                         </h4>
                         <div className="text-[10px] text-slate-400 flex items-center gap-2">
