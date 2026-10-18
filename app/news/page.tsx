@@ -472,44 +472,43 @@ function NewsContent() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
               
-              {/* Bên trái: 1 Bài viết nổi bật lớn (Editorial Lead - 7 cols) với tỉ lệ ảnh 16:9 chuẩn */}
+              {/* Bên trái: 1 Bài viết nổi bật lớn (Editorial Lead - 7 cols) với ảnh thu nhỏ gọn gàng, chân bằng khít cột bên phải */}
               <div className="lg:col-span-7 flex flex-col">
                 <div
                   id={`article-${featuredArticle.id}`}
                   onClick={() => handleArticleClick(featuredArticle)}
-                  className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
+                  className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full lg:max-h-[412px] cursor-pointer"
                 >
-                  {/* Ảnh 16:9 ngang chuẩn */}
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
+                  {/* Ảnh thu nhỏ chiều cao gọn gàng h-48 sm:h-52 lg:h-[215px] */}
+                  <div className="relative w-full h-48 sm:h-52 lg:h-[215px] overflow-hidden bg-slate-900 shrink-0">
                     <ArticleImage
                       src={featuredArticle.image}
                       alt={featuredArticle.title}
                       category={featuredArticle.category}
-                      className="group-hover:scale-105 transition-transform duration-500"
-                      style={{ aspectRatio: '16/9' }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
+                    <div className="absolute top-3.5 left-3.5">
+                      <span className="bg-orange-500 text-white text-[10px] sm:text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
                         {featuredArticle.categoryLabel}
                       </span>
                     </div>
                   </div>
 
-                  {/* Text bên dưới ảnh */}
-                  <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-3.5">
-                    <div className="space-y-2">
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
+                  {/* Text bên dưới ảnh: Bố cục tinh gọn, vừa khít đáy */}
+                  <div className="p-4 sm:p-4.5 lg:p-5 flex flex-col justify-between flex-1 space-y-2.5">
+                    <div className="space-y-1.5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-orange-600">
                         {featuredArticle.categoryLabel}
                       </div>
-                      <h2 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-900 group-hover:text-orange-600 transition-colors leading-snug">
+                      <h2 className="text-base sm:text-lg lg:text-[19px] font-black text-slate-900 group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
                         {featuredArticle.title}
                       </h2>
-                      <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                      <p className="text-xs sm:text-[13px] text-slate-600 line-clamp-2 leading-relaxed">
                         {featuredArticle.summary}
                       </p>
                     </div>
 
-                    <div className="pt-3.5 sm:pt-4 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                    <div className="pt-2.5 border-t border-slate-100/80 flex items-center text-[11px] sm:text-[12px] text-[#6B7280]">
                       {featuredArticle.author && (
                         <>
                           <span className="font-medium text-slate-700">{featuredArticle.author}</span>
@@ -522,11 +521,11 @@ function NewsContent() {
                 </div>
               </div>
 
-              {/* Bên phải: Danh sách bài viết phụ dạng thẻ ngang có thanh cuộn góc phải, hiển thị 3 bài đầu vừa vặn */}
+              {/* Bên phải: Danh sách bài viết phụ dạng thẻ ngang có thanh cuộn góc phải, chân bằng khít với thẻ bên trái */}
               <div
                 className="lg:col-span-5 flex flex-col gap-2.5 overflow-y-auto pr-1.5 custom-hero-scrollbar"
                 style={{
-                  maxHeight: '520px',
+                  maxHeight: '412px',
                   overflowY: 'auto',
                   scrollbarWidth: 'thin',
                   scrollbarColor: '#CBD5E1 #F1F5F9',
@@ -540,7 +539,7 @@ function NewsContent() {
                     className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-2.5 sm:p-3 flex flex-row items-center gap-3 shrink-0 cursor-pointer"
                   >
                     {/* Ảnh nhỏ vuông 1:1 nằm bên trái */}
-                    <div className="relative aspect-square w-20 sm:w-22 md:w-24 rounded-xl overflow-hidden bg-slate-900 shrink-0">
+                    <div className="relative aspect-square w-20 sm:w-22 rounded-xl overflow-hidden bg-slate-900 shrink-0">
                       <ArticleImage
                         src={article.image}
                         alt={article.title}
@@ -553,7 +552,7 @@ function NewsContent() {
                       </span>
                     </div>
 
-                    {/* Tiêu đề và ngày tháng nằm bên phải - Thu hẹp khoảng trống */}
+                    {/* Tiêu đề và ngày tháng nằm bên phải */}
                     <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1 h-full">
                       <div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 block mb-0.5">
