@@ -568,22 +568,32 @@ function NewsContent() {
                             </div>
                           </div>
 
-                          <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-3.5">
-                            <div className="space-y-2">
-                              <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
+                          <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 space-y-2.5">
+                            <div className="space-y-1.5">
+                              <div className="text-[10px] font-bold uppercase tracking-wider text-orange-600">
                                 {latestArticles[0].categoryLabel}
                               </div>
-                              <h3 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug">
+                              <h3
+                                className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug"
+                                style={{
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                  wordBreak: 'normal',
+                                  overflowWrap: 'break-word',
+                                }}
+                              >
                                 {latestArticles[0].title}
                               </h3>
                               {latestArticles[0].summary && (
-                                <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                                <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
                                   {latestArticles[0].summary}
                                 </p>
                               )}
                             </div>
 
-                            <div className="pt-3.5 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                            <div className="pt-2 border-t border-slate-100/80 flex items-center text-[11px] text-[#6B7280]">
                               <span>{latestArticles[0].date} • {formatReadTime(latestArticles[0].readTime)}</span>
                             </div>
                           </div>
