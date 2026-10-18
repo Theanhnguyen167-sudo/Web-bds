@@ -10,6 +10,45 @@ export const DEFAULT_ARTICLE_CATEGORIES: ArticleCategoryItem[] = [
   { id: 'investment', label: 'Đầu tư', color: 'bg-orange-500 text-white', badgeBg: 'bg-orange-50', badgeText: 'text-orange-600' },
 ];
 
+/**
+ * Danh mục ảnh placeholder / fallback chuẩn chuyên đề theo từng Category bài viết BĐS:
+ * - Quy hoạch & Dự án: Ảnh bản đồ quy hoạch, sa bàn quy hoạch đô thị
+ * - Chính sách & Pháp lý: Ảnh văn bản pháp luật, con dấu, hồ sơ đất đai, búa công lý
+ * - Thị trường & Giá đất & Đầu tư: Ảnh cao ốc skyline hiện đại, biểu đồ tài chính BĐS
+ * - Phân tích & Kiến thức & Hà Nội: Ảnh đại đô thị, kiến trúc nhà ở
+ */
+export const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
+  // 1. Quy hoạch & Dự án -> Ảnh bản đồ quy hoạch, đô thị vệ tinh
+  planning: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&auto=format&fit=crop&q=80',
+  project: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1200&auto=format&fit=crop&q=80',
+
+  // 2. Chính sách & Pháp lý -> Ảnh văn bản, hồ sơ tòa án, búa công lý
+  policy: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&auto=format&fit=crop&q=80',
+  legal: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80',
+
+  // 3. Thị trường, Giá đất & Đầu tư -> Ảnh tòa nhà skyline, đồ thị tài chính
+  market: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80',
+  pricing: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&auto=format&fit=crop&q=80',
+  investment: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1200&auto=format&fit=crop&q=80',
+
+  // 4. Phân tích & Hà Nội & Kiến thức
+  analysis: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80',
+  hanoi: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&auto=format&fit=crop&q=80',
+  knowledge: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80',
+
+  // 5. Fallback mặc định chung
+  default: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&auto=format&fit=crop&q=80',
+};
+
+/**
+ * Trả về ảnh fallback chuẩn theo Category bài viết khi ảnh bị null, undefined, rỗng hoặc link bị lỗi
+ */
+export function getCategoryFallbackImage(category?: string | null): string {
+  if (!category) return CATEGORY_FALLBACK_IMAGES.default;
+  const key = category.toLowerCase().trim();
+  return CATEGORY_FALLBACK_IMAGES[key] || CATEGORY_FALLBACK_IMAGES.default;
+}
+
 export function slugifyVietnamese(text: string): string {
   if (!text) return '';
   let str = text.toLowerCase().trim();
