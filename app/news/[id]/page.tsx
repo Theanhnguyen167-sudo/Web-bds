@@ -97,27 +97,6 @@ export default function NewsDetailPage() {
 
       <main className="flex-1 pt-24 sm:pt-28 pb-16">
         <div className="container max-w-4xl mx-auto px-4 sm:px-6">
-          
-          {/* Thanh công cụ điều hướng trên đỉnh bài viết */}
-          <div className="flex items-center justify-between py-4 border-b border-slate-200/80 mb-6">
-            <button
-              onClick={handleGoBack}
-              className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-orange-500 hover:text-orange-600 text-slate-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
-            >
-              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5 text-slate-500 group-hover:text-orange-600" />
-              <span>Quay lại trang tin tức</span>
-            </button>
-
-            {/* Breadcrumb nhỏ gọn */}
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400">
-              <Link href="/" className="hover:text-slate-700 transition-colors">Trang chủ</Link>
-              <span>/</span>
-              <Link href="/news" className="hover:text-slate-700 transition-colors">Tin tức</Link>
-              <span>/</span>
-              <span className="text-slate-700 font-medium truncate max-w-[200px]">{article.categoryLabel}</span>
-            </div>
-          </div>
-
           {/* Vùng nội dung bài viết dạng Editorial */}
           <article className="bg-white rounded-3xl border border-[#E5E7EB] shadow-xs overflow-hidden">
             

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
@@ -101,53 +101,143 @@ function NewsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const catParam = searchParams.get('category');
-  const [selectedCategory, setSelectedCategory] = useState(catParam || 'all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [allNews, setAllNews] = useState<NewsArticle[]>(NEWS_ARTICLES);
-  const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 5;
 
-  // Khôi phục chính xác vị trí cuộn khi người dùng quay lại từ trang chi tiết bài viết
-  useEffect(() => {
+  // Khôi phục bộ lọc, từ khóa và phân trang từ sessionStorage khi người dùng bấm Back trình duyệt
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('news_selected_category');
+      if (saved && !catParam) return saved;
+    }
+    return catParam || 'all';
+  });
+
+  const [searchQuery, setSearchQuery] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('news_search_query');
+      if (saved) return saved;
+    }
+    return '';
+  });
+
+  const [allNews, setAllNews] = useState<NewsArticle[]>(NEWS_ARTICLES);
+
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('news_current_page');
+      if (saved) {
+        const p = parseInt(saved, 10);
+        if (!isNaN(p) && p > 0) return p;
+      }
+    }
+    return 1;
+  });
+
+  const PAGE_SIZE = 5;
+  const isInitialMount = useRef(true);
+
+  // Hàm khôi phục cuộn đa tầng (bảo toàn 100% vị trí khi bấm nút Back của trình duyệt)
+  const restoreScrollPosition = useCallback(() => {
     if (typeof window === 'undefined') return;
-    const savedY = sessionStorage.getItem('news_scroll_y');
+
+    const savedYStr = sessionStorage.getItem('news_scroll_y');
     const savedId = sessionStorage.getItem('news_scroll_id');
-    if (savedY) {
-      const y = parseInt(savedY, 10);
-      setTimeout(() => {
-        window.scrollTo({ top: y, behavior: 'instant' });
-        if (savedId) {
-          const el = document.getElementById(`article-${savedId}`);
-          if (el) {
-            el.scrollIntoView({ block: 'nearest', behavior: 'instant' });
-          }
-        }
+
+    if (!savedYStr && !savedId) return;
+
+    const targetY = savedYStr ? parseInt(savedYStr, 10) : 0;
+
+    // Vô hiệu hóa tính năng tự can thiệp cuộn của trình duyệt
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    let attempts = 0;
+    const maxAttempts = 8;
+    const delaySteps = [20, 80, 180, 350, 600, 1000, 1500, 2200];
+
+    const tryRestore = () => {
+      let targetElement: HTMLElement | null = null;
+      if (savedId) {
+        targetElement =
+          document.getElementById(`article-${savedId}`) ||
+          document.getElementById(`article-sidebar-${savedId}`);
+      }
+
+      if (targetElement) {
+        // Đưa phần tử bài viết vào giữa màn hình
+        targetElement.scrollIntoView({ block: 'center', behavior: 'instant' });
+
+        // Highlight viền cam tinh tế giúp nhận diện bài viết vừa xem
+        targetElement.classList.add('ring-2', 'ring-orange-500/80', 'ring-offset-2');
+        setTimeout(() => {
+          targetElement?.classList.remove('ring-2', 'ring-orange-500/80', 'ring-offset-2');
+        }, 1600);
+      } else if (targetY > 0) {
+        window.scrollTo({ top: targetY, behavior: 'instant' });
+      }
+
+      attempts++;
+      if (attempts < maxAttempts) {
+        setTimeout(tryRestore, delaySteps[attempts]);
+      } else {
+        // Dọn dẹp sau khi đã định vị ổn định
         sessionStorage.removeItem('news_scroll_y');
         sessionStorage.removeItem('news_scroll_id');
-      }, 60);
-    }
+        sessionStorage.removeItem('news_selected_category');
+        sessionStorage.removeItem('news_current_page');
+        sessionStorage.removeItem('news_search_query');
+      }
+    };
+
+    tryRestore();
   }, []);
 
-  // Điều hướng sang URL riêng của bài viết và ghi nhớ vị trí hiện tại
+  // Khôi phục cuộn khi mount và khi bắt sự kiện popstate (nút Back của trình duyệt) hoặc pageshow (BFCache)
+  useEffect(() => {
+    restoreScrollPosition();
+
+    const handlePopState = () => {
+      restoreScrollPosition();
+    };
+
+    const handlePageShow = () => {
+      restoreScrollPosition();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [restoreScrollPosition]);
+
+  // Điều hướng sang URL riêng của bài viết và ghi nhớ toàn bộ trạng thái hiện tại
   const handleArticleClick = (article: NewsArticle) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('news_scroll_id', article.id);
       sessionStorage.setItem('news_scroll_y', String(window.scrollY));
+      sessionStorage.setItem('news_selected_category', selectedCategory);
+      sessionStorage.setItem('news_current_page', String(currentPage));
+      sessionStorage.setItem('news_search_query', searchQuery);
     }
     router.push(`/news/${article.id}`);
   };
 
-  // Tự động đồng bộ khi URL query param category thay đổi (ví dụ khi chọn từ menu điều hướng)
+  // Tự động đồng bộ khi URL query param category thay đổi từ menu điều hướng bên ngoài
   useEffect(() => {
     if (catParam) {
       setSelectedCategory(catParam);
-    } else {
-      setSelectedCategory('all');
     }
   }, [catParam]);
 
-  // Khi thay đổi bộ lọc chuyên mục hoặc từ khóa tìm kiếm, tự động reset về trang 1
+  // Khi người dùng chủ động thay đổi bộ lọc hoặc từ khóa (không phải lúc khôi phục từ back), reset về trang 1
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     setCurrentPage(1);
   }, [selectedCategory, searchQuery]);
 
