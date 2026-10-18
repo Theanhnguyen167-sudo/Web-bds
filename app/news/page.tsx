@@ -410,7 +410,7 @@ function NewsContent() {
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [allNews, setAllNews] = useState<NewsArticle[]>(NEWS_ARTICLES);
   const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 5;
 
   // Tự động đồng bộ khi URL query param category thay đổi (ví dụ khi chọn từ menu điều hướng)
   useEffect(() => {
@@ -808,44 +808,101 @@ function NewsContent() {
                 </div>
               ) : (
                 <>
-                  {/* Grid 3 cột trên desktop chuẩn Section 7 */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {latestArticles.map((article) => (
-                      <article
-                        key={article.id}
-                        onClick={() => setSelectedArticle(article)}
-                        className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between cursor-pointer"
-                      >
-                        <div>
-                          {/* Ảnh tỷ lệ 16:9 đồng nhất */}
+                  {/* Bố cục Tin mới nhất chuẩn Hình 3: 1 bài lớn bên trái (Lead Card) + 4 bài danh sách ngang bên phải (Horizontal List Cards) */}
+                  {latestArticles.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+                      
+                      {/* Cột trái: 1 Bài viết lớn tiêu điểm (Lead Card - 7 cột) */}
+                      <div className={`${latestArticles.length > 1 ? 'md:col-span-7' : 'md:col-span-12'} flex flex-col`}>
+                        <article
+                          onClick={() => setSelectedArticle(latestArticles[0])}
+                          className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
+                        >
                           <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
                             <ArticleImage
-                              src={article.image}
-                              alt={article.title}
-                              category={article.category}
-                              className="group-hover:scale-105 transition-transform duration-300"
+                              src={latestArticles[0].image}
+                              alt={latestArticles[0].title}
+                              category={latestArticles[0].category}
+                              className="group-hover:scale-105 transition-transform duration-500"
                             />
+                            <div className="absolute top-3 left-3">
+                              <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
+                                {latestArticles[0].categoryLabel}
+                              </span>
+                            </div>
                           </div>
 
-                          {/* Nội dung card - Chỉ giữ tag và tiêu đề lớn, loại bỏ tóm tắt theo yêu cầu */}
-                          <div className="p-4 sm:p-5 space-y-2">
-                            <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
-                              {article.categoryLabel}
+                          <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-3.5">
+                            <div className="space-y-2">
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-orange-600">
+                                {latestArticles[0].categoryLabel}
+                              </div>
+                              <h3 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug">
+                                {latestArticles[0].title}
+                              </h3>
+                              {latestArticles[0].summary && (
+                                <p className="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                                  {latestArticles[0].summary}
+                                </p>
+                              )}
                             </div>
 
-                            <h3 className="text-[15px] sm:text-[16px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug">
-                              {article.title}
-                            </h3>
+                            <div className="pt-3.5 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
+                              <span>{latestArticles[0].date} • {formatReadTime(latestArticles[0].readTime)}</span>
+                            </div>
                           </div>
-                        </div>
+                        </article>
+                      </div>
 
-                        {/* Footer card */}
-                        <div className="px-4.5 pb-4 sm:px-5 sm:pb-4.5 pt-3 border-t border-slate-100/80 flex items-center text-[12px] text-[#6B7280]">
-                          <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                      {/* Cột phải: 4 bài danh sách ngang (Horizontal List Cards - 5 cột) với cỡ chữ tiêu đề vừa như Hình 2 */}
+                      {latestArticles.length > 1 && (
+                        <div className="md:col-span-5 flex flex-col justify-between gap-3">
+                          {latestArticles.slice(1, 5).map((article) => (
+                            <article
+                              key={article.id}
+                              onClick={() => setSelectedArticle(article)}
+                              className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-3 sm:p-3.5 flex flex-row items-center gap-3.5 flex-1 cursor-pointer"
+                            >
+                              <div className="relative aspect-square w-16 sm:w-20 rounded-xl overflow-hidden bg-slate-900 shrink-0">
+                                <ArticleImage
+                                  src={article.image}
+                                  alt={article.title}
+                                  category={article.category}
+                                  className="group-hover:scale-105 transition-transform duration-300"
+                                />
+                              </div>
+
+                              <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1 h-full">
+                                <div>
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 block mb-0.5">
+                                    {article.categoryLabel}
+                                  </span>
+                                  <h4
+                                    className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug"
+                                    style={{
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: 'vertical',
+                                      overflow: 'hidden',
+                                      wordBreak: 'normal',
+                                      overflowWrap: 'break-word',
+                                    }}
+                                  >
+                                    {article.title}
+                                  </h4>
+                                </div>
+
+                                <div className="text-[12px] text-[#6B7280] pt-1">
+                                  <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                                </div>
+                              </div>
+                            </article>
+                          ))}
                         </div>
-                      </article>
-                    ))}
-                  </div>
+                      )}
+
+                    </div>
+                  )}
 
                   {/* Thanh Phân trang (Pagination Bar) rõ ràng - Giữ cho footer không bị đẩy quá xa */}
                   {totalPages > 1 && (
