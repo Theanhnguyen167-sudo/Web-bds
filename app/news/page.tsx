@@ -310,9 +310,8 @@ function NewsContent() {
   }, [allNews]);
 
   const secondaryArticles = useMemo(() => {
-    // 4 bài viết phụ đồng hành thuộc cụm Tiêu điểm Bất động sản
+    // 3 bài viết phụ đồng hành thuộc cụm Tiêu điểm Bất động sản
     const spotlightIds = [
-      'luat-dat-dai-moi-va-tac-dong-bang-gia-dat-ha-noi',
       'metro-line-2-hanoi-gia-nha-pho-tang-12-phan-tram',
       'top-5-phuong-gia-dat-tang-manh-nhat-dong-da-2026',
       'vanh-dai-4-ha-noi-dinh-vi-dong-tien-ven-do-2026',
@@ -323,7 +322,7 @@ function NewsContent() {
     if (spotlightMatches.length > 0) {
       return spotlightMatches;
     }
-    return allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 4);
+    return allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 3);
   }, [allNews, featuredArticle]);
 
   // Danh sách các bài viết đã xuất hiện tại khối Hero Tiêu điểm BĐS (1 chính + 4 phụ)
