@@ -122,8 +122,11 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
     };
   }, [listingId, listings, initialListing]);
 
-  // Luôn tự động cuộn lên đầu trang khi mở trang chi tiết bất động sản
+  // Luôn tự động cuộn lên đầu trang khi mở trang chi tiết bất động sản mới (ngoại trừ khi bấm Quay lại)
   useEffect(() => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('hanoi_bds_is_popstate') === '1') {
+      return;
+    }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [listingId]);
 

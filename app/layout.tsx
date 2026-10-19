@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from 'next';
+import { Suspense } from 'react';
 import './globals.css';
 import { AppProvider } from '@/lib/context/AppContext';
 import { ToastContainer } from '@/components/ui/Toast';
 import { AdminFloatingSwitch } from '@/components/admin/AdminFloatingSwitch';
 import { PwaProvider } from '@/components/pwa/PwaProvider';
+import { GlobalScrollRestoration } from '@/components/layout/GlobalScrollRestoration';
 
 export const viewport: Viewport = {
   themeColor: '#ea580c',
@@ -74,6 +76,9 @@ export default function RootLayout({
       <body className="font-sans bg-page-bg text-text-primary antialiased selection:bg-accent selection:text-white">
         <AppProvider>
           <PwaProvider>
+            <Suspense fallback={null}>
+              <GlobalScrollRestoration />
+            </Suspense>
             {children}
             <ToastContainer />
             <AdminFloatingSwitch />

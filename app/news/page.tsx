@@ -191,83 +191,32 @@ function NewsContent() {
   const PAGE_SIZE = 5;
   const isInitialMount = useRef(true);
 
-  // Hàm khôi phục cuộn đa tầng (bảo toàn 100% vị trí khi bấm nút Back của trình duyệt)
-  const restoreScrollPosition = useCallback(() => {
+  // Highlight viền cam tinh tế giúp nhận diện bài viết vừa xem khi quay lại trang tin tức (vị trí cuộn do GlobalScrollRestoration bảo toàn chính xác)
+  useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    const savedYStr = sessionStorage.getItem('news_scroll_y');
     const savedId = sessionStorage.getItem('news_scroll_id');
-
-    if (!savedYStr && !savedId) return;
-
-    const targetY = savedYStr ? parseInt(savedYStr, 10) : 0;
-
-    // Vô hiệu hóa tính năng tự can thiệp cuộn của trình duyệt
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
+    if (!savedId) return;
 
     let attempts = 0;
-    const maxAttempts = 8;
-    const delaySteps = [20, 80, 180, 350, 600, 1000, 1500, 2200];
-
-    const tryRestore = () => {
-      let targetElement: HTMLElement | null = null;
-      if (savedId) {
-        targetElement =
-          document.getElementById(`article-${savedId}`) ||
-          document.getElementById(`article-sidebar-${savedId}`);
-      }
+    const tryHighlight = () => {
+      const targetElement =
+        document.getElementById(`article-${savedId}`) ||
+        document.getElementById(`article-sidebar-${savedId}`);
 
       if (targetElement) {
-        // Đưa phần tử bài viết vào giữa màn hình
-        targetElement.scrollIntoView({ block: 'center', behavior: 'instant' });
-
-        // Highlight viền cam tinh tế giúp nhận diện bài viết vừa xem
         targetElement.classList.add('ring-2', 'ring-orange-500/80', 'ring-offset-2');
         setTimeout(() => {
           targetElement?.classList.remove('ring-2', 'ring-orange-500/80', 'ring-offset-2');
         }, 1600);
-      } else if (targetY > 0) {
-        window.scrollTo({ top: targetY, behavior: 'instant' });
-      }
-
-      attempts++;
-      if (attempts < maxAttempts) {
-        setTimeout(tryRestore, delaySteps[attempts]);
-      } else {
-        // Dọn dẹp sau khi đã định vị ổn định
-        sessionStorage.removeItem('news_scroll_y');
         sessionStorage.removeItem('news_scroll_id');
-        sessionStorage.removeItem('news_selected_category');
-        sessionStorage.removeItem('news_current_page');
-        sessionStorage.removeItem('news_search_query');
+      } else if (attempts < 6) {
+        attempts++;
+        setTimeout(tryHighlight, 120);
       }
     };
 
-    tryRestore();
+    tryHighlight();
   }, []);
-
-  // Khôi phục cuộn khi mount và khi bắt sự kiện popstate (nút Back của trình duyệt) hoặc pageshow (BFCache)
-  useEffect(() => {
-    restoreScrollPosition();
-
-    const handlePopState = () => {
-      restoreScrollPosition();
-    };
-
-    const handlePageShow = () => {
-      restoreScrollPosition();
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    window.addEventListener('pageshow', handlePageShow);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('pageshow', handlePageShow);
-    };
-  }, [restoreScrollPosition]);
 
   // Điều hướng sang URL riêng của bài viết và ghi nhớ toàn bộ trạng thái hiện tại
   const handleArticleClick = (article: NewsArticle) => {
