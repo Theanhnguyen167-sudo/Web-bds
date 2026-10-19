@@ -310,12 +310,25 @@ function NewsContent() {
   }, [allNews]);
 
   const secondaryArticles = useMemo(() => {
-    return allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 6);
+    // 4 bài viết phụ đồng hành thuộc cụm Tiêu điểm Bất động sản
+    const spotlightIds = [
+      'luat-dat-dai-moi-va-tac-dong-bang-gia-dat-ha-noi',
+      'metro-line-2-hanoi-gia-nha-pho-tang-12-phan-tram',
+      'top-5-phuong-gia-dat-tang-manh-nhat-dong-da-2026',
+      'vanh-dai-4-ha-noi-dinh-vi-dong-tien-ven-do-2026',
+    ];
+    const spotlightMatches = spotlightIds
+      .map((id) => allNews.find((a) => a.id === id))
+      .filter((a): a is NewsArticle => Boolean(a));
+    if (spotlightMatches.length > 0) {
+      return spotlightMatches;
+    }
+    return allNews.filter((a) => a.id !== featuredArticle.id).slice(0, 4);
   }, [allNews, featuredArticle]);
 
-  // Danh sách các bài viết đã xuất hiện tại khối Hero (loại trừ bài chính và 3 bài phụ đầu tiên để các khối dưới vẫn phong phú)
+  // Danh sách các bài viết đã xuất hiện tại khối Hero Tiêu điểm BĐS (1 chính + 4 phụ)
   const heroArticles = useMemo(() => {
-    return [featuredArticle, ...secondaryArticles.slice(0, 3)].filter(Boolean);
+    return [featuredArticle, ...secondaryArticles].filter(Boolean);
   }, [featuredArticle, secondaryArticles]);
 
   const heroExcludeIds = useMemo(() => {

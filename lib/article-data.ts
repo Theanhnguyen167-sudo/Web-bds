@@ -124,6 +124,30 @@ export const INITIAL_ARTICLES: Article[] = [
     ],
   },
   {
+    id: 'art-policy-luat-dat-dai',
+    title: 'Luật Đất đai mới và tác động tới bảng giá đất hàng năm tại Hà Nội: Tái lập mặt bằng chi phí và áp lực tái cấu trúc dòng vốn',
+    slug: 'luat-dat-dai-moi-va-tac-dong-bang-gia-dat-ha-noi',
+    excerpt: 'Phân tích toàn diện việc bãi bỏ khung giá đất, bảng giá đất hàng năm từ 2026 tác động tới chi phí đầu vào, biên lợi nhuận chủ đầu tư và thanh khoản thị trường.',
+    content: `<p>Bước sang quý III/2026, thị trường bất động sản Thủ đô đang chứng kiến những tác động sâu rộng và trực diện nhất từ việc Luật Đất đai 2024 cùng các nghị định hướng dẫn thi hành đi vào đời sống thực tế tròn hai năm. Điểm nhấn mang tính cách mạng chính là việc chính thức xóa bỏ cơ chế "khung giá đất" do Chính phủ ban hành định kỳ 5 năm một lần, thay thế bằng cơ chế "Bảng giá đất hàng năm" do Ủy ban nhân dân cấp tỉnh/thành phố xây dựng và trình Hội đồng nhân dân cùng cấp thông qua, bắt đầu áp dụng từ ngày 01/01/2026.</p>`,
+    featuredImage: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80',
+    category: 'policy',
+    categoryLabel: 'Chính sách & Pháp lý',
+    categoryColor: 'bg-blue-600 text-white',
+    authorId: 'admin-2',
+    authorName: 'ThS. Nguyễn Hoàng Nam',
+    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    authorRole: 'Chuyên gia Phân tích Tài chính BĐS',
+    status: 'published',
+    seoTitle: 'Luật Đất đai mới và tác động tới bảng giá đất hàng năm tại Hà Nội',
+    seoDescription: 'Phân tích toàn diện việc bãi bỏ khung giá đất, bảng giá đất hàng năm từ 2026 tại Hà Nội.',
+    seoKeywords: 'luật đất đai 2024, bảng giá đất hà nội 2026, chi phí giải phóng mặt bằng',
+    views: 5120,
+    readTime: '9 phút',
+    createdAt: '2026-09-27T08:00:00Z',
+    updatedAt: '2026-09-27T08:00:00Z',
+    publishedAt: '2026-09-27T08:00:00Z',
+  },
+  {
     id: 'art-2',
     title: 'Thị trường BĐS Hà Nội: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức tăng tốc thi công',
     slug: 'metro-line-2-hanoi-gia-nha-pho-tang-12-phan-tram',
@@ -276,7 +300,7 @@ export const INITIAL_ARTICLES: Article[] = [
   },
 ];
 
-const ARTICLES_STORAGE_KEY = 'hanoi_platform_articles_v2026';
+const ARTICLES_STORAGE_KEY = 'hanoi_platform_articles_v2026_published';
 const CATEGORIES_STORAGE_KEY = 'hanoi_platform_article_categories_v2026';
 
 export function getStoredArticles(): Article[] {
