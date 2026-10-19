@@ -46,6 +46,15 @@ const CATEGORIES = [
   { id: 'investment', label: 'Tài chính & Đầu tư' },
 ];
 
+const NEWS_HEADINGS_TOC = [
+  { id: 'tieu-diem-bds', label: 'Tiêu điểm BĐS' },
+  { id: 'tin-moi-nhat', label: 'Tin mới nhất' },
+  { id: 'chuyen-de-thi-truong', label: 'Thị trường BĐS' },
+  { id: 'chuyen-de-quy-hoach', label: 'Quy hoạch & Hạ tầng' },
+  { id: 'bien-dong-thi-truong', label: 'Biến động thị trường' },
+  { id: 'doc-nhieu', label: 'Đọc nhiều' },
+];
+
 const DISTRICT_PRICE_STATS = [
   { name: 'Cầu Giấy', price: '115 tr/m²', change: '+12.4%' },
   { name: 'Đống Đa', price: '85 tr/m²', change: '+8.2%' },
@@ -120,6 +129,53 @@ function NewsContent() {
   });
 
   const [allNews, setAllNews] = useState<NewsArticle[]>(NEWS_ARTICLES);
+  const [activeHeadingId, setActiveHeadingId] = useState<string>('tieu-diem-bds');
+
+  const scrollToHeading = (id: string) => {
+    if (
+      (id === 'tieu-diem-bds' || id === 'chuyen-de-thi-truong' || id === 'chuyen-de-quy-hoach') &&
+      (selectedCategory !== 'all' || searchQuery)
+    ) {
+      setSelectedCategory('all');
+      setSearchQuery('');
+    }
+
+    setTimeout(() => {
+      const element = document.getElementById(id);
+      if (element) {
+        const navbarHeight = 68;
+        const tocHeight = 44;
+        const yOffset = -(navbarHeight + tocHeight + 16);
+        const y = element.getBoundingClientRect().top + window.scrollY + yOffset;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        setActiveHeadingId(id);
+      }
+    }, 60);
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 160;
+      for (let i = NEWS_HEADINGS_TOC.length - 1; i >= 0; i--) {
+        const item = NEWS_HEADINGS_TOC[i];
+        const el = document.getElementById(item.id);
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.scrollY;
+          if (scrollPosition >= top) {
+            setActiveHeadingId(item.id);
+            return;
+          }
+        }
+      }
+      if (NEWS_HEADINGS_TOC.length > 0) {
+        setActiveHeadingId(NEWS_HEADINGS_TOC[0].id);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [selectedCategory, searchQuery]);
 
   const [currentPage, setCurrentPage] = useState<number>(() => {
     if (typeof window !== 'undefined') {
@@ -436,6 +492,38 @@ function NewsContent() {
         </div>
       </section>
 
+      {/* ── THANH ĐIỀU HƯỚNG NHỎ: MỤC LỤC NGANG CÁC TIÊU ĐỀ (Horizontal Headings TOC) ── */}
+      <nav
+        aria-label="Mục lục điều hướng tiêu đề trang tin tức"
+        className="bg-white/95 supports-[backdrop-filter]:bg-white/85 backdrop-blur-md border-b border-slate-200/80 sticky top-16 sm:top-[68px] z-30 shadow-xs"
+      >
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
+            <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1 sm:mr-1.5">
+              <Compass className="h-3.5 w-3.5 text-orange-500" />
+              <span>Mục lục:</span>
+            </span>
+            {NEWS_HEADINGS_TOC.map((heading) => {
+              const isActive = activeHeadingId === heading.id;
+              return (
+                <button
+                  key={heading.id}
+                  type="button"
+                  onClick={() => scrollToHeading(heading.id)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+                    isActive
+                      ? 'bg-orange-500 text-white border-orange-500 shadow-xs font-bold'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  {heading.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
       {/* ── MAIN CONTENT CONTAINER (max-w 1280px, Spacing chuẩn) ── */}
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-12 sm:space-y-16">
 
@@ -461,7 +549,7 @@ function NewsContent() {
 
         {/* ── 5 & 6. FEATURED NEWS (EDITORIAL 1 CHÍNH + 2 PHỤ) ── */}
         {selectedCategory === 'all' && !searchQuery && (
-          <section className="space-y-4">
+          <section id="tieu-diem-bds" className="space-y-4 scroll-mt-32">
             <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-orange-600 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
@@ -579,7 +667,7 @@ function NewsContent() {
         )}
 
         {/* ── 7, 8, 10, 11. LATEST NEWS + COMPACT SIDEBAR ── */}
-        <section className="space-y-6">
+        <section id="tin-moi-nhat" className="space-y-6 scroll-mt-32">
           
           <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
             <div>
@@ -811,7 +899,7 @@ function NewsContent() {
                 <div className="space-y-10 sm:space-y-12 pt-8 sm:pt-10 border-t border-slate-200/80">
                   
                   {/* Chuyên đề 1: Thị trường BĐS (1 bài lớn bên trái + 4 bài danh sách ngang bên phải) */}
-                  <section className="space-y-6">
+                  <section id="chuyen-de-thi-truong" className="space-y-6 scroll-mt-32">
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
                       <div>
                         <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 uppercase tracking-wider mb-1">
@@ -917,7 +1005,7 @@ function NewsContent() {
                   </section>
 
                   {/* Chuyên đề 2: Quy hoạch & Hạ tầng (Card ngang kèm bản đồ thu nhỏ và badge tiến độ) */}
-                  <section className="space-y-6">
+                  <section id="chuyen-de-quy-hoach" className="space-y-6 scroll-mt-32">
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
                       <div>
                         <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
@@ -1025,7 +1113,7 @@ function NewsContent() {
             >
 
               {/* Module 1: Biến động thị trường */}
-              <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E5E7EB] shadow-xs space-y-4">
+              <div id="bien-dong-thi-truong" className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E5E7EB] shadow-xs space-y-4 scroll-mt-32">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -1062,7 +1150,7 @@ function NewsContent() {
               </div>
 
               {/* Module 2: Đọc nhiều (Top 5 bài viết editorial) */}
-              <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E5E7EB] shadow-xs space-y-4">
+              <div id="doc-nhieu" className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E5E7EB] shadow-xs space-y-4 scroll-mt-32">
                 <div className="border-b border-slate-100 pb-3">
                   <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
                     <FileText className="h-4 w-4 text-orange-500" />
