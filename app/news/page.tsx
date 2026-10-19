@@ -269,12 +269,12 @@ function NewsContent() {
           tags: a.tags && a.tags.length > 0 ? a.tags : ['Bất động sản', 'Quy hoạch Hà Nội'],
         }));
 
-        const existingIds = new Set(mapped.map((m) => m.id));
-        const existingTitles = new Set(mapped.map((m) => m.title?.trim().toLowerCase()).filter(Boolean));
-        const nonDuplicateMock = NEWS_ARTICLES.filter(
-          (na) => !existingIds.has(na.id) && !existingTitles.has(na.title?.trim().toLowerCase())
+        const existingIds = new Set(NEWS_ARTICLES.map((na) => na.id));
+        const existingTitles = new Set(NEWS_ARTICLES.map((na) => na.title?.trim().toLowerCase()).filter(Boolean));
+        const additionalStored = mapped.filter(
+          (m) => !existingIds.has(m.id) && !existingTitles.has(m.title?.trim().toLowerCase())
         );
-        const combined = [...mapped, ...nonDuplicateMock];
+        const combined = [...NEWS_ARTICLES, ...additionalStored];
         setAllNews(combined);
       }
     } catch (e) {

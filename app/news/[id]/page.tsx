@@ -164,11 +164,41 @@ export default function NewsDetailPage() {
 
               {/* Nội dung chi tiết các đoạn văn */}
               <div className="space-y-5 text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
-                {article.content.map((paragraph, idx) => (
-                  <p key={idx} className="leading-relaxed">
-                    {paragraph}
-                  </p>
-                ))}
+                {article.content.map((paragraph, idx) => {
+                  if (paragraph.startsWith('## ')) {
+                    return (
+                      <h2 key={idx} className="text-xl sm:text-2xl font-black text-slate-900 pt-5 pb-1 border-b border-slate-100">
+                        {paragraph.replace('## ', '')}
+                      </h2>
+                    );
+                  }
+                  if (paragraph.startsWith('### ')) {
+                    return (
+                      <h3 key={idx} className="text-lg font-bold text-slate-900 pt-3 pb-0.5">
+                        {paragraph.replace('### ', '')}
+                      </h3>
+                    );
+                  }
+                  if (paragraph.startsWith('> ')) {
+                    return (
+                      <blockquote key={idx} className="p-4 sm:p-5 rounded-2xl bg-orange-50/80 border-l-4 border-orange-500 text-slate-800 font-medium italic my-4 leading-relaxed">
+                        {paragraph.replace('> ', '')}
+                      </blockquote>
+                    );
+                  }
+                  if (paragraph.startsWith('Nguồn tham khảo:')) {
+                    return (
+                      <div key={idx} className="pt-4 pb-2 border-t border-slate-200 text-xs sm:text-sm font-semibold text-slate-500 italic">
+                        {paragraph}
+                      </div>
+                    );
+                  }
+                  return (
+                    <p key={idx} className="leading-relaxed whitespace-pre-line">
+                      {paragraph}
+                    </p>
+                  );
+                })}
                 
                 <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/60 text-xs text-amber-800 leading-relaxed mt-6">
                   <p className="font-semibold mb-1 flex items-center gap-1.5 text-amber-900">

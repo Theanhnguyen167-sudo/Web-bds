@@ -175,6 +175,37 @@ export const INITIAL_ARTICLES: Article[] = [
   },
   {
     id: 'art-4',
+    title: 'Quy hoạch Vành đai 4: Cơ hội vàng và định vị dòng tiền cho nhà đầu tư ven đô',
+    slug: 'vanh-dai-4-ha-noi-dinh-vi-dong-tien-ven-do-2026',
+    excerpt: 'Định vị các vùng trũng giá và cơ hội giải ngân dòng vốn đầu tư bất động sản ven đô Hà Nội theo tiến độ hoàn thiện của đại dự án Vành đai 4 Vùng Thủ đô.',
+    content: `<p>Với quy mô hơn 112 km đi qua ba tỉnh thành (Hà Nội, Hưng Yên, Bắc Ninh), tuyến Vành đai 4 – Vùng Thủ đô đang bước vào giai đoạn tăng tốc thi công các gói thầu xây lắp cuối cùng trong năm 2026. Sự hình thành của đại dự án này đang tái cấu trúc bản đồ giá trị đất đai ven đô theo hướng mở rộng không gian phát triển công nghiệp và đô thị sinh thái.</p>
+<h3>Dòng vốn đầu tư thông minh hiện đang tập trung định vị vào 3 phân vùng trọng điểm:</h3>
+<ul>
+<li><strong>Huyện Hoài Đức & Đan Phượng (Phía Tây):</strong> Trọng tâm đón sóng lên quận kết hợp trục đại lộ Tây Thăng Long và các nút giao Vành đai 4. Các khu đô thị hoàn chỉnh pháp lý ghi nhận mức độ quan tâm tăng 35% nhờ thời gian kết nối về trung tâm Mỹ Đình rút ngắn xuống còn 20 phút.</li>
+<li><strong>Huyện Mê Linh (Phía Bắc):</strong> Vùng đất hưởng lợi kép từ hạ tầng cầu Hồng Hà và sự mở rộng của các cụm công nghiệp công nghệ cao, thu hút nhóm nhà đầu tư tìm kiếm quỹ đất giá còn mềm dao động từ 35 – 55 triệu đồng/m².</li>
+<li><strong>Huyện Thanh Oai & Thường Tín (Phía Nam):</strong> Điểm tựa từ các nút giao kết nối vào cao tốc Pháp Vân - Cầu Giẽ, phát triển mạnh các cụm kho bãi logistics và đô thị vệ tinh quy mô vừa.</li>
+</ul>
+<p>Chiến lược giải ngân an toàn trong giai đoạn này là tập trung vào sản phẩm đất thổ cư có sổ đỏ nằm trong bán kính 1 – 3 km từ các nút giao Vành đai 4, tránh các khu vực nằm trực tiếp trong ranh giới cắm mốc giải phóng mặt bằng chưa đền bù.</p>`,
+    featuredImage: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1200&auto=format&fit=crop&q=80',
+    category: 'planning',
+    categoryLabel: 'Quy hoạch & Hạ tầng',
+    categoryColor: 'bg-emerald-600 text-white',
+    authorId: 'admin-2',
+    authorName: 'Hội đồng Chuyên gia BĐS Thủ đô',
+    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    authorRole: 'Chuyên gia Quy hoạch',
+    status: 'published',
+    seoTitle: 'Quy hoạch Vành đai 4: Cơ hội vàng và định vị dòng tiền ven đô',
+    seoDescription: 'Phân tích cơ hội đầu tư đất nền, nhà phố ven đô bám theo trục đại lộ Vành đai 4 vùng Thủ đô.',
+    seoKeywords: 'vành đai 4 hà nội, đất nền ven đô, hoài đức, mê linh',
+    views: 3280,
+    readTime: '5 phút',
+    createdAt: '2026-09-22T08:00:00Z',
+    updatedAt: '2026-09-29T10:00:00Z',
+    publishedAt: '2026-09-22T09:00:00Z',
+  },
+  {
+    id: 'art-5',
     title: 'Cẩm nang pháp lý sổ đỏ: 7 bước kiểm tra quy hoạch trước khi xuống cọc',
     slug: 'cam-nang-phap-ly-so-do-7-buoc-kiem-tra-quy-hoach',
     excerpt: 'Bí quyết thẩm định pháp lý thửa đất, tránh rủi ro dính quy hoạch treo, đất chỉ giới đường đỏ mở rộng.',
@@ -245,8 +276,8 @@ export const INITIAL_ARTICLES: Article[] = [
   },
 ];
 
-const ARTICLES_STORAGE_KEY = 'hanoi_platform_articles';
-const CATEGORIES_STORAGE_KEY = 'hanoi_platform_article_categories';
+const ARTICLES_STORAGE_KEY = 'hanoi_platform_articles_v2026';
+const CATEGORIES_STORAGE_KEY = 'hanoi_platform_article_categories_v2026';
 
 export function getStoredArticles(): Article[] {
   if (typeof window === 'undefined') return INITIAL_ARTICLES;
