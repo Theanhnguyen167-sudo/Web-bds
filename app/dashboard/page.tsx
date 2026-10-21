@@ -59,7 +59,7 @@ import {
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
-import { TEST_SELLERS_LIST, DemoSeller, getListingExpiryInfo } from '@/lib/services/listing-service';
+import { getListingExpiryInfo } from '@/lib/services/listing-service';
 import { getListingUrl } from '@/lib/listing-slug';
 import { mockListings } from '@/lib/mock-data';
 import { Pencil } from 'lucide-react';
@@ -275,30 +275,7 @@ function DashboardContent() {
   const aiReportsLimit = user?.aiReportsLimit ?? pkgDef.limits.aiReports;
   const remainingAiReports = Math.max(0, aiReportsLimit - aiReportsUsed);
 
-  // Chuyển đổi nhanh tài khoản Seller để test Section 23
-  const handleSwitchSeller = (seller: DemoSeller) => {
-    const sPkgDef = getPackageDefinition(seller.package || 'pro');
-    const updatedUser: any = {
-      id: seller.id,
-      name: seller.name,
-      email: seller.email,
-      phone: seller.phone,
-      role: 'agent',
-      package: sPkgDef.name,
-      packageExpiry: '2026-12-31',
-      aiReportsUsed: 3,
-      aiReportsLimit: sPkgDef.limits.aiReports,
-      listingsCount: listings.filter((l) => l.ownerId === seller.id).length,
-      listingsLimit: sPkgDef.limits.maxListings,
-      listingDurationDays: sPkgDef.limits.listingDurationDays,
-      featuredListingsUsed: 1,
-      featuredListingsLimit: sPkgDef.limits.featuredListings,
-      activeListings: listings.filter((l) => l.ownerId === seller.id && l.status === 'active').length,
-      avatar: seller.avatar,
-    };
-    setUser(updatedUser);
-    addToast(`👤 Đã chuyển phiên làm việc sang: ${seller.name} (${sPkgDef.name.toUpperCase()})`, 'info');
-  };
+
 
   const handleDeleteListing = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -421,72 +398,6 @@ function DashboardContent() {
       <Navbar />
 
       <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-
-        {/* SECTION 23: MULTI-SELLER & PACKAGE TESTING HUB */}
-        <div className="mb-6 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50/90 via-sky-50/60 to-purple-50/60 p-4 space-y-3 text-xs shadow-xs">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-black text-[10px] uppercase tracking-wider shadow-2xs">
-                🧪 Testing Hub
-              </span>
-              <div>
-                <p className="font-bold text-slate-800">
-                  Đang đăng nhập: <span className="text-indigo-600 font-black">{user?.name}</span> · Gói: <span className="font-black text-orange-600">{pkgDef.name}</span>
-                </p>
-                <p className="text-[11px] text-slate-500">Chuyển nhanh tài khoản hoặc gói cước để kiểm thử hạn mức và đặc quyền:</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-bold text-slate-500">Seller:</span>
-              {TEST_SELLERS_LIST.map((s: DemoSeller) => {
-                const isSelected = user?.id === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => handleSwitchSeller(s)}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs ${
-                      isSelected
-                        ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/50 scale-[1.02]'
-                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-                    }`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-300' : 'bg-slate-300'}`} />
-                    <span>{s.id === 'seller_a' ? 'Seller A' : s.id === 'seller_b' ? 'Seller B' : 'Seller C'}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Quick Package Switcher */}
-          <div className="pt-2 border-t border-indigo-100 flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
-              <Zap className="h-3 w-3 text-amber-500" />
-              <span>Thử nhanh gói:</span>
-            </span>
-            {(['free', 'basic', 'pro', 'agency'] as PackageTierId[]).map((pKey) => {
-              const isCur = pkgDef.id === pKey;
-              return (
-                <button
-                  key={pKey}
-                  type="button"
-                  onClick={() => handleQuickSwitchPackage(pKey)}
-                  className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
-                    isCur
-                      ? 'bg-orange-600 text-white shadow-sm ring-2 ring-orange-400/60'
-                      : 'bg-white text-slate-700 hover:bg-orange-50 border border-slate-200'
-                  }`}
-                >
-                  {pKey === 'free' ? 'Free (3 tin)' : pKey === 'basic' ? 'Basic (20 tin)' : pKey === 'pro' ? 'Pro (50 tin)' : 'Agency (250 tin)'}
-                  {isCur && ' ✓'}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* User Profile Header Banner */}
         <div className="rounded-3xl border border-border bg-white p-6 sm:p-8 shadow-sm mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
