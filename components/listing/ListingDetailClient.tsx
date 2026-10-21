@@ -226,6 +226,8 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
 
   // Booking Modal State (Hẹn xem nhà)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  // Trạng thái thu gọn / mở rộng cam kết người bán
+  const [isCommitmentExpanded, setIsCommitmentExpanded] = useState(false);
 
   const isSaved = savedListingIds.includes(listing.id);
 
@@ -493,97 +495,92 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             )}
           </div>
 
-          {/* ── BÊN PHẢI (30% / lg:col-span-3): THÔNG TIN CHI TIẾT CỦA NGƯỜI ĐĂNG BÁN ── */}
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm flex flex-col justify-between space-y-4">
-            {/* Header thông tin người đăng bán */}
-            <div>
-              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-                <span className="text-xs font-bold uppercase tracking-wider text-orange-600 flex items-center gap-1.5">
-                  <UserCheck className="h-3.5 w-3.5" />
-                  Thông tin người đăng bán
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Đang trực tuyến
-                </span>
+          {/* ── BÊN PHẢI (30% / lg:col-span-3): THÔNG TIN NGƯỜI BÁN ── */}
+          <div className="lg:col-span-3 lg:sticky lg:top-24 bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] space-y-4">
+            
+            {/* A. THÔNG TIN NGƯỜI BÁN */}
+            <div className="flex items-start gap-3.5">
+              {/* Ảnh đại diện hình tròn bên trái + Chấm trạng thái trực tuyến */}
+              <div className="relative shrink-0">
+                <img
+                  src={sellerAvatar}
+                  alt={sellerName}
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-2 ring-slate-100 border border-slate-200/90 shadow-2xs"
+                />
+                <span
+                  className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white"
+                  title="Đang trực tuyến"
+                />
               </div>
 
-              {/* Thông tin cá nhân & Avatar */}
-              <div className="flex items-start gap-4 sm:gap-5 mt-4">
-                {/* Avatar khống chế kích thước chuẩn đẹp */}
-                <div className="relative shrink-0">
-                  <img
-                    src={sellerAvatar}
-                    alt={sellerName}
-                    className="w-20 h-20 sm:w-22 sm:h-22 rounded-full object-cover ring-4 ring-orange-50 border-2 border-orange-400 shadow-md"
-                    style={{ width: '84px', height: '84px' }}
-                  />
-                  <span
-                    className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white"
-                    title="Đang trực tuyến"
-                  />
+              {/* Thông tin người bán bên phải */}
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                  <h3 className="text-base sm:text-[17px] font-bold text-[#172B4D] tracking-tight truncate">
+                    {sellerName}
+                  </h3>
+                  <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-emerald-700 bg-emerald-50/90 border border-emerald-200/60 px-2 py-0.5 rounded-full shrink-0">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Trực tuyến
+                  </span>
                 </div>
 
-                {/* Tên & chức danh */}
-                <div className="min-w-0 flex-1 space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
-                      {sellerName}
-                    </h3>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md">
-                      <Award className="h-3 w-3 text-amber-600" />
-                      Môi giới uy tín
-                    </span>
-                  </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/70 px-2 py-0.5 rounded-md">
+                    <Award className="h-3 w-3 text-amber-600" />
+                    Môi giới uy tín
+                  </span>
+                </div>
 
-                  <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                    Chuyên viên tư vấn BĐS · Phụ trách khu vực {listing.district}
-                  </p>
+                <p className="text-xs text-[#64748B] font-medium line-clamp-1">
+                  Chuyên viên tư vấn BĐS · Phụ trách {listing.district}
+                </p>
 
-                  <div className="flex items-center gap-2 pt-0.5">
-                    <div className="flex items-center text-amber-500 text-xs font-bold gap-0.5">
-                      <Star className="h-3.5 w-3.5 fill-amber-400" />
-                      <span>4.9 / 5.0</span>
-                    </div>
-                    <span className="text-slate-300">·</span>
-                    <span className="text-xs text-slate-500 font-medium">52 giao dịch thành công</span>
+                <div className="flex items-center gap-1.5 pt-0.5 text-xs text-[#64748B]">
+                  <div className="flex items-center text-amber-500 font-semibold gap-0.5">
+                    <Star className="h-3.5 w-3.5 fill-amber-400" />
+                    <span>4.9 / 5.0</span>
                   </div>
+                  <span className="text-slate-300">·</span>
+                  <span>52 giao dịch</span>
                 </div>
               </div>
             </div>
 
-            {/* Các chỉ số uy tín người bán */}
-            <div className="grid grid-cols-3 gap-2.5 p-3 rounded-xl bg-slate-50/90 border border-slate-100 text-center">
-              <div className="space-y-0.5">
-                <span className="text-xs font-medium text-slate-500 block">Tin đã đăng</span>
-                <span className="text-sm sm:text-base font-extrabold text-slate-900">18+ tin</span>
+            {/* B. PHẦN CHỈ SỐ UY TÍN (3 CỘT) */}
+            <div className="grid grid-cols-3 divide-x divide-slate-100 rounded-xl bg-slate-50/80 border border-slate-100 py-2.5 px-1 sm:px-2 text-center">
+              <div className="px-1 space-y-0.5">
+                <span className="text-[11px] text-[#64748B] font-medium block">Tin đã đăng</span>
+                <span className="text-xs sm:text-sm font-bold text-[#172B4D] block">18+ tin</span>
               </div>
-              <div className="space-y-0.5 border-x border-slate-200">
-                <span className="text-xs font-medium text-slate-500 block">Tỷ lệ phản hồi</span>
-                <span className="text-sm sm:text-base font-extrabold text-emerald-600">100%</span>
+              <div className="px-1 space-y-0.5">
+                <span className="text-[11px] text-[#64748B] font-medium block">Tỷ lệ phản hồi</span>
+                <span className="text-xs sm:text-sm font-bold text-emerald-600 block">100%</span>
               </div>
-              <div className="space-y-0.5">
-                <span className="text-xs font-medium text-slate-500 block">Thời gian phản hồi</span>
-                <span className="text-sm sm:text-base font-extrabold text-orange-600">&lt; 5 phút</span>
+              <div className="px-1 space-y-0.5">
+                <span className="text-[11px] text-[#64748B] font-medium block">Phản hồi</span>
+                <span className="text-xs sm:text-sm font-bold text-[#F97316] block">&lt; 5 phút</span>
               </div>
             </div>
 
-            {/* Kênh liên hệ & CTA gọi / nhắn tin */}
-            <div className="space-y-2.5">
+            {/* C. CÁC NÚT LIÊN HỆ */}
+            <div className="space-y-2">
+              {/* Nút Gọi ngay - CTA chính */}
               <a
                 href={`tel:${cleanSellerPhone}`}
-                className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 py-3.5 px-4 text-white font-bold text-base shadow-md hover:shadow-lg transition-all"
+                className="w-full h-11 sm:h-12 flex items-center justify-center gap-2 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
               >
-                <Phone className="h-5 w-5" />
+                <Phone className="h-4.5 w-4.5" />
                 <span>Gọi ngay: {sellerPhone}</span>
               </a>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              {/* Nút CTA phụ (Zalo + Hẹn xem nhà) */}
+              <div className="grid grid-cols-2 gap-2">
                 <a
                   href={`https://zalo.me/${cleanSellerPhone}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white py-2.5 px-3 text-xs sm:text-sm font-bold shadow-xs transition-colors"
+                  className="h-10 sm:h-11 flex items-center justify-center gap-1.5 rounded-xl bg-[#0068FF] hover:bg-[#0055d4] text-white text-xs sm:text-sm font-semibold shadow-2xs transition-colors"
                 >
                   <MessageSquare className="h-4 w-4" />
                   <span>Chat qua Zalo</span>
@@ -592,26 +589,54 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
                 <button
                   type="button"
                   onClick={() => setIsBookingModalOpen(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 py-2.5 px-3 text-xs sm:text-sm font-semibold text-slate-700 shadow-xs transition-colors cursor-pointer"
+                  className="h-10 sm:h-11 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#172B4D] text-xs sm:text-sm font-semibold shadow-2xs transition-colors cursor-pointer"
                   title="Đặt lịch hẹn xem nhà trực tiếp với người bán"
                 >
-                  <Calendar className="h-4 w-4 text-orange-500" />
+                  <Calendar className="h-4 w-4 text-[#F97316]" />
                   <span>Hẹn xem nhà</span>
                 </button>
               </div>
             </div>
 
-            {/* Cam kết minh bạch từ người bán */}
-            <div className="rounded-xl bg-emerald-50/70 border border-emerald-200/80 p-3 space-y-1 text-xs text-slate-600">
-              <div className="flex items-center gap-2 font-bold text-emerald-800">
-                <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span>Cam kết minh bạch từ người đăng bán</span>
+            {/* D. PHẦN CAM KẾT NGƯỜI BÁN */}
+            <div className="rounded-xl bg-[#F0FDF4] border border-emerald-100 p-3 space-y-2 text-xs">
+              <div
+                className="flex items-center justify-between font-bold text-emerald-900 cursor-pointer select-none"
+                onClick={() => setIsCommitmentExpanded(!isCommitmentExpanded)}
+              >
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="text-xs font-bold text-emerald-900">Cam kết người bán</span>
+                </div>
+                <button
+                  type="button"
+                  className="text-emerald-700 hover:text-emerald-900 p-0.5 rounded transition-colors"
+                  aria-label={isCommitmentExpanded ? 'Thu gọn' : 'Xem thêm'}
+                >
+                  {isCommitmentExpanded ? (
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
               </div>
-              <p className="text-[11px] text-emerald-900/80 leading-relaxed">
-                • Bất động sản chính chủ, ảnh chụp và vị trí thực tế 100%.<br />
-                • Dẫn xem nhà trực tiếp miễn phí, không phát sinh phụ phí với khách mua.<br />
-                • Hỗ trợ thủ tục pháp lý, kiểm tra quy hoạch và sang tên sổ đỏ trọn gói.
-              </p>
+
+              <ul className="space-y-1.5 text-[11.5px] text-[#64748B] leading-relaxed">
+                <li className="flex items-start gap-1.5">
+                  <span className="text-emerald-500 font-bold mt-0.5">•</span>
+                  <span>Bất động sản chính chủ, hình ảnh & vị trí thực tế 100%.</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-emerald-500 font-bold mt-0.5">•</span>
+                  <span>Dẫn xem nhà trực tiếp miễn phí, không phát sinh phụ phí.</span>
+                </li>
+                {isCommitmentExpanded && (
+                  <li className="flex items-start gap-1.5 pt-1 border-t border-emerald-100/70">
+                    <span className="text-emerald-500 font-bold mt-0.5">•</span>
+                    <span>Hỗ trợ thủ tục pháp lý, kiểm tra quy hoạch và sang tên sổ đỏ.</span>
+                  </li>
+                )}
+              </ul>
             </div>
           </div>
 
