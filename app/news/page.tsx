@@ -111,22 +111,21 @@ function NewsContent() {
   const searchParams = useSearchParams();
   const catParam = searchParams.get('category');
 
-  // Khôi phục bộ lọc, từ khóa và phân trang từ sessionStorage khi người dùng bấm Back trình duyệt
-  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('news_selected_category');
-      if (saved && !catParam) return saved;
-    }
-    return catParam || 'all';
-  });
+  // Khởi tạo state an toàn chống Hydration Mismatch
+  const [selectedCategory, setSelectedCategory] = useState<string>(catParam || 'all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const [searchQuery, setSearchQuery] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('news_search_query');
-      if (saved) return saved;
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedCat = sessionStorage.getItem('news_selected_category');
+    const savedQuery = sessionStorage.getItem('news_search_query');
+    if (savedCat && !catParam) {
+      setSelectedCategory(savedCat);
     }
-    return '';
-  });
+    if (savedQuery) {
+      setSearchQuery(savedQuery);
+    }
+  }, [catParam]);
 
   const [allNews, setAllNews] = useState<NewsArticle[]>(NEWS_ARTICLES);
   const [activeHeadingId, setActiveHeadingId] = useState<string>('tieu-diem-bds');
@@ -372,7 +371,7 @@ function NewsContent() {
   // Cấu trúc: Bố cục 4 Card ngang có kèm bản đồ thu nhỏ và badge tiến độ
   const planningTopicArticles = useMemo(() => {
     const list = getArticlesForBlock(allNews, {
-      previousBlocks: [heroArticles, latestArticles, marketTopicArticles],
+      previousBlocks: [heroArticles, latestPool.slice(0, 5), marketTopicArticles],
       category: ['planning', 'project'],
       limit: 4,
     });
@@ -386,7 +385,7 @@ function NewsContent() {
       return [...list, ...extra].slice(0, 4);
     }
     return list;
-  }, [allNews, heroArticles, latestArticles, marketTopicArticles, heroExcludeIds]);
+  }, [allNews, heroArticles, latestPool, marketTopicArticles, heroExcludeIds]);
 
   // 5. Widget "Đọc nhiều" ở Sidebar:
   // Lọc DISTINCT theo bài viết để mỗi bài chỉ đứng 1 vị trí thứ hạng duy nhất
@@ -658,7 +657,7 @@ function NewsContent() {
             {/* Cột Trái (Main Content: lg:col-span-8 ~70%) */}
             <div id="news-content-grid" className="lg:col-span-8 space-y-6">
               
-              {latestArticles.length === 0 ? (
+              {latestPool.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-3">
                   <Newspaper className="h-10 w-10 text-slate-300 mx-auto" />
                   <h3 className="text-sm font-bold text-slate-800">Không tìm thấy bài viết phù hợp</h3>
