@@ -18,22 +18,22 @@ export const DEFAULT_ARTICLE_CATEGORIES: ArticleCategoryItem[] = [
  * - Phân tích & Kiến thức & Hà Nội: Ảnh đại đô thị, kiến trúc nhà ở
  */
 export const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
-  // 1. Quy hoạch & Dự án -> Ảnh bản đồ quy hoạch, đô thị vệ tinh
+  // 1. Quy hoạch & Dự án -> Ảnh bản đồ quy hoạch, đại lộ cao tốc đô thị
   planning: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&auto=format&fit=crop&q=80',
-  project: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1200&auto=format&fit=crop&q=80',
+  project: 'https://images.unsplash.com/photo-1545459720-aac8509eb02c?w=1200&auto=format&fit=crop&q=80',
 
   // 2. Chính sách & Pháp lý -> Ảnh văn bản, hồ sơ tòa án, búa công lý
   policy: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&auto=format&fit=crop&q=80',
-  legal: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80',
+  legal: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&auto=format&fit=crop&q=80',
 
-  // 3. Thị trường, Giá đất & Đầu tư -> Ảnh tòa nhà skyline, đồ thị tài chính
+  // 3. Thị trường, Giá đất & Đầu tư -> Ảnh tòa nhà skyline, tài chính BĐS
   market: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80',
   pricing: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&auto=format&fit=crop&q=80',
-  investment: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1200&auto=format&fit=crop&q=80',
+  investment: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1200&auto=format&fit=crop&q=80',
 
   // 4. Phân tích & Hà Nội & Kiến thức
   analysis: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80',
-  hanoi: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&auto=format&fit=crop&q=80',
+  hanoi: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80',
   knowledge: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80',
 
   // 5. Fallback mặc định chung
@@ -129,7 +129,7 @@ export const INITIAL_ARTICLES: Article[] = [
     slug: 'luat-dat-dai-moi-va-tac-dong-bang-gia-dat-ha-noi',
     excerpt: 'Phân tích toàn diện việc bãi bỏ khung giá đất, bảng giá đất hàng năm từ 2026 tác động tới chi phí đầu vào, biên lợi nhuận chủ đầu tư và thanh khoản thị trường.',
     content: `<p>Bước sang quý III/2026, thị trường bất động sản Thủ đô đang chứng kiến những tác động sâu rộng và trực diện nhất từ việc Luật Đất đai 2024 cùng các nghị định hướng dẫn thi hành đi vào đời sống thực tế tròn hai năm. Điểm nhấn mang tính cách mạng chính là việc chính thức xóa bỏ cơ chế "khung giá đất" do Chính phủ ban hành định kỳ 5 năm một lần, thay thế bằng cơ chế "Bảng giá đất hàng năm" do Ủy ban nhân dân cấp tỉnh/thành phố xây dựng và trình Hội đồng nhân dân cùng cấp thông qua, bắt đầu áp dụng từ ngày 01/01/2026.</p>`,
-    featuredImage: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&auto=format&fit=crop&q=80',
     category: 'policy',
     categoryLabel: 'Chính sách & Pháp lý',
     categoryColor: 'bg-blue-600 text-white',
@@ -154,7 +154,7 @@ export const INITIAL_ARTICLES: Article[] = [
     excerpt: 'Sự kết nối giữa các trục giao thông hướng tâm và tuyến Metro số 2 đang tạo lực đẩy mạnh mẽ cho phân khúc nhà phố trung tâm và ven đô.',
     content: `<p>Tuyến đường sắt đô thị số 2 (đoạn Nam Thăng Long - Trần Hưng Đạo) vừa được phê duyệt điều chỉnh tổng mức đầu tư và phương án giải phóng mặt bằng, tạo nên làn sóng quan tâm đặc biệt từ giới đầu tư bất động sản.</p>
 <p>Khảo sát thực tế của hệ thống HaNoi Realty cho thấy, trong bán kính 800m quanh các nhà ga C1 (Xuân Đỉnh), C2 (Ngoại Giao Đoàn), C3 (Tây Hồ Tây) và khu vực trung tâm phố cổ, giá chào bán nhà mặt phố và nhà riêng trong ngõ ô tô đã ghi nhận mức tăng từ 10% đến 14% so với cùng kỳ.</p>`,
-    featuredImage: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&auto=format&fit=crop&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&auto=format&fit=crop&q=80',
     category: 'planning',
     categoryLabel: 'Quy hoạch',
     categoryColor: 'bg-emerald-500 text-white',
@@ -210,7 +210,7 @@ export const INITIAL_ARTICLES: Article[] = [
 <li><strong>Huyện Thanh Oai & Thường Tín (Phía Nam):</strong> Điểm tựa từ các nút giao kết nối vào cao tốc Pháp Vân - Cầu Giẽ, phát triển mạnh các cụm kho bãi logistics và đô thị vệ tinh quy mô vừa.</li>
 </ul>
 <p>Chiến lược giải ngân an toàn trong giai đoạn này là tập trung vào sản phẩm đất thổ cư có sổ đỏ nằm trong bán kính 1 – 3 km từ các nút giao Vành đai 4, tránh các khu vực nằm trực tiếp trong ranh giới cắm mốc giải phóng mặt bằng chưa đền bù.</p>`,
-    featuredImage: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1200&auto=format&fit=crop&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1545459720-aac8509eb02c?w=1200&auto=format&fit=crop&q=80',
     category: 'planning',
     categoryLabel: 'Quy hoạch & Hạ tầng',
     categoryColor: 'bg-emerald-600 text-white',
@@ -235,7 +235,7 @@ export const INITIAL_ARTICLES: Article[] = [
     excerpt: 'Bí quyết thẩm định pháp lý thửa đất, tránh rủi ro dính quy hoạch treo, đất chỉ giới đường đỏ mở rộng.',
     content: `<p>Rủi ro lớn nhất của nhà đầu tư cá nhân là mua phải đất nằm trong diện giải phóng mặt bằng phục vụ công trình công cộng hoặc chỉ giới đường đỏ cắt qua phần lớn diện tích căn nhà.</p>
 <p>Bài viết này hướng dẫn chi tiết quy trình 7 bước tra cứu tọa độ WGS84 và đối chiếu trực tiếp trên hệ thống GIS quy hoạch phân khu Hà Nội.</p>`,
-    featuredImage: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&auto=format&fit=crop&q=80',
     category: 'legal',
     categoryLabel: 'Pháp lý',
     categoryColor: 'bg-indigo-500 text-white',
@@ -281,7 +281,7 @@ export const INITIAL_ARTICLES: Article[] = [
     slug: 'quy-hoach-chi-tiet-phan-khu-song-hong',
     excerpt: 'Dự án trục không gian cảnh quan Sông Hồng mở ra tiềm năng khai thác du lịch và đô thị sinh thái 2 bên bờ sông.',
     content: `<p>Đồ án quy hoạch phân khu đô thị sông Hồng xác định đây là trục không gian đặc trưng cây xanh mặt nước, văn hóa lịch sử của Thủ đô.</p>`,
-    featuredImage: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200&auto=format&fit=crop&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=1200&auto=format&fit=crop&q=80',
     category: 'hanoi',
     categoryLabel: 'Tin Hà Nội',
     categoryColor: 'bg-rose-500 text-white',

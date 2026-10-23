@@ -1924,7 +1924,7 @@ export default function HomePage() {
               >
                 <div className="relative w-full sm:w-5/12 h-[140px] sm:h-full overflow-hidden bg-slate-900 shrink-0">
                   <img
-                    src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80"
+                    src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1000&auto=format&fit=crop&q=80"
                     alt="Metro line Hanoi"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -1969,7 +1969,7 @@ export default function HomePage() {
                   title: 'Quy hoạch Vành đai 4: Cơ hội vàng cho nhà đầu tư BĐS ven đô',
                   category: 'Quy hoạch',
                   date: '25/09/2025',
-                  image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&auto=format&fit=crop&q=80',
+                  image: 'https://images.unsplash.com/photo-1545459720-aac8509eb02c?w=400&auto=format&fit=crop&q=80',
                 },
                 {
                   title: 'Top 5 phường có giá đất tăng mạnh nhất quận Đống Đa: Phân tích thực tế',
@@ -1981,7 +1981,7 @@ export default function HomePage() {
                   title: 'Lãi suất vay mua nhà giảm sâu: Thời điểm thích hợp để sở hữu BĐS an cư?',
                   category: 'Tài chính',
                   date: '15/09/2025',
-                  image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&auto=format&fit=crop&q=80',
+                  image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&auto=format&fit=crop&q=80',
                 },
               ].map((article, idx) => (
                 <Link
