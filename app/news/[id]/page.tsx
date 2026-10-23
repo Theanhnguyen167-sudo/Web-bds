@@ -19,7 +19,9 @@ import {
   Sparkles,
   Compass,
   FileText,
-  Newspaper
+  Newspaper,
+  Camera,
+  Search
 } from 'lucide-react';
 
 export default function NewsDetailPage() {
@@ -164,11 +166,94 @@ export default function NewsDetailPage() {
 
               {/* Nội dung chi tiết các đoạn văn */}
               <div className="space-y-5 text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
-                {article.content.map((paragraph, idx) => (
-                  <p key={idx} className="leading-relaxed">
-                    {paragraph}
-                  </p>
-                ))}
+                {article.content.map((paragraph, idx) => {
+                  if (paragraph.startsWith('## ')) {
+                    return (
+                      <h2 key={idx} className="text-xl sm:text-2xl font-black text-slate-900 pt-5 pb-1 border-b border-slate-100">
+                        {paragraph.replace('## ', '')}
+                      </h2>
+                    );
+                  }
+                  if (paragraph.startsWith('### ')) {
+                    return (
+                      <h3 key={idx} className="text-lg font-bold text-slate-900 pt-3 pb-0.5">
+                        {paragraph.replace('### ', '')}
+                      </h3>
+                    );
+                  }
+                  if (paragraph.startsWith('> ')) {
+                    return (
+                      <blockquote key={idx} className="p-4 sm:p-5 rounded-2xl bg-orange-50/80 border-l-4 border-orange-500 text-slate-800 font-medium italic my-4 leading-relaxed">
+                        {paragraph.replace('> ', '')}
+                      </blockquote>
+                    );
+                  }
+                  if (paragraph.startsWith('[CHÈN ẢNH:')) {
+                    const raw = paragraph.replace(/^\[CHÈN ẢNH:\s*/, '').replace(/\]$/, '');
+                    const altMatch = raw.match(/Alt-text:\s*([^\-]+)/);
+                    const searchMatch = raw.match(/Tìm kiếm:\s*(.+)$/);
+                    let desc = raw;
+                    if (altMatch) {
+                      desc = desc.split('- Alt-text:')[0].trim();
+                    }
+                    const altText = altMatch ? altMatch[1].trim() : '';
+                    const searchQuery = searchMatch ? searchMatch[1].trim() : '';
+
+                    return (
+                      <div key={idx} className="my-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-orange-50/40 border border-orange-200/80 shadow-xs space-y-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-100/80 pb-2">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-700 uppercase tracking-wider">
+                            <Camera className="h-4 w-4 text-orange-500" />
+                            Gợi ý hình ảnh On-page SEO
+                          </span>
+                          {altText && (
+                            <span className="text-[11px] font-semibold text-slate-600 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
+                              Mã Alt-text chuẩn SEO
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs sm:text-[13px] text-slate-700 font-medium leading-relaxed">
+                          <span className="font-bold text-slate-900">Mô tả ảnh:</span> {desc}
+                        </p>
+                        {altText && (
+                          <div className="text-[11px] sm:text-xs text-slate-600 bg-white/90 p-2.5 rounded-xl border border-slate-200/70 font-mono">
+                            <span className="font-bold text-orange-600 font-sans">Alt: </span>
+                            &ldquo;{altText}&rdquo;
+                          </div>
+                        )}
+                        {searchQuery && (
+                          <div className="pt-1 flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <span className="text-slate-500 text-[11px] font-medium flex items-center gap-1">
+                              <Search className="h-3 w-3 text-slate-400" />
+                              Cú pháp tìm kiếm nguồn ảnh:
+                            </span>
+                            <a
+                              href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(searchQuery)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold transition-colors shadow-2xs"
+                            >
+                              <span>Tìm ảnh VnExpress trên Google</span>
+                              <ChevronRight className="h-3 w-3" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  if (paragraph.startsWith('Nguồn tham khảo:')) {
+                    return (
+                      <div key={idx} className="pt-4 pb-2 border-t border-slate-200 text-xs sm:text-sm font-semibold text-slate-500 italic">
+                        {paragraph}
+                      </div>
+                    );
+                  }
+                  return (
+                    <p key={idx} className="leading-relaxed whitespace-pre-line">
+                      {paragraph}
+                    </p>
+                  );
+                })}
                 
                 <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/60 text-xs text-amber-800 leading-relaxed mt-6">
                   <p className="font-semibold mb-1 flex items-center gap-1.5 text-amber-900">

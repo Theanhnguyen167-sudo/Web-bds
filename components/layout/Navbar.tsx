@@ -36,36 +36,7 @@ export const Navbar: React.FC = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
-  // Quản lý mục lục đổ xuống với Chế độ trễ an toàn (Safe Delay) chống tắt khi lia chuột chéo
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const closeTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const handleMenuEnter = (menuName: string) => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-    setActiveDropdown(menuName);
-  };
-
-  const handleMenuLeave = () => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-    }
-    // Độ trễ an toàn 250ms: Giữ menu mở khi lia chuột chéo từ nút bấm sang bảng dropdown
-    closeTimerRef.current = setTimeout(() => {
-      setActiveDropdown(null);
-    }, 250);
-  };
-
-  // Dọn dẹp timer khi component unmount
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
-      }
-    };
-  }, []);
 
   // Đồng bộ số lượng thông báo chưa đọc của riêng tài khoản đang đăng nhập
   useEffect(() => {
@@ -111,79 +82,14 @@ export const Navbar: React.FC = () => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  interface NavSubItem {
-    name: string;
-    href: string;
-  }
-
-  interface NavLinkItem {
-    name: string;
-    href: string;
-    subItems?: NavSubItem[];
-  }
-
-  const navLinks: NavLinkItem[] = [
+  const navLinks = [
     { name: 'Trang chủ', href: '/' },
-    {
-      name: 'Tìm kiếm',
-      href: '/search',
-      subItems: [
-        { name: 'Mua bán nhà đất', href: '/search?type=sale' },
-        { name: 'Cho thuê nhà đất', href: '/search?type=rent' },
-        { name: 'Dự án bất động sản', href: '/search?type=project' },
-        { name: 'Bản đồ tra cứu BĐS', href: '/search' },
-      ],
-    },
-    {
-      name: 'Quy hoạch',
-      href: '/planning',
-      subItems: [
-        { name: 'Bản đồ quy hoạch Hà Nội', href: '/planning' },
-        { name: 'Quy hoạch phân khu đô thị', href: '/planning' },
-        { name: 'Kế hoạch sử dụng đất', href: '/planning' },
-        { name: 'Tra cứu thửa đất theo toạ độ', href: '/planning' },
-      ],
-    },
-    {
-      name: 'Tin tức',
-      href: '/news',
-      subItems: [
-        { name: 'Tất cả tin tức', href: '/news' },
-        { name: 'Thị trường BĐS', href: '/news?category=market' },
-        { name: 'Quy hoạch & Hạ tầng', href: '/news?category=planning' },
-        { name: 'Biến động giá đất', href: '/news?category=pricing' },
-        { name: 'Chính sách & Pháp lý', href: '/news?category=policy' },
-        { name: 'Dự án & Quy hoạch', href: '/news?category=project' },
-        { name: 'Tài chính & Đầu tư', href: '/news?category=investment' },
-      ],
-    },
-    {
-      name: 'Báo cáo AI',
-      href: '/reports',
-      subItems: [
-        { name: 'Báo cáo thị trường BĐS', href: '/reports' },
-        { name: 'Định giá nhà đất tự động', href: '/reports' },
-        { name: 'Dự báo xu hướng giá', href: '/reports' },
-      ],
-    },
-    {
-      name: 'Bảng giá',
-      href: '/pricing',
-      subItems: [
-        { name: 'Bảng giá đất Hà Nội mới nhất', href: '/pricing' },
-        { name: 'Lịch sử biến động giá đất', href: '/pricing' },
-        { name: 'So sánh giá đất theo quận', href: '/pricing' },
-      ],
-    },
-    {
-      name: 'Về chúng tôi',
-      href: '/about',
-      subItems: [
-        { name: 'Giới thiệu Hanoi Realty', href: '/about' },
-        { name: 'Đội ngũ chuyên gia', href: '/about#team' },
-        { name: 'Liên hệ hợp tác', href: '/about#contact' },
-      ],
-    },
+    { name: 'Tìm kiếm', href: '/search' },
+    { name: 'Quy hoạch', href: '/planning' },
+    { name: 'Tin tức', href: '/news' },
+    { name: 'Báo cáo AI', href: '/reports' },
+    { name: 'Bảng giá', href: '/pricing' },
+    { name: 'Về chúng tôi', href: '/about' },
   ];
 
   const handleLogout = async () => {
@@ -240,80 +146,25 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* 2. MAIN NAVIGATION (Desktop lg+) */}
-        <nav
-          className="main-navigation hidden lg:flex items-center gap-1.5 xl:gap-2.5 2xl:gap-3.5 shrink-0 transition-all duration-200"
-          onMouseLeave={handleMenuLeave}
-        >
+        <nav className="main-navigation hidden lg:flex items-center gap-1.5 xl:gap-2.5 2xl:gap-3.5 shrink-0 transition-all duration-200">
           {navLinks.map((link) => {
             const isActive =
               link.href === '/'
                 ? pathname === '/'
                 : pathname === link.href || pathname.startsWith(link.href + '/');
-            const hasSub = Boolean(link.subItems && link.subItems.length > 0);
-            const isOpen = activeDropdown === link.name;
 
             return (
-              <div
+              <Link
                 key={link.name}
-                className="relative py-2"
-                onMouseEnter={() => hasSub && handleMenuEnter(link.name)}
-                onMouseLeave={handleMenuLeave}
+                href={link.href}
+                className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2.5 py-1.5 flex items-center gap-1 ${
+                  isActive
+                    ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/80'
+                }`}
               >
-                <Link
-                  href={link.href}
-                  onClick={() => setActiveDropdown(null)}
-                  className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2.5 py-1.5 flex items-center gap-1 ${
-                    isActive || isOpen
-                      ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
-                      : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/80'
-                  }`}
-                >
-                  <span className="whitespace-nowrap">{link.name}</span>
-                  {hasSub && (
-                    <ChevronDown
-                      className={`h-3 w-3 opacity-60 transition-transform duration-200 shrink-0 ${
-                        isOpen ? 'rotate-180 opacity-100 text-accent' : 'hover:opacity-100'
-                      }`}
-                    />
-                  )}
-                </Link>
-
-                {/* Submenu Dropdown với Chế độ trễ an toàn & Cầu đệm vô hình chống tắt khi lia chuột chéo */}
-                {hasSub && isOpen && (
-                  <div
-                    className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-[110]"
-                    onMouseEnter={() => handleMenuEnter(link.name)}
-                    onMouseLeave={handleMenuLeave}
-                  >
-                    {/* Cầu đệm vô hình (Invisible Bridge): mở rộng vùng đón chuột khi lia chéo góc */}
-                    <div className="absolute -top-3 -left-12 -right-12 h-6 pointer-events-auto" />
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                      transition={{ duration: 0.16, ease: 'easeOut' }}
-                      className="min-w-[220px] w-max max-w-[280px] rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-[0_12px_30px_-6px_rgba(0,0,0,0.12),0_4px_12px_-2px_rgba(0,0,0,0.06)] p-1.5 space-y-0.5"
-                    >
-                      {link.subItems?.map((sub) => {
-                        return (
-                          <Link
-                            key={sub.name}
-                            href={sub.href}
-                            onClick={() => setActiveDropdown(null)}
-                            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-orange-600 hover:bg-orange-50/80 transition-all group/item"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover/item:bg-orange-500 group-hover/item:scale-125 transition-all" />
-                              <span className="whitespace-nowrap">{sub.name}</span>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </motion.div>
-                  </div>
-                )}
-              </div>
+                <span className="whitespace-nowrap">{link.name}</span>
+              </Link>
             );
           })}
         </nav>
@@ -617,44 +468,23 @@ export const Navbar: React.FC = () => {
                     ? pathname === '/'
                     : pathname === link.href || pathname.startsWith(link.href + '/');
                 return (
-                  <div key={link.name} className="flex flex-col">
-                    <Link
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
-                        isActive
-                          ? isScrolled
-                            ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
-                            : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
-                          : isScrolled
-                            ? 'hover:bg-slate-100 text-slate-700'
-                            : 'hover:bg-white/10 text-slate-200'
-                      }`}
-                    >
-                      <span>{link.name}</span>
-                      {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
-                    </Link>
-
-                    {/* SubItems trên Mobile nếu có */}
-                    {link.subItems && (
-                      <div className="pl-3 pr-1 py-1 flex flex-wrap gap-1">
-                        {link.subItems.map((sub) => (
-                          <Link
-                            key={sub.name}
-                            href={sub.href}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className={`text-[11px] px-2.5 py-1 rounded-lg transition-colors ${
-                              isScrolled
-                                ? 'text-slate-600 hover:text-orange-600 hover:bg-orange-50'
-                                : 'text-slate-300 hover:text-white hover:bg-white/10'
-                            }`}
-                          >
-                            {sub.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
+                      isActive
+                        ? isScrolled
+                          ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
+                          : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
+                        : isScrolled
+                          ? 'hover:bg-slate-100 text-slate-700'
+                          : 'hover:bg-white/10 text-slate-200'
+                    }`}
+                  >
+                    <span>{link.name}</span>
+                    {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
+                  </Link>
                 );
               })}
             </div>

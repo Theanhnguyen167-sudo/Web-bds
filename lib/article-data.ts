@@ -124,6 +124,30 @@ export const INITIAL_ARTICLES: Article[] = [
     ],
   },
   {
+    id: 'art-policy-luat-dat-dai',
+    title: 'Luật Đất đai mới và tác động tới bảng giá đất hàng năm tại Hà Nội: Tái lập mặt bằng chi phí và áp lực tái cấu trúc dòng vốn',
+    slug: 'luat-dat-dai-moi-va-tac-dong-bang-gia-dat-ha-noi',
+    excerpt: 'Phân tích toàn diện việc bãi bỏ khung giá đất, bảng giá đất hàng năm từ 2026 tác động tới chi phí đầu vào, biên lợi nhuận chủ đầu tư và thanh khoản thị trường.',
+    content: `<p>Bước sang quý III/2026, thị trường bất động sản Thủ đô đang chứng kiến những tác động sâu rộng và trực diện nhất từ việc Luật Đất đai 2024 cùng các nghị định hướng dẫn thi hành đi vào đời sống thực tế tròn hai năm. Điểm nhấn mang tính cách mạng chính là việc chính thức xóa bỏ cơ chế "khung giá đất" do Chính phủ ban hành định kỳ 5 năm một lần, thay thế bằng cơ chế "Bảng giá đất hàng năm" do Ủy ban nhân dân cấp tỉnh/thành phố xây dựng và trình Hội đồng nhân dân cùng cấp thông qua, bắt đầu áp dụng từ ngày 01/01/2026.</p>`,
+    featuredImage: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80',
+    category: 'policy',
+    categoryLabel: 'Chính sách & Pháp lý',
+    categoryColor: 'bg-blue-600 text-white',
+    authorId: 'admin-2',
+    authorName: 'ThS. Nguyễn Hoàng Nam',
+    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    authorRole: 'Chuyên gia Phân tích Tài chính BĐS',
+    status: 'published',
+    seoTitle: 'Luật Đất đai mới và tác động tới bảng giá đất hàng năm tại Hà Nội',
+    seoDescription: 'Phân tích toàn diện việc bãi bỏ khung giá đất, bảng giá đất hàng năm từ 2026 tại Hà Nội.',
+    seoKeywords: 'luật đất đai 2024, bảng giá đất hà nội 2026, chi phí giải phóng mặt bằng',
+    views: 5120,
+    readTime: '9 phút',
+    createdAt: '2026-09-27T08:00:00Z',
+    updatedAt: '2026-09-27T08:00:00Z',
+    publishedAt: '2026-09-27T08:00:00Z',
+  },
+  {
     id: 'art-2',
     title: 'Thị trường BĐS Hà Nội: Giá nhà phố tăng 12% sau thông tin Metro Line 2 chính thức tăng tốc thi công',
     slug: 'metro-line-2-hanoi-gia-nha-pho-tang-12-phan-tram',
@@ -175,6 +199,37 @@ export const INITIAL_ARTICLES: Article[] = [
   },
   {
     id: 'art-4',
+    title: 'Quy hoạch Vành đai 4: Cơ hội vàng và định vị dòng tiền cho nhà đầu tư ven đô',
+    slug: 'vanh-dai-4-ha-noi-dinh-vi-dong-tien-ven-do-2026',
+    excerpt: 'Định vị các vùng trũng giá và cơ hội giải ngân dòng vốn đầu tư bất động sản ven đô Hà Nội theo tiến độ hoàn thiện của đại dự án Vành đai 4 Vùng Thủ đô.',
+    content: `<p>Với quy mô hơn 112 km đi qua ba tỉnh thành (Hà Nội, Hưng Yên, Bắc Ninh), tuyến Vành đai 4 – Vùng Thủ đô đang bước vào giai đoạn tăng tốc thi công các gói thầu xây lắp cuối cùng trong năm 2026. Sự hình thành của đại dự án này đang tái cấu trúc bản đồ giá trị đất đai ven đô theo hướng mở rộng không gian phát triển công nghiệp và đô thị sinh thái.</p>
+<h3>Dòng vốn đầu tư thông minh hiện đang tập trung định vị vào 3 phân vùng trọng điểm:</h3>
+<ul>
+<li><strong>Huyện Hoài Đức & Đan Phượng (Phía Tây):</strong> Trọng tâm đón sóng lên quận kết hợp trục đại lộ Tây Thăng Long và các nút giao Vành đai 4. Các khu đô thị hoàn chỉnh pháp lý ghi nhận mức độ quan tâm tăng 35% nhờ thời gian kết nối về trung tâm Mỹ Đình rút ngắn xuống còn 20 phút.</li>
+<li><strong>Huyện Mê Linh (Phía Bắc):</strong> Vùng đất hưởng lợi kép từ hạ tầng cầu Hồng Hà và sự mở rộng của các cụm công nghiệp công nghệ cao, thu hút nhóm nhà đầu tư tìm kiếm quỹ đất giá còn mềm dao động từ 35 – 55 triệu đồng/m².</li>
+<li><strong>Huyện Thanh Oai & Thường Tín (Phía Nam):</strong> Điểm tựa từ các nút giao kết nối vào cao tốc Pháp Vân - Cầu Giẽ, phát triển mạnh các cụm kho bãi logistics và đô thị vệ tinh quy mô vừa.</li>
+</ul>
+<p>Chiến lược giải ngân an toàn trong giai đoạn này là tập trung vào sản phẩm đất thổ cư có sổ đỏ nằm trong bán kính 1 – 3 km từ các nút giao Vành đai 4, tránh các khu vực nằm trực tiếp trong ranh giới cắm mốc giải phóng mặt bằng chưa đền bù.</p>`,
+    featuredImage: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1200&auto=format&fit=crop&q=80',
+    category: 'planning',
+    categoryLabel: 'Quy hoạch & Hạ tầng',
+    categoryColor: 'bg-emerald-600 text-white',
+    authorId: 'admin-2',
+    authorName: 'Hội đồng Chuyên gia BĐS Thủ đô',
+    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    authorRole: 'Chuyên gia Quy hoạch',
+    status: 'published',
+    seoTitle: 'Quy hoạch Vành đai 4: Cơ hội vàng và định vị dòng tiền ven đô',
+    seoDescription: 'Phân tích cơ hội đầu tư đất nền, nhà phố ven đô bám theo trục đại lộ Vành đai 4 vùng Thủ đô.',
+    seoKeywords: 'vành đai 4 hà nội, đất nền ven đô, hoài đức, mê linh',
+    views: 3280,
+    readTime: '5 phút',
+    createdAt: '2026-09-22T08:00:00Z',
+    updatedAt: '2026-09-29T10:00:00Z',
+    publishedAt: '2026-09-22T09:00:00Z',
+  },
+  {
+    id: 'art-5',
     title: 'Cẩm nang pháp lý sổ đỏ: 7 bước kiểm tra quy hoạch trước khi xuống cọc',
     slug: 'cam-nang-phap-ly-so-do-7-buoc-kiem-tra-quy-hoach',
     excerpt: 'Bí quyết thẩm định pháp lý thửa đất, tránh rủi ro dính quy hoạch treo, đất chỉ giới đường đỏ mở rộng.',
@@ -245,8 +300,8 @@ export const INITIAL_ARTICLES: Article[] = [
   },
 ];
 
-const ARTICLES_STORAGE_KEY = 'hanoi_platform_articles';
-const CATEGORIES_STORAGE_KEY = 'hanoi_platform_article_categories';
+const ARTICLES_STORAGE_KEY = 'hanoi_platform_articles_v2026_published';
+const CATEGORIES_STORAGE_KEY = 'hanoi_platform_article_categories_v2026';
 
 export function getStoredArticles(): Article[] {
   if (typeof window === 'undefined') return INITIAL_ARTICLES;
