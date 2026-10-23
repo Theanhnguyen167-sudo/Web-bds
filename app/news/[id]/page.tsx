@@ -167,6 +167,7 @@ export default function NewsDetailPage() {
               {/* Nội dung chi tiết các đoạn văn */}
               <div className="space-y-5 text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
                 {article.content.map((paragraph, idx) => {
+                  // 1. Tiêu đề H2
                   if (paragraph.startsWith('## ')) {
                     return (
                       <h2 key={idx} className="text-xl sm:text-2xl font-black text-slate-900 pt-5 pb-1 border-b border-slate-100">
@@ -174,6 +175,8 @@ export default function NewsDetailPage() {
                       </h2>
                     );
                   }
+
+                  // 2. Tiêu đề H3
                   if (paragraph.startsWith('### ')) {
                     return (
                       <h3 key={idx} className="text-lg font-bold text-slate-900 pt-3 pb-0.5">
@@ -181,6 +184,8 @@ export default function NewsDetailPage() {
                       </h3>
                     );
                   }
+
+                  // 3. Trích dẫn Blockquote
                   if (paragraph.startsWith('> ')) {
                     return (
                       <blockquote key={idx} className="p-4 sm:p-5 rounded-2xl bg-orange-50/80 border-l-4 border-orange-500 text-slate-800 font-medium italic my-4 leading-relaxed">
@@ -188,6 +193,72 @@ export default function NewsDetailPage() {
                       </blockquote>
                     );
                   }
+
+                  // 4. Kẻ phân cách Markdown ---
+                  if (paragraph.trim() === '---') {
+                    return <hr key={idx} className="my-6 border-slate-200" />;
+                  }
+
+                  // 5. Cú pháp ảnh Markdown: ![alt](url)
+                  const imgMatch = paragraph.trim().match(/^!\[(.*?)\]\((.*?)\)$/);
+                  if (imgMatch) {
+                    const altText = imgMatch[1];
+                    const imgSrc = imgMatch[2];
+                    return (
+                      <figure key={idx} className="my-6 space-y-2">
+                        <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 shadow-md bg-slate-100">
+                          <img
+                            src={imgSrc}
+                            alt={altText}
+                            className="w-full h-auto max-h-[520px] object-cover transition-transform duration-500 hover:scale-[1.01]"
+                            loading="lazy"
+                          />
+                        </div>
+                        {altText && (
+                          <figcaption className="text-center text-xs sm:text-[13px] text-slate-500 italic font-medium px-4">
+                            Ảnh: {altText}
+                          </figcaption>
+                        )}
+                      </figure>
+                    );
+                  }
+
+                  // 6. Cú pháp bảng Markdown
+                  if (paragraph.includes('|') && paragraph.includes('\n')) {
+                    const lines = paragraph.trim().split('\n').map(l => l.trim()).filter(l => l.startsWith('|'));
+                    if (lines.length >= 2) {
+                      const headerCells = lines[0].split('|').map(c => c.trim()).filter((_, i, arr) => i > 0 && i < arr.length - 1);
+                      // Dòng 1 là separator |---|---|, lấy từ dòng index 2 trở đi
+                      const dataRows = lines.slice(2).map(line =>
+                        line.split('|').map(c => c.trim()).filter((_, i, arr) => i > 0 && i < arr.length - 1)
+                      );
+
+                      return (
+                        <div key={idx} className="my-6 overflow-x-auto rounded-2xl border border-slate-200 shadow-xs bg-white">
+                          <table className="w-full text-left text-xs sm:text-sm">
+                            <thead className="bg-slate-100/90 text-slate-900 font-bold border-b border-slate-200">
+                              <tr>
+                                {headerCells.map((th, hIdx) => (
+                                  <th key={hIdx} className="px-4 py-3 whitespace-nowrap">{th}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {dataRows.map((tr, rIdx) => (
+                                <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
+                                  {tr.map((td, dIdx) => (
+                                    <td key={dIdx} className="px-4 py-3 text-slate-700 whitespace-nowrap font-medium">{td}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    }
+                  }
+
+                  // 7. Hộp gợi ý ảnh cũ (tương thích ngược)
                   if (paragraph.startsWith('[CHÈN ẢNH:')) {
                     const raw = paragraph.replace(/^\[CHÈN ẢNH:\s*/, '').replace(/\]$/, '');
                     const altMatch = raw.match(/Alt-text:\s*([^\-]+)/);
@@ -241,6 +312,8 @@ export default function NewsDetailPage() {
                       </div>
                     );
                   }
+
+                  // 8. Nguồn tham khảo
                   if (paragraph.startsWith('Nguồn tham khảo:')) {
                     return (
                       <div key={idx} className="pt-4 pb-2 border-t border-slate-200 text-xs sm:text-sm font-semibold text-slate-500 italic">
@@ -248,6 +321,8 @@ export default function NewsDetailPage() {
                       </div>
                     );
                   }
+
+                  // 9. Đoạn văn thông thường
                   return (
                     <p key={idx} className="leading-relaxed whitespace-pre-line">
                       {paragraph}
