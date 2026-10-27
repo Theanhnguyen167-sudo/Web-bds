@@ -368,65 +368,139 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
   // Cấu trúc phân cấp dữ liệu Silo động cho Breadcrumb và URL chuẩn SEO
   const silo = getListingSiloData(listing);
 
-  // 1. Lọc và xếp hạng BĐS tương tự theo Semantic Silo:
-  // Tiêu chí ưu tiên: cùng mục đích giao dịch, cùng loại BĐS, cùng khu vực, gần mức giá, gần diện tích
-  const similarListings = useMemo(() => {
+  // Tối ưu khu vực "BĐS liên quan" theo đúng logic phân tầng ưu tiên:
+  // 1. Cùng loại BĐS
+  // 2. Cùng quận/huyện
+  // 3. Cùng mục đích giao dịch
+  // 4. Giá tương tự nếu có dữ liệu
+  // 5. Diện tích tương tự nếu có dữ liệu
+  // (Ưu tiên tin cùng quận trước, sau đó mới đến khu vực lân cận; loại bỏ listing đang xem, unpublished & duplicate)
+  const relatedListings = useMemo(() => {
     const allPool = listings.length > 0 ? listings : mockListings;
-    const currentPurpose = listing.purpose || 'sale';
+
     const currentType = (listing.type || (listing as any).propertyType || 'house').toLowerCase();
-    const currentDistrict = (listing.district || '').toLowerCase();
+    const currentDistrict = (listing.district || '').toLowerCase().trim();
+    const currentPurpose = (listing.purpose || 'sale').toLowerCase();
     const currentPrice = listing.price || 0;
     const currentArea = listing.area || 0;
 
-    return allPool
-      .filter((item) => item.id !== listing.id && (item.status === 'active' || !item.status))
-      .map((candidate) => {
-        let score = 0;
-        const candidatePurpose = candidate.purpose || 'sale';
-        const candidateType = (candidate.type || candidate.propertyType || 'house').toLowerCase();
-        const candidateDistrict = (candidate.district || '').toLowerCase();
+    // Helper chuẩn hóa loại BĐS
+    const normalizeType = (t?: string) => {
+      if (!t) return 'house';
+      const lower = t.toLowerCase();
+      if (lower === 'house' || lower === 'nha-pho' || lower === 'nha-rieng' || lower === 'nha-mat-pho') return 'house';
+      if (lower === 'apartment' || lower === 'chung-cu' || lower === 'can-ho-chung-cu' || lower === 'penthouse') return 'apartment';
+      if (lower === 'villa' || lower === 'biet-thu') return 'villa';
+      if (lower === 'land' || lower === 'dat-nen' || lower === 'dat-tho-cu') return 'land';
+      return lower;
+    };
 
-        // 1. Cùng mục đích giao dịch (mua bán hoặc cho thuê)
-        if (candidatePurpose === currentPurpose) {
-          score += 100;
-        }
+    const targetType = normalizeType(currentType);
 
-        // 2. Cùng loại BĐS (nhà phố, chung cư, biệt thự...)
-        if (candidateType === currentType) {
-          score += 60;
-        }
+    // Helper lọc tin active/published
+    const isPublished = (item: ListingItem) => {
+      const s = (item.status || 'active').toLowerCase();
+      return s === 'active' || s === 'published';
+    };
 
-        // 3. Cùng khu vực (quận/huyện)
-        if (
-          currentDistrict &&
-          candidateDistrict &&
-          (candidateDistrict.includes(currentDistrict) || currentDistrict.includes(candidateDistrict))
-        ) {
-          score += 50;
-        }
+    // Lọc thô danh sách: Bỏ chính listing đang xem, bỏ tin unpublished, chống duplicate
+    const validCandidates: ListingItem[] = [];
+    const seenIds = new Set<string>();
+    seenIds.add(listing.id);
+    if (listing.slug) seenIds.add(listing.slug);
 
-        // 4. Gần mức giá (chênh lệch phần trăm)
-        if (currentPrice > 0 && candidate.price > 0) {
-          const priceDiffRatio = Math.abs(candidate.price - currentPrice) / currentPrice;
-          if (priceDiffRatio <= 0.2) score += 30;
-          else if (priceDiffRatio <= 0.4) score += 20;
-          else if (priceDiffRatio <= 0.7) score += 10;
-          else if (priceDiffRatio <= 1.2) score += 5;
-        }
+    for (const item of allPool) {
+      if (!item || !item.id) continue;
+      if (seenIds.has(item.id)) continue;
+      if (listing.slug && item.slug && item.slug === listing.slug) continue;
+      if (!isPublished(item)) continue;
+      seenIds.add(item.id);
+      validCandidates.push(item);
+    }
 
-        // 5. Gần diện tích (chênh lệch phần trăm)
-        if (currentArea > 0 && candidate.area > 0) {
-          const areaDiffRatio = Math.abs(candidate.area - currentArea) / currentArea;
-          if (areaDiffRatio <= 0.2) score += 20;
-          else if (areaDiffRatio <= 0.4) score += 12;
-          else if (areaDiffRatio <= 0.7) score += 6;
-        }
+    // Tính điểm tương đồng giá & diện tích (Điểm càng cao -> càng gần giá và diện tích)
+    const getClosenessScore = (candidate: ListingItem) => {
+      let score = 0;
+      // 4. Giá tương tự
+      if (currentPrice > 0 && candidate.price > 0) {
+        const priceDiff = Math.abs(candidate.price - currentPrice) / currentPrice;
+        score += Math.max(0, 50 - priceDiff * 50);
+      }
+      // 5. Diện tích tương tự
+      if (currentArea > 0 && candidate.area > 0) {
+        const areaDiff = Math.abs(candidate.area - currentArea) / currentArea;
+        score += Math.max(0, 30 - areaDiff * 30);
+      }
+      return score;
+    };
 
-        return { candidate, score };
+    // TẦNG 1: Ưu tiên cao nhất - Cùng loại BĐS + Cùng quận/huyện + Cùng mục đích giao dịch
+    const tier1 = validCandidates
+      .filter((c) => {
+        const cType = normalizeType(c.type || c.propertyType);
+        const cDistrict = (c.district || '').toLowerCase().trim();
+        const cPurpose = (c.purpose || 'sale').toLowerCase();
+        const matchType = cType === targetType;
+        const matchDistrict = cDistrict && currentDistrict && (cDistrict.includes(currentDistrict) || currentDistrict.includes(cDistrict));
+        const matchPurpose = cPurpose === currentPurpose;
+        return matchType && matchDistrict && matchPurpose;
       })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-      .map((item) => item.candidate);
+      .sort((a, b) => getClosenessScore(b) - getClosenessScore(a));
+
+    // TẦNG 2: Ưu tiên tiếp theo - Cùng loại BĐS + Cùng mục đích giao dịch tại các KHU VỰC LÂN CẬN (khác quận)
+    const tier2 = validCandidates
+      .filter((c) => {
+        const cType = normalizeType(c.type || c.propertyType);
+        const cDistrict = (c.district || '').toLowerCase().trim();
+        const cPurpose = (c.purpose || 'sale').toLowerCase();
+        const matchType = cType === targetType;
+        const matchDistrict = cDistrict && currentDistrict && (cDistrict.includes(currentDistrict) || currentDistrict.includes(cDistrict));
+        const matchPurpose = cPurpose === currentPurpose;
+        return matchType && !matchDistrict && matchPurpose;
+      })
+      .sort((a, b) => getClosenessScore(b) - getClosenessScore(a));
+
+    // TẦNG 3: Fallback nếu kho chưa đủ - Cùng quận/huyện + Cùng mục đích giao dịch
+    const tier3 = validCandidates
+      .filter((c) => {
+        const cType = normalizeType(c.type || c.propertyType);
+        const cDistrict = (c.district || '').toLowerCase().trim();
+        const cPurpose = (c.purpose || 'sale').toLowerCase();
+        const matchType = cType === targetType;
+        const matchDistrict = cDistrict && currentDistrict && (cDistrict.includes(currentDistrict) || currentDistrict.includes(cDistrict));
+        const matchPurpose = cPurpose === currentPurpose;
+        return !matchType && matchDistrict && matchPurpose;
+      })
+      .sort((a, b) => getClosenessScore(b) - getClosenessScore(a));
+
+    // TẦNG 4: Fallback mở rộng cùng mục đích giao dịch
+    const tier4 = validCandidates
+      .filter((c) => {
+        const cPurpose = (c.purpose || 'sale').toLowerCase();
+        return cPurpose === currentPurpose;
+      })
+      .sort((a, b) => getClosenessScore(b) - getClosenessScore(a));
+
+    // Tuyển chọn đúng 3 listing theo thứ tự ưu tiên, bảo đảm không bao giờ duplicate
+    const selected: ListingItem[] = [];
+    const addedIds = new Set<string>();
+
+    const pick = (list: ListingItem[]) => {
+      for (const item of list) {
+        if (!addedIds.has(item.id)) {
+          addedIds.add(item.id);
+          selected.push(item);
+          if (selected.length >= 3) break;
+        }
+      }
+    };
+
+    pick(tier1);
+    if (selected.length < 3) pick(tier2);
+    if (selected.length < 3) pick(tier3);
+    if (selected.length < 3) pick(tier4);
+
+    return selected;
   }, [listing, listings]);
 
   // 2. Lọc các loại hình BĐS khác tại cùng quận (loại trừ loại hiện tại)
@@ -1131,17 +1205,17 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
 
         </div>
 
-        {/* ════════════ 3. BĐS TƯƠNG TỰ THEO SEMANTIC SILO ════════════ */}
-        {similarListings.length > 0 && (
+        {/* ════════════ KHU VỰC BĐS LIÊN QUAN (RELATED LISTINGS) ════════════ */}
+        {relatedListings.length > 0 && (
           <section className="mt-12 pt-8 border-t border-slate-200/80 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
                   <Building className="h-5 w-5 text-orange-500" />
-                  <span>BĐS tương tự tại {silo.district}</span>
+                  <span>BĐS liên quan</span>
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  Các bất động sản {silo.propertyTypeName.toLowerCase()} cùng phân khúc giá và khu vực {silo.district}
+                  Bất động sản {silo.propertyTypeName.toLowerCase()} tại {silo.district} và khu vực lân cận cùng phân khúc
                 </p>
               </div>
 
@@ -1149,14 +1223,14 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
                 href={`/${silo.transactionType}/${silo.propertyTypeSlug}/${silo.districtSlug}`}
                 className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors shrink-0 group"
               >
-                <span>Xem tất cả {silo.propertyTypeName} {silo.district}</span>
+                <span>Xem thêm {silo.propertyTypeName} {silo.district}</span>
                 <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {similarListings.map((simListing) => (
-                <ListingCard key={simListing.id} listing={simListing} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedListings.map((relListing) => (
+                <ListingCard key={relListing.id} listing={relListing} />
               ))}
             </div>
           </section>
