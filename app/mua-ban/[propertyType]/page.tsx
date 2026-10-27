@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { SearchContent } from '@/components/search/SearchContent';
 import { CATEGORY_MAP, normalizeCategorySlug } from '@/lib/listing-slug';
 
@@ -45,15 +45,15 @@ export async function generateMetadata({ params, searchParams }: CategoryPagePro
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
-  // Chuyển hướng các alias cũ sang URL chuẩn SEO
+  // Chuyển hướng vĩnh viễn (301/308 permanent) các alias cũ sang URL chuẩn SEO
   if (params.propertyType === 'can-ho-chung-cu') {
-    redirect('/mua-ban/chung-cu');
+    permanentRedirect('/mua-ban/chung-cu');
   }
   if (params.propertyType === 'nha-rieng') {
-    redirect('/mua-ban/nha-pho');
+    permanentRedirect('/mua-ban/nha-pho');
   }
   if (params.propertyType === 'cho-thue') {
-    redirect('/cho-thue');
+    permanentRedirect('/cho-thue');
   }
 
   const category = CATEGORY_MAP[params.propertyType];

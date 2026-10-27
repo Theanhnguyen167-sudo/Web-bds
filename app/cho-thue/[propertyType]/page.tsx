@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { SearchContent } from '@/components/search/SearchContent';
 import { CATEGORY_MAP, SLUG_TO_PROPERTY_TYPE_MAP, normalizeCategorySlug } from '@/lib/listing-slug';
 
@@ -46,11 +46,12 @@ export async function generateMetadata({ params, searchParams }: RentCategoryPag
 }
 
 export default function RentCategoryPage({ params }: RentCategoryPageProps) {
+  // Chuyển hướng vĩnh viễn (301/308 permanent) các alias cũ sang URL chuẩn SEO
   if (params.propertyType === 'can-ho-chung-cu') {
-    redirect('/cho-thue/chung-cu');
+    permanentRedirect('/cho-thue/chung-cu');
   }
   if (params.propertyType === 'nha-rieng') {
-    redirect('/cho-thue/nha-pho');
+    permanentRedirect('/cho-thue/nha-pho');
   }
 
   const rawProp = params.propertyType.toLowerCase();

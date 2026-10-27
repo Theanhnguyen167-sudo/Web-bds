@@ -593,8 +593,34 @@ export function getValidListingSlugParams(
 }
 
 /**
+ * Bảng mapping slug cũ -> slug mới hoặc ID khi listing đổi tiêu đề/slug
+ * Đảm bảo redirect 301 không bị đứt gãy liên kết (Broken links)
+ */
+export const SLUG_REDIRECT_MAP: Record<string, string> = {
+  // Mapping cho các slug cũ hoặc biến thể slug đã từng lưu hành
+};
+
+/**
+ * Đăng ký thêm mapping slug cũ -> slug mới (dành cho runtime hoặc memory cache)
+ */
+export function registerSlugRedirect(oldSlug: string, newSlugOrId: string) {
+  if (oldSlug && newSlugOrId) {
+    SLUG_REDIRECT_MAP[oldSlug.toLowerCase().trim()] = newSlugOrId.trim();
+  }
+}
+
+/**
+ * Tra cứu slug đích từ slug cũ
+ */
+export function getMappedSlug(slug: string): string {
+  if (!slug) return '';
+  const lower = slug.toLowerCase().trim();
+  return SLUG_REDIRECT_MAP[lower] || lower;
+}
+
+/**
  * Tìm listing bằng slug kết hợp typeSlug, districtSlug và transactionType
- * Hỗ trợ tra cứu ID nguyên bản từ database/mock data
+ * Hỗ trợ tra cứu ID nguyên bản từ database/mock data và tra cứu slug cũ qua SLUG_REDIRECT_MAP
  */
 export function findListingBySlug(
   slug: string,
@@ -606,7 +632,8 @@ export function findListingBySlug(
   const pool = listingPool || mockListings;
   if (!slug) return undefined;
 
-  const targetSlug = slug.toLowerCase();
+  const rawSlug = slug.toLowerCase().trim();
+  const targetSlug = getMappedSlug(rawSlug);
 
   const matchesFilter = (item: ListingItem) => {
     // 1. Kiểm tra transactionType (purpose)
@@ -646,27 +673,56 @@ export function findListingBySlug(
   // 1. Khớp chính xác trường slug đã lưu trữ
   const directSlugMatch = pool.find((item) => {
     if (!item.slug) return false;
-    return item.slug.toLowerCase() === targetSlug && matchesFilter(item);
+    const itemSlug = item.slug.toLowerCase();
+    return (itemSlug === targetSlug || itemSlug === rawSlug) && matchesFilter(item);
   });
   if (directSlugMatch) return directSlugMatch;
 
   // 2. Khớp theo unique slug tính toán từ pool
   const computedMatch = pool.find((item) => {
     const itemUniqueSlug = generateUniqueSlug(item, pool);
-    return itemUniqueSlug === targetSlug && matchesFilter(item);
+    return (itemUniqueSlug === targetSlug || itemUniqueSlug === rawSlug) && matchesFilter(item);
   });
   if (computedMatch) return computedMatch;
 
   // 3. Khớp theo base slug (nếu không có hậu tố)
   const baseMatch = pool.find((item) => {
     const itemBase = generateBaseSlug(item);
-    return itemBase === targetSlug && matchesFilter(item);
+    return (itemBase === targetSlug || itemBase === rawSlug) && matchesFilter(item);
   });
   if (baseMatch) return baseMatch;
 
-  // 4. Fallback: Nếu slug trùng với ID nguyên bản (backward compatibility)
-  const idMatch = pool.find((item) => item.id === slug);
-  if (idMatch && matchesFilter(idMatch)) return idMatch;
+  // 4. Fallback: Nếu slug trùng với ID nguyên bản (backward compatibility: /listings/[id] hoặc /[id] as slug)
+  const idMatch = pool.find((item) => (item.id === targetSlug || item.id === rawSlug) && matchesFilter(item));
+  if (idMatch) return idMatch;
+
+  // 5. Fallback mở rộng: Nếu URL cũ có propertyType hoặc district khác (listing đã được chuyển mục/chuyển quận)
+  // hoặc người dùng truy cập trực tiếp bằng ID / old slug vào route bất kỳ:
+  const relaxedMatch = pool.find((item) => {
+    const itemSlug = item.slug ? item.slug.toLowerCase() : '';
+    const itemUniqueSlug = generateUniqueSlug(item, pool);
+    const itemBase = generateBaseSlug(item);
+    const idMatches = item.id === targetSlug || item.id === rawSlug;
+    const slugMatches =
+      itemSlug === targetSlug ||
+      itemSlug === rawSlug ||
+      itemUniqueSlug === targetSlug ||
+      itemUniqueSlug === rawSlug ||
+      itemBase === targetSlug ||
+      itemBase === rawSlug;
+
+    if (!idMatches && !slugMatches) return false;
+
+    // Giữ nguyên transactionType nếu có
+    if (transactionType) {
+      const isRent = item.purpose === 'rent';
+      if (transactionType === 'cho-thue' && !isRent) return false;
+      if (transactionType === 'mua-ban' && isRent) return false;
+    }
+
+    return true;
+  });
+  if (relaxedMatch) return relaxedMatch;
 
   return undefined;
 }
