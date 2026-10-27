@@ -1,18 +1,47 @@
+import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { SearchContent } from '@/components/search/SearchContent';
-import { CATEGORY_MAP } from '@/lib/listing-slug';
+import { CATEGORY_MAP, normalizeCategorySlug } from '@/lib/listing-slug';
 
 interface CategoryPageProps {
   params: {
     propertyType: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export function generateStaticParams() {
   return Object.keys(CATEGORY_MAP).map((propertyType) => ({
     propertyType,
   }));
+}
+
+export async function generateMetadata({ params, searchParams }: CategoryPageProps): Promise<Metadata> {
+  const normType = normalizeCategorySlug(params.propertyType) || params.propertyType;
+  const category = CATEGORY_MAP[normType];
+  if (!category) return {};
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+  const canonicalUrl = `${baseUrl}/mua-ban/${normType}`;
+
+  // Kiểm tra faceted filter query params để chống duplicate content (Patent US9063942B2)
+  const hasFilterQueries = searchParams ? Object.keys(searchParams).length > 0 : false;
+
+  return {
+    title: `${category.name} Giá Tốt, Sổ Đỏ Chính Chủ | HaNoi Realty`,
+    description: category.description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    ...(hasFilterQueries ? { robots: { index: false, follow: true } } : {}),
+    openGraph: {
+      title: `${category.name} Hà Nội - HaNoi Realty`,
+      description: category.description,
+      url: canonicalUrl,
+      type: 'website',
+    },
+  };
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {

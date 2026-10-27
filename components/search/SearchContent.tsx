@@ -249,11 +249,8 @@ export function SearchContent({
   const hasDeepFilters = activeParamsList.some((k) => deepFilterKeys.includes(k));
   const districtParam = searchParams.get('district');
 
-  const canonicalUrl = districtParam && !hasDeepFilters
-    ? `${baseUrl}/search?district=${encodeURIComponent(districtParam)}`
-    : `${baseUrl}/search`;
-
-  const shouldNoIndex = hasDeepFilters || activeParamsList.length > 2;
+  const canonicalUrl = `${baseUrl}/search`;
+  const shouldNoIndex = hasDeepFilters || activeParamsList.length > 0;
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-page-bg text-text-primary">

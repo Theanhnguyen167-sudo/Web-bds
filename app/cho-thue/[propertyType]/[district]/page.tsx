@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { SearchContent } from '@/components/search/SearchContent';
@@ -14,6 +15,7 @@ interface RentDistrictCategoryPageProps {
     propertyType: string;
     district: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 /**
@@ -35,6 +37,35 @@ export function generateStaticParams() {
     const [propertyType, district] = pair.split(':');
     return { propertyType, district };
   });
+}
+
+export async function generateMetadata({ params, searchParams }: RentDistrictCategoryPageProps): Promise<Metadata> {
+  const { propertyType, district } = params;
+  const rawProp = propertyType.toLowerCase();
+  const category = CATEGORY_MAP[rawProp];
+  const mappedType = SLUG_TO_PROPERTY_TYPE_MAP[rawProp] || category?.type;
+  const districtName = getDistrictNameFromSlug(district);
+  if ((!category && !mappedType) || !districtName) return {};
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+  const canonicalUrl = `${baseUrl}/cho-thue/${propertyType}/${district}`;
+  const categoryName = category?.name?.replace('Mua bán', 'Cho thuê') || `Cho thuê ${propertyType}`;
+  const hasFilterQueries = searchParams ? Object.keys(searchParams).length > 0 : false;
+
+  return {
+    title: `${categoryName} tại ${districtName} - Giá Tốt Nhất | HaNoi Realty`,
+    description: `Danh sách ${categoryName.toLowerCase()} tại ${districtName}, Hà Nội. Vị trí thuận tiện, giá thuê hợp lý, pháp lý rõ ràng.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    ...(hasFilterQueries ? { robots: { index: false, follow: true } } : {}),
+    openGraph: {
+      title: `${categoryName} tại ${districtName} - HaNoi Realty`,
+      description: `Danh sách ${categoryName.toLowerCase()} tại ${districtName}, Hà Nội`,
+      url: canonicalUrl,
+      type: 'website',
+    },
+  };
 }
 
 export default async function RentDistrictCategoryPage({ params }: RentDistrictCategoryPageProps) {

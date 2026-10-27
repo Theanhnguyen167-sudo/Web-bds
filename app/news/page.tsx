@@ -395,6 +395,7 @@ function NewsContent() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col font-sans selection:bg-orange-500 selection:text-white antialiased">
+      <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn'}/news`} />
       <Navbar />
 
       {/* ── 3. HERO SECTION (220-280px desktop, Clean Dark Navy, Modern Editorial) ── */}

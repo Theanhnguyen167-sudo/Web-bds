@@ -21,6 +21,7 @@ import {
 
 interface DistrictHubPageProps {
   params: { slug: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
@@ -31,11 +32,12 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: DistrictHubPageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: DistrictHubPageProps): Promise<Metadata> {
   const district = HANOI_DISTRICTS_HUB_DATA[params.slug];
   if (!district) return {};
 
   const pageUrl = `${baseUrl}/khu-vuc/${params.slug}`;
+  const hasFilterQueries = searchParams ? Object.keys(searchParams).length > 0 : false;
 
   return {
     title: `Bất Động Sản & Bản Đồ Quy Hoạch ${district.name} 2030 - 2045 | HaNoi Realty`,
@@ -43,6 +45,7 @@ export async function generateMetadata({ params }: DistrictHubPageProps): Promis
     alternates: {
       canonical: pageUrl,
     },
+    ...(hasFilterQueries ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: `Bất Động Sản & Quy Hoạch ${district.name} - HaNoi Realty`,
       description: district.description,

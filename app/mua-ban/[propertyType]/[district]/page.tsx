@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { SearchContent } from '@/components/search/SearchContent';
@@ -15,6 +16,7 @@ interface DistrictCategoryPageProps {
     propertyType: string;
     district: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 /**
@@ -22,6 +24,33 @@ interface DistrictCategoryPageProps {
  */
 export function generateStaticParams() {
   return getValidCategoryDistrictPairs(mockListings);
+}
+
+export async function generateMetadata({ params, searchParams }: DistrictCategoryPageProps): Promise<Metadata> {
+  const { propertyType, district } = params;
+  const category = CATEGORY_MAP[propertyType];
+  const districtName = getDistrictNameFromSlug(district);
+  if (!category || !districtName) return {};
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+  const canonicalUrl = `${baseUrl}/mua-ban/${propertyType}/${district}`;
+
+  const hasFilterQueries = searchParams ? Object.keys(searchParams).length > 0 : false;
+
+  return {
+    title: `${category.name} tại ${districtName} - Cập Nhật Mới Nhất | HaNoi Realty`,
+    description: `Danh sách ${category.name.toLowerCase()} tại ${districtName}, Hà Nội. Vị trí đẹp, quy hoạch minh bạch, giá tốt nhất.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    ...(hasFilterQueries ? { robots: { index: false, follow: true } } : {}),
+    openGraph: {
+      title: `${category.name} tại ${districtName} - HaNoi Realty`,
+      description: `Danh sách ${category.name.toLowerCase()} tại ${districtName}, Hà Nội`,
+      url: canonicalUrl,
+      type: 'website',
+    },
+  };
 }
 
 export default async function DistrictCategoryPage({ params }: DistrictCategoryPageProps) {

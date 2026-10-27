@@ -105,7 +105,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   const listing = (await getListingById(params.id)) || mockListings[0];
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
   const formattedPrice = ((listing.price || 0) / 1e9).toFixed(1);
-  const pageUrl = `${baseUrl}/listings/${params.id}`;
+  const pageUrl = listing ? `${baseUrl}${getListingUrl(listing)}` : `${baseUrl}/listings/${params.id}`;
 
   return {
     title: `${listing.title} - HaNoi Realty`,

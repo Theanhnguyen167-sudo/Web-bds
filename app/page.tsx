@@ -678,6 +678,7 @@ export default function HomePage() {
 
   return (
     <div className="overflow-x-hidden bg-page-bg text-text-primary font-sans scroll-smooth">
+      <link rel="canonical" href={process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn'} />
       <Navbar />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
