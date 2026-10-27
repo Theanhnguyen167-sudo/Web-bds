@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import PropertyAmenities from '@/components/listing/PropertyAmenities';
 import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
 import { getListingSiloData } from '@/lib/listing-slug';
+import { ListingCard } from '@/components/listing/ListingCard';
 import {
   Home,
   MapPin,
@@ -228,6 +229,26 @@ function SellerContactCard({
   );
 }
 
+const POPULAR_DISTRICTS = [
+  { slug: 'dong-da', name: 'Đống Đa' },
+  { slug: 'cau-giay', name: 'Cầu Giấy' },
+  { slug: 'ba-dinh', name: 'Ba Đình' },
+  { slug: 'thanh-xuan', name: 'Thanh Xuân' },
+  { slug: 'tay-ho', name: 'Tây Hồ' },
+  { slug: 'hai-ba-trung', name: 'Hai Bà Trưng' },
+  { slug: 'nam-tu-liem', name: 'Nam Từ Liêm' },
+  { slug: 'hoan-kiem', name: 'Hoàn Kiếm' },
+  { slug: 'long-bien', name: 'Long Biên' },
+];
+
+const SILO_PROPERTY_TYPES = [
+  { slug: 'nha-pho', name: 'Nhà phố' },
+  { slug: 'chung-cu', name: 'Chung cư' },
+  { slug: 'biet-thu', name: 'Biệt thự' },
+  { slug: 'dat-nen', name: 'Đất nền' },
+  { slug: 'nha-mat-pho', name: 'Nhà mặt phố' },
+];
+
 interface ListingDetailClientProps {
   listingId: string;
   initialListing?: ListingItem | null;
@@ -346,6 +367,77 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
 
   // Cấu trúc phân cấp dữ liệu Silo động cho Breadcrumb và URL chuẩn SEO
   const silo = getListingSiloData(listing);
+
+  // 1. Lọc và xếp hạng BĐS tương tự theo Semantic Silo:
+  // Tiêu chí ưu tiên: cùng mục đích giao dịch, cùng loại BĐS, cùng khu vực, gần mức giá, gần diện tích
+  const similarListings = useMemo(() => {
+    const allPool = listings.length > 0 ? listings : mockListings;
+    const currentPurpose = listing.purpose || 'sale';
+    const currentType = (listing.type || (listing as any).propertyType || 'house').toLowerCase();
+    const currentDistrict = (listing.district || '').toLowerCase();
+    const currentPrice = listing.price || 0;
+    const currentArea = listing.area || 0;
+
+    return allPool
+      .filter((item) => item.id !== listing.id && (item.status === 'active' || !item.status))
+      .map((candidate) => {
+        let score = 0;
+        const candidatePurpose = candidate.purpose || 'sale';
+        const candidateType = (candidate.type || candidate.propertyType || 'house').toLowerCase();
+        const candidateDistrict = (candidate.district || '').toLowerCase();
+
+        // 1. Cùng mục đích giao dịch (mua bán hoặc cho thuê)
+        if (candidatePurpose === currentPurpose) {
+          score += 100;
+        }
+
+        // 2. Cùng loại BĐS (nhà phố, chung cư, biệt thự...)
+        if (candidateType === currentType) {
+          score += 60;
+        }
+
+        // 3. Cùng khu vực (quận/huyện)
+        if (
+          currentDistrict &&
+          candidateDistrict &&
+          (candidateDistrict.includes(currentDistrict) || currentDistrict.includes(candidateDistrict))
+        ) {
+          score += 50;
+        }
+
+        // 4. Gần mức giá (chênh lệch phần trăm)
+        if (currentPrice > 0 && candidate.price > 0) {
+          const priceDiffRatio = Math.abs(candidate.price - currentPrice) / currentPrice;
+          if (priceDiffRatio <= 0.2) score += 30;
+          else if (priceDiffRatio <= 0.4) score += 20;
+          else if (priceDiffRatio <= 0.7) score += 10;
+          else if (priceDiffRatio <= 1.2) score += 5;
+        }
+
+        // 5. Gần diện tích (chênh lệch phần trăm)
+        if (currentArea > 0 && candidate.area > 0) {
+          const areaDiffRatio = Math.abs(candidate.area - currentArea) / currentArea;
+          if (areaDiffRatio <= 0.2) score += 20;
+          else if (areaDiffRatio <= 0.4) score += 12;
+          else if (areaDiffRatio <= 0.7) score += 6;
+        }
+
+        return { candidate, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((item) => item.candidate);
+  }, [listing, listings]);
+
+  // 2. Lọc các loại hình BĐS khác tại cùng quận (loại trừ loại hiện tại)
+  const otherTypesInDistrict = useMemo(() => {
+    return SILO_PROPERTY_TYPES.filter((t) => t.slug !== silo.propertyTypeSlug).slice(0, 4);
+  }, [silo.propertyTypeSlug]);
+
+  // 3. Lọc các quận lân cận cho cùng loại hình BĐS (loại trừ quận hiện tại)
+  const nearbyDistricts = useMemo(() => {
+    return POPULAR_DISTRICTS.filter((d) => d.slug !== silo.districtSlug).slice(0, 5);
+  }, [silo.districtSlug]);
 
   // Đồng bộ thông tin người đăng bán với tài khoản đăng nhập:
   const isOwner = Boolean(
@@ -530,7 +622,7 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
 
         {/* ── HEADER BÀI ĐĂNG (TIÊU ĐỀ, GIÁ, ĐỊA CHỈ, THÔNG SỐ CỐT LÕI) ── */}
         <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-7 shadow-sm space-y-4 mb-6">
-          {/* Badge phân khu & quy hoạch */}
+          {/* Badge phân khu, quy hoạch & Liên kết chuẩn Semantic Silo */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 border border-blue-200/60">
               <Layers className="h-3 w-3" />
@@ -544,6 +636,26 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
                 <span>⭐</span> Tin nổi bật
               </span>
             )}
+
+            {/* 1. Liên kết Loại BĐS trong Semantic Silo */}
+            <Link
+              href={`/${silo.transactionType}/${silo.propertyTypeSlug}`}
+              className="inline-flex items-center gap-1 rounded-md bg-orange-50 hover:bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700 border border-orange-200/80 transition-colors"
+              title={`Xem tất cả tin ${silo.propertyTypeName}`}
+            >
+              <Building className="h-3 w-3 text-orange-600" />
+              <span>{silo.propertyTypeName}</span>
+            </Link>
+
+            {/* 2. Liên kết Khu vực trong Semantic Silo */}
+            <Link
+              href={`/${silo.transactionType}/${silo.propertyTypeSlug}/${silo.districtSlug}`}
+              className="inline-flex items-center gap-1 rounded-md bg-slate-100 hover:bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 border border-slate-200 transition-colors"
+              title={`Xem ${silo.propertyTypeName} tại ${silo.district}`}
+            >
+              <MapPin className="h-3 w-3 text-slate-500" />
+              <span>{silo.district}</span>
+            </Link>
           </div>
 
           {/* Tiêu đề bài đăng */}
@@ -572,10 +684,26 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             </div>
           </div>
 
-          {/* Địa chỉ bài đăng */}
+          {/* Địa chỉ bài đăng với liên kết Semantic Silo khu vực */}
           <div className="flex items-center gap-2 text-sm sm:text-base text-slate-700 font-medium">
             <MapPin className="h-4 w-4 text-orange-500 shrink-0" />
-            <span>{listing.address}</span>
+            <span>
+              {listing.district && listing.address.includes(listing.district) ? (
+                <>
+                  {listing.address.split(listing.district)[0]}
+                  <Link
+                    href={`/${silo.transactionType}/${silo.propertyTypeSlug}/${silo.districtSlug}`}
+                    className="text-slate-900 font-bold hover:text-orange-600 transition-colors underline underline-offset-4 decoration-slate-300 hover:decoration-orange-500"
+                    title={`Xem ${silo.propertyTypeName} tại ${silo.district}`}
+                  >
+                    {listing.district}
+                  </Link>
+                  {listing.address.split(listing.district)[1]}
+                </>
+              ) : (
+                listing.address
+              )}
+            </span>
           </div>
         </div>
 
@@ -1002,6 +1130,86 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
           </aside>
 
         </div>
+
+        {/* ════════════ 3. BĐS TƯƠNG TỰ THEO SEMANTIC SILO ════════════ */}
+        {similarListings.length > 0 && (
+          <section className="mt-12 pt-8 border-t border-slate-200/80 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <Building className="h-5 w-5 text-orange-500" />
+                  <span>BĐS tương tự tại {silo.district}</span>
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                  Các bất động sản {silo.propertyTypeName.toLowerCase()} cùng phân khúc giá và khu vực {silo.district}
+                </p>
+              </div>
+
+              <Link
+                href={`/${silo.transactionType}/${silo.propertyTypeSlug}/${silo.districtSlug}`}
+                className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors shrink-0 group"
+              >
+                <span>Xem tất cả {silo.propertyTypeName} {silo.district}</span>
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {similarListings.map((simListing) => (
+                <ListingCard key={simListing.id} listing={simListing} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ════════════ 4. CÁC TRANG LIÊN QUAN TRONG CÙNG SEMANTIC SILO ════════════ */}
+        <section className="mt-10 pt-8 border-t border-slate-200/80 space-y-6">
+          <div className="flex items-center gap-2">
+            <Compass className="h-5 w-5 text-orange-500" />
+            <h3 className="text-base sm:text-lg font-bold text-slate-900">
+              Khám phá liên quan trong cùng Semantic Silo
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs">
+            {/* Cột 1: Các loại hình BĐS khác tại cùng quận */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Bất động sản khác tại {silo.district}
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {otherTypesInDistrict.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/${silo.transactionType}/${item.slug}/${silo.districtSlug}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-orange-50 text-slate-700 hover:text-orange-700 text-xs font-semibold border border-slate-200/70 hover:border-orange-200 transition-all shadow-xs"
+                  >
+                    <span>{item.name} tại {silo.district}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Cột 2: Cùng loại BĐS tại các quận lân cận */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                {silo.propertyTypeName} tại các quận lân cận
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {nearbyDistricts.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/${silo.transactionType}/${silo.propertyTypeSlug}/${item.slug}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-orange-50 text-slate-700 hover:text-orange-700 text-xs font-semibold border border-slate-200/70 hover:border-orange-200 transition-all shadow-xs"
+                  >
+                    <MapPin className="h-3 w-3 text-slate-400" />
+                    <span>{silo.propertyTypeName} {item.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* ── LIGHTBOX MODAL TOÀN MÀN HÌNH KHI XEM ẢNH ── */}
