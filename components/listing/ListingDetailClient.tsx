@@ -12,6 +12,7 @@ import { useApp } from '@/lib/context/AppContext';
 import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import PropertyAmenities from '@/components/listing/PropertyAmenities';
 import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
+import { getListingSiloData } from '@/lib/listing-slug';
 import {
   Home,
   MapPin,
@@ -338,7 +339,13 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
     authorPhone: rawListing?.authorPhone,
     authorAvatar: rawListing?.authorAvatar,
     authorEmail: rawListing?.authorEmail,
+    purpose: (rawListing?.purpose as any) || 'sale',
+    slug: rawListing?.slug,
+    city: rawListing?.city || 'Hà Nội',
   };
+
+  // Cấu trúc phân cấp dữ liệu Silo động cho Breadcrumb và URL chuẩn SEO
+  const silo = getListingSiloData(listing);
 
   // Đồng bộ thông tin người đăng bán với tài khoản đăng nhập:
   const isOwner = Boolean(
@@ -461,23 +468,41 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
         
         {/* ── BREADCRUMB & TOP ACTIONS ── */}
         <div className="flex items-center justify-between gap-4 py-4">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-medium text-slate-500 truncate">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-medium text-slate-500 overflow-x-auto no-scrollbar whitespace-nowrap py-1">
             <Link href="/" className="hover:text-slate-900 transition-colors flex items-center gap-1 shrink-0">
-              <Home className="h-3.5 w-3.5" />
+              <Home className="h-3.5 w-3.5 text-slate-400" />
               <span>Trang chủ</span>
             </Link>
             <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
-            <Link href="/" className="hover:text-slate-900 transition-colors shrink-0">
-              Hà Nội
+            <Link
+              href={`/${silo.transactionType}`}
+              className="hover:text-slate-900 transition-colors shrink-0"
+            >
+              {silo.transactionName} BĐS
             </Link>
             <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
-            <Link href={`/search?district=${encodeURIComponent(listing.district)}`} className="text-slate-700 hover:text-slate-900 font-semibold transition-colors shrink-0">
-              {listing.district}
+            <Link
+              href={`/${silo.transactionType}/${silo.propertyTypeSlug}`}
+              className="hover:text-slate-900 transition-colors shrink-0"
+            >
+              {silo.propertyTypeName}
             </Link>
             <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
-            <span className="text-slate-400 truncate max-w-[150px] sm:max-w-[220px]">
-              Mã #{listing.id}
-            </span>
+            <Link
+              href={`/${silo.transactionType}/${silo.propertyTypeSlug}/${silo.districtSlug}`}
+              className="hover:text-slate-900 transition-colors shrink-0"
+            >
+              {silo.district}
+            </Link>
+            <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
+            <Link
+              href={silo.url}
+              aria-current="page"
+              className="text-slate-800 font-semibold truncate max-w-[180px] sm:max-w-[260px] md:max-w-[360px] hover:text-orange-600 transition-colors shrink-0"
+              title={listing.title}
+            >
+              {listing.title}
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
