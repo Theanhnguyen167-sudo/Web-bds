@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type UserRole = 'user' | 'broker' | 'agency' | 'admin';
+export type UserRole = 'buyer' | 'owner' | 'agent' | 'admin' | 'user' | 'broker' | 'agency';
 export type MembershipTier = 'free' | 'vip1' | 'vip2' | 'vip3';
 export type PropertyType = 'house' | 'apartment' | 'villa' | 'land' | 'commercial';
 export type ListingType = 'sale' | 'rent';

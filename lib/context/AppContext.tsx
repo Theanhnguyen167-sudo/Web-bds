@@ -266,7 +266,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         sessionUser.user_metadata?.picture ||
         'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80';
 
-      const userRole = (profile?.role as any) || (sessionUser.email?.includes('admin') ? 'admin' : 'user');
+      const userRole = (profile?.role as any) || sessionUser.user_metadata?.role || (sessionUser.email === 'admin@hanoirealty.vn' ? 'admin' : 'buyer');
 
       // Gói dịch vụ: Mặc định luôn là 'Free'. Chỉ nhận gói cao hơn nếu user đã thanh toán trong DB hoặc là admin
       let userPackage = 'Free';
