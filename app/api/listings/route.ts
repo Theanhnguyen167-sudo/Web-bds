@@ -36,11 +36,17 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') || 'all';
     const author = searchParams.get('author');
+    const code = searchParams.get('code');
 
     let query = supabase
       .from('listings')
       .select('*, users!user_id(full_name, avatar_url, phone)')
       .order('created_at', { ascending: false });
+
+    if (code) {
+      // Tìm theo mã định danh căn nhà BDS-XXXXX (chỉ hiển thị căn được phép công bố)
+      query = query.ilike('listing_code', code);
+    }
 
     if (status !== 'all') {
       query = query.eq('status', status);

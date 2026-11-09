@@ -14,6 +14,8 @@ import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import PropertyAmenities from '@/components/listing/PropertyAmenities';
 import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
 import { getListingSiloData } from '@/lib/listing-slug';
+import { CodeBadge } from '@/components/common/CodeBadge';
+import { getListingIdentifier } from '@/lib/identification';
 import { ListingCard } from '@/components/listing/ListingCard';
 import {
   Home,
@@ -733,7 +735,10 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             </Link>
           </div>
 
-          {/* Tiêu đề bài đăng */}
+          {/* Mã định danh căn nhà & Tiêu đề bài đăng */}
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <CodeBadge code={getListingIdentifier(listing)} label="Mã căn" size="sm" />
+          </div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
             {listing.title}
           </h1>

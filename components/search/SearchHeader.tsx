@@ -147,7 +147,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
             onFocus={() => {
               if (suggestions.length > 0) setShowDropdown(true);
             }}
-            placeholder="Tìm theo địa chỉ, dự án, từ khoá..."
+            placeholder="Tìm theo địa chỉ, dự án, mã căn (BDS-00125)..."
             className="w-full pl-9 pr-8 py-1.5 sm:py-2 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 rounded-xl border border-transparent focus:border-orange-500 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none transition-all touch-manipulation"
           />
           {searchTerm && (

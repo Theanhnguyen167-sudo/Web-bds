@@ -7,6 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
+import { CodeBadge } from '@/components/common/CodeBadge';
+import { ReferralAgentConnect } from '@/components/dashboard/ReferralAgentConnect';
+import { getUserAgentCode, getUserOwnerCode, formatHdCode, formatBdsCode } from '@/lib/identification';
 import {
   LayoutDashboard,
   Home,
@@ -33,6 +36,7 @@ import {
   Bed,
   Bath,
   Building,
+  UserCheck,
   ArrowRight,
   Search,
   Bell,
@@ -54,7 +58,7 @@ import {
   Smartphone,
   Award,
   ChevronDown,
-  UserCheck,
+  FileText,
   X,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
@@ -71,9 +75,9 @@ import {
   PackageTierId,
 } from '@/lib/packages/package-config';
 
-type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team';
+type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral';
 
-const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team'];
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral'];
 
 interface MenuItem {
   id: TabType;
@@ -365,12 +369,19 @@ function DashboardContent() {
             : undefined,
         },
         { id: 'saved', label: 'Tin đã lưu', icon: Heart, count: savedListingIds.length },
+        { id: 'contracts', label: 'Hợp đồng & Đặt cọc', icon: FileText, count: 1, badge: 'HD' },
         { id: 'reports', label: 'Báo cáo AI', icon: Sparkles, count: user?.aiReportsUsed || 8 },
       ],
     },
     {
       title: 'TÀI KHOẢN & DỊCH VỤ',
       items: [
+        {
+          id: 'referral',
+          label: 'Chuyên viên hỗ trợ',
+          icon: UserCheck,
+          badge: user?.referredByAgentCode ? 'ĐÃ KẾT NỐI' : undefined,
+        },
         {
           id: 'notifications',
           label: 'Thông báo',
@@ -423,6 +434,16 @@ function DashboardContent() {
               </div>
               <p className="text-xs text-text-secondary mt-0.5">{user?.email || 'an@example.com'}</p>
               <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-12-31'}</p>
+
+              {/* Mã định danh tài khoản: mỗi tài khoản CHỈ có 1 mã duy nhất theo đúng loại vai trò đăng ký */}
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                {user && (user.role === 'agent' || user.role === 'broker' || user.role === 'agency') && getUserAgentCode(user) && (
+                  <CodeBadge code={getUserAgentCode(user)!} label="Mã CTV & Giới thiệu" size="sm" />
+                )}
+                {user && user.role === 'owner' && getUserOwnerCode(user) && (
+                  <CodeBadge code={getUserOwnerCode(user)!} label="Mã Chủ nhà" size="sm" />
+                )}
+              </div>
             </div>
           </div>
 
@@ -1970,6 +1991,20 @@ function DashboardContent() {
                   transition={{ duration: 0.2 }}
                   className="space-y-6"
                 >
+                  {/* Khối Mã Định Danh CTV / TPKD & Mã Giới Thiệu Cố Định */}
+                  <div className="rounded-2xl border border-orange-200 bg-orange-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-orange-950 flex items-center gap-1.5">
+                        <UserCheck className="h-4 w-4 text-orange-600" />
+                        <span>Mã định danh CTV / TPKD &amp; Mã giới thiệu khách hàng:</span>
+                      </p>
+                      <p className="text-[11.5px] text-slate-600">
+                        Mã này được cấp cố định từ Supabase. Khi đổi gói hội viên hoặc thăng cấp lên TPKD, mã vẫn được giữ nguyên vĩnh viễn.
+                      </p>
+                    </div>
+                    <CodeBadge code={(user ? getUserAgentCode(user) : null) || 'MG-00102'} label="Mã CTV & Giới thiệu" />
+                  </div>
+
                   {pkgDef.id === 'agency' || user?.role === 'admin' ? (
                     <div className="space-y-6">
                       {/* Agency Header & Actions */}
@@ -2176,6 +2211,87 @@ function DashboardContent() {
                   <NotificationBell
                     variant="embedded"
                     onUnreadCountChange={setUnreadNotifCount}
+                  />
+                </motion.div>
+              )}
+
+              {/* TAB: CONTRACTS (HỢP ĐỒNG & ĐẶT CỌC - MÃ HD-XXXXX) */}
+              {activeTab === 'contracts' && (
+                <motion.div
+                  key="tab-contracts"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-3xl border border-border bg-white p-6 sm:p-8 shadow-sm space-y-6"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-accent" />
+                        <h3 className="text-base font-extrabold text-text-primary">
+                          Hợp đồng &amp; Thỏa thuận đặt cọc
+                        </h3>
+                      </div>
+                      <p className="text-xs text-text-secondary mt-1">
+                        Danh sách các hợp đồng, biên bản đặt cọc có mã định danh HD-XXXXX bảo chứng qua HaNoi Realty.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Danh sách hợp đồng mẫu có liên kết mã căn nhà BDS-00125 */}
+                  <div className="space-y-3">
+                    <div className="rounded-2xl border border-slate-200 p-5 hover:border-orange-300 transition-all bg-slate-50/50 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <CodeBadge code="HD-00035" label="Mã HĐ" />
+                          <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[10.5px] font-bold">
+                            ✓ Đã xác nhận bảo chứng sàn
+                          </span>
+                        </div>
+                        <span className="text-xs font-semibold text-slate-500">Ngày lập: 08/11/2026</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200/80 text-xs">
+                        <div>
+                          <p className="text-slate-400 font-medium">BĐS liên kết:</p>
+                          <div className="mt-1 flex items-center gap-1.5 font-bold text-slate-800">
+                            <CodeBadge code="BDS-00125" label="Mã căn" size="sm" />
+                            <span className="truncate">Nhà phố Đống Đa 5 tầng</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <p className="text-slate-400 font-medium">Tiền đặt cọc bảo chứng:</p>
+                          <p className="mt-1 font-extrabold text-rose-600">100.000.000 đ</p>
+                        </div>
+
+                        <div>
+                          <p className="text-slate-400 font-medium">Chuyên viên phụ trách:</p>
+                          <div className="mt-1 flex items-center gap-1 font-semibold text-slate-700">
+                            <CodeBadge code="MG-00102" label="Mã CTV" size="sm" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* TAB: REFERRAL (CHUYÊN VIÊN MÔI GIỚI HỖ TRỢ) */}
+              {activeTab === 'referral' && (
+                <motion.div
+                  key="tab-referral"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  <ReferralAgentConnect
+                    buyerEmail={user?.email}
+                    buyerId={user?.id}
+                    initialAgentCode={user?.referredByAgentCode}
                   />
                 </motion.div>
               )}

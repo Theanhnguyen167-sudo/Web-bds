@@ -7,6 +7,8 @@ export interface GeoPoint {
 
 export interface Listing {
   id: string;
+  code?: string;
+  listing_code?: string;
   user_id: string;
   title: string;
   slug?: string | null;

@@ -1,5 +1,7 @@
 export interface ListingItem {
   id: string;
+  code?: string;
+  listing_code?: string;
   title: string;
   slug?: string;
   /** ID tài khoản đã tạo tin đăng (BẮT BUỘC để phân quyền thông báo cho đúng chủ tin) */
@@ -432,6 +434,9 @@ export interface UserProfile {
   featuredListingsLimit?: number;
   activeListings: number;
   avatar: string;
+  agentCode?: string;
+  ownerCode?: string;
+  referredByAgentCode?: string;
 }
 
 export const mockUser: UserProfile = {
@@ -440,6 +445,7 @@ export const mockUser: UserProfile = {
   email: "an@example.com",
   phone: "0988 123 456",
   role: "agent",
+  agentCode: "MG-00102",
   package: "pro",
   packageExpiry: "2026-12-31",
   aiReportsUsed: 8,
