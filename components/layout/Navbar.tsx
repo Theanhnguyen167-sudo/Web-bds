@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
 import {
-  Home,
   Layers,
   Sparkles,
   Tag,
@@ -56,7 +55,7 @@ export const Navbar: React.FC = () => {
             }
           }
         }
-      } catch {}
+      } catch { }
     };
     syncNotifCount();
     window.addEventListener('hanoi_notifications_updated', syncNotifCount);
@@ -120,9 +119,8 @@ export const Navbar: React.FC = () => {
       className="fixed top-0 left-0 right-0 z-[100] bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-md border-b border-slate-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.06)] text-slate-800 transition-all duration-200"
     >
       <div
-        className={`header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-2.5 min-[375px]:px-3 sm:px-6 lg:px-8 transition-all duration-300 flex-nowrap ${
-          isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
-        }`}
+        className={`header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-2.5 min-[375px]:px-3 sm:px-6 lg:px-8 transition-all duration-300 flex-nowrap ${isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
+          }`}
       >
         {/* 1. LOGO */}
         <div className="logo shrink-0 flex items-center">
@@ -132,15 +130,30 @@ export const Navbar: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               className="flex items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20 h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-9 sm:w-9 shrink-0 transition-all duration-300"
             >
-              <Home className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+              {/* Biểu tượng 3 nút ngoại vi (Chủ nhà, Môi giới, Người mua) nối về tâm điều phối */}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 sm:h-4.5 sm:w-4.5"
+                aria-hidden="true"
+              >
+                <line x1="12" y1="12.5" x2="12" y2="5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <line x1="12" y1="12.5" x2="5.5" y2="18.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <line x1="12" y1="12.5" x2="18.5" y2="18.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <circle cx="12" cy="12.5" r="2.6" fill="currentColor" />
+                <circle cx="12" cy="5" r="2.1" fill="currentColor" />
+                <circle cx="5.5" cy="18.5" r="2.1" fill="currentColor" />
+                <circle cx="18.5" cy="18.5" r="2.1" fill="currentColor" />
+              </svg>
             </motion.div>
             <div className="flex flex-col">
               <span className="font-extrabold tracking-tight flex items-center gap-1 text-[13.5px] min-[360px]:text-[14.5px] sm:text-base lg:text-[17px] leading-tight text-slate-900 group-hover:text-slate-900 transition-colors whitespace-nowrap">
                 HaNoi <span className="text-accent font-black">Realty</span>
               </span>
-              <span className="text-[8px] min-[360px]:text-[8.5px] sm:text-[10px] font-medium uppercase tracking-wider sm:tracking-widest -mt-0.5 leading-none text-slate-500 whitespace-nowrap transition-colors">
-                PropTech & Quy Hoạch
-              </span>
+                <span className="text-[7.5px] min-[360px]:text-[8.5px] sm:text-[10px] font-semibold tracking-tight min-[360px]:tracking-normal sm:tracking-wide -mt-0.5 leading-none text-slate-500 whitespace-nowrap transition-colors">
+                  Kết nối giao dịch BĐS
+                </span>
             </div>
           </Link>
         </div>
@@ -157,11 +170,10 @@ export const Navbar: React.FC = () => {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2.5 py-1.5 flex items-center gap-1 ${
-                  isActive
+                className={`relative rounded-xl text-xs xl:text-[13px] font-medium tracking-wide whitespace-nowrap shrink-0 transition-all duration-200 px-2.5 py-1.5 flex items-center gap-1 ${isActive
                     ? 'text-accent font-bold bg-orange-50 border border-orange-200/80 shadow-xs'
                     : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/80'
-                }`}
+                  }`}
               >
                 <span className="whitespace-nowrap">{link.name}</span>
               </Link>
@@ -248,11 +260,10 @@ export const Navbar: React.FC = () => {
                       <p className="text-xs font-bold text-text-primary truncate">{user.name}</p>
                       <p className="text-[11px] text-text-secondary truncate">{user.email}</p>
                       <div className="mt-1.5 flex items-center gap-1.5">
-                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
-                          user.package && user.package.toLowerCase() !== 'free'
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${user.package && user.package.toLowerCase() !== 'free'
                             ? 'bg-amber-100 text-amber-800 border border-amber-200'
                             : 'bg-slate-100 text-slate-700 border border-slate-200'
-                        }`}>
+                          }`}>
                           Gói {user.package || 'Free'}{user.package && user.package.toLowerCase() !== 'free' ? ' VIP' : ''}
                         </span>
                         {user.role === 'admin' && (
@@ -455,11 +466,10 @@ export const Navbar: React.FC = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.22, ease: 'easeInOut' }}
-            className={`lg:hidden border-t px-4 py-4 shadow-2xl overflow-hidden ${
-              isScrolled
+            className={`lg:hidden border-t px-4 py-4 shadow-2xl overflow-hidden ${isScrolled
                 ? 'border-slate-200/80 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-xl text-slate-800'
                 : 'border-white/10 bg-[#0a1128]/98 backdrop-blur-xl text-white'
-            }`}
+              }`}
           >
             <div className="flex flex-col gap-1.5 max-h-[65vh] overflow-y-auto no-scrollbar py-1">
               {navLinks.map((link) => {
@@ -472,15 +482,14 @@ export const Navbar: React.FC = () => {
                     key={link.name}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
-                      isActive
+                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${isActive
                         ? isScrolled
                           ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
                           : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
                         : isScrolled
                           ? 'hover:bg-slate-100 text-slate-700'
                           : 'hover:bg-white/10 text-slate-200'
-                    }`}
+                      }`}
                   >
                     <span>{link.name}</span>
                     {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
@@ -489,20 +498,18 @@ export const Navbar: React.FC = () => {
               })}
             </div>
 
-            <div className={`border-t pt-3 mt-3 flex flex-col gap-2 ${
-              isScrolled ? 'border-slate-200' : 'border-slate-700'
-            }`}>
+            <div className={`border-t pt-3 mt-3 flex flex-col gap-2 ${isScrolled ? 'border-slate-200' : 'border-slate-700'
+              }`}>
               {user ? (
                 <>
                   {user.role === 'admin' && (
                     <Link
                       href="/admin"
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${
-                        isScrolled
+                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${isScrolled
                           ? 'bg-orange-50 border-orange-200 text-orange-600'
                           : 'bg-orange-500/20 border-orange-500/40 text-orange-400'
-                      }`}
+                        }`}
                     >
                       <ShieldCheck className="h-4 w-4" />
                       <span>🛡️ Vào trang Quản trị (Admin)</span>
@@ -511,11 +518,10 @@ export const Navbar: React.FC = () => {
                   <Link
                     href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${
-                      isScrolled
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
                         ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
                         : 'bg-primary-light/60 hover:bg-primary-light text-white'
-                    }`}
+                      }`}
                   >
                     <LayoutDashboard className="h-4 w-4 text-accent" />
                     <span>Dashboard ({user.name})</span>
@@ -523,22 +529,20 @@ export const Navbar: React.FC = () => {
                   <Link
                     href="/dashboard?tab=saved"
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold ${
-                      isScrolled
+                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
                         ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
                         : 'bg-primary-light/60 hover:bg-primary-light text-white'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <Heart className="h-4 w-4 text-red-500 fill-red-500" />
                       <span>Tin đã lưu</span>
                     </div>
                     {savedListingIds.length > 0 && (
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                        isScrolled
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${isScrolled
                           ? 'bg-red-100 text-red-600'
                           : 'bg-red-500/20 text-red-300'
-                      }`}>
+                        }`}>
                         {savedListingIds.length}
                       </span>
                     )}
@@ -558,11 +562,10 @@ export const Navbar: React.FC = () => {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${
-                    isScrolled
+                  className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
                       ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
                       : 'bg-primary-light hover:bg-primary-light/80 text-white'
-                  }`}
+                    }`}
                 >
                   <User className="h-4 w-4" />
                   <span>Đăng nhập / Đăng ký</span>
@@ -576,11 +579,10 @@ export const Navbar: React.FC = () => {
                   setMobileMenuOpen(false);
                   window.dispatchEvent(new CustomEvent('open_pwa_install'));
                 }}
-                className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all border ${
-                  isScrolled
+                className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all border ${isScrolled
                     ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
                     : 'bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border-orange-500/30'
-                }`}
+                  }`}
               >
                 <Download className="h-4 w-4 text-orange-500" />
                 <span>📲 Cài đặt App HaNoi Realty (PWA)</span>
