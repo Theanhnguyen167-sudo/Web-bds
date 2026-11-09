@@ -88,6 +88,7 @@ export const Navbar: React.FC = () => {
     { name: 'Tin tức', href: '/news' },
     { name: 'Báo cáo AI', href: '/reports' },
     { name: 'Bảng giá', href: '/pricing' },
+    { name: 'Dành cho Môi giới', href: '/danh-cho-moi-gioi' },
     { name: 'Về chúng tôi', href: '/about' },
   ];
 

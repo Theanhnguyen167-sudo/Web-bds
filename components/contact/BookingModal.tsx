@@ -250,7 +250,8 @@ export default function BookingModal({
           note: note.trim() || undefined,
           purpose: VISIT_PURPOSES.find(p => p.id === purpose)?.label,
           createdAt: new Date().toISOString(),
-          status: 'pending'
+          status: 'pending',
+          brokerReferralCode: (typeof window !== 'undefined' ? (sessionStorage.getItem('active_booking_referral_code') || undefined) : undefined),
         }
       };
 
@@ -264,6 +265,7 @@ export default function BookingModal({
         // 2. Lưu vào lịch sử đặt hẹn
         const existingApptsRaw = localStorage.getItem(STORAGE_KEY_APPOINTMENTS);
         const existingAppts = existingApptsRaw ? JSON.parse(existingApptsRaw) : [];
+        const brokerRefCode = sessionStorage.getItem('active_booking_referral_code') || undefined;
         const newAppt = {
           id: apptId,
           sellerId: sellerOwnerId,
@@ -278,6 +280,7 @@ export default function BookingModal({
           purpose,
           agentName,
           agentPhone,
+          brokerReferralCode: brokerRefCode,
           createdAt: new Date().toISOString(),
           status: 'pending'
         };
@@ -791,6 +794,14 @@ export default function BookingModal({
                       {name} ({phone})
                     </span>
                   </div>
+                  {typeof window !== 'undefined' && sessionStorage.getItem('active_booking_referral_code') && (
+                    <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                      <span className="text-slate-500">Chuyên viên đồng hành:</span>
+                      <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs border border-blue-200">
+                        {sessionStorage.getItem('active_booking_referral_name') || sessionStorage.getItem('active_booking_referral_code')}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2">

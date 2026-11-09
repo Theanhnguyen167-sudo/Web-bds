@@ -23,6 +23,7 @@ export interface AppointmentData {
   purpose?: string;
   createdAt?: string;
   status?: 'pending' | 'confirmed' | 'cancelled';
+  brokerReferralCode?: string;
 }
 
 export interface NotificationItem {
