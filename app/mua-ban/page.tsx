@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
 export default function MuaBanIndexPage() {
-  redirect('/mua-ban/nha-pho');
+  permanentRedirect('/mua-ban/nha-pho');
 }

@@ -271,6 +271,21 @@ export const Navbar: React.FC = () => {
                             Admin
                           </span>
                         )}
+                        {user.role === 'owner' && (
+                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                            Chủ nhà
+                          </span>
+                        )}
+                        {user.role === 'agent' && (
+                          <span className="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] font-bold text-orange-700">
+                            CTV Môi giới
+                          </span>
+                        )}
+                        {(user.role === 'buyer' || user.role === 'user') && (
+                          <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-700">
+                            Khách hàng
+                          </span>
+                        )}
                         <span className="text-[10px] text-text-muted">
                           {user.package && user.package.toLowerCase() !== 'free' ? `HSD: ${user.packageExpiry}` : 'Miễn phí'}
                         </span>

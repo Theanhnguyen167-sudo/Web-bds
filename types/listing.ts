@@ -1,4 +1,4 @@
-import { PropertyType, ListingStatus } from './database';
+import { PropertyType, ListingStatus, VerificationStatus } from './database';
 
 export interface GeoPoint {
   lat: number;
@@ -39,6 +39,11 @@ export interface Listing {
   rejectionReason?: string | null;
   publishedAt?: string | null;
   appointments?: number;
+  property_code?: string; // Mã định danh BĐS duy nhất (Property ID, VD: HR-PROP-0012)
+  verification_status?: VerificationStatus;
+  legal_documents?: string[];
+  commission_rate?: number;
+  exclusive_contract?: boolean;
 }
 
 export interface SellerSnapshot {

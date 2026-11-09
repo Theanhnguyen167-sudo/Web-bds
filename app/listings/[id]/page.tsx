@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { permanentRedirect, notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { mockListings, ListingItem } from '@/lib/mock-data';
 import { parseLocationCoordinates } from '@/lib/utils';
@@ -105,7 +105,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   const listing = (await getListingById(params.id)) || mockListings[0];
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
   const formattedPrice = ((listing.price || 0) / 1e9).toFixed(1);
-  const pageUrl = `${baseUrl}/listings/${params.id}`;
+  const pageUrl = listing ? `${baseUrl}${getListingUrl(listing)}` : `${baseUrl}/listings/${params.id}`;
 
   return {
     title: `${listing.title} - HaNoi Realty`,
@@ -135,12 +135,11 @@ export default async function ListingPage({ params }: ListingPageProps) {
   const listing = initialListing || mockListings.find((l) => l.id === params.id);
 
   if (listing) {
-    // Auto redirect dạng URL cũ sang URL SEO mới: /mua-ban/[loai-bds]/[quan]/[slug]
-    redirect(getListingUrl(listing));
-  } else {
-    // Nếu không tìm thấy trên server (ví dụ tin mới tạo đang lưu ở localStorage), 
-    // không thể redirect vì không biết slug. 
-    // Trả về giao diện client-side để tự động tra cứu trong useApp() context.
-    return <ListingDetailClient listingId={params.id} />;
+    // Chuyển hướng vĩnh viễn (Permanent redirect 301/308) từ URL cũ sang URL SEO chuẩn:
+    // /listings/[id] -> /mua-ban/[loai-bds]/[quan]/[slug] hoặc /cho-thue/...
+    permanentRedirect(getListingUrl(listing));
   }
+
+  // Nếu listing thực sự không tồn tại trên hệ thống -> KHÔNG redirect về homepage, trả về 404 Not Found
+  notFound();
 }

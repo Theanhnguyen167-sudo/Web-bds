@@ -1,12 +1,14 @@
+import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { SearchContent } from '@/components/search/SearchContent';
-import { CATEGORY_MAP } from '@/lib/listing-slug';
+import { CATEGORY_MAP, normalizeCategorySlug } from '@/lib/listing-slug';
 
 interface CategoryPageProps {
   params: {
     propertyType: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export function generateStaticParams() {
@@ -15,16 +17,43 @@ export function generateStaticParams() {
   }));
 }
 
+export async function generateMetadata({ params, searchParams }: CategoryPageProps): Promise<Metadata> {
+  const normType = normalizeCategorySlug(params.propertyType) || params.propertyType;
+  const category = CATEGORY_MAP[normType];
+  if (!category) return {};
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+  const canonicalUrl = `${baseUrl}/mua-ban/${normType}`;
+
+  // Kiểm tra faceted filter query params để chống duplicate content (Patent US9063942B2)
+  const hasFilterQueries = searchParams ? Object.keys(searchParams).length > 0 : false;
+
+  return {
+    title: `${category.name} Giá Tốt, Sổ Đỏ Chính Chủ | HaNoi Realty`,
+    description: category.description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    ...(hasFilterQueries ? { robots: { index: false, follow: true } } : {}),
+    openGraph: {
+      title: `${category.name} Hà Nội - HaNoi Realty`,
+      description: category.description,
+      url: canonicalUrl,
+      type: 'website',
+    },
+  };
+}
+
 export default function CategoryPage({ params }: CategoryPageProps) {
-  // Chuyển hướng các alias cũ sang URL chuẩn SEO
+  // Chuyển hướng vĩnh viễn (301/308 permanent) các alias cũ sang URL chuẩn SEO
   if (params.propertyType === 'can-ho-chung-cu') {
-    redirect('/mua-ban/chung-cu');
+    permanentRedirect('/mua-ban/chung-cu');
   }
   if (params.propertyType === 'nha-rieng') {
-    redirect('/mua-ban/nha-pho');
+    permanentRedirect('/mua-ban/nha-pho');
   }
   if (params.propertyType === 'cho-thue') {
-    redirect('/cho-thue');
+    permanentRedirect('/cho-thue');
   }
 
   const category = CATEGORY_MAP[params.propertyType];

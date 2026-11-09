@@ -15,7 +15,10 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: 'HaNoi Realty - Nền tảng BĐS & Tra cứu Quy hoạch Hà Nội',
   description: 'Nền tảng tìm kiếm BĐS thông minh, tra cứu quy hoạch đất Hà Nội 2030-2045 và thẩm định tiềm năng đầu tư AI chuyên sâu.',
   manifest: '/manifest.webmanifest',

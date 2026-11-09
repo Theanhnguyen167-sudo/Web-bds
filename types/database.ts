@@ -6,13 +6,16 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type UserRole = 'user' | 'agent' | 'admin';
+export type UserRole = 'user' | 'agent' | 'admin' | 'buyer' | 'seller' | 'owner' | 'broker';
+export type VerificationStatus = 'unverified' | 'in_review' | 'verified' | 'rejected';
 export type PropertyType = 'house' | 'apartment' | 'land' | 'villa' | 'shophouse';
 export type ListingStatus = 'pending' | 'active' | 'expired' | 'sold' | 'rejected' | 'hidden' | 'draft';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'pending';
 export type PaymentStatus = 'pending' | 'success' | 'failed';
 export type ProjectStatus = 'planning' | 'construction' | 'completed';
 export type ZoneType = 'residential' | 'commercial' | 'green' | 'transport' | 'industrial' | 'public';
+
+export type BrokerTier = 'ctv' | 'sales_director' | 'general';
 
 export interface Profile {
   id: string;
@@ -21,6 +24,11 @@ export interface Profile {
   phone: string | null;
   avatar_url: string | null;
   role: UserRole;
+  // Thành viên & Phân cấp kinh doanh
+  member_id?: string | null;            // Mã định danh thành viên duy nhất (VD: HR-MBR-10023)
+  leader_id?: string | null;            // Trưởng phòng quản lý (nếu là CTV)
+  broker_tier?: BrokerTier;             // Cấp 1 (ctv) hoặc Cấp 2 (sales_director)
+  team_name?: string | null;            // Tên nhóm kinh doanh
   created_at: string;
   updated_at: string;
 }

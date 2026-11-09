@@ -1,26 +1,49 @@
 import { createClient } from '@/lib/supabase/client';
 
-export async function signUpWithEmail(email: string, password: string, fullName: string) {
+export async function signUpWithEmail(
+  email: string,
+  password: string,
+  fullName: string,
+  role: string = 'buyer',
+  phone?: string,
+  extraMetadata?: Record<string, any>
+) {
   try {
     const supabase = createClient();
     const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
-      setTimeout(() => reject(new Error('Supabase Auth timeout')), 2000)
+      setTimeout(() => reject(new Error('Supabase Auth timeout')), 4000)
     );
     const authPromise = supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } }
+      options: {
+        data: {
+          full_name: fullName,
+          role,
+          phone: phone || '',
+          ...extraMetadata,
+        },
+      },
     });
 
     const { data, error } = (await Promise.race([authPromise, timeoutPromise])) as any;
 
     if (data?.user) {
-      await (supabase.from('users') as any).insert({
-        id: data.user.id,
-        email,
-        full_name: fullName,
-        role: 'user'
-      }).catch(() => {});
+      await (supabase.from('users') as any)
+        .upsert(
+          {
+            id: data.user.id,
+            email,
+            full_name: fullName,
+            role: role === 'admin' ? 'admin' : role === 'agent' ? 'agent' : 'user',
+            phone: phone || null,
+            notification_preferences: {
+              business_role: role,
+            },
+          },
+          { onConflict: 'email' }
+        )
+        .catch(() => {});
     }
 
     return { data, error };
