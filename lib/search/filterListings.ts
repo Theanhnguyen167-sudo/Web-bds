@@ -1,4 +1,5 @@
 import { ListingItem } from '@/lib/mock-data';
+import { extractIdentificationCode, getListingIdentifier } from '@/lib/identification';
 import { HANOI_METRO_STATIONS } from '@/lib/leaflet/hanoi-data';
 
 export interface SearchFilters {
@@ -152,10 +153,22 @@ export function filterListings(
       if (!matchCat) return false;
     }
 
-    // 1. Keyword search (title, address, district, description)
+    // 1. Keyword search (Mã định danh BDS-XXXXX, title, address, district, description)
     if (filters.keyword.trim()) {
-      const kw = filters.keyword.trim().toLowerCase();
+      const rawKw = filters.keyword.trim();
+      const kw = rawKw.toLowerCase();
+      const parsedCode = extractIdentificationCode(rawKw);
+      const itemCode = getListingIdentifier(listing).toLowerCase();
+
+      // Nếu nhập mã BDS-XXXXX: mở đúng căn nhà được phép công bố
+      if (parsedCode.type === 'BDS' && parsedCode.code) {
+        const statusStr = String(listing.status || 'active');
+        const isPublished = statusStr !== 'sold';
+        return isPublished && itemCode === parsedCode.code.toLowerCase();
+      }
+
       const match =
+        itemCode.includes(kw) ||
         listing.title.toLowerCase().includes(kw) ||
         listing.address.toLowerCase().includes(kw) ||
         listing.district.toLowerCase().includes(kw) ||

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { extractIdentificationCode } from '@/lib/identification';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -145,8 +146,16 @@ export function AirbnbStickySearchBar() {
   // Execute Search
   const handleExecuteSearch = () => {
     const params = new URLSearchParams();
+    const rawLoc = locationQuery.trim();
+    const parsedCode = extractIdentificationCode(rawLoc);
+
+    if (parsedCode.type === 'BDS' && parsedCode.code) {
+      params.set('keyword', parsedCode.code);
+    } else if (rawLoc) {
+      params.set('district', rawLoc);
+    }
+
     if (selectedType !== 'all') params.set('type', selectedType);
-    if (locationQuery.trim()) params.set('district', locationQuery.trim());
     if (searchTab === 'rent') params.set('purpose', 'rent');
     if (searchTab === 'project') params.set('type', 'project');
 
@@ -270,7 +279,7 @@ export function AirbnbStickySearchBar() {
               setLocationDropdownOpen(true);
             }}
             onFocus={() => setLocationDropdownOpen(true)}
-            placeholder="Nhập tên đường, quận, phường Hà Nội..."
+            placeholder="Nhập tên đường, quận hoặc mã BDS (VD: BDS-00125)..."
             className="w-full text-xs font-semibold text-slate-800 bg-transparent focus:outline-none placeholder:text-slate-400 py-1.5"
           />
           {locationQuery && (

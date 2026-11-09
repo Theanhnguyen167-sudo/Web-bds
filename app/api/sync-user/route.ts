@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     // Kiểm tra xem đã có bản ghi theo email này trong bảng users chưa
     const { data: existingUser } = await supabase
       .from('users')
-      .select('id, role, membership_tier, notification_preferences')
+      .select('id, role, membership_tier, notification_preferences, agent_code, owner_code, referred_by_agent_code')
       .eq('email', email)
       .maybeSingle();
 
@@ -60,6 +60,29 @@ export async function POST(req: Request) {
       business_role: assignedRole,
     };
 
+    // Quản lý mã định danh: Mỗi tài khoản CHỈ có 1 mã duy nhất theo đúng vai trò đăng ký
+    let existingAgentCode: string | null = existingUser?.agent_code || currentPreferences?.agent_code || null;
+    let existingOwnerCode: string | null = existingUser?.owner_code || currentPreferences?.owner_code || null;
+
+    if (assignedRole === 'agent') {
+      if (!existingAgentCode) {
+        existingAgentCode = 'MG-00102';
+      }
+      existingOwnerCode = null; // CTV không mang mã chủ nhà
+    } else if (assignedRole === 'owner') {
+      if (!existingOwnerCode) {
+        existingOwnerCode = 'CN-00086';
+      }
+      existingAgentCode = null; // Chủ nhà không mang mã CTV
+    } else {
+      // Người mua / Khách hàng / Admin: không cấp mã riêng
+      existingAgentCode = null;
+      existingOwnerCode = null;
+    }
+
+    updatedPreferences.agent_code = existingAgentCode;
+    updatedPreferences.owner_code = existingOwnerCode;
+
     const payload: any = {
       id: validUserId,
       email,
@@ -69,6 +92,9 @@ export async function POST(req: Request) {
       role: dbRole,
       notification_preferences: updatedPreferences,
     };
+
+    if (existingAgentCode) payload.agent_code = existingAgentCode;
+    if (existingOwnerCode) payload.owner_code = existingOwnerCode;
 
     const { data, error } = await supabase
       .from('users')
@@ -81,7 +107,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, data: { ...data, businessRole: assignedRole } });
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...data,
+        businessRole: assignedRole,
+        agentCode: existingAgentCode || data?.agent_code,
+        ownerCode: existingOwnerCode || data?.owner_code,
+        referredByAgentCode: data?.referred_by_agent_code,
+      },
+    });
   } catch (err: any) {
     console.error('API sync-user exception:', err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -112,8 +147,26 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, error: 'User not found in Supabase' }, { status: 404 });
     }
 
-    const businessRole = (data.notification_preferences as any)?.business_role || data.role || 'buyer';
-    return NextResponse.json({ success: true, data: { ...data, businessRole } });
+    const prefs = (data.notification_preferences as any) || {};
+    const businessRole = prefs.business_role || data.role || 'buyer';
+    const isAgent = businessRole === 'agent' || data.role === 'agent';
+    const isOwner = businessRole === 'owner';
+
+    // Mỗi tài khoản CHỈ có duy nhất 1 mã đúng vai trò đăng ký
+    const agentCode = isAgent ? (data.agent_code || prefs.agent_code || 'MG-00102') : null;
+    const ownerCode = isOwner ? (data.owner_code || prefs.owner_code || 'CN-00086') : null;
+    const referredByAgentCode = data.referred_by_agent_code || prefs.referred_by_agent_code || null;
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...data,
+        businessRole,
+        agentCode,
+        ownerCode,
+        referredByAgentCode,
+      },
+    });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

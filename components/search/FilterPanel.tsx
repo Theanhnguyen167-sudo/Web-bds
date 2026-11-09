@@ -39,7 +39,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Tìm theo đường, dự án, từ khoá..."
+            placeholder="Tìm theo đường, dự án, mã căn (BDS-00125)..."
             onChange={(e) => onSearchChange?.(e.target.value)}
             className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-2 text-xs font-medium focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />

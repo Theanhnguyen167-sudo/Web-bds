@@ -255,6 +255,8 @@ export default function AuthPageContent({
         phone: phoneNumber.trim(),
         role: registerRole,
         package: 'Free',
+        agentCode: registerRole === 'agent' ? 'MG-00102' : undefined,
+        ownerCode: registerRole === 'owner' ? 'CN-00086' : undefined,
       });
 
       addToast(`🎉 Đăng ký thành công! Chào mừng ${fullName} gia nhập HaNoi Realty (${meta.badge})`, 'success');
@@ -323,6 +325,8 @@ export default function AuthPageContent({
           phone: userPhone,
           role: userRole,
           package: userRole === 'admin' ? 'Agency' : 'Free',
+          agentCode: userRole === 'agent' ? 'MG-00102' : undefined,
+          ownerCode: userRole === 'owner' ? 'CN-00086' : undefined,
         });
 
         const targetRoute = getRouteForRole(userRole);
@@ -352,6 +356,8 @@ export default function AuthPageContent({
           phone: phoneNumber.trim(),
           role: 'buyer',
           package: 'Free',
+          agentCode: undefined,
+          ownerCode: undefined,
         });
         addToast(`🎉 Đăng nhập thành công với số ${phoneNumber}!`, 'success');
         setLoading(false);
@@ -419,6 +425,8 @@ export default function AuthPageContent({
           avatar: fbUser.photoURL || mockUser.avatar,
           role: detectedRole,
           package: detectedRole === 'admin' ? 'Agency' : 'Free',
+          agentCode: detectedRole === 'agent' ? 'MG-00102' : undefined,
+          ownerCode: detectedRole === 'owner' ? 'CN-00086' : undefined,
         });
 
         const targetRoute = getRouteForRole(detectedRole);
@@ -483,6 +491,8 @@ export default function AuthPageContent({
         phone: demoPhone,
         role: role,
         package: demoPackage,
+        agentCode: role === 'agent' ? 'MG-00102' : undefined,
+        ownerCode: role === 'owner' ? 'CN-00086' : undefined,
       });
 
       addToast(`⚡ Đăng nhập kiểm thử: ${demoName}`, 'success');
