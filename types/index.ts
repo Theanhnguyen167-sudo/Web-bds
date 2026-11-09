@@ -20,6 +20,8 @@ export type {
   AgreementDocument,
 } from './broker-deal';
 export * from './broker-finance';
+export * from './broker-subscription';
+export * from './broker-team';
 export type {
   BrokerRole,
   SubscriptionTier,
