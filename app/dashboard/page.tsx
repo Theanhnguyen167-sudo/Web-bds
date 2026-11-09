@@ -10,6 +10,7 @@ import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { CodeBadge } from '@/components/common/CodeBadge';
 import { ReferralAgentConnect } from '@/components/dashboard/ReferralAgentConnect';
 import { MyClientsTab } from '@/components/dashboard/MyClientsTab';
+import { FinancesTab } from '@/components/dashboard/finances/FinancesTab';
 import { getUserAgentCode, getUserOwnerCode, formatHdCode, formatBdsCode } from '@/lib/identification';
 import {
   LayoutDashboard,
@@ -60,6 +61,7 @@ import {
   Award,
   ChevronDown,
   FileText,
+  Wallet,
   X,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
@@ -76,9 +78,9 @@ import {
   PackageTierId,
 } from '@/lib/packages/package-config';
 
-type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients';
+type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients' | 'finances';
 
-const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients'];
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients', 'finances'];
 
 interface MenuItem {
   id: TabType;
@@ -368,6 +370,7 @@ function DashboardContent() {
               { id: 'clients' as TabType, label: 'Khách hàng của tôi', icon: Users },
             ]
           : []),
+        { id: 'finances' as TabType, label: 'Tiền & thanh toán', icon: Wallet },
         { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
         {
           id: 'appointments',
@@ -539,84 +542,86 @@ function DashboardContent() {
           {/* Right Main Content */}
           <div className="lg:col-span-3 space-y-6">
 
-            {/* Quick Metrics Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {/* Thẻ 1: Hạn mức tin đăng & Lượt còn lại */}
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
-                  <span>Hạn mức tin ({pkgDef.name})</span>
-                  <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
-                    {pkgDef.badgeLabel}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <p className="text-2xl font-black text-text-primary">
-                    {userListings.length} / {maxListings}
-                  </p>
-                  {userListings.some(l => l.status === 'pending') && (
-                    <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.2 rounded-full animate-pulse">
-                      {userListings.filter(l => l.status === 'pending').length} chờ duyệt
+            {/* Quick Metrics Cards: CHỈ hiển thị khi ở tab Quản lý tin đăng và KHÔNG dành cho khách mua */}
+            {activeTab === 'listings' && !isBuyerUser && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {/* Thẻ 1: Hạn mức tin đăng & Lượt còn lại */}
+                <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                  <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                    <span>Hạn mức tin ({pkgDef.name})</span>
+                    <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
+                      {pkgDef.badgeLabel}
                     </span>
-                  )}
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <p className="text-2xl font-black text-text-primary">
+                      {userListings.length} / {maxListings}
+                    </p>
+                    {userListings.some(l => l.status === 'pending') && (
+                      <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.2 rounded-full animate-pulse">
+                        {userListings.filter(l => l.status === 'pending').length} chờ duyệt
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                    <span className={remainingListings > 0 ? "text-emerald-600" : "text-rose-600"}>
+                      {remainingListings > 0 ? `Còn lại ${remainingListings} lượt đăng` : 'Đã hết hạn mức'}
+                    </span>
+                    <span className="text-slate-400">Hạn: {pkgDef.limits.listingDurationDays} ngày/tin</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
-                  <span className={remainingListings > 0 ? "text-emerald-600" : "text-rose-600"}>
-                    {remainingListings > 0 ? `Còn lại ${remainingListings} lượt đăng` : 'Đã hết hạn mức'}
-                  </span>
-                  <span className="text-slate-400">Hạn: {pkgDef.limits.listingDurationDays} ngày/tin</span>
-                </div>
-              </div>
 
-              {/* Thẻ 2: Tin nổi bật / VIP (Top 1 Tìm Kiếm) */}
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
-                  <span>Tin nổi bật (Top 1)</span>
-                  <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
-                    <Crown className="h-3 w-3" /> VIP
-                  </span>
+                {/* Thẻ 2: Tin nổi bật / VIP (Top 1 Tìm Kiếm) */}
+                <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                  <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                    <span>Tin nổi bật (Top 1)</span>
+                    <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
+                      <Crown className="h-3 w-3" /> VIP
+                    </span>
+                  </div>
+                  <p className="text-2xl font-black text-amber-500 mt-1">
+                    {featuredUsed} / {pkgDef.limits.featuredListings}
+                  </p>
+                  <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                    <span className={remainingFeatured > 0 ? "text-amber-600" : "text-slate-500"}>
+                      {pkgDef.limits.featuredListings > 0 ? `Còn ${remainingFeatured} lượt đẩy Top` : 'Gói Free (0 tin)'}
+                    </span>
+                    <span className="text-slate-400">Ghim đầu tìm kiếm</span>
+                  </div>
                 </div>
-                <p className="text-2xl font-black text-amber-500 mt-1">
-                  {featuredUsed} / {pkgDef.limits.featuredListings}
-                </p>
-                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
-                  <span className={remainingFeatured > 0 ? "text-amber-600" : "text-slate-500"}>
-                    {pkgDef.limits.featuredListings > 0 ? `Còn ${remainingFeatured} lượt đẩy Top` : 'Gói Free (0 tin)'}
-                  </span>
-                  <span className="text-slate-400">Ghim đầu tìm kiếm</span>
-                </div>
-              </div>
 
-              {/* Thẻ 3: Thời hạn hiển thị tin theo gói */}
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
-                <span className="text-[11px] text-text-muted font-semibold">Thời hạn hiển thị tin</span>
-                <p className="text-2xl font-black text-indigo-600 mt-1">
-                  {pkgDef.limits.listingDurationDays} <span className="text-xs font-bold text-slate-500">ngày/tin</span>
-                </p>
-                <div className="text-[10px] font-bold text-slate-500 pt-1 flex items-center gap-1">
-                  <Clock className="h-3 w-3 text-slate-400" />
-                  <span className="truncate">
-                    {pkgDef.id === 'free' ? 'Sau 7 ngày tự động ẩn' : `Gói ${pkgDef.name} (${pkgDef.limits.listingDurationDays} ngày/tin)`}
-                  </span>
+                {/* Thẻ 3: Thời hạn hiển thị tin theo gói */}
+                <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                  <span className="text-[11px] text-text-muted font-semibold">Thời hạn hiển thị tin</span>
+                  <p className="text-2xl font-black text-indigo-600 mt-1">
+                    {pkgDef.limits.listingDurationDays} <span className="text-xs font-bold text-slate-500">ngày/tin</span>
+                  </p>
+                  <div className="text-[10px] font-bold text-slate-500 pt-1 flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-slate-400" />
+                    <span className="truncate">
+                      {pkgDef.id === 'free' ? 'Sau 7 ngày tự động ẩn' : `Gói ${pkgDef.name} (${pkgDef.limits.listingDurationDays} ngày/tin)`}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Thẻ 4: Báo cáo AI & Tin đã lưu */}
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
-                  <span>Báo cáo AI ({aiReportsLimit} lượt)</span>
-                  <span className="text-rose-600 font-bold flex items-center gap-0.5">
-                    <Heart className="h-2.5 w-2.5 fill-rose-600" /> {savedListingIds.length}
-                  </span>
-                </div>
-                <p className="text-2xl font-black text-text-primary mt-1">
-                  {aiReportsUsed} / {aiReportsLimit}
-                </p>
-                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
-                  <span className="text-emerald-600">Còn lại {remainingAiReports} lượt AI</span>
-                  <span className="text-slate-400">{savedListingIds.length} tin đã lưu</span>
+                {/* Thẻ 4: Báo cáo AI & Tin đã lưu */}
+                <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                  <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                    <span>Báo cáo AI ({aiReportsLimit} lượt)</span>
+                    <span className="text-rose-600 font-bold flex items-center gap-0.5">
+                      <Heart className="h-2.5 w-2.5 fill-rose-600" /> {savedListingIds.length}
+                    </span>
+                  </div>
+                  <p className="text-2xl font-black text-text-primary mt-1">
+                    {aiReportsUsed} / {aiReportsLimit}
+                  </p>
+                  <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                    <span className="text-emerald-600">Còn lại {remainingAiReports} lượt AI</span>
+                    <span className="text-slate-400">{savedListingIds.length} tin đã lưu</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Tabbed Content Area */}
             <AnimatePresence mode="wait">
@@ -2333,6 +2338,20 @@ function DashboardContent() {
                   className="space-y-6"
                 >
                   <MyClientsTab user={user} appointments={appointments} />
+                </motion.div>
+              )}
+
+              {/* TAB: FINANCES (TIỀN & THANH TOÁN - CHỦ NHÀ, CTV/TPKD, NGƯỜI MUA, ADMIN) */}
+              {activeTab === 'finances' && (
+                <motion.div
+                  key="tab-finances"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  <FinancesTab user={user} />
                 </motion.div>
               )}
             </AnimatePresence>

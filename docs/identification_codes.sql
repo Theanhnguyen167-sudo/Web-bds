@@ -149,3 +149,51 @@ ALTER TABLE public.appointments
 CREATE INDEX IF NOT EXISTS idx_appointments_broker_ref ON public.appointments(broker_referral_code);
 CREATE INDEX IF NOT EXISTS idx_appointments_listing_code ON public.appointments(listing_code);
 
+-- 7. Bảng Tài khoản ngân hàng người dùng (User Bank Accounts)
+CREATE TABLE IF NOT EXISTS public.user_bank_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  bank_name TEXT NOT NULL,
+  bank_code VARCHAR(20),
+  account_number VARCHAR(50) NOT NULL,
+  account_holder TEXT NOT NULL,
+  branch TEXT,
+  is_default BOOLEAN DEFAULT false,
+  is_verified BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Bảng Giao dịch tài chính (Financial Transactions) lưu vết thu/chi, hoa hồng, cọc escrow
+CREATE TABLE IF NOT EXISTS public.financial_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  transaction_code VARCHAR(30) UNIQUE NOT NULL,
+  contract_code VARCHAR(20),
+  listing_code VARCHAR(20),
+  payer_code VARCHAR(20),
+  payer_name TEXT NOT NULL,
+  receiver_code VARCHAR(20),
+  receiver_name TEXT NOT NULL,
+  category VARCHAR(30) NOT NULL,
+  gross_amount NUMERIC(15, 2) NOT NULL,
+  deduction_fee NUMERIC(15, 2) DEFAULT 0,
+  net_amount NUMERIC(15, 2) NOT NULL,
+  status VARCHAR(30) DEFAULT 'pending_payment',
+  escrow_bank_name TEXT,
+  beneficiary_bank TEXT,
+  beneficiary_account VARCHAR(50),
+  beneficiary_name TEXT,
+  transfer_syntax TEXT,
+  release_conditions TEXT,
+  proof_image_url TEXT,
+  admin_notes TEXT,
+  dispute_reason TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_contract ON public.financial_transactions(contract_code);
+CREATE INDEX IF NOT EXISTS idx_transactions_listing ON public.financial_transactions(listing_code);
+CREATE INDEX IF NOT EXISTS idx_transactions_payer ON public.financial_transactions(payer_code);
+CREATE INDEX IF NOT EXISTS idx_transactions_receiver ON public.financial_transactions(receiver_code);
+
