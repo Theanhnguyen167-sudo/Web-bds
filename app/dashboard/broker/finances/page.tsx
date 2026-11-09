@@ -83,7 +83,10 @@ function BrokerFinancesContent() {
       </div>
 
       {/* BẢNG KÊ ĐỐI SOÁT TÀI CHÍNH */}
-      <CommissionLedger initialRecords={BROKER_MOCK_COMMISSIONS} />
+      <CommissionLedger 
+        initialRecords={BROKER_MOCK_COMMISSIONS} 
+        subscriptionTier={profile.subscriptionTier}
+      />
 
     </div>
   );

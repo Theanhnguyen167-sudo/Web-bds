@@ -12,6 +12,7 @@ import {
   FileText
 } from 'lucide-react';
 import { BROKER_MOCK_LEADS } from '@/lib/data/broker-mock-leads';
+import { LeadDisputeModal } from './LeadDisputeModal';
 
 interface DuplicateCheckModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const DuplicateCheckModal: React.FC<DuplicateCheckModalProps> = ({
     daysRemaining?: number;
     leadName?: string;
   } | null>(null);
+  const [isDisputeOpen, setIsDisputeOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -125,6 +127,16 @@ export const DuplicateCheckModal: React.FC<DuplicateCheckModalProps> = ({
                   <div className="rounded-lg bg-white/80 p-2.5 text-[11px] text-slate-700 border border-amber-200">
                     <strong>Lưu ý quan trọng:</strong> Bạn vẫn <strong>hoàn toàn có quyền</strong> giới thiệu và đăng ký bảo lưu khách hàng này với <em>bất kỳ căn BĐS nào khác</em> trong kho nhà chung!
                   </div>
+                  <div className="pt-1 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsDisputeOpen(true)}
+                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 font-bold text-white text-[11px] shadow-xs flex items-center gap-1 transition-colors"
+                    >
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      <span>Nộp khiếu nại nếu bạn có bằng chứng sớm hơn</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-xs text-emerald-900 space-y-2">
@@ -163,6 +175,18 @@ export const DuplicateCheckModal: React.FC<DuplicateCheckModalProps> = ({
         </div>
 
       </div>
+
+      <LeadDisputeModal
+        isOpen={isDisputeOpen}
+        onClose={() => setIsDisputeOpen(false)}
+        propertyCode={result?.propertyCode || 'HN-BĐS'}
+        customerName={result?.leadName || 'Khách hàng'}
+        phone={phoneQuery}
+        onDisputeSubmitted={() => {
+          setIsDisputeOpen(false);
+          onClose();
+        }}
+      />
     </div>
   );
 };

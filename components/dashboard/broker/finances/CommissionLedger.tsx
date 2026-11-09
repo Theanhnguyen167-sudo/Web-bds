@@ -13,18 +13,24 @@ import {
   Eye, 
   ExternalLink,
   ShieldAlert,
-  ArrowUpDown
+  ArrowUpDown,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 import { CommissionRecord } from '@/types/broker-finance';
-import { IncomeStatus } from '@/types/broker-nav';
+import { IncomeStatus, SubscriptionTier } from '@/types/broker-nav';
 import { formatCurrencyVND } from '@/lib/utils';
 import { SettlementDetailDrawer } from './SettlementDetailDrawer';
 
 interface CommissionLedgerProps {
   initialRecords: CommissionRecord[];
+  subscriptionTier?: SubscriptionTier;
 }
 
-export const CommissionLedger: React.FC<CommissionLedgerProps> = ({ initialRecords }) => {
+export const CommissionLedger: React.FC<CommissionLedgerProps> = ({ 
+  initialRecords,
+  subscriptionTier,
+}) => {
   const [records, setRecords] = useState<CommissionRecord[]>(initialRecords);
   const [activeTab, setActiveTab] = useState<IncomeStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,6 +99,16 @@ export const CommissionLedger: React.FC<CommissionLedgerProps> = ({ initialRecor
   return (
     <div className="space-y-5">
       
+      {/* Banner Cam Kết Bảo Toàn Quyền Lợi Tài Chính Dù Hết Hạn Gói */}
+      {subscriptionTier === 'expired' && (
+        <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-4 text-xs text-emerald-950 flex items-start gap-3 shadow-xs">
+          <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="leading-relaxed">
+            <strong className="font-bold">Cam kết bảo lưu quyền lợi HaNoi Realty:</strong> Dù gói dịch vụ của bạn hiện đang ở trạng thái hết hạn, bạn vẫn có <strong>toàn quyền 100%</strong> truy cập bảng kê đối soát hoa hồng này và nhận tiền chi trả bình thường qua ngân hàng khi các deal hoàn tất.
+          </div>
+        </div>
+      )}
+
       {/* 1. THANH 5 THẺ TÓM TẮT TRẠNG THÁI */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {/* Dự kiến */}
@@ -278,8 +294,14 @@ export const CommissionLedger: React.FC<CommissionLedgerProps> = ({ initialRecor
                       <div className="font-semibold text-slate-800">
                         {item.brokerShareRate}% trên {item.totalCommissionRate}% sàn
                       </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        {item.agreementVersion}
+                      <div className="flex items-center gap-1 mt-1">
+                        <span 
+                          className="inline-flex items-center gap-1 font-mono text-[9px] font-bold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200"
+                          title="Phiên bản thỏa thuận chốt của deal - không bị ảnh hưởng bởi thay đổi biểu phí sau này"
+                        >
+                          <Lock className="h-2.5 w-2.5 text-slate-400" />
+                          {item.agreementVersion}
+                        </span>
                       </div>
                     </td>
 

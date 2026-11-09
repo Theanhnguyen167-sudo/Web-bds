@@ -17,6 +17,7 @@ import {
 import { NewLeadFormData, LeadItem } from '@/types/broker-lead';
 import { BROKER_MOCK_LISTINGS } from '@/lib/data/broker-mock-listings';
 import { BROKER_MOCK_LEADS } from '@/lib/data/broker-mock-leads';
+import { LeadDisputeModal } from './LeadDisputeModal';
 
 interface RegisterLeadModalProps {
   isOpen: boolean;
@@ -43,6 +44,8 @@ export const RegisterLeadModal: React.FC<RegisterLeadModalProps> = ({
 
   const [evidencePreview, setEvidencePreview] = useState<string | null>(null);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [conflictLead, setConflictLead] = useState<any>(null);
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -59,13 +62,16 @@ export const RegisterLeadModal: React.FC<RegisterLeadModalProps> = ({
           (l.rawPhone?.includes(clean) || l.maskedPhone.replace(/\D/g, '').includes(clean))
       );
       if (duplicate && duplicate.protectionStatus === 'active') {
+        setConflictLead(duplicate);
         setConflictWarning(
           `Cảnh báo: Khách hàng với SĐT này đã được đăng ký bảo lưu với BĐS ${formData.targetPropertyCode} bởi CTV khác (còn ${duplicate.protectionDaysRemaining} ngày).`
         );
       } else {
+        setConflictLead(null);
         setConflictWarning(null);
       }
     } else {
+      setConflictLead(null);
       setConflictWarning(null);
     }
   };
@@ -258,11 +264,26 @@ export const RegisterLeadModal: React.FC<RegisterLeadModalProps> = ({
                 </div>
               </div>
 
-              {/* Cảnh báo trùng khách nếu có */}
+              {/* Cảnh báo trùng khách nếu có kèm nút nộp khiếu nại */}
               {conflictWarning && (
-                <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-900 flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
-                  <span>{conflictWarning}</span>
+                <div className="rounded-xl border border-rose-300 bg-rose-50 p-3.5 text-xs text-rose-950 space-y-2.5">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+                    <span className="font-semibold leading-relaxed">{conflictWarning}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-rose-200">
+                    <span className="text-[11px] text-rose-800">
+                      Bạn có bằng chứng tương tác sớm hơn với căn nhà này?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsDisputeModalOpen(true)}
+                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 font-bold text-white text-[11px] shadow-xs flex items-center gap-1 self-end sm:self-auto transition-colors"
+                    >
+                      <AlertTriangle className="h-3 w-3" />
+                      <span>Nộp khiếu nại đối soát</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -368,6 +389,20 @@ export const RegisterLeadModal: React.FC<RegisterLeadModalProps> = ({
         </div>
 
       </div>
+
+      {/* Modal Khiếu Nại Trùng Khách */}
+      <LeadDisputeModal
+        isOpen={isDisputeModalOpen}
+        onClose={() => setIsDisputeModalOpen(false)}
+        propertyCode={formData.targetPropertyCode}
+        customerName={formData.fullName || 'Khách hàng'}
+        phone={formData.phone}
+        currentProtectedBrokerCode={conflictLead?.brokerCode}
+        onDisputeSubmitted={(payload) => {
+          setIsDisputeModalOpen(false);
+          onClose();
+        }}
+      />
     </div>
   );
 };

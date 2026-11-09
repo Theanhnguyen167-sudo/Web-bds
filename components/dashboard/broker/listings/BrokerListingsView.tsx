@@ -18,6 +18,11 @@ import {
   MarketingKitModal, 
   AccountRestrictedModal 
 } from '@/components/dashboard/broker/listings';
+import {
+  addListingToCurated,
+  removeListingFromCurated,
+  updateCuratedListingNote,
+} from '@/lib/services/broker-curated-service';
 
 // Dữ liệu profile mặc định
 const DEFAULT_PROFILE: BrokerProfile = {
@@ -50,31 +55,43 @@ function BrokerListingsContent({ forcedTab }: BrokerListingsContentProps) {
   const [selectedListingForKit, setSelectedListingForKit] = useState<BrokerListing | null>(null);
   const [restrictedFeature, setRestrictedFeature] = useState<string | null>(null);
 
-  // Toggle lưu vào tủ hàng
-  const handleToggleCurate = (id: string) => {
+  // Toggle lưu vào tủ hàng (CHỈ INSERT/DELETE BẢNG broker_curated_listings, KHÔNG NHÂN BẢN BĐS)
+  const handleToggleCurate = async (id: string) => {
+    const target = listings.find((item) => item.id === id);
+    if (!target) return;
+    const nextCurated = !target.isCurated;
+
     setListings((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, isCurated: !item.isCurated } : item
+        item.id === id ? { ...item, isCurated: nextCurated } : item
       )
     );
+
+    if (nextCurated) {
+      await addListingToCurated(profile.id, profile.brokerCode, id);
+    } else {
+      await removeListingFromCurated(profile.id, id);
+    }
   };
 
-  // Xóa khỏi tủ hàng
-  const handleRemoveCurated = (id: string) => {
+  // Xóa khỏi tủ hàng (CHỈ XÓA QUAN HỆ TRONG broker_curated_listings)
+  const handleRemoveCurated = async (id: string) => {
     setListings((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, isCurated: false } : item
       )
     );
+    await removeListingFromCurated(profile.id, id);
   };
 
-  // Cập nhật ghi chú cá nhân
-  const handleUpdateNote = (id: string, note: string) => {
+  // Cập nhật ghi chú cá nhân (private notes)
+  const handleUpdateNote = async (id: string, note: string) => {
     setListings((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, privateNote: note } : item
       )
     );
+    await updateCuratedListingNote(profile.id, id, note);
   };
 
   const curatedCount = listings.filter((l) => l.isCurated).length;

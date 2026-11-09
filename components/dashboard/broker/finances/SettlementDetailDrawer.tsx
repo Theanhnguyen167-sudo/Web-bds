@@ -140,6 +140,11 @@ export const SettlementDetailDrawer: React.FC<SettlementDetailDrawerProps> = ({
                 </span>
               </div>
 
+              <div className="rounded-lg bg-white/5 p-2 text-[10px] text-slate-300 flex items-center gap-1.5 border border-white/10">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <span>Phiên bản thỏa thuận <strong>{record.agreementVersion}</strong> đã khóa cứng, bảo vệ hoa hồng không bị ảnh hưởng bởi thay đổi biểu phí sau này.</span>
+              </div>
+
               {record.taxWithholding ? (
                 <div className="flex items-baseline justify-between border-b border-white/10 pb-2.5 text-rose-300">
                   <span>Khấu trừ thuế TNCN (10% tạm tính):</span>
