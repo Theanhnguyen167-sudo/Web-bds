@@ -263,3 +263,4 @@ export const TeamMemberTable: React.FC<TeamMemberTableProps> = ({
     </div>
   );
 };
+

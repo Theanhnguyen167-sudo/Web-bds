@@ -360,3 +360,4 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ profil
     </div>
   );
 };
+

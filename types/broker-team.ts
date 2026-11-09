@@ -76,3 +76,4 @@ export interface TeamInvitePayload {
   brokerCodeOrEmail: string;
   note?: string;
 }
+

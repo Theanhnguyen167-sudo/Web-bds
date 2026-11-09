@@ -435,3 +435,4 @@ export const TeamManagementBoard: React.FC<TeamManagementBoardProps> = ({
     </div>
   );
 };
+

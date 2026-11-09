@@ -400,3 +400,4 @@ export const SubscriptionPaymentModal: React.FC<SubscriptionPaymentModalProps> =
     </div>
   );
 };
+

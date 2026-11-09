@@ -66,3 +66,4 @@ export interface BillingCycleOption {
   discountPercent: number;
   bonusText?: string;
 }
+

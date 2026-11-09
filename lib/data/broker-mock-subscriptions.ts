@@ -177,3 +177,4 @@ export const MOCK_SUBSCRIPTION_INVOICES: SubscriptionInvoice[] = [
     transactionRef: 'SYS-FREE-WELCOME',
   },
 ];
+
