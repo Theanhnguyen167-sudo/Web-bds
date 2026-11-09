@@ -24,10 +24,12 @@ export interface BuyerRequest {
   preferred_directions?: string[];        // Đông, Tây, Nam, Bắc,...
   car_access?: boolean;                   // Ngõ ô tô tránh
   
-  // Bước 3: Thời gian mua & Hỗ trợ chuyên sâu
-  urgency: UrgencyLevel;                  // Cần mua gấp, trong 1 tháng, 3 tháng
-  needs_loan_support: boolean;            // Cần tư vấn gói vay ngân hàng
-  needs_planning_check: boolean;          // Cần kiểm tra quy hoạch phân khu Hà Nội
+  // Bước 3: Hỗ trợ môi giới & Thời gian mua
+  support_type?: 'connect_ctv' | 'self_search' | 'has_broker';
+  referral_code?: string;                 // Mã giới thiệu CTV (nếu có)
+  urgency?: UrgencyLevel;                 // Cần mua gấp, trong 1 tháng, 3 tháng
+  needs_loan_support?: boolean;           // Cần tư vấn gói vay ngân hàng
+  needs_planning_check?: boolean;         // Cần kiểm tra quy hoạch phân khu Hà Nội
   notes?: string;                         // Yêu cầu đặc thù khác
   
   // Bước 4: Thông tin liên hệ
@@ -54,7 +56,9 @@ export interface CreateBuyerRequestDTO {
   min_bedrooms?: number;
   preferred_directions?: string[];
   car_access?: boolean;
-  urgency: UrgencyLevel;
+  urgency?: UrgencyLevel;
+  support_type?: 'connect_ctv' | 'self_search' | 'has_broker';
+  referral_code?: string;
   needs_loan_support?: boolean;
   needs_planning_check?: boolean;
   notes?: string;

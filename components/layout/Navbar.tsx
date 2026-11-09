@@ -105,11 +105,10 @@ export const Navbar: React.FC = () => {
   };
 
   const handlePostListingClick = () => {
-    if (!user) {
-      addToast('Vui lòng đăng nhập để đăng tin', 'info');
-      router.push('/login');
-    } else {
+    if (user?.role === 'owner') {
       router.push('/listings/create');
+    } else {
+      router.push('/buyer-request');
     }
   };
 
@@ -171,15 +170,6 @@ export const Navbar: React.FC = () => {
 
         {/* 3. HEADER ACTIONS (Desktop lg+) */}
         <div className="header-actions hidden lg:flex items-center gap-3 shrink-0">
-          {/* Quick Search Shortcut */}
-          <Link
-            href="/search"
-            className="h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 border border-slate-200/70 text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 hover:border-slate-300 shrink-0"
-            title="Tìm kiếm BĐS"
-          >
-            <Search className="h-4 w-4 shrink-0" />
-          </Link>
-
           {/* Admin Portal Quick Switch Button for Admins */}
           {user?.role === 'admin' && (
             <Link
@@ -193,16 +183,7 @@ export const Navbar: React.FC = () => {
             </Link>
           )}
 
-          {/* Buyer Request CTA */}
-          <Link
-            href="/buyer-request"
-            className="h-9 hidden md:flex items-center justify-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 hover:bg-orange-100 px-3 text-xs font-bold text-orange-700 transition-all whitespace-nowrap shrink-0"
-          >
-            <Search className="h-3.5 w-3.5 shrink-0 text-orange-600" />
-            <span className="whitespace-nowrap">Nhu cầu mua</span>
-          </Link>
-
-          {/* Post Listing Button (Owner Property Submission) */}
+          {/* Main Action Button: Đăng tìm BĐS (Người mua) / Gửi bán BĐS (Chủ nhà) */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
@@ -210,7 +191,9 @@ export const Navbar: React.FC = () => {
             className="h-9 flex items-center justify-center gap-1.5 rounded-xl bg-accent px-3.5 text-xs font-bold text-white shadow-sm shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             <PlusCircle className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">Gửi bán BĐS</span>
+            <span className="whitespace-nowrap">
+              {user?.role === 'owner' ? 'Gửi bán BĐS' : 'Đăng tìm BĐS'}
+            </span>
           </motion.button>
 
           {/* Auth State / Account Dropdown */}
@@ -348,23 +331,27 @@ export const Navbar: React.FC = () => {
                     <span>Bảng điều khiển</span>
                   </Link>
 
-                  <Link
-                    href="/dashboard?tab=buyer-requests"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
-                  >
-                    <Search className="h-4 w-4 text-orange-500" />
-                    <span>Nhu cầu mua của tôi</span>
-                  </Link>
+                  {user?.role !== 'owner' && (
+                    <Link
+                      href="/dashboard?tab=buyer-requests"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                    >
+                      <Search className="h-4 w-4 text-orange-500" />
+                      <span>Nhu cầu mua của tôi</span>
+                    </Link>
+                  )}
 
-                  <Link
-                    href="/dashboard?tab=listings"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
-                  >
-                    <Home className="h-4 w-4 text-blue-500" />
-                    <span>BĐS đã gửi bán</span>
-                  </Link>
+                  {user?.role !== 'buyer' && (
+                    <Link
+                      href="/dashboard?tab=listings"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                    >
+                      <Home className="h-4 w-4 text-blue-500" />
+                      <span>BĐS đã gửi bán</span>
+                    </Link>
+                  )}
 
                   <Link
                     href="/dashboard?tab=saved"
@@ -421,12 +408,12 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile Right Actions (Tablet & Mobile < lg) - Thứ tự: Đăng tin, Tìm kiếm, Thông báo, Tài khoản (icon người), 3 gạch */}
         <div className="flex lg:hidden items-center gap-[15px] shrink-0 flex-nowrap ml-auto">
-          {/* 1. Nút Đăng tin: Nút pill màu cam nổi bật, bo tròn tinh tế */}
+          {/* 1. Nút Đăng tìm BĐS (Người mua) / Gửi bán BĐS (Chủ nhà) */}
           <button
             onClick={handlePostListingClick}
             className="h-7.5 flex items-center justify-center rounded-full bg-accent hover:bg-accent-hover active:scale-95 px-2.5 text-[11px] font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
           >
-            Đăng tin
+            {user?.role === 'owner' ? 'Gửi bán BĐS' : 'Đăng tìm BĐS'}
           </button>
 
           {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}

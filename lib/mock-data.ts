@@ -28,6 +28,10 @@ export interface ListingItem {
   city?: string;
   propertyType?: "house" | "apartment" | "land" | "villa";
   appointments?: number;
+  propertyCode?: string;
+  verificationStatus?: string;
+  surveyDate?: string;
+  surveyTimeSlot?: string;
   seller?: {
     fullName: string;
     phone: string;

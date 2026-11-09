@@ -82,6 +82,9 @@ export const BuyerRequestWizard: React.FC = () => {
   const [purpose, setPurpose] = useState<BuyerPurpose>('living');
   const [selectedTypes, setSelectedTypes] = useState<string[]>(['house']);
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>(['Cầu Giấy', 'Nam Từ Liêm']);
+  const [districtsInput, setDistrictsInput] = useState<string>('Cầu Giấy, Nam Từ Liêm');
+  const [budgetMinInput, setBudgetMinInput] = useState<string>('3');
+  const [budgetMaxInput, setBudgetMaxInput] = useState<string>('6');
 
   const [budgetMin, setBudgetMin] = useState(3_000_000_000);
   const [budgetMax, setBudgetMax] = useState(6_000_000_000);
@@ -89,6 +92,11 @@ export const BuyerRequestWizard: React.FC = () => {
   const [minBedrooms, setMinBedrooms] = useState<number>(3);
   const [selectedDirections, setSelectedDirections] = useState<string[]>(['Đông Nam', 'Nam']);
   const [carAccess, setCarAccess] = useState<boolean>(true);
+
+  // Bước 3 State
+  const [supportType, setSupportType] = useState<'connect_ctv' | 'self_search' | 'has_broker'>('has_broker');
+  const [referralCode, setReferralCode] = useState<string>('');
+  const [agreeConsent, setAgreeConsent] = useState<boolean>(true);
 
   const [urgency, setUrgency] = useState<UrgencyLevel>('within_1_month');
   const [needsLoanSupport, setNeedsLoanSupport] = useState<boolean>(false);
@@ -135,13 +143,27 @@ export const BuyerRequestWizard: React.FC = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (step === 1) {
-      if (selectedTypes.length === 0) newErrors.types = 'Vui lòng chọn ít nhất 1 loại hình BĐS';
-      if (selectedDistricts.length === 0) newErrors.districts = 'Vui lòng chọn ít nhất 1 quận/huyện';
+      if (selectedTypes.length === 0) newErrors.types = 'Vui lòng chọn 1 loại hình BĐS';
     }
 
     if (step === 2) {
-      if (budgetMin <= 0) newErrors.budget = 'Tài chính tối thiểu phải lớn hơn 0';
-      if (budgetMax <= budgetMin) newErrors.budget = 'Tài chính tối đa phải lớn hơn mức tối thiểu';
+      if (!districtsInput.trim()) {
+        newErrors.districts = 'Vui lòng nhập quận/huyện mong muốn';
+      }
+      const minVal = parseFloat(budgetMinInput);
+      const maxVal = parseFloat(budgetMaxInput);
+      if (isNaN(minVal) || minVal <= 0) {
+        newErrors.budget = 'Vui lòng nhập mức ngân sách tối thiểu (tỷ đồng)';
+      } else if (!isNaN(maxVal) && maxVal < minVal) {
+        newErrors.budget = 'Ngân sách tối đa phải lớn hơn hoặc bằng mức tối thiểu';
+      }
+    }
+
+    if (step === 3) {
+      if (!agreeConsent) {
+        newErrors.consent = 'Vui lòng tích đồng ý để HaNoi Realty xử lý yêu cầu tư vấn';
+        addToast('Vui lòng tích chọn đồng ý xử lý yêu cầu tư vấn', 'warning');
+      }
     }
 
     if (step === 4) {
@@ -176,20 +198,26 @@ export const BuyerRequestWizard: React.FC = () => {
     try {
       const generatedCode = `HR-REQ-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
+      const parsedMin = (parseFloat(budgetMinInput) || 3) * 1_000_000_000;
+      const parsedMax = (parseFloat(budgetMaxInput) || 6) * 1_000_000_000;
+      const parsedDistricts = districtsInput.split(',').map((s) => s.trim()).filter(Boolean);
+
       const newRequest: BuyerRequest = {
         id: `req_${Date.now()}`,
         code: generatedCode,
         user_id: user?.id,
         purpose,
         property_types: selectedTypes,
-        target_districts: selectedDistricts,
-        budget_min: budgetMin,
-        budget_max: budgetMax,
+        target_districts: parsedDistricts.length > 0 ? parsedDistricts : ['Hà Nội'],
+        budget_min: parsedMin,
+        budget_max: parsedMax,
         min_area: minArea,
         min_bedrooms: minBedrooms,
         preferred_directions: selectedDirections,
         car_access: carAccess,
         urgency,
+        support_type: supportType,
+        referral_code: referralCode.trim() || undefined,
         needs_loan_support: needsLoanSupport,
         needs_planning_check: needsPlanningCheck,
         notes,
@@ -289,482 +317,411 @@ export const BuyerRequestWizard: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-4 space-y-8">
-      {/* HEADER & TIÊU ĐỀ */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 border border-orange-500/20 px-3.5 py-1 text-xs font-black text-orange-600">
-          <Sparkles className="h-3.5 w-3.5 text-orange-500 animate-pulse" />
-          <span>Dành Riêng Cho Người Mua Nhà Hà Nội • 100% Miễn Phí</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          Đăng Ký Nhu Cầu Mua Bất Động Sản
+    <div className="w-full max-w-3xl mx-auto py-6 sm:py-10 px-4 space-y-8">
+      {/* HEADER & TIÊU ĐỀ THEO MẪU */}
+      <div className="space-y-1 pb-4 border-b border-slate-100">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          Đăng nhu cầu mua BĐS
         </h1>
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-          Mô tả căn nhà bạn mơ ước. HaNoi Realty sẽ sàng lọc từ kho nguồn hàng đã thẩm định quy hoạch và hồ sơ pháp lý sạch, tránh lãng phí thời gian xem nhà ảo.
+        <p className="text-xs sm:text-sm text-slate-400 font-medium">
+          Miễn phí • Thông tin được bảo vệ
         </p>
       </div>
 
-      {/* THANH TIẾN ĐỘ 4 BƯỚC */}
-      <div className="relative">
-        <div className="flex items-center justify-between max-w-2xl mx-auto px-4">
+      {/* THANH TIẾN ĐỘ 4 BƯỚC: NÉT ĐỨT / ĐƯỜNG THẲNG & DẤU TÍCH XANH LÁ HOÀN THÀNH */}
+      <div className="pb-6 border-b border-slate-100">
+        <div className="flex items-center justify-between max-w-2xl mx-auto px-1 sm:px-4">
           {[
-            { step: 1, title: 'Loại hình & Khu vực' },
-            { step: 2, title: 'Tài chính & Tiêu chí' },
-            { step: 3, title: 'Tiến độ & Hỗ trợ' },
-            { step: 4, title: 'Thông tin liên hệ' },
-          ].map((item) => {
-            const isCompleted = currentStep > item.step;
-            const isCurrent = currentStep === item.step;
+            { step: 1, title: 'Loại BĐS' },
+            { step: 2, title: 'Khu vực & ngân sách' },
+            { step: 3, title: 'Hỗ trợ môi giới' },
+            { step: 4, title: 'Xác nhận' },
+          ].map((item, idx) => {
+            const isCompleted = item.step < currentStep;
+            const isCurrent = item.step === currentStep;
+
             return (
-              <div key={item.step} className="flex flex-col items-center relative z-10">
-                <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-xs transition-all duration-300 ${
-                    isCompleted
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-4 ring-emerald-100 dark:ring-emerald-950'
-                      : isCurrent
-                      ? 'bg-orange-600 text-white shadow-md shadow-orange-600/30 ring-4 ring-orange-100 dark:ring-orange-950 scale-105'
-                      : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
-                  }`}
-                >
-                  {isCompleted ? <Check className="w-4 h-4 stroke-[3]" /> : item.step}
+              <React.Fragment key={item.step}>
+                <div className="flex flex-col items-center shrink-0">
+                  <div
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 ${
+                      isCompleted
+                        ? 'bg-emerald-600 text-white shadow-sm ring-4 ring-emerald-50'
+                        : isCurrent
+                        ? 'bg-orange-600 text-white shadow-sm ring-4 ring-orange-100'
+                        : 'bg-slate-100 text-slate-400'
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <Check className="w-4 h-4 text-white stroke-[3]" />
+                    ) : (
+                      item.step
+                    )}
+                  </div>
+                  <span
+                    className={`text-[11px] sm:text-xs mt-2 text-center whitespace-nowrap ${
+                      isCurrent
+                        ? 'text-slate-900 font-bold'
+                        : isCompleted
+                        ? 'text-slate-700 font-medium'
+                        : 'text-slate-400 font-medium'
+                    }`}
+                  >
+                    {item.title}
+                  </span>
                 </div>
-                <span
-                  className={`text-[11px] font-bold mt-2 text-center whitespace-nowrap hidden sm:block ${
-                    isCurrent ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500'
-                  }`}
-                >
-                  {item.title}
-                </span>
-              </div>
+
+                {/* Đoạn nối giữa bước idx và idx + 1: Nét đứt (chưa xong) -> Đường liền (đã xong) */}
+                {idx < 3 && (
+                  <div
+                    className={`flex-1 mx-1.5 sm:mx-3 -mt-5 transition-all duration-300 ${
+                      currentStep > item.step
+                        ? 'border-t-2 border-solid border-emerald-500'
+                        : 'border-t-2 border-dashed border-slate-300'
+                    }`}
+                  />
+                )}
+              </React.Fragment>
             );
           })}
-        </div>
-        {/* Đường nối */}
-        <div className="absolute top-4.5 left-1/2 -translate-x-1/2 w-3/4 max-w-xl h-0.5 bg-slate-200 dark:bg-slate-800 -z-0">
-          <div
-            className="h-full bg-orange-600 transition-all duration-500 ease-out"
-            style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
-          />
         </div>
       </div>
 
       {/* KHUNG NỘI DUNG TỪNG BƯỚC */}
-      <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+      <div className="pt-2">
         <AnimatePresence mode="wait">
-          {/* ==================== BƯỚC 1 ==================== */}
+          {/* ==================== BƯỚC 1: BẠN ĐANG MUỐN MUA LOẠI BĐS NÀO? ==================== */}
           {currentStep === 1 && (
             <motion.div
               key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
               className="space-y-6"
             >
               <div>
-                <h2 className="text-lg font-black text-slate-900 dark:text-white">Bước 1: Nhu cầu & Khu vực tìm kiếm</h2>
-                <p className="text-xs text-slate-500 mt-1">Chọn mục đích và loại hình BĐS bạn đang quan tâm.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 1. Bạn đang muốn mua loại BĐS nào?
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                  Chọn loại hình phù hợp với nhu cầu
+                </p>
               </div>
 
-              {/* Mục đích mua */}
-              <div className="space-y-3">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-400">Mục đích chính của bạn</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {PURPOSE_OPTIONS.map((opt) => (
-                    <div
-                      key={opt.id}
-                      onClick={() => setPurpose(opt.id)}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                        purpose === opt.id
-                          ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-950/20 shadow-xs'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
-                      }`}
+              {/* Danh sách lựa chọn dạng Radio List chuẩn giao diện */}
+              <div className="space-y-3 pt-2">
+                {[
+                  { id: 'house', label: 'Nhà phố / Nhà riêng' },
+                  { id: 'apartment', label: 'Chung cư' },
+                  { id: 'land', label: 'Đất nền / Đất thổ cư' },
+                  { id: 'villa', label: 'Biệt thự / Shophouse' },
+                ].map((item) => {
+                  const isSelected = selectedTypes.includes(item.id);
+                  return (
+                    <label
+                      key={item.id}
+                      onClick={() => setSelectedTypes([item.id])}
+                      className="flex items-center gap-3.5 py-2.5 cursor-pointer select-none group"
                     >
-                      <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center justify-between">
-                        <span>{opt.label}</span>
-                        {purpose === opt.id && <CheckCircle2 className="w-4 h-4 text-orange-600" />}
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{opt.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Loại BĐS */}
-              <div className="space-y-3">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-400">Loại hình mong muốn (Chọn 1 hoặc nhiều)</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {PROPERTY_TYPES.map((type) => {
-                    const isSelected = selectedTypes.includes(type.id);
-                    const Icon = type.icon;
-                    return (
-                      <div
-                        key={type.id}
-                        onClick={() => toggleType(type.id)}
-                        className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center flex flex-col items-center gap-2 ${
-                          isSelected
-                            ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-950/20 shadow-xs'
-                            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className={`p-2.5 rounded-xl ${isSelected ? 'bg-orange-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}>
-                          <Icon className="w-5 h-5" />
+                      {/* Custom Radio Button */}
+                      <div className="relative flex items-center justify-center">
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${
+                            isSelected
+                              ? 'border-slate-900 bg-white'
+                              : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                          )}
                         </div>
-                        <span className="font-bold text-xs text-slate-900 dark:text-white">{type.label}</span>
                       </div>
-                    );
-                  })}
-                </div>
-                {errors.types && <p className="text-xs text-red-500 font-medium">{errors.types}</p>}
-              </div>
 
-              {/* Quận / Huyện Hà Nội */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-400">Quận / Huyện ưu tiên tại Hà Nội</label>
-                  <span className="text-xs text-slate-400">Đã chọn: {selectedDistricts.length} quận</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {HANOI_POPULAR_DISTRICTS.map((district) => {
-                    const isSelected = selectedDistricts.includes(district);
-                    return (
-                      <button
-                        type="button"
-                        key={district}
-                        onClick={() => toggleDistrict(district)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                          isSelected
-                            ? 'bg-orange-600 text-white border-orange-600 shadow-xs'
-                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400'
+                      <span
+                        className={`text-sm sm:text-base font-normal transition-colors ${
+                          isSelected ? 'text-slate-900 font-medium' : 'text-slate-700 group-hover:text-slate-900'
                         }`}
                       >
-                        {district}
-                      </button>
-                    );
-                  })}
-                </div>
-                {errors.districts && <p className="text-xs text-red-500 font-medium">{errors.districts}</p>}
+                        {item.label}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
+              {errors.types && <p className="text-xs text-red-500 font-medium pt-1">{errors.types}</p>}
             </motion.div>
           )}
 
-          {/* ==================== BƯỚC 2 ==================== */}
+          {/* ==================== BƯỚC 2: KHU VỰC VÀ NGÂN SÁCH ==================== */}
           {currentStep === 2 && (
             <motion.div
               key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
               className="space-y-6"
             >
               <div>
-                <h2 className="text-lg font-black text-slate-900 dark:text-white">Bước 2: Khoảng tài chính & Tiêu chí chi tiết</h2>
-                <p className="text-xs text-slate-500 mt-1">Xác định ngân sách dự kiến để nhận các gợi ý sát thực tế nhất.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 2. Khu vực và ngân sách
+                </h2>
               </div>
 
-              {/* Ngân sách Preset */}
-              <div className="space-y-3">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-400">Mức ngân sách nhanh</label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                  {BUDGET_PRESETS.map((preset) => {
-                    const isSelected = budgetMin === preset.min && budgetMax === preset.max;
-                    return (
-                      <button
-                        type="button"
-                        key={preset.label}
-                        onClick={() => {
-                          setBudgetMin(preset.min);
-                          setBudgetMax(preset.max);
-                        }}
-                        className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
-                          isSelected
-                            ? 'bg-orange-600 text-white border-orange-600 shadow-xs'
-                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Nhập khoảng giá cụ thể */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <div>
-                  <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Tài chính tối thiểu (VNĐ)</label>
-                  <input
-                    type="number"
-                    step={100_000_000}
-                    value={budgetMin}
-                    onChange={(e) => setBudgetMin(Number(e.target.value))}
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-sm text-slate-900 dark:text-white"
-                  />
-                  <span className="text-[11px] text-orange-600 font-bold mt-1 block">{formatCurrencyVND(budgetMin)}</span>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Tài chính tối đa (VNĐ)</label>
-                  <input
-                    type="number"
-                    step={100_000_000}
-                    value={budgetMax}
-                    onChange={(e) => setBudgetMax(Number(e.target.value))}
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-sm text-slate-900 dark:text-white"
-                  />
-                  <span className="text-[11px] text-orange-600 font-bold mt-1 block">{formatCurrencyVND(budgetMax)}</span>
-                </div>
-              </div>
-              {errors.budget && <p className="text-xs text-red-500 font-medium">{errors.budget}</p>}
-
-              {/* Diện tích & Phòng ngủ */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Diện tích tối thiểu (m²)</label>
-                  <input
-                    type="number"
-                    min={20}
-                    value={minArea}
-                    onChange={(e) => setMinArea(Number(e.target.value))}
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Số phòng ngủ tối thiểu</label>
-                  <select
-                    value={minBedrooms}
-                    onChange={(e) => setMinBedrooms(Number(e.target.value))}
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold"
-                  >
-                    <option value={1}>1+ phòng ngủ</option>
-                    <option value={2}>2+ phòng ngủ</option>
-                    <option value={3}>3+ phòng ngủ</option>
-                    <option value={4}>4+ phòng ngủ</option>
-                    <option value={5}>5+ phòng ngủ</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Ngõ ô tô */}
-              <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-950/40 text-orange-600">
-                    <Car className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">Yêu cầu ngõ ô tô</h4>
-                    <p className="text-[11px] text-slate-500">Ưu tiên nhà ngõ ô tô đỗ cửa hoặc ô tô tránh nhau</p>
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={carAccess}
-                  onChange={(e) => setCarAccess(e.target.checked)}
-                  className="w-5 h-5 rounded text-orange-600 focus:ring-orange-500 cursor-pointer"
-                />
-              </div>
-
-              {/* Hướng nhà ưu tiên */}
+              {/* 1. Quận / huyện mong muốn */}
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Hướng nhà ưu tiên (tùy chọn)</label>
-                <div className="flex flex-wrap gap-2">
-                  {['Đông Nam', 'Nam', 'Đông', 'Bắc', 'Tây Nam', 'Chính Tây', 'Tây Bắc', 'Đông Bắc'].map((dir) => {
-                    const isSelected = selectedDirections.includes(dir);
-                    return (
-                      <button
-                        type="button"
-                        key={dir}
-                        onClick={() => toggleDirection(dir)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
-                          isSelected
-                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent font-bold'
-                            : 'bg-white dark:bg-slate-800 text-slate-600 border-slate-200 dark:border-slate-700'
-                        }`}
-                      >
-                        {dir}
-                      </button>
-                    );
-                  })}
+                <label className="text-sm font-semibold text-slate-800 block">
+                  Quận/huyện mong muốn
+                </label>
+                <input
+                  type="text"
+                  value={districtsInput}
+                  onChange={(e) => setDistrictsInput(e.target.value)}
+                  placeholder="Ví dụ: Cầu Giấy, Nam Từ Liêm"
+                  className="w-full h-12 px-5 rounded-full border border-slate-300 focus:border-slate-400 focus:outline-none text-sm text-slate-800 placeholder:text-slate-400 bg-white transition-colors"
+                />
+                {errors.districts && (
+                  <p className="text-xs text-red-500 font-medium px-2">{errors.districts}</p>
+                )}
+              </div>
+
+              {/* 2. Khoảng ngân sách (tỷ đồng) */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-800 block">
+                  Khoảng ngân sách (tỷ đồng)
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    value={budgetMinInput}
+                    onChange={(e) => setBudgetMinInput(e.target.value)}
+                    placeholder="Từ"
+                    className="w-full h-12 px-5 rounded-full border border-slate-300 focus:border-slate-400 focus:outline-none text-sm text-slate-800 placeholder:text-slate-400 bg-white transition-colors"
+                  />
+                  <input
+                    type="text"
+                    value={budgetMaxInput}
+                    onChange={(e) => setBudgetMaxInput(e.target.value)}
+                    placeholder="Đến"
+                    className="w-full h-12 px-5 rounded-full border border-slate-300 focus:border-slate-400 focus:outline-none text-sm text-slate-800 placeholder:text-slate-400 bg-white transition-colors"
+                  />
                 </div>
+                {errors.budget && (
+                  <p className="text-xs text-red-500 font-medium px-2">{errors.budget}</p>
+                )}
+              </div>
+
+              {/* 3. Yêu cầu thêm */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-800 block">
+                  Yêu cầu thêm
+                </label>
+                <textarea
+                  rows={4}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Ví dụ: diện tích tối thiểu 60m², 3 phòng ngủ, có sổ đỏ..."
+                  className="w-full p-4 rounded-2xl border border-slate-300 focus:border-slate-400 focus:outline-none text-sm text-slate-800 placeholder:text-slate-400 bg-white resize-none transition-colors"
+                />
               </div>
             </motion.div>
           )}
 
-          {/* ==================== BƯỚC 3 ==================== */}
+          {/* ==================== BƯỚC 3: BẠN MUỐN ĐƯỢC HỖ TRỢ THẾ NÀO? ==================== */}
           {currentStep === 3 && (
             <motion.div
               key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
               className="space-y-6"
             >
               <div>
-                <h2 className="text-lg font-black text-slate-900 dark:text-white">Bước 3: Mức độ cần mua & Hỗ trợ chuyên sâu</h2>
-                <p className="text-xs text-slate-500 mt-1">Cho chúng tôi biết kế hoạch thời gian và các dịch vụ bạn cần hỗ trợ thêm.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 3. Bạn muốn được hỗ trợ thế nào?
+                </h2>
               </div>
 
-              {/* Mức độ cần mua */}
-              <div className="space-y-3">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-400">Kế hoạch thời gian mua nhà</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { id: 'immediate', label: 'Cần mua gấp (Trong 1 tháng)', desc: 'Tài chính sẵn sàng, muốn chốt nhanh' },
-                    { id: 'within_3_months', label: 'Trong 1 - 3 tháng tới', desc: 'Đang xem nhà và cân đối tài chính' },
-                    { id: 'exploring', label: 'Đang khảo sát thị trường', desc: 'Chưa vội, tìm căn thật sự ưng ý' },
-                  ].map((item) => (
-                    <div
+              {/* 3 Lựa chọn hình thức hỗ trợ dạng Radio List */}
+              <div className="space-y-3 pt-1">
+                {[
+                  { id: 'connect_ctv', label: 'Nhờ HaNoi Realty kết nối CTV tư vấn' },
+                  { id: 'self_search', label: 'Tự tìm kiếm và nhận gợi ý BĐS' },
+                  { id: 'has_broker', label: 'Tôi đã có môi giới giới thiệu' },
+                ].map((item) => {
+                  const isSelected = supportType === item.id;
+                  return (
+                    <label
                       key={item.id}
-                      onClick={() => setUrgency(item.id as UrgencyLevel)}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                        urgency === item.id
-                          ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-950/20'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                      onClick={() => setSupportType(item.id as any)}
+                      className="flex items-center gap-3.5 py-2.5 cursor-pointer select-none group"
+                    >
+                      {/* Custom Radio Button */}
+                      <div className="relative flex items-center justify-center">
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${
+                            isSelected
+                              ? 'border-slate-900 bg-white'
+                              : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                          )}
+                        </div>
+                      </div>
+
+                      <span
+                        className={`text-sm sm:text-base font-normal transition-colors ${
+                          isSelected ? 'text-slate-900 font-medium' : 'text-slate-700 group-hover:text-slate-900'
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {/* Nhập mã giới thiệu CTV */}
+              <div className="space-y-2 pt-2">
+                <label className="text-sm font-semibold text-slate-800 block">
+                  Mã giới thiệu CTV (nếu có)
+                </label>
+                <input
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  placeholder="Nhập mã giới thiệu"
+                  className="w-full h-12 px-5 rounded-full border border-slate-300 focus:border-slate-400 focus:outline-none text-sm text-slate-800 placeholder:text-slate-400 bg-white transition-colors"
+                />
+              </div>
+
+              {/* Đồng ý cam kết sử dụng thông tin */}
+              <div className="pt-2">
+                <label
+                  onClick={() => setAgreeConsent(!agreeConsent)}
+                  className="flex items-start gap-3.5 cursor-pointer select-none group"
+                >
+                  <div className="relative flex items-center justify-center mt-0.5">
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${
+                        agreeConsent
+                          ? 'border-slate-900 bg-white'
+                          : 'border-slate-300 group-hover:border-slate-400 bg-white'
                       }`}
                     >
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">{item.label}</h4>
-                      <p className="text-[11px] text-slate-500 mt-1">{item.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Hỗ trợ đặc thù */}
-              <div className="space-y-3">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-400">Dịch vụ bạn cần HaNoi Realty hỗ trợ kèm theo</label>
-                
-                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950/40 text-blue-600">
-                      <FileCheck2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">Kiểm tra quy hoạch phân khu Hà Nội (Miễn phí)</h4>
-                      <p className="text-[11px] text-slate-500">Đối chiếu thửa đất với bản đồ quy hoạch giao thông, mở đường 2030</p>
+                      {agreeConsent && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                      )}
                     </div>
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={needsPlanningCheck}
-                    onChange={(e) => setNeedsPlanningCheck(e.target.checked)}
-                    className="w-5 h-5 rounded text-orange-600 focus:ring-orange-500 cursor-pointer"
-                  />
-                </div>
-
-                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-950/40 text-purple-600">
-                      <DollarSign className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">Tư vấn gói vay mua nhà ngân hàng</h4>
-                      <p className="text-[11px] text-slate-500">Hỗ trợ tính toán hạn mức vay và kết nối lãi suất ưu đãi tốt nhất</p>
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={needsLoanSupport}
-                    onChange={(e) => setNeedsLoanSupport(e.target.checked)}
-                    className="w-5 h-5 rounded text-orange-600 focus:ring-orange-500 cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* Ghi chú thêm */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Yêu cầu đặc thù khác (nếu có)</label>
-                <textarea
-                  rows={3}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ví dụ: Gần trường tiểu học Dịch Vọng Hậu, nhà xây mới có thang máy, nở hậu..."
-                  className="w-full p-3.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs sm:text-sm focus:ring-2 focus:ring-orange-500 outline-none"
-                />
+                  <span className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal group-hover:text-slate-900">
+                    Tôi đồng ý cho HaNoi Realty sử dụng thông tin liên hệ để xử lý yêu cầu tư vấn này.
+                  </span>
+                </label>
               </div>
             </motion.div>
           )}
 
-          {/* ==================== BƯỚC 4 ==================== */}
+          {/* ==================== BƯỚC 4: KIỂM TRA VÀ GỬI NHU CẦU ==================== */}
           {currentStep === 4 && (
             <motion.div
               key="step4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
               className="space-y-6"
             >
               <div>
-                <h2 className="text-lg font-black text-slate-900 dark:text-white">Bước 4: Thông tin liên hệ & Xác nhận</h2>
-                <p className="text-xs text-slate-500 mt-1">Thông tin được bảo mật tuyệt đối, chỉ phục vụ gửi danh sách BĐS phù hợp.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 4. Kiểm tra và gửi nhu cầu
+                </h2>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Họ và tên của bạn <span className="text-red-500">*</span></label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+              {/* 2 Checklist items theo mẫu thiết kế */}
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center gap-3 text-slate-800 text-sm sm:text-base font-normal">
+                  <div className="w-5 h-5 rounded-full border-2 border-emerald-600 flex items-center justify-center text-emerald-600 shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </div>
+                  <span>Kiểm tra lại loại nhà, khu vực, ngân sách và phương thức hỗ trợ</span>
+                </div>
+
+                <div className="flex items-center gap-3 text-slate-800 text-sm sm:text-base font-normal">
+                  <div className="w-5 h-5 rounded-full border-2 border-emerald-600 flex items-center justify-center text-emerald-600 shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </div>
+                  <span>Xác nhận thông tin liên hệ trước khi gửi yêu cầu</span>
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-500 pt-0.5">
+                Sau khi gửi, bạn có thể quản lý nhu cầu mua và theo dõi phản hồi trong Dashboard Người mua.
+              </p>
+
+              {/* Thông tin liên hệ & Tóm tắt tiêu chí */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Họ và tên của bạn <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
                       placeholder="Nguyễn Văn An"
-                      className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs sm:text-sm font-semibold"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-300 focus:border-slate-500 focus:outline-none text-sm text-slate-800 bg-white"
                     />
+                    {errors.contactName && (
+                      <p className="text-xs text-red-500 font-medium mt-1">{errors.contactName}</p>
+                    )}
                   </div>
-                  {errors.contactName && <p className="text-xs text-red-500 font-medium mt-1">{errors.contactName}</p>}
-                </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Số điện thoại liên hệ <span className="text-red-500">*</span></label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Số điện thoại liên hệ <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="tel"
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
                       placeholder="0912 345 678"
-                      className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs sm:text-sm font-semibold"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-300 focus:border-slate-500 focus:outline-none text-sm text-slate-800 bg-white"
                     />
-                  </div>
-                  {errors.contactPhone && <p className="text-xs text-red-500 font-medium mt-1">{errors.contactPhone}</p>}
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Email nhận danh sách BĐS (tùy chọn)</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                    <input
-                      type="email"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="an.nguyen@gmail.com"
-                      className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs sm:text-sm"
-                    />
+                    {errors.contactPhone && (
+                      <p className="text-xs text-red-500 font-medium mt-1">{errors.contactPhone}</p>
+                    )}
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Khung giờ tiện nghe điện thoại</label>
-                  <select
-                    value={preferredContactTime}
-                    onChange={(e) => setPreferredContactTime(e.target.value)}
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs sm:text-sm font-semibold"
-                  >
-                    <option value="Bất kỳ lúc nào">Bất kỳ lúc nào</option>
-                    <option value="Giờ hành chính (08:30 - 17:30)">Giờ hành chính (08:30 - 17:30)</option>
-                    <option value="Buổi tối (18:30 - 21:00)">Buổi tối (18:30 - 21:00)</option>
-                    <option value="Cuối tuần">Thứ 7 & Chủ nhật</option>
-                  </select>
+                <div className="pt-3 border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Loại BĐS:</span>
+                    <strong className="text-slate-800">
+                      {selectedTypes.map((t) => (t === 'house' ? 'Nhà phố' : t === 'apartment' ? 'Chung cư' : t === 'land' ? 'Đất nền' : 'Biệt thự')).join(', ')}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Khu vực:</span>
+                    <strong className="text-slate-800 truncate block">{districtsInput || 'Hà Nội'}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Ngân sách:</span>
+                    <strong className="text-orange-600">{budgetMinInput} – {budgetMaxInput} tỷ đồng</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Hỗ trợ:</span>
+                    <strong className="text-slate-800">
+                      {supportType === 'connect_ctv' ? 'Kết nối CTV' : supportType === 'self_search' ? 'Tự tìm kiếm' : 'Có môi giới'}
+                    </strong>
+                  </div>
                 </div>
-              </div>
-
-              {/* Cam kết minh bạch */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Cam kết từ HaNoi Realty:</span>
-                </div>
-                <p>• Dịch vụ tìm kiếm và tư vấn nhà là <strong>hoàn toàn miễn phí</strong> đối với Người mua.</p>
-                <p>• Thông tin cá nhân được bảo vệ nghiêm ngặt, không bị spam bởi môi giới tự do.</p>
-                <p>• Mọi căn nhà gửi tới bạn đều được kiểm tra hồ sơ và cấp mã Property ID chính thức.</p>
               </div>
             </motion.div>
           )}
@@ -789,7 +746,7 @@ export const BuyerRequestWizard: React.FC = () => {
             <button
               type="button"
               onClick={handleNext}
-              className="px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/20 flex items-center gap-1.5 transition-all"
+              className="px-6 py-2.5 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/20 flex items-center gap-1.5 transition-all"
             >
               <span>Tiếp tục</span>
               <ArrowRight className="w-4 h-4" />
@@ -799,17 +756,17 @@ export const BuyerRequestWizard: React.FC = () => {
               type="button"
               disabled={isSubmitting}
               onClick={handleSubmit}
-              className="px-8 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-sm font-black shadow-lg shadow-orange-600/30 flex items-center gap-2 transition-all disabled:opacity-60"
+              className="px-8 py-3 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold shadow-md shadow-orange-600/25 flex items-center gap-2 transition-all disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Đang ghi nhận...</span>
+                  <span>Đang gửi...</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Gửi Nhu Cầu Mua BĐS</span>
+                  <span>Gửi nhu cầu mua</span>
                 </>
               )}
             </button>
