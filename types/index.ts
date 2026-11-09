@@ -7,6 +7,7 @@ export * from './notification';
 export * from './article';
 export * from './deal';
 export * from './contract';
+export * from './broker-listing';
 export type {
   BrokerRole,
   SubscriptionTier,
