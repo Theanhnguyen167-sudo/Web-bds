@@ -17,6 +17,7 @@ export interface AppointmentData {
   time: string;
   listingId: string;
   listingTitle: string;
+  listingCode?: string;
   sellerId?: string;
   sellerEmail?: string;
   note?: string;

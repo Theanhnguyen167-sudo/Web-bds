@@ -77,10 +77,11 @@ import {
   AgencyTeamMember,
   PackageTierId,
 } from '@/lib/packages/package-config';
+import { BuyerRequest } from '@/types/buyer-request';
 
-type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients' | 'finances';
+type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients' | 'finances' | 'buyer-requests';
 
-const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients', 'finances'];
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients', 'finances', 'buyer-requests'];
 
 interface MenuItem {
   id: TabType;
@@ -189,6 +190,7 @@ function DashboardContent() {
   const [appointmentViewMode, setAppointmentViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedScheduleDate, setSelectedScheduleDate] = useState<Date>(new Date());
   const [selectedScheduleListingId, setSelectedScheduleListingId] = useState<string>('all');
+  const [buyerRequests, setBuyerRequests] = useState<any[]>([]);
 
   // Sync tab with URL query parameter on load
   useEffect(() => {
@@ -217,6 +219,28 @@ function DashboardContent() {
     return () => {
       window.removeEventListener('hanoi_appointments_updated', syncAppointments);
       window.removeEventListener('storage', syncAppointments);
+    };
+  }, []);
+
+  // Load and sync buyer requests từ localStorage
+  useEffect(() => {
+    const syncBuyerRequests = () => {
+      try {
+        const raw = localStorage.getItem('hanoi_realty_buyer_requests');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setBuyerRequests(parsed);
+          }
+        }
+      } catch {}
+    };
+    syncBuyerRequests();
+    window.addEventListener('hanoi_buyer_requests_updated', syncBuyerRequests);
+    window.addEventListener('storage', syncBuyerRequests);
+    return () => {
+      window.removeEventListener('hanoi_buyer_requests_updated', syncBuyerRequests);
+      window.removeEventListener('storage', syncBuyerRequests);
     };
   }, []);
 
@@ -371,7 +395,16 @@ function DashboardContent() {
             ]
           : []),
         { id: 'finances' as TabType, label: 'Tiền & thanh toán', icon: Wallet },
-        { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
+        { id: 'listings', label: isOwnerUser ? 'BĐS đã gửi bán' : 'Quản lý tin đăng', icon: Home, count: userListings.length },
+        {
+          id: 'buyer-requests' as TabType,
+          label: 'Nhu cầu mua của tôi',
+          icon: Search,
+          count: buyerRequests.length,
+          badge: buyerRequests.filter((r: any) => r.status === 'pending').length > 0
+            ? `${buyerRequests.filter((r: any) => r.status === 'pending').length} CHỜ`
+            : undefined,
+        },
         {
           id: 'appointments',
           label: 'Lịch hẹn xem nhà',
@@ -968,6 +1001,172 @@ function DashboardContent() {
                                 </Link>
                               </div>
                             )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* TAB: NHU CẦU MUA CỦA TÔI (DÀNH CHO NGƯỜI MUA BĐS) */}
+              {activeTab === 'buyer-requests' && (
+                <motion.div
+                  key="tab-buyer-requests"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 gap-3">
+                    <div>
+                      <h3 className="text-sm font-extrabold text-text-primary flex items-center gap-2">
+                        <span>Nhu cầu mua BĐS của tôi</span>
+                        <span className="rounded-full bg-orange-100 text-orange-700 px-2 py-0.5 text-[10px] font-black">
+                          {buyerRequests.length} yêu cầu
+                        </span>
+                      </h3>
+                      <p className="text-xs text-text-secondary mt-0.5">
+                        Theo dõi danh sách tiêu chí tìm mua nhà đất đã gửi tới HaNoi Realty (Hoàn toàn miễn phí)
+                      </p>
+                    </div>
+                    <Link
+                      href="/buyer-request"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      <span>Đăng nhu cầu mới</span>
+                    </Link>
+                  </div>
+
+                  {buyerRequests.length === 0 ? (
+                    <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
+                      <Search className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                      <h4 className="font-bold text-sm text-slate-700">Chưa có nhu cầu tìm mua nào</h4>
+                      <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">
+                        Đăng ký tiêu chí căn nhà mơ ước (khu vực, tài chính, hướng nhà) để HaNoi Realty lọc nguồn hàng chính chủ đã xác thực quy hoạch giúp bạn.
+                      </p>
+                      <Link
+                        href="/buyer-request"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        Đăng nhu cầu tìm mua ngay (Miễn phí)
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {buyerRequests.map((req: any) => {
+                        const isPaused = req.status === 'cancelled' || req.status === 'paused';
+                        return (
+                          <div
+                            key={req.id || req.code}
+                            className={`rounded-2xl border p-4 transition-all shadow-xs space-y-3 ${
+                              isPaused
+                                ? 'border-slate-200 bg-slate-50/70 opacity-75'
+                                : 'border-orange-100 bg-orange-50/20 hover:border-orange-300'
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-mono text-xs font-black text-orange-600 bg-orange-100 px-2 py-0.5 rounded-md">
+                                  {req.code}
+                                </span>
+                                <span className="text-xs font-bold text-slate-800">
+                                  Khu vực: {Array.isArray(req.target_districts) ? req.target_districts.join(', ') : req.target_districts || 'Hà Nội'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                                  req.status === 'pending'
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    : req.status === 'matched'
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                    : req.status === 'contacted'
+                                    ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                    : 'bg-slate-200 text-slate-700'
+                                }`}>
+                                  {req.status === 'pending' ? 'Đang tìm kiếm' : req.status === 'matched' ? 'Đã tìm thấy căn phù hợp' : req.status === 'contacted' ? 'Đang tư vấn' : 'Đã tạm dừng'}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Tài chính</span>
+                                <strong className="text-orange-600">
+                                  {formatCurrencyVND(req.budget_min || 0)} – {formatCurrencyVND(req.budget_max || 0)}
+                                </strong>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Loại hình</span>
+                                <span className="font-semibold text-slate-700">
+                                  {Array.isArray(req.property_types) ? req.property_types.join(', ') : req.property_types || 'Nhà đất'}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Tiêu chí</span>
+                                <span className="font-semibold text-slate-700">
+                                  Tối thiểu {req.min_area || 30}m² • {req.min_bedrooms || 1} PN
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Người liên hệ</span>
+                                <span className="font-semibold text-slate-700 truncate block">
+                                  {req.contact_name} ({req.contact_phone})
+                                </span>
+                              </div>
+                            </div>
+
+                            {req.notes && (
+                              <p className="text-[11px] text-slate-600 bg-white p-2.5 rounded-xl border border-slate-200">
+                                <strong>Ghi chú:</strong> {req.notes}
+                              </p>
+                            )}
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                              <span className="text-[10px] text-slate-400">
+                                Ngày đăng: {new Date(req.created_at || Date.now()).toLocaleDateString('vi-VN')}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextStatus = isPaused ? 'pending' : 'paused';
+                                    const updated = buyerRequests.map((r: any) =>
+                                      (r.id === req.id || r.code === req.code) ? { ...r, status: nextStatus } : r
+                                    );
+                                    setBuyerRequests(updated);
+                                    if (typeof window !== 'undefined') {
+                                      localStorage.setItem('hanoi_realty_buyer_requests', JSON.stringify(updated));
+                                      window.dispatchEvent(new Event('hanoi_buyer_requests_updated'));
+                                    }
+                                    addToast(isPaused ? '▶️ Đã tiếp tục kích hoạt tìm kiếm BĐS' : '⏸️ Đã tạm dừng yêu cầu', 'info');
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 font-bold text-[11px] text-slate-700 transition-colors"
+                                >
+                                  {isPaused ? 'Tiếp tục tìm' : 'Tạm dừng'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm('Bạn có chắc chắn muốn xoá yêu cầu tìm mua này?')) {
+                                      const updated = buyerRequests.filter((r: any) => r.id !== req.id && r.code !== req.code);
+                                      setBuyerRequests(updated);
+                                      if (typeof window !== 'undefined') {
+                                        localStorage.setItem('hanoi_realty_buyer_requests', JSON.stringify(updated));
+                                        window.dispatchEvent(new Event('hanoi_buyer_requests_updated'));
+                                      }
+                                      addToast('Đã xoá yêu cầu tìm mua', 'info');
+                                    }
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 font-bold text-[11px] transition-colors"
+                                >
+                                  Xoá
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
