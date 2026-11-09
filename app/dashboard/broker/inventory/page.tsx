@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import BrokerListingsPage from '../listings/page';
+import { BrokerListingsView } from '@/components/dashboard/broker/listings';
 
 export default function BrokerInventoryPage() {
-  return <BrokerListingsPage forcedTab="pool" />;
+  return <BrokerListingsView forcedTab="pool" />;
 }

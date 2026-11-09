@@ -4,4 +4,4 @@ export * from './BrokerListingCard';
 export * from './MarketingKitModal';
 export * from './AccountRestrictedModal';
 export * from './PortfolioCompareModal';
-
+export * from './BrokerListingsView';

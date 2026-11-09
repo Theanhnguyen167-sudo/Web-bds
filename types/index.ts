@@ -8,6 +8,7 @@ export * from './article';
 export * from './deal';
 export * from './contract';
 export * from './broker-listing';
+export * from './broker-lead';
 export type {
   BrokerRole,
   SubscriptionTier,
