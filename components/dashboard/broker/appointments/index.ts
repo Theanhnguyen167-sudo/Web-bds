@@ -3,4 +3,5 @@ export * from './AppointmentWeekView';
 export * from './AppointmentMasterView';
 export * from './CreateAppointmentModal';
 export * from './UpdateVisitOutcomeModal';
+export * from './VisitCheckinButton';
 

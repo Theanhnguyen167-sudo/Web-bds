@@ -20,6 +20,7 @@ import {
 import { CommissionRecord } from '@/types/broker-finance';
 import { BROKER_DEFAULT_BENEFICIARY } from '@/lib/data/broker-mock-finances';
 import { formatCurrencyVND } from '@/lib/utils';
+import { STATUS_METADATA } from './CommissionLedger';
 
 interface SettlementDetailDrawerProps {
   record: CommissionRecord | null;
@@ -64,22 +65,7 @@ export const SettlementDetailDrawer: React.FC<SettlementDetailDrawerProps> = ({
     }, 2000);
   };
 
-  const getStatusInfo = (status: import('@/types/broker-nav').IncomeStatus) => {
-    switch (status) {
-      case 'estimated':
-        return { label: '1. Dự kiến', color: 'bg-slate-100 text-slate-800 border-slate-200' };
-      case 'eligible':
-        return { label: '2. Đủ điều kiện', color: 'bg-blue-100 text-blue-800 border-blue-200' };
-      case 'auditing':
-        return { label: '3. Chờ đối soát', color: 'bg-amber-100 text-amber-800 border-amber-200' };
-      case 'paid':
-        return { label: '4. Đã chi trả', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
-      case 'disputed':
-        return { label: '5. Đang tranh chấp', color: 'bg-rose-100 text-rose-800 border-rose-200' };
-    }
-  };
-
-  const statusInfo = getStatusInfo(record.status);
+  const meta = STATUS_METADATA[record.status];
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
@@ -90,8 +76,8 @@ export const SettlementDetailDrawer: React.FC<SettlementDetailDrawerProps> = ({
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 bg-slate-50">
             <div>
               <div className="flex items-center gap-2">
-                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${statusInfo.color}`}>
-                  {statusInfo.label}
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${meta.badgeColor}`}>
+                  {meta.label}
                 </span>
                 <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                   {record.dealCode}
@@ -112,6 +98,17 @@ export const SettlementDetailDrawer: React.FC<SettlementDetailDrawerProps> = ({
 
           {/* Scrollable Body */}
           <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
+            
+            {/* Box giải thích điều kiện thực tế trạng thái hiện tại */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-800">Điều kiện thực tế: {meta.shortCondition}</span>
+                <span className="text-[10px] text-slate-400 font-mono">Quy chuẩn HaNoi Realty</span>
+              </div>
+              <p className="text-slate-600 text-[11px] leading-relaxed">
+                {meta.fullCondition}
+              </p>
+            </div>
             
             {/* THẺ TỔNG HỢP SỐ TIỀN THỰC NHẬN */}
             <div className="rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950 p-5 text-white space-y-3 shadow-md">

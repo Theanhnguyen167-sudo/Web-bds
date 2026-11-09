@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { AppointmentItem, AppointmentStatus } from '@/types/broker-appointment';
 import { formatCurrencyVND } from '@/lib/utils';
+import { VisitCheckinButton } from './VisitCheckinButton';
 
 interface AppointmentCardProps {
   item: AppointmentItem;
@@ -203,16 +204,28 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
       </div>
 
       {/* Footer Hành động */}
-      <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-        <a
-          href={googleMapsUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 p-1"
-        >
-          <Navigation className="h-3.5 w-3.5" />
-          <span>Chỉ đường đón khách</span>
-        </a>
+      <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 p-1"
+          >
+            <Navigation className="h-3.5 w-3.5" />
+            <span>Chỉ đường</span>
+          </a>
+
+          {/* Nút Check-in GPS hiện trường chống luồn cò */}
+          <VisitCheckinButton
+            appointmentId={item.id}
+            propertyCode={item.propertyCode}
+            propertyTitle={item.listingTitle}
+            meetingAddress={item.meetingAddress}
+            targetCoordinates={item.targetCoordinates}
+            initialCheckin={item.checkinRecord || item.outcome?.checkinRecord}
+          />
+        </div>
 
         <div className="flex items-center gap-2">
           {item.status !== 'completed' && item.status !== 'cancelled' && (

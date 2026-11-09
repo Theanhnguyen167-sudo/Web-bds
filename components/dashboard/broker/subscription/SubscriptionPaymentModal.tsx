@@ -52,8 +52,10 @@ export const SubscriptionPaymentModal: React.FC<SubscriptionPaymentModalProps> =
   const discountAmount = Math.round((rawTotal * currentCycleOpt.discountPercent) / 100);
   const finalAmount = rawTotal - discountAmount;
 
-  // Cú pháp chuyển khoản định danh
-  const transferContent = `SUB ${selectedPlan.id === 'tpkd_monthly' ? 'TPKD' : 'CTV'} ${brokerCode.replace('-', '')}`;
+  // Cú pháp chuyển khoản định danh chuẩn Napas VietQR: HR [MÃ_CTV] GOI [TÊN_GÓI]
+  const planTag = selectedPlan.id === 'tpkd_monthly' ? 'TPKD' : 'CTV';
+  const cleanBrokerCode = brokerCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  const transferContent = `HR ${cleanBrokerCode} GOI ${planTag}`;
   const bankInfo = {
     bankName: 'Ngân hàng TMCP Quân Đội (MB Bank)',
     accountNumber: '888809129999',

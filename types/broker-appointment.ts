@@ -12,12 +12,22 @@ export type AppointmentStatus =
 
 export type ClientInterestLevel = 'high' | 'medium' | 'low';
 
+export interface VisitCheckinRecord {
+  checkedInAt: string; // ISO timestamp
+  lat: number;
+  lng: number;
+  distanceMeters: number;
+  accuracyMeters?: number;
+  isSimulated?: boolean;
+}
+
 export interface VisitOutcome {
   interestLevel: ClientInterestLevel;
   feedbackNote: string;
   proposedPrice?: number; // Mức giá khách đề xuất (VND)
   advanceToNegotiation: boolean; // Chuyển sang giai đoạn đàm phán cọc
   checkinPhotoUrl?: string; // Ảnh check-in hoặc chứng từ xác nhận
+  checkinRecord?: VisitCheckinRecord; // Bản ghi định vị GPS hiện trường
   recordedAt: string; // ISO
 }
 
@@ -31,6 +41,7 @@ export interface AppointmentItem {
   propertyCode: string; // VD: HR-BDS-1024
   listingTitle: string;
   meetingAddress: string;
+  targetCoordinates?: { lat: number; lng: number };
   scheduledDate: string; // YYYY-MM-DD
   scheduledTimeSlot: string; // VD: "09:00 - 10:00"
   scheduledTimestamp: string; // ISO String for countdown
@@ -40,6 +51,7 @@ export interface AppointmentItem {
   hostConfirmedAt?: string;
   noteToHost?: string;
   brokerNotes?: string;
+  checkinRecord?: VisitCheckinRecord;
   outcome?: VisitOutcome;
   createdAt: string;
 }
