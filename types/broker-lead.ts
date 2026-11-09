@@ -29,6 +29,8 @@ export interface LeadTimelineEntry {
 
 export interface LeadItem {
   id: string;
+  brokerId?: string;
+  brokerCode?: string;
   fullName: string;
   maskedPhone: string; // VD: 0912.xxx.789
   rawPhone?: string;
