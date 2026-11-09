@@ -574,6 +574,12 @@ export const CreateListingWizard: React.FC = () => {
       return;
     }
 
+    if (user?.role === 'buyer') {
+      addToast('Tài khoản Người mua không thể gửi bán BĐS. Vui lòng chuyển sang Đăng nhu cầu mua!', 'error');
+      router.push('/buyer-request');
+      return;
+    }
+
     if (!isEditMode && isOverLimit) {
       addToast(
         `⚠️ Bạn đã đạt hạn mức tối đa ${maxListings} tin của Gói ${pkgDef.name}. Vui lòng nâng cấp gói để tiếp tục đăng tin mới!`,
@@ -710,45 +716,40 @@ export const CreateListingWizard: React.FC = () => {
   return (
     <div className="w-full max-w-4xl mx-auto py-8">
 
-      {/* 🌟 BANNER HẠN MỨC GÓI ĐĂNG TIN THÀNH VIÊN 🌟 */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+      {/* THÔNG BÁO GỬI BĐS MIỄN PHÍ CHO CHỦ NHÀ */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 shadow-xs">
         <div className="flex items-center gap-2.5">
-          <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
-            pkgDef.id === 'agency'
-              ? 'bg-[#0a1128] text-amber-300'
-              : pkgDef.id === 'pro'
-              ? 'bg-orange-500 text-white'
-              : pkgDef.id === 'basic'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-200 text-slate-700'
-          }`}>
-            Gói {pkgDef.name}
+          <span className="px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-700 text-white">
+            Chủ Nhà
           </span>
-          <span className="text-xs font-bold text-slate-700">
-            Hạn mức: <strong className={isOverLimit ? 'text-rose-600' : 'text-slate-900'}>{userListings.length}/{maxListings} tin</strong>
-            {' · '}Thời hạn hiển thị tin: <strong>{pkgDef.limits.listingDurationDays} ngày</strong>
+          <span className="text-xs font-bold text-emerald-800">
+            Gửi BĐS vào kho HaNoi Realty — <strong>Miễn phí 100%</strong>, không giới hạn tin, cấp Property ID duy nhất sau thẩm định.
           </span>
         </div>
-
-        {isOverLimit ? (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-rose-600">⚠️ Đã hết lượt đăng tin</span>
-            <Link
-              href="/pricing"
-              className="px-3 py-1 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs"
-            >
-              Nâng cấp gói ngay →
-            </Link>
-          </div>
-        ) : (
-          <Link
-            href="/pricing"
-            className="text-xs font-bold text-orange-600 hover:underline inline-flex items-center gap-1"
-          >
-            Bảng giá & Hạn mức VIP →
-          </Link>
-        )}
+        <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+          <ShieldCheck className="h-3.5 w-3.5" /> Xác minh chính chủ
+        </span>
       </div>
+
+      {/* CẢNH BÁO PHÂN QUYỀN NẾU LÀ NGƯỜI MUA */}
+      {user?.role === 'buyer' && (
+        <div className="mb-6 rounded-2xl border border-sky-300 bg-sky-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="space-y-1">
+            <h4 className="text-xs font-black text-sky-900 uppercase tracking-wide">
+              ℹ️ Bạn đang sử dụng vai trò Người mua BĐS
+            </h4>
+            <p className="text-xs text-sky-700">
+              Biểu mẫu này dành riêng cho Chủ nhà gửi bán BĐS. Đối với Người mua, vui lòng đăng nhu cầu tìm mua để HaNoi Realty gợi ý các căn nhà phù hợp đã thẩm định.
+            </p>
+          </div>
+          <Link
+            href="/buyer-request"
+            className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-sm transition-all whitespace-nowrap text-center shrink-0"
+          >
+            Đăng nhu cầu mua →
+          </Link>
+        </div>
+      )}
 
       {/* 1. THANH TIẾN ĐỘ 6 BƯỚC CHUẨN */}
       <div className="mb-8">
@@ -756,10 +757,10 @@ export const CreateListingWizard: React.FC = () => {
           {[
             { step: 1, label: 'Loại hình' },
             { step: 2, label: 'Vị trí' },
-            { step: 3, label: 'Hình ảnh' },
+            { step: 3, label: 'Ảnh & Khảo sát' },
             { step: 4, label: 'Giá & Thông số' },
-            { step: 5, label: 'Thông tin người đăng' },
-            { step: 6, label: 'Kiểm tra & xuất bản' },
+            { step: 5, label: 'Xác minh chủ nhà' },
+            { step: 6, label: 'Kiểm tra & gửi duyệt' },
           ].map((item) => {
             const isCompleted = publishedListingId !== null || currentStep > item.step;
             const isCurrent = publishedListingId === null && currentStep === item.step;
@@ -1119,8 +1120,8 @@ export const CreateListingWizard: React.FC = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-extrabold text-text-primary">Bước 3: Tải ảnh bất động sản</h2>
-                    <p className="text-xs text-text-secondary mt-1">Tin đăng có từ 3 ảnh trở lên nhận được gấp 4 lần lượt liên hệ</p>
+                    <h2 className="text-lg font-extrabold text-text-primary">Bước 3: Ảnh BĐS & Đặt lịch khảo sát</h2>
+                    <p className="text-xs text-text-secondary mt-1">Tải ảnh thực tế và đặt lịch để HaNoi Realty đến khảo sát, quay chụp chuyên nghiệp (miễn phí)</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {postingData.images.length > 0 && (
@@ -1283,6 +1284,61 @@ export const CreateListingWizard: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </motion.div>
+            )}
+
+            {/* SURVEY SCHEDULE - Rendered as part of Step 3 bottom section */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3-survey"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-6 rounded-2xl border border-blue-200 bg-blue-50/50 p-5 space-y-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-blue-600 text-white shrink-0">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-blue-900">Đặt lịch khảo sát & quay chụp chuyên nghiệp</h3>
+                    <p className="text-xs text-blue-700 mt-0.5">HaNoi Realty cử nhân sự đến tận nơi để khảo sát thực địa và quay chụp ảnh chất lượng cao — <strong>Miễn phí 100%</strong></p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Ngày khảo sát mong muốn</label>
+                    <input
+                      type="date"
+                      value={postingData.surveyDate || ''}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) =>
+                        setPostingData((prev) => ({ ...prev, surveyDate: e.target.value }))
+                      }
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Khung giờ tiện nhất</label>
+                    <select
+                      value={postingData.surveyTimeSlot || ''}
+                      onChange={(e) =>
+                        setPostingData((prev) => ({ ...prev, surveyTimeSlot: e.target.value }))
+                      }
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="">-- Chọn khung giờ --</option>
+                      <option value="Sáng 8:00 - 11:30">Sáng 8:00 - 11:30</option>
+                      <option value="Chiều 13:30 - 17:00">Chiều 13:30 - 17:00</option>
+                      <option value="Tối 17:30 - 20:00">Tối 17:30 - 20:00</option>
+                      <option value="Cuối tuần (thỏa thuận)">Cuối tuần (thỏa thuận)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-blue-600 font-medium">
+                  💡 Bạn có thể bỏ qua bước này nếu đã có ảnh thực tế chất lượng. Nhân sự sẽ liên hệ xác nhận lịch qua SĐT bạn cung cấp ở Bước 5.
+                </p>
               </motion.div>
             )}
 
@@ -1468,22 +1524,124 @@ export const CreateListingWizard: React.FC = () => {
               </motion.div>
             )}
 
-            {/* STEP 5: Thông tin người đăng (NEW STEP!) */}
+            {/* STEP 5: Xác minh chủ nhà & hồ sơ BĐS */}
             {currentStep === 5 && (
-              <Step5SellerInfo
-                seller={postingData.seller}
-                onChange={(updated) =>
-                  setPostingData((prev) => ({
-                    ...prev,
-                    seller: { ...prev.seller, ...updated },
-                  }))
-                }
-                errors={sellerErrors}
-                clearError={clearSellerError}
-                onVerifyPhoneSuccess={() => {
-                  addToast('✓ Số điện thoại đã xác thực thành công!', 'success');
-                }}
-              />
+              <motion.div
+                key="step5-owner-verify"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <div>
+                  <h2 className="text-lg font-extrabold text-text-primary">Bước 5: Xác minh chủ nhà & hồ sơ BĐS</h2>
+                  <p className="text-xs text-text-secondary mt-1">Cung cấp thông tin chủ nhà và tải lên giấy tờ sở hữu để HaNoi Realty xác minh chính chủ trước khi đưa vào kho chung</p>
+                </div>
+
+                {/* Thông tin chủ nhà */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Thông tin người đăng (Chủ nhà)</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-text-primary block mb-1">Họ và tên chủ nhà <span className="text-red-500">*</span></label>
+                      <input
+                        type="text"
+                        value={postingData.seller.fullName}
+                        onChange={(e) => setPostingData(prev => ({ ...prev, seller: { ...prev.seller, fullName: e.target.value } }))}
+                        placeholder="Nguyễn Văn A"
+                        className="w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none"
+                      />
+                      {sellerErrors.fullName && <p className="text-xs text-red-500 mt-1">{sellerErrors.fullName}</p>}
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-text-primary block mb-1">Số điện thoại <span className="text-red-500">*</span></label>
+                      <input
+                        type="tel"
+                        value={postingData.seller.phone}
+                        onChange={(e) => setPostingData(prev => ({ ...prev, seller: { ...prev.seller, phone: e.target.value } }))}
+                        placeholder="0912 345 678"
+                        className="w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none"
+                      />
+                      {sellerErrors.phone && <p className="text-xs text-red-500 mt-1">{sellerErrors.phone}</p>}
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-text-primary block mb-1">Email liên hệ</label>
+                      <input
+                        type="email"
+                        value={postingData.seller.email}
+                        onChange={(e) => setPostingData(prev => ({ ...prev, seller: { ...prev.seller, email: e.target.value } }))}
+                        placeholder="chuNha@gmail.com"
+                        className="w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-text-primary block mb-1">Vai trò người đăng <span className="text-red-500">*</span></label>
+                      <select
+                        value={postingData.seller.sellerType}
+                        onChange={(e) => setPostingData(prev => ({ ...prev, seller: { ...prev.seller, sellerType: e.target.value as any } }))}
+                        className="w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
+                      >
+                        <option value="Chính chủ">Chính chủ (tôi là chủ BĐS)</option>
+                        <option value="Người được ủy quyền">Người được ủy quyền hợp lệ</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hồ sơ pháp lý */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Hồ sơ pháp lý BĐS</h3>
+                  <p className="text-xs text-slate-600">Vui lòng liệt kê các loại giấy tờ bạn có để HaNoi Realty xác minh. Bản gốc sẽ được kiểm tra khi nhân sự đến khảo sát.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { id: 'so_do', label: 'Sổ đỏ / Sổ hồng (GCNQSDĐ)', desc: 'Giấy chứng nhận quyền sử dụng đất' },
+                      { id: 'hop_dong_mua_ban', label: 'Hợp đồng mua bán', desc: 'Từ chủ cũ hoặc sàn giao dịch' },
+                      { id: 'giay_phep_xay_dung', label: 'Giấy phép xây dựng', desc: 'Áp dụng cho nhà phố, biệt thự' },
+                      { id: 'bien_ban_ban_giao', label: 'Biên bản bàn giao', desc: 'Từ chủ đầu tư (chung cư)' },
+                    ].map((doc) => {
+                      const isChecked = (postingData.legalDocuments || '').includes(doc.id);
+                      return (
+                        <label key={doc.id} className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${isChecked ? 'border-accent bg-orange-50/40' : 'border-border hover:border-slate-300'}`}>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const current = (postingData.legalDocuments || '').split(',').filter(Boolean);
+                              const updated = e.target.checked ? [...current, doc.id] : current.filter(d => d !== doc.id);
+                              setPostingData(prev => ({ ...prev, legalDocuments: updated.join(',') }));
+                            }}
+                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-500"
+                          />
+                          <div>
+                            <p className="text-xs font-bold text-slate-900">{doc.label}</p>
+                            <p className="text-[11px] text-slate-500">{doc.desc}</p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Cam kết chính chủ */}
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span className="text-sm font-black text-emerald-900">Cam kết chính chủ</span>
+                  </div>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={postingData.isOwnerCommitted || false}
+                      onChange={(e) => setPostingData(prev => ({ ...prev, isOwnerCommitted: e.target.checked }))}
+                      className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
+                    />
+                    <p className="text-xs text-emerald-800 leading-relaxed">
+                      Tôi xác nhận tôi là <strong>chủ sở hữu hợp pháp</strong> hoặc <strong>người được ủy quyền hợp lệ</strong> của BĐS này. Tôi cam kết cung cấp thông tin chính xác và chịu trách nhiệm pháp lý về tính xác thực của hồ sơ.
+                    </p>
+                  </label>
+                </div>
+              </motion.div>
             )}
 
             {/* STEP 6: Kiểm tra & xuất bản (UPDATED STEP 6!) */}
@@ -1560,12 +1718,12 @@ export const CreateListingWizard: React.FC = () => {
                   {isSubmitting ? (
                     <>
                       <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Đang xuất bản...</span>
+                      <span>Đang gửi duyệt...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>Xuất bản tin</span>
+                      <ShieldCheck className="h-4 w-4" />
+                      <span>Gửi duyệt vào kho BĐS</span>
                     </>
                   )}
                 </motion.button>

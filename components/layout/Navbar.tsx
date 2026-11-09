@@ -193,7 +193,16 @@ export const Navbar: React.FC = () => {
             </Link>
           )}
 
-          {/* Post Listing Button */}
+          {/* Buyer Request CTA */}
+          <Link
+            href="/buyer-request"
+            className="h-9 hidden md:flex items-center justify-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 hover:bg-orange-100 px-3 text-xs font-bold text-orange-700 transition-all whitespace-nowrap shrink-0"
+          >
+            <Search className="h-3.5 w-3.5 shrink-0 text-orange-600" />
+            <span className="whitespace-nowrap">Nhu cầu mua</span>
+          </Link>
+
+          {/* Post Listing Button (Owner Property Submission) */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
@@ -201,7 +210,7 @@ export const Navbar: React.FC = () => {
             className="h-9 flex items-center justify-center gap-1.5 rounded-xl bg-accent px-3.5 text-xs font-bold text-white shadow-sm shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             <PlusCircle className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">Đăng tin</span>
+            <span className="whitespace-nowrap">Gửi bán BĐS</span>
           </motion.button>
 
           {/* Auth State / Account Dropdown */}
@@ -337,6 +346,24 @@ export const Navbar: React.FC = () => {
                   >
                     <LayoutDashboard className="h-4 w-4 text-accent" />
                     <span>Bảng điều khiển</span>
+                  </Link>
+
+                  <Link
+                    href="/dashboard?tab=buyer-requests"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                  >
+                    <Search className="h-4 w-4 text-orange-500" />
+                    <span>Nhu cầu mua của tôi</span>
+                  </Link>
+
+                  <Link
+                    href="/dashboard?tab=listings"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                  >
+                    <Home className="h-4 w-4 text-blue-500" />
+                    <span>BĐS đã gửi bán</span>
                   </Link>
 
                   <Link

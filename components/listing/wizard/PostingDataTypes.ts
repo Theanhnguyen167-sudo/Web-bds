@@ -44,6 +44,17 @@ export interface PostingData {
   seller: SellerInfo;
   status: 'pending' | 'draft' | 'active' | 'rejected' | 'hidden' | 'expired' | 'sold';
   isFeatured?: boolean;
+  // Chủ nhà: Lịch khảo sát
+  surveyDate?: string;         // YYYY-MM-DD
+  surveyTimeSlot?: string;     // "Sáng 8:00 - 11:30" | ...
+  // Chủ nhà: Hồ sơ pháp lý (comma-separated: 'so_do,hop_dong_mua_ban,..') 
+  legalDocuments?: string;
+  // Chủ nhà: Cam kết chính chủ
+  isOwnerCommitted?: boolean;
+  // Property ID do hệ thống cấp sau thẩm định
+  propertyCode?: string;
+  // Trạng thái xác minh
+  verificationStatus?: 'in_review' | 'verified' | 'rejected';
 }
 
 export interface SellerValidationErrors {
