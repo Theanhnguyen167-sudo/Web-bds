@@ -42,7 +42,8 @@ WHERE listing_code IS NULL;
 ALTER TABLE public.users 
   ADD COLUMN IF NOT EXISTS agent_code VARCHAR(20) UNIQUE,
   ADD COLUMN IF NOT EXISTS owner_code VARCHAR(20) UNIQUE,
-  ADD COLUMN IF NOT EXISTS referred_by_agent_code VARCHAR(20);
+  ADD COLUMN IF NOT EXISTS referred_by_agent_code VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS referred_at TIMESTAMPTZ DEFAULT NOW();
 
 -- Index tra cứu nhanh mã giới thiệu & mã căn nhà
 CREATE INDEX IF NOT EXISTS idx_users_agent_code ON public.users(agent_code);
@@ -123,4 +124,28 @@ CREATE TRIGGER trg_contracts_updated_at
 
 -- 5. RLS (Row Level Security) bảo vệ: Không cho phép client tự sửa mã của mình
 -- Mã là duy nhất, cố định và do hệ thống quản lý.
+
+-- 6. Bảng Lịch hẹn xem nhà (Appointments) lưu vết mã căn BDS và mã Môi giới giới thiệu
+CREATE TABLE IF NOT EXISTS public.appointments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Bổ sung các cột định danh vào bảng appointments (trường hợp bảng đã có sẵn từ trước)
+ALTER TABLE public.appointments
+  ADD COLUMN IF NOT EXISTS listing_id UUID REFERENCES public.listings(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS listing_code VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS buyer_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS buyer_name TEXT,
+  ADD COLUMN IF NOT EXISTS buyer_phone TEXT,
+  ADD COLUMN IF NOT EXISTS seller_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS broker_referral_code VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS appointment_date DATE,
+  ADD COLUMN IF NOT EXISTS appointment_time VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS purpose TEXT,
+  ADD COLUMN IF NOT EXISTS note TEXT,
+  ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'pending';
+
+CREATE INDEX IF NOT EXISTS idx_appointments_broker_ref ON public.appointments(broker_referral_code);
+CREATE INDEX IF NOT EXISTS idx_appointments_listing_code ON public.appointments(listing_code);
 

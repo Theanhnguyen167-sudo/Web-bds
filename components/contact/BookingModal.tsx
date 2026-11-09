@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/lib/context/AppContext';
 import { getListingUrl } from '@/lib/listing-slug';
+import { getListingIdentifier } from '@/lib/identification';
 import { NotificationItem } from '@/types/notification';
 
 export interface BookingModalProps {
@@ -222,14 +223,17 @@ export default function BookingModal({
 
       const finalSellerEmail = sellerEmail || targetListing?.authorEmail;
 
+      const brokerRefCode = user?.referredByAgentCode || (typeof window !== 'undefined' ? sessionStorage.getItem('active_booking_referral_code') : null) || undefined;
+      const targetListingCode = targetListing ? getListingIdentifier(targetListing) : undefined;
+
       // 1. Tạo thông báo mới chi tiết cho NGƯỜI BÁN (Chủ tin)
       const newNotif: NotificationItem = {
         id: notifId,
         recipientUserId: sellerOwnerId, // CHỈ chủ sở hữu tin đăng mới nhận thông báo
         type: 'appointment',
         title: 'Bạn có lịch hẹn xem nhà mới',
-        message: `${name.trim()} đã đặt lịch xem "${listingTitle}" vào lúc ${selectedTime} ngày ${formattedDateStr}.`,
-        content: `Khách hàng ${name.trim()} (SĐT: ${phone.trim()}) vừa đặt lịch hẹn xem căn "${listingTitle}" vào lúc ${selectedTime}, ${formattedDateStr}.${note.trim() ? ` Ghi chú: "${note.trim()}"` : ''}`,
+        message: `${name.trim()} đã đặt lịch xem "${listingTitle}" (${targetListingCode || 'BDS'}) vào lúc ${selectedTime} ngày ${formattedDateStr}.${brokerRefCode ? ` [Môi giới: ${brokerRefCode}]` : ''}`,
+        content: `Khách hàng ${name.trim()} (SĐT: ${phone.trim()}) vừa đặt lịch hẹn xem căn "${listingTitle}" [${targetListingCode || 'BDS'}] vào lúc ${selectedTime}, ${formattedDateStr}.${brokerRefCode ? ` Người giới thiệu: ${brokerRefCode}.` : ''}${note.trim() ? ` Ghi chú: "${note.trim()}"` : ''}`,
         category: 'message',
         createdAt: 'Vừa xong',
         timestamp: Date.now(),
@@ -245,13 +249,14 @@ export default function BookingModal({
           time: selectedTime,
           listingId: listingId,
           listingTitle: listingTitle,
+          listingCode: targetListingCode,
           sellerId: sellerOwnerId,
           sellerEmail: finalSellerEmail,
           note: note.trim() || undefined,
           purpose: VISIT_PURPOSES.find(p => p.id === purpose)?.label,
           createdAt: new Date().toISOString(),
           status: 'pending',
-          brokerReferralCode: (typeof window !== 'undefined' ? (sessionStorage.getItem('active_booking_referral_code') || undefined) : undefined),
+          brokerReferralCode: brokerRefCode,
         }
       };
 
@@ -265,7 +270,6 @@ export default function BookingModal({
         // 2. Lưu vào lịch sử đặt hẹn
         const existingApptsRaw = localStorage.getItem(STORAGE_KEY_APPOINTMENTS);
         const existingAppts = existingApptsRaw ? JSON.parse(existingApptsRaw) : [];
-        const brokerRefCode = sessionStorage.getItem('active_booking_referral_code') || undefined;
         const newAppt = {
           id: apptId,
           sellerId: sellerOwnerId,
@@ -276,6 +280,7 @@ export default function BookingModal({
           time: selectedTime,
           listingId,
           listingTitle,
+          listingCode: targetListingCode,
           note: note.trim(),
           purpose,
           agentName,
@@ -303,9 +308,15 @@ export default function BookingModal({
           signal: controller.signal,
           body: JSON.stringify({
             listingId,
+            listingCode: targetListingCode,
+            brokerReferralCode: brokerRefCode,
             bookingData: {
               title: newNotif.title,
-              content: newNotif.content
+              content: newNotif.content,
+              buyerName: name.trim(),
+              buyerPhone: phone.trim(),
+              brokerReferralCode: brokerRefCode,
+              listingCode: targetListingCode,
             }
           })
         })

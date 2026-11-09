@@ -9,6 +9,7 @@ import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { CodeBadge } from '@/components/common/CodeBadge';
 import { ReferralAgentConnect } from '@/components/dashboard/ReferralAgentConnect';
+import { MyClientsTab } from '@/components/dashboard/MyClientsTab';
 import { getUserAgentCode, getUserOwnerCode, formatHdCode, formatBdsCode } from '@/lib/identification';
 import {
   LayoutDashboard,
@@ -75,9 +76,9 @@ import {
   PackageTierId,
 } from '@/lib/packages/package-config';
 
-type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral';
+type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients';
 
-const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral'];
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients'];
 
 interface MenuItem {
   id: TabType;
@@ -354,10 +355,19 @@ function DashboardContent() {
   };
 
   // Sidebar Menu categorized
+  const isAgentUser = user && (user.role === 'agent' || user.role === 'broker' || user.role === 'agency');
+  const isOwnerUser = user?.role === 'owner';
+  const isBuyerUser = !isAgentUser && !isOwnerUser;
+
   const menuGroups: MenuGroup[] = [
     {
       title: 'QUẢN LÝ',
       items: [
+        ...(isAgentUser
+          ? [
+              { id: 'clients' as TabType, label: 'Khách hàng của tôi', icon: Users },
+            ]
+          : []),
         { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
         {
           id: 'appointments',
@@ -368,7 +378,7 @@ function DashboardContent() {
             ? `${userAppointments.filter((a) => a.status === 'pending').length} MỚI`
             : undefined,
         },
-        { id: 'saved', label: 'Tin đã lưu', icon: Heart, count: savedListingIds.length },
+        { id: 'saved', label: 'Tin đã lưu & Giỏ nhà', icon: Heart, count: savedListingIds.length },
         { id: 'contracts', label: 'Hợp đồng & Đặt cọc', icon: FileText, count: 1, badge: 'HD' },
         { id: 'reports', label: 'Báo cáo AI', icon: Sparkles, count: user?.aiReportsUsed || 8 },
       ],
@@ -376,30 +386,38 @@ function DashboardContent() {
     {
       title: 'TÀI KHOẢN & DỊCH VỤ',
       items: [
-        {
-          id: 'referral',
-          label: 'Chuyên viên hỗ trợ',
-          icon: UserCheck,
-          badge: user?.referredByAgentCode ? 'ĐÃ KẾT NỐI' : undefined,
-        },
+        ...(isBuyerUser
+          ? [
+              {
+                id: 'referral' as TabType,
+                label: 'Môi giới giới thiệu bạn',
+                icon: UserCheck,
+                badge: user?.referredByAgentCode ? 'ĐÃ KẾT NỐI' : undefined,
+              },
+            ]
+          : []),
         {
           id: 'notifications',
           label: 'Thông báo',
           icon: Bell,
           badge: unreadNotifCount > 0 ? `${unreadNotifCount} MỚI` : undefined,
         },
-        {
-          id: 'packages',
-          label: 'Gói Hội Viên',
-          icon: Tag,
-          badge: user?.package?.toUpperCase() || 'FREE',
-        },
-        {
-          id: 'agency-team',
-          label: 'Đội Ngũ Môi Giới',
-          icon: Users,
-          badge: user?.package?.toLowerCase() === 'agency' ? 'AGENCY' : 'VIP',
-        },
+        ...(isAgentUser
+          ? [
+              {
+                id: 'packages' as TabType,
+                label: 'Gói Hội Viên',
+                icon: Tag,
+                badge: user?.package?.toUpperCase() || 'FREE',
+              },
+              {
+                id: 'agency-team' as TabType,
+                label: 'Đội Ngũ Môi Giới',
+                icon: Users,
+                badge: user?.package?.toLowerCase() === 'agency' ? 'AGENCY' : 'VIP',
+              },
+            ]
+          : []),
       ],
     },
   ];
@@ -2278,7 +2296,7 @@ function DashboardContent() {
                 </motion.div>
               )}
 
-              {/* TAB: REFERRAL (CHUYÊN VIÊN MÔI GIỚI HỖ TRỢ) */}
+              {/* TAB: REFERRAL (MÔI GIỚI GIỚI THIỆU BẠN - DÀNH CHO KHÁCH MUA) */}
               {activeTab === 'referral' && (
                 <motion.div
                   key="tab-referral"
@@ -2292,7 +2310,29 @@ function DashboardContent() {
                     buyerEmail={user?.email}
                     buyerId={user?.id}
                     initialAgentCode={user?.referredByAgentCode}
+                    onSuccess={(agentCode) => {
+                      if (user) {
+                        setUser({
+                          ...user,
+                          referredByAgentCode: agentCode,
+                        });
+                      }
+                    }}
                   />
+                </motion.div>
+              )}
+
+              {/* TAB: CLIENTS (KHÁCH HÀNG CỦA TÔI - DÀNH CHO MÔI GIỚI / TPKD) */}
+              {activeTab === 'clients' && (
+                <motion.div
+                  key="tab-clients"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  <MyClientsTab user={user} appointments={appointments} />
                 </motion.div>
               )}
             </AnimatePresence>
