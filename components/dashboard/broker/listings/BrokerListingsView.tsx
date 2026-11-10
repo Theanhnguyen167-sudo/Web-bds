@@ -23,19 +23,20 @@ import {
   removeListingFromCurated,
   updateCuratedListingNote,
 } from '@/lib/services/broker-curated-service';
+import { useApp } from '@/lib/context/AppContext';
 
-// Dữ liệu profile mặc định
+// Dữ liệu profile mặc định khi chưa có thông tin đăng nhập
 const DEFAULT_PROFILE: BrokerProfile = {
-  id: 'usr_broker_01',
-  fullName: 'Nguyễn Thế Anh',
-  brokerCode: 'CTV-HN1089',
-  email: 'theanh.nguyen@hanoirealty.vn',
-  phone: '0912 888 999',
+  id: 'usr_guest',
+  fullName: 'Cộng tác viên mới',
+  brokerCode: 'CTV-CHODUYET',
+  email: '',
+  phone: '',
   role: 'ctv',
-  verificationStatus: 'verified', // 'verified' | 'pending' | 'rejected'
-  subscriptionTier: 'ctv_monthly', // 'free' | 'ctv_monthly' | 'tpkd_monthly' | 'expired'
-  referralCode: 'CTV-HN1089',
-  teamName: 'Đội nhóm Tây Hồ - Cầu Giấy',
+  verificationStatus: 'pending', // Mặc định chưa duyệt, khoá thông tin nội bộ
+  subscriptionTier: 'free',
+  referralCode: '',
+  teamName: 'Đội nhóm kinh doanh',
 };
 
 interface BrokerListingsContentProps {
@@ -43,13 +44,39 @@ interface BrokerListingsContentProps {
 }
 
 function BrokerListingsContent({ forcedTab }: BrokerListingsContentProps) {
+  const { user } = useApp();
   const searchParams = useSearchParams();
   const paramTab = searchParams.get('tab') === 'curated' ? 'curated' : 'pool';
   const effectiveInitialTab = forcedTab || paramTab;
 
+  const effectiveProfile = React.useMemo<BrokerProfile>(() => {
+    if (user) {
+      const isBrokerRole = user.role === 'agent' || user.role === 'broker' || user.role === 'tpkd' || user.role === 'admin';
+      const isVerified = user.role === 'admin' || user.verificationStatus === 'verified';
+      const isTpkd = user.role === 'tpkd' || user.package?.toLowerCase().includes('tpkd');
+      return {
+        id: user.id,
+        fullName: user.name || 'Cộng tác viên',
+        brokerCode: user.agentCode || `CTV-${user.id.slice(0, 6).toUpperCase()}`,
+        email: user.email || '',
+        phone: user.phone || '',
+        role: isTpkd ? 'tpkd' : 'ctv',
+        verificationStatus: isBrokerRole && isVerified ? 'verified' : ((user.verificationStatus as any) === 'rejected' ? 'rejected' : 'pending'),
+        subscriptionTier: isTpkd ? 'tpkd_monthly' : (user.package?.toLowerCase().includes('free') ? 'free' : 'ctv_monthly'),
+        referralCode: user.agentCode || user.id,
+        teamName: 'Đội nhóm kinh doanh',
+      };
+    }
+    return DEFAULT_PROFILE;
+  }, [user]);
+
   const [activeTab, setActiveTab] = useState<'pool' | 'curated'>(effectiveInitialTab);
   const [listings, setListings] = useState<BrokerListing[]>(BROKER_MOCK_LISTINGS);
-  const [profile, setProfile] = useState<BrokerProfile>(DEFAULT_PROFILE);
+  const [profile, setProfile] = useState<BrokerProfile>(effectiveProfile);
+
+  React.useEffect(() => {
+    setProfile(effectiveProfile);
+  }, [effectiveProfile]);
 
   // Modals state
   const [selectedListingForKit, setSelectedListingForKit] = useState<BrokerListing | null>(null);

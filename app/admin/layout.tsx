@@ -13,14 +13,24 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useApp();
-  const [isAuthorized, setIsAuthorized] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
-  // In demo mode or if user has admin privileges
   useEffect(() => {
-    // If strict authentication is desired:
-    // if (!user) router.push('/login');
+    // Siết chặt kiểm tra quyền Quản trị viên từ phiên xác thực
+    if (!user) {
+      setIsAuthorized(false);
+      router.push(`/login?redirect=${encodeURIComponent(pathname || '/admin')}`);
+      return;
+    }
+
+    if (user.role !== 'admin') {
+      setIsAuthorized(false);
+      router.push('/dashboard');
+      return;
+    }
+
     setIsAuthorized(true);
-  }, [user, router]);
+  }, [user, pathname, router]);
 
   if (!isAuthorized) {
     return (

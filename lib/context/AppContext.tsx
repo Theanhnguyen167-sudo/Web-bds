@@ -290,14 +290,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         sessionUser.user_metadata?.picture ||
         'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80';
 
-      const userRole = (profile?.role as any) || sessionUser.user_metadata?.role || (sessionUser.email === 'admin@hanoirealty.vn' ? 'admin' : 'buyer');
+      const validDbRoles = ['admin', 'tpkd', 'agent', 'broker', 'owner', 'buyer'];
+      const userRole = profile?.role && validDbRoles.includes(profile.role) ? profile.role : 'buyer';
+      const verificationStatus = profile?.verification_status || (userRole === 'admin' ? 'verified' : 'pending');
 
       // Gói dịch vụ: Mặc định luôn là 'Free'. Chỉ nhận gói cao hơn nếu user đã thanh toán trong DB hoặc là admin
       let userPackage = 'Free';
       let packageExpiry = 'Vĩnh viễn';
 
       if (userRole === 'admin') {
-        userPackage = 'Agency';
+        userPackage = 'tpkd';
         packageExpiry = '2026-12-31';
       } else if (profile?.package && profile.package.toLowerCase() !== 'free') {
         userPackage = profile.package;
@@ -312,6 +314,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         email: sessionUser.email || 'user@example.com',
         phone: profile?.phone || sessionUser.user_metadata?.phone || '',
         role: userRole,
+        verificationStatus: verificationStatus,
         avatar: avatar,
         agentCode: (userRole === 'agent') ? (profile?.agent_code || 'MG-00102') : undefined,
         ownerCode: (userRole === 'owner') ? (profile?.owner_code || 'CN-00086') : undefined,
@@ -347,15 +350,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const email = fbUser.email || 'user@example.com';
       const fullName = fbUser.displayName || email.split('@')[0];
       const avatar = fbUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullName)}`;
-      const userRole = email.includes('admin') ? 'admin' : 'user';
-
-      let userPackage = 'Free';
-      let packageExpiry = 'Vĩnh viễn';
-
-      if (userRole === 'admin') {
-        userPackage = 'Agency';
-        packageExpiry = '2026-12-31';
-      }
 
       // Đồng bộ thông tin người dùng lên bảng public.users của Supabase qua API an toàn
       let dbUser: any = null;
@@ -369,18 +363,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             full_name: fullName,
             avatar_url: avatar,
             phone: fbUser.phoneNumber || '',
-            role: userRole,
           }),
         });
         const syncJson = await syncRes.json();
         dbUser = syncJson?.data;
-
-        if (userRole !== 'admin' && dbUser?.package && dbUser.package.toLowerCase() !== 'free') {
-          userPackage = dbUser.package;
-          packageExpiry = dbUser.package_expires_at || dbUser.packageExpiry || '2026-12-31';
-        }
       } catch (dbErr) {
         console.warn('Sync to Supabase users table notice:', dbErr);
+      }
+
+      const validRoles = ['admin', 'tpkd', 'agent', 'broker', 'owner', 'buyer'];
+      const userRole = dbUser?.role && validRoles.includes(dbUser.role) ? dbUser.role : 'buyer';
+      const verificationStatus = dbUser?.verification_status || (userRole === 'admin' ? 'verified' : 'pending');
+
+      let userPackage = 'Free';
+      let packageExpiry = 'Vĩnh viễn';
+
+      if (userRole === 'admin') {
+        userPackage = 'tpkd';
+        packageExpiry = '2026-12-31';
+      } else if (dbUser?.package && dbUser.package.toLowerCase() !== 'free') {
+        userPackage = dbUser.package;
+        packageExpiry = dbUser.package_expires_at || dbUser.packageExpiry || '2026-12-31';
       }
 
       const fbPkgDef = getPackageDefinition(userPackage);
@@ -391,6 +394,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         email: email,
         phone: fbUser.phoneNumber || '',
         role: userRole,
+        verificationStatus: verificationStatus,
         avatar: avatar,
         agentCode: ((userRole as string) === 'agent') ? (dbUser?.agent_code || dbUser?.agentCode || 'MG-00102') : undefined,
         ownerCode: ((userRole as string) === 'owner') ? (dbUser?.owner_code || dbUser?.ownerCode || 'CN-00086') : undefined,

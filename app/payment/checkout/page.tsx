@@ -23,7 +23,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const { user, addToast } = useApp();
 
-  const packageIdParam = searchParams.get('packageId') || 'pro';
+  const packageIdParam = searchParams.get('packageId') || 'ctv';
   const billingParam = (searchParams.get('billing') as 'monthly' | 'yearly') || 'monthly';
 
   const [packageId, setPackageId] = useState(packageIdParam);
@@ -37,7 +37,7 @@ function CheckoutContent() {
   // Find selected package details
   const currentPkg =
     mockPackages.find((p) => p.id === packageId) ||
-    mockPackages.find((p) => p.id === 'pro')!;
+    mockPackages.find((p) => p.id === 'ctv')!;
 
   const priceMonth = currentPkg.price;
   const yearlyMonthlyPrice = Math.floor((currentPkg.price * 0.8) / 1000) * 1000;

@@ -76,8 +76,8 @@ export async function POST(req: Request) {
     }
 
     const {
-      brokerId,
-      brokerCode,
+      brokerId: inputBrokerId,
+      brokerCode: inputBrokerCode,
       customerName,
       phone: rawPhone,
       targetPropertyCode,
@@ -86,6 +86,44 @@ export async function POST(req: Request) {
       notes,
       proofImageUrls,
     } = parseResult.data;
+
+    let brokerId = inputBrokerId;
+    let brokerCode = inputBrokerCode;
+
+    // Xác thực phiên và phân quyền CTV đã duyệt từ server tin cậy
+    try {
+      const supabaseServer = createServerSupabaseClient();
+      const { data: { user } } = await supabaseServer.auth.getUser();
+      if (user) {
+        brokerId = user.id;
+        const { data: userRow } = await (supabaseServer.from('users' as any) as any)
+          .select('role, verification_status, agent_code')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (userRow) {
+          const isAllowedRole = userRow.role === 'agent' || userRow.role === 'broker' || userRow.role === 'tpkd' || userRow.role === 'admin';
+          const isVerified = userRow.role === 'admin' || userRow.verification_status === 'verified';
+          if (!isAllowedRole || !isVerified) {
+            return NextResponse.json(
+              {
+                success: false,
+                error: {
+                  code: 'UNAUTHORIZED_BROKER',
+                  message: 'Tài khoản CTV của bạn chưa được duyệt hoặc không đủ thẩm quyền để đăng ký bảo lưu khách.',
+                },
+              },
+              { status: 403 }
+            );
+          }
+          if (userRow.agent_code) {
+            brokerCode = userRow.agent_code;
+          }
+        }
+      }
+    } catch {
+      // Bỏ qua lỗi session khi chạy mock test
+    }
 
     // 2. Chuẩn hóa số điện thoại
     const normalizedPhone = normalizeVietnamesePhone(rawPhone);

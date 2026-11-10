@@ -48,10 +48,6 @@ export async function GET(req: Request) {
       query = query.ilike('listing_code', code);
     }
 
-    if (status !== 'all') {
-      query = query.eq('status', status);
-    }
-
     if (author === 'me') {
       const supabaseServer = createServerSupabaseClient();
       const { data: { user } } = await supabaseServer.auth.getUser();
@@ -59,6 +55,37 @@ export async function GET(req: Request) {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
       }
       query = query.eq('user_id', user.id);
+      if (status !== 'all') {
+        query = query.eq('status', status);
+      }
+    } else {
+      // Nếu truy vấn tin chưa duyệt hoặc xem toàn bộ trạng thái mà không phải tin của mình -> Yêu cầu quyền Admin từ DB
+      if (status !== 'active') {
+        const supabaseServer = createServerSupabaseClient();
+        const { data: { user } } = await supabaseServer.auth.getUser();
+        let isAdmin = false;
+        if (user) {
+          const { data: profile } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (profile?.role === 'admin') {
+            isAdmin = true;
+          }
+        }
+        if (!isAdmin) {
+          return NextResponse.json(
+            { success: false, error: { message: 'Bạn không có quyền truy cập tin đăng chưa duyệt', code: 'FORBIDDEN' } },
+            { status: 403 }
+          );
+        }
+        if (status !== 'all') {
+          query = query.eq('status', status);
+        }
+      } else {
+        query = query.eq('status', 'active');
+      }
     }
 
     const { data, error } = await query;
@@ -207,9 +234,25 @@ export async function POST(req: Request) {
   }
 }
 
-// PATCH: Phê duyệt hoặc Từ chối tin đăng (Dành cho Admin)
+// PATCH: Phê duyệt hoặc Từ chối tin đăng (Dành riêng cho Admin)
 export async function PATCH(req: Request) {
   try {
+    const supabaseServer = createServerSupabaseClient();
+    const { data: { user } } = await supabaseServer.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile?.role !== 'admin') {
+      return NextResponse.json({ success: false, error: 'Forbidden: Yêu cầu quyền Quản trị viên' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { id, status, rejection_reason, rejectionReason } = body; // status: 'active' | 'rejected' | 'hidden'
 

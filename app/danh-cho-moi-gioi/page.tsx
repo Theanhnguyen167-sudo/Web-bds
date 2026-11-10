@@ -128,8 +128,8 @@ export default function BrokerLandingPage() {
         'Ưu tiên kết nối trực tiếp với Ban Pháp lý và Kế toán sàn',
         'Cam kết KHÔNG có hoa hồng tuyển dụng (chống đa cấp)',
       ],
-      ctaText: 'Đăng Ký Quản Trị TPKD',
-      ctaHref: '/register?role=tpkd',
+      ctaText: 'Tìm hiểu gói TPKD',
+      ctaHref: '#tpkd',
     },
   ];
 
@@ -227,11 +227,11 @@ export default function BrokerLandingPage() {
               </Link>
 
               <Link
-                href="/register?role=tpkd"
+                href="#tpkd"
                 className="w-full sm:w-auto px-7 py-3.5 rounded-2xl border-2 border-purple-400/60 bg-purple-950/40 hover:bg-purple-900/50 font-bold text-sm text-purple-200 transition-all flex items-center justify-center gap-2"
               >
                 <Crown className="h-4 w-4 text-purple-400" />
-                <span>Đăng ký Quản trị TPKD</span>
+                <span>Tìm hiểu gói TPKD</span>
               </Link>
 
               <Link
@@ -426,6 +426,12 @@ export default function BrokerLandingPage() {
                           </div>
                         ))}
                       </div>
+
+                      {isTpkd && (
+                        <div className="mt-4 p-3 rounded-xl bg-purple-50 border border-purple-200/80 text-[11px] text-purple-900 leading-relaxed">
+                          <strong>Quy chuẩn xét duyệt:</strong> Quyền quản trị TPKD chỉ có hiệu lực sau khi hồ sơ năng lực và chứng chỉ được HaNoi Realty thẩm định đạt yêu cầu. Việc mua gói không tự động cấp quyền TPKD.
+                        </div>
+                      )}
                     </div>
 
                     <div className="pt-8">

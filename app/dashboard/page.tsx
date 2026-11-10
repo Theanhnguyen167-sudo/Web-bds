@@ -1562,7 +1562,7 @@ function DashboardContent() {
                                     onClick={async (e) => {
                                       e.stopPropagation();
                                       if (pkgDef.limits.featuredListings === 0) {
-                                        addToast('Gói Free không có lượt đẩy Top 1. Vui lòng nâng cấp gói Basic, Pro hoặc Agency!', 'warning');
+                                        addToast('Gói Free không có lượt đẩy Top 1. Vui lòng nâng cấp gói CTV hoặc TPKD!', 'warning');
                                         handleSelectTab('packages');
                                         return;
                                       }
@@ -2843,9 +2843,15 @@ function DashboardContent() {
                       <span className="text-[11px] text-slate-500">Áp dụng tức thì vào tài khoản</span>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {(['free', 'basic', 'pro', 'agency'] as PackageTierId[]).map((pkgKey) => {
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {(['ctv_free', 'ctv', 'tpkd'] as PackageTierId[]).map((pkgKey) => {
                         const isCurrent = pkgDef.id === pkgKey;
+                        const label =
+                          pkgKey === 'ctv_free'
+                            ? 'CTV Free (0 đ)'
+                            : pkgKey === 'ctv'
+                            ? 'Gói CTV (189k)'
+                            : 'Gói TPKD (499k)';
                         return (
                           <button
                             key={pkgKey}
@@ -2857,7 +2863,7 @@ function DashboardContent() {
                                 : 'bg-white text-slate-700 hover:bg-orange-50 border border-slate-200'
                             }`}
                           >
-                            <span>{pkgKey === 'free' ? 'Gói Free' : pkgKey === 'basic' ? 'Gói Basic' : pkgKey === 'pro' ? 'Gói Pro' : 'Gói Agency'}</span>
+                            <span>{label}</span>
                             {isCurrent && <span className="text-[10px] bg-white text-orange-600 px-1 rounded font-black">✓</span>}
                           </button>
                         );
@@ -2891,14 +2897,14 @@ function DashboardContent() {
                     <CodeBadge code={(user ? getUserAgentCode(user) : null) || 'MG-00102'} label="Mã CTV & Giới thiệu" />
                   </div>
 
-                  {pkgDef.id === 'agency' || user?.role === 'admin' ? (
+                  {pkgDef.id === 'agency' || pkgDef.id === 'tpkd' || user?.role === 'admin' ? (
                     <div className="space-y-6">
-                      {/* Agency Header & Actions */}
+                      {/* Agency/TPKD Header & Actions */}
                       <div className="rounded-3xl border border-indigo-200 bg-gradient-to-r from-indigo-900 via-[#0a1128] to-purple-950 p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>
                           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black uppercase mb-2">
                             <Building2 className="h-3.5 w-3.5" />
-                            <span>Đặc Quyền Gói Agency</span>
+                            <span>{pkgDef.id === 'tpkd' ? 'Đặc Quyền Gói TPKD Quản Trị' : 'Đặc Quyền Quản Trị Đội Nhóm'}</span>
                           </div>
                           <h2 className="text-2xl font-black">Quản Trị Đội Ngũ Môi Giới & Sàn Giao Dịch</h2>
                           <p className="text-xs text-slate-300 mt-1 max-w-xl">
@@ -3053,31 +3059,31 @@ function DashboardContent() {
                       </div>
                     </div>
                   ) : (
-                    /* Locked Teaser for non-Agency */
+                    /* Locked Teaser for non-TPKD / non-Agency */
                     <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center space-y-6 shadow-sm">
-                      <div className="w-16 h-16 rounded-3xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center mx-auto shadow-sm">
+                      <div className="w-16 h-16 rounded-3xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center mx-auto shadow-sm">
                         <Lock className="h-8 w-8" />
                       </div>
 
                       <div className="max-w-md mx-auto space-y-2">
-                        <span className="px-3 py-1 rounded-full text-xs font-black uppercase bg-indigo-100 text-indigo-800">
-                          Đặc quyền Gói Agency (Doanh Nghiệp)
+                        <span className="px-3 py-1 rounded-full text-xs font-black uppercase bg-purple-100 text-purple-800">
+                          Đặc quyền Gói Quản Trị TPKD
                         </span>
                         <h2 className="text-xl sm:text-2xl font-black text-slate-900">
-                          Quản Trị Đội Ngũ Môi Giới & Sàn BĐS
+                          Quản Trị Đội Nhóm CTV & Môi Giới
                         </h2>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          Tính năng cho phép chủ sàn phân bổ hạn mức 250 tin đăng, 40 tin nổi bật và quản lý hiệu suất bán hàng của từng môi giới, cùng sự hỗ trợ của Chuyên viên tài khoản riêng Dedicated Account Manager 24/7.
+                          Tính năng cho phép Trưởng phòng kinh doanh quản lý và điều phối các CTV thành viên, theo dõi tiến độ và nhận thù lao quản lý theo từng giao dịch thành công. Quyền TPKD cần xét duyệt hồ sơ quản trị trước khi cấp quyền.
                         </p>
                       </div>
 
                       <div className="flex items-center justify-center gap-3">
                         <Link
-                          href="/payment/checkout?packageId=agency&billing=monthly"
-                          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#0a1128] via-indigo-900 to-purple-900 hover:from-black hover:to-indigo-950 text-white font-black text-xs shadow-lg transition-all flex items-center gap-2"
+                          href="/danh-cho-moi-gioi#tpkd"
+                          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-800 via-indigo-900 to-purple-950 hover:from-purple-900 hover:to-black text-white font-black text-xs shadow-lg transition-all flex items-center gap-2"
                         >
                           <Crown className="h-4 w-4 text-amber-400" />
-                          <span>Nâng Cấp Gói Agency Ngay (1.999.000 đ/tháng) →</span>
+                          <span>Tìm hiểu gói TPKD (499.000 đ/tháng) →</span>
                         </Link>
                       </div>
                     </div>

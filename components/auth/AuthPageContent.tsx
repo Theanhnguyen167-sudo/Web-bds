@@ -178,6 +178,13 @@ export default function AuthPageContent({
 
   // Sync mode state if URL changes
   useEffect(() => {
+    // Xử lý link cũ /register?role=tpkd: chuyển hướng tới mục thông tin TPKD thay vì rơi vào form người mua
+    const roleParam = searchParams?.get('role');
+    if (roleParam === 'tpkd') {
+      router.replace('/danh-cho-moi-gioi#tpkd');
+      return;
+    }
+
     if (pathname && pathname.includes('register')) {
       setMode('register');
     } else if (searchParams && searchParams.get('mode') === 'register') {

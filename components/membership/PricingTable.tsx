@@ -29,76 +29,66 @@ interface PackageFeatureConfig {
 }
 
 const PACKAGE_FEATURE_CONFIGS: Record<string, PackageFeatureConfig> = {
-  free: {
-    serviceLimitsTitle: 'Hạn mức dịch vụ',
+  ctv_free: {
+    serviceLimitsTitle: 'Hạn mức tháng trải nghiệm',
     serviceLimits: [
-      { label: 'Đăng tối đa tin BĐS (Thời hạn 7 ngày)', badge: 'x 3' },
+      { label: 'Khai thác kho BĐS mở', badge: 'Chuẩn' },
+      { label: 'Thời hạn trải nghiệm', badge: '30 ngày' },
     ],
-    privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
+    privilegesTitle: 'Đặc quyền khởi đầu',
     privileges: [
-      'Bản đồ vị trí & tiện ích cơ bản',
-      'Hỗ trợ cộng đồng trực tuyến',
+      'Cấp Member ID định danh CTV riêng',
+      'Đăng ký bảo lưu khách 72h chống trùng',
+      'Xem nguồn hàng sạch đã xác thực',
+      'Nhận 50% hoa hồng chốt deal',
     ],
   },
-  basic: {
-    serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
+  ctv: {
+    serviceLimitsTitle: 'Hạn mức dịch vụ thực chiến',
     serviceLimits: [
-      { label: 'Tin nổi bật / tháng', badge: 'x 2' },
-      { label: 'Đăng tối đa tin BĐS (Thời hạn 30 ngày)', badge: 'x 20' },
+      { label: 'Kho nhà mở Hà Nội', badge: 'Không giới hạn' },
+      { label: 'Tủ hàng cá nhân', badge: 'Không giới hạn' },
     ],
-    privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
+    privilegesTitle: 'Đặc quyền môi giới chuyên nghiệp',
     privileges: [
-      'Bản đồ vị trí & tiện ích xung quanh',
-      'Huy hiệu Môi giới xác thực',
-      'Hỗ trợ qua Ticket & Email',
+      'Toàn quyền khai thác kho nhà mở KHÔNG GIỚI HẠN',
+      'CRM chuyên sâu: Đăng ký bảo lưu khách 72h',
+      'Tải trọn bộ Marketing Kit sạch (ảnh HD, bài viết)',
+      'Gắn mã CTV (#CTV...) vào link BĐS',
+      'Ví hoa hồng đối soát 5 trạng thái minh bạch',
     ],
   },
-  pro: {
-    serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
+  tpkd: {
+    serviceLimitsTitle: 'Hạn mức quản trị đội nhóm',
     serviceLimits: [
-      { label: 'Tin nổi bật / tháng', badge: 'x 10' },
-      { label: 'Đăng tối đa tin BĐS (Thời hạn 60 ngày)', badge: 'x 50' },
+      { label: 'Quản trị CTV thành viên', badge: 'Đội nhóm' },
+      { label: 'Bàn làm việc TPKD Manager', badge: 'Độc quyền' },
     ],
-    privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
+    privilegesTitle: 'Đặc quyền Trưởng phòng KD',
     privileges: [
-      'Đẩy tin tự động lên trang chủ',
-      'Huy hiệu VIP Pro nổi bật',
-      'Hỗ trợ ưu tiên 24/7',
-    ],
-  },
-  agency: {
-    serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
-    serviceLimits: [
-      { label: 'Tin nổi bật / tháng', badge: 'x 40' },
-      { label: 'Đăng tối đa tin BĐS (Thời hạn 90 ngày)', badge: 'x 250' },
-    ],
-    privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
-    privileges: [
-      'Quản trị phân quyền đội ngũ môi giới',
-      'Dedicated Account Manager',
-      'Hỗ trợ ưu tiên 24/7',
+      'Toàn bộ đặc quyền của gói CTV Tiêu chuẩn',
+      'Bảng điều khiển Quản trị đội nhóm CTV trực thuộc',
+      'Mời & phân bổ khách cho CTV trong nhóm',
+      'Nhận Thù lao Quản lý (5 - 15 triệu/deal)',
+      'Lưu ý: Quyền TPKD cần hồ sơ quản trị được duyệt',
     ],
   },
 };
 
 const ANCHOR_PRICES: Record<string, string> = {
-  basic: '469.000 đ',
-  pro: '1.159.000 đ',
-  agency: '3.199.000 đ',
+  ctv: '249.000 đ',
+  tpkd: '699.000 đ',
 };
 
 const getSavingsText = (pkgId: string, isYearly: boolean): string => {
-  if (pkgId === 'free') {
-    return 'Trải nghiệm cá nhân • Không mất phí';
+  if (pkgId === 'ctv_free' || pkgId === 'free') {
+    return 'Miễn phí trải nghiệm tháng đầu';
   }
-  if (isYearly) {
-    if (pkgId === 'basic') return 'Giảm đến 32% • Tiết kiệm 150.000 đ/tháng';
-    if (pkgId === 'pro') return 'Giảm đến 45% • Tiết kiệm 520.000 đ/tháng';
-    if (pkgId === 'agency') return 'Giảm đến 50% • Tiết kiệm 1.600.000 đ/tháng';
-  } else {
-    if (pkgId === 'basic') return 'Giảm 15% • Tiết kiệm 70.000 đ/tháng';
-    if (pkgId === 'pro') return 'Giảm 31% • Tiết kiệm 360.000 đ/tháng';
-    if (pkgId === 'agency') return 'Giảm 38% • Tiết kiệm 1.200.000 đ/tháng';
+  if (pkgId === 'ctv') {
+    return isYearly ? 'Tiết kiệm 20% khi thanh toán 1 năm' : 'Giảm 24% • Tiết kiệm 60.000 đ/tháng';
+  }
+  if (pkgId === 'tpkd') {
+    return isYearly ? 'Tiết kiệm 20% khi thanh toán 1 năm' : 'Giảm 28% • Tiết kiệm 200.000 đ/tháng';
   }
   return '';
 };
@@ -109,22 +99,32 @@ export const PricingTable: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
 
   const handleSelectPackage = (pkg: (typeof mockPackages)[0]) => {
+    if (pkg.id === 'tpkd') {
+      addToast('Gói TPKD yêu cầu xét duyệt hồ sơ quản lý và thẩm định điều kiện riêng trước khi kích hoạt.', 'info');
+      router.push('/danh-cho-moi-gioi#tpkd');
+      return;
+    }
+
     if (!user) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('pendingPackage', JSON.stringify({ packageId: pkg.id, billing: billingCycle }));
       }
-      addToast('Vui lòng đăng nhập để tiến hành kích hoạt gói thành viên', 'info');
-      router.push(`/login?redirect=/payment/checkout?packageId=${pkg.id}&billing=${billingCycle}`);
+      if (pkg.id === 'ctv_free') {
+        router.push('/register?role=ctv');
+      } else {
+        addToast('Vui lòng đăng nhập để tiến hành kích hoạt gói thành viên', 'info');
+        router.push(`/login?redirect=/payment/checkout?packageId=${pkg.id}&billing=${billingCycle}`);
+      }
       return;
     }
 
-    if (pkg.id === 'free') {
-      if (user.package?.toLowerCase() === 'free') {
-        addToast('Bạn đang sử dụng gói Free mặc định!', 'info');
+    if (pkg.id === 'ctv_free' || pkg.id === 'free') {
+      if (user.package?.toLowerCase() === 'ctv_free' || user.package?.toLowerCase() === 'ctv') {
+        addToast('Bạn đã có gói CTV hoạt động!', 'info');
       } else {
-        upgradeUserPackage('free');
-        addToast('🎉 Đã chuyển sang Gói Cơ Bản (Free)! Hạn mức 3 tin và đặc quyền cơ bản đã có hiệu lực.', 'success');
-        router.push('/dashboard?tab=packages');
+        upgradeUserPackage('ctv_free');
+        addToast('🎉 Đã kích hoạt Gói CTV Free tháng đầu! Toàn quyền trải nghiệm kho BĐS mở.', 'success');
+        router.push('/dashboard/broker');
       }
       return;
     }
@@ -224,97 +224,98 @@ export const PricingTable: React.FC = () => {
       </div>
 
       {/* Pricing Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 xl:gap-6 items-stretch">
-        {mockPackages.map((pkg, idx) => {
-          const isPro = pkg.isPopular;
-          const isAgency = pkg.id === 'agency';
-          const isBasic = pkg.id === 'basic';
-          const isFree = pkg.id === 'free';
-          const isYearly = billingCycle === 'yearly';
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+        {mockPackages
+          .filter((p) => ['ctv_free', 'ctv', 'tpkd'].includes(p.id))
+          .map((pkg, idx) => {
+            const isCtv = pkg.id === 'ctv';
+            const isTpkd = pkg.id === 'tpkd';
+            const isCtvFree = pkg.id === 'ctv_free';
+            const isYearly = billingCycle === 'yearly';
 
-          const calculatedPrice =
-            isYearly && pkg.price > 0
-              ? Math.floor((pkg.price * 0.8) / 1000) * 1000
-              : pkg.price;
+            const calculatedPrice =
+              isYearly && pkg.price > 0
+                ? Math.floor((pkg.price * 0.8) / 1000) * 1000
+                : pkg.price;
 
-          const anchorPrice = ANCHOR_PRICES[pkg.id];
-          const savingsText = getSavingsText(pkg.id, isYearly);
-          const featureConfig = PACKAGE_FEATURE_CONFIGS[pkg.id] || {
-            serviceLimitsTitle: 'Hạn mức dịch vụ',
-            serviceLimits: [],
-            privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
-            privileges: [],
-          };
+            const anchorPrice = ANCHOR_PRICES[pkg.id];
+            const savingsText = getSavingsText(pkg.id, isYearly);
+            const featureConfig = PACKAGE_FEATURE_CONFIGS[pkg.id] || {
+              serviceLimitsTitle: 'Hạn mức dịch vụ',
+              serviceLimits: [],
+              privilegesTitle: 'Đặc quyền',
+              privileges: [],
+            };
 
-          return (
-            <motion.div
-              key={pkg.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: idx * 0.1 }}
-              whileHover={{ y: -6 }}
-              className={`relative flex flex-col rounded-3xl p-4 sm:p-5 xl:p-5 transition-all duration-300 min-w-0 ${
-                isPro
-                  ? 'border-2 border-orange-500 bg-gradient-to-b from-orange-50/50 via-white to-amber-50/20 shadow-xl shadow-orange-500/15 lg:scale-[1.03] ring-4 ring-orange-500/15 z-10'
-                  : isAgency
-                  ? 'border border-indigo-200/90 bg-white hover:border-indigo-400/80 hover:shadow-xl'
-                  : isBasic
-                  ? 'border border-blue-200/80 bg-white hover:border-blue-400/70 hover:shadow-xl'
-                  : 'border border-slate-200 bg-white hover:border-slate-300 hover:shadow-lg'
-              }`}
-            >
-              {/* 4. Hero Card Banner on Top of Pro */}
-              {isPro && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 px-4 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-orange-500/40 whitespace-nowrap z-20 flex items-center gap-1.5 border border-white/30">
-                  <Flame className="h-3.5 w-3.5 fill-white" />
-                  <span>BÁN CHẠY NHẤT</span>
+            return (
+              <motion.div
+                key={pkg.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: idx * 0.1 }}
+                whileHover={{ y: -6 }}
+                className={`relative flex flex-col rounded-3xl p-5 xl:p-6 transition-all duration-300 min-w-0 ${
+                  isCtv
+                    ? 'border-2 border-orange-500 bg-gradient-to-b from-orange-50/50 via-white to-amber-50/20 shadow-xl shadow-orange-500/15 lg:scale-[1.03] ring-4 ring-orange-500/15 z-10'
+                    : isTpkd
+                    ? 'border-2 border-purple-400 bg-white hover:border-purple-500 hover:shadow-xl'
+                    : 'border border-blue-200 bg-white hover:border-blue-300 hover:shadow-lg'
+                }`}
+              >
+                {/* 4. Hero Card Banner on Top of CTV */}
+                {isCtv && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 px-4 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-orange-500/40 whitespace-nowrap z-20 flex items-center gap-1.5 border border-white/30">
+                    <Flame className="h-3.5 w-3.5 fill-white" />
+                    <span>MÔI GIỚI THỰC CHIẾN • PHỔ BIẾN NHẤT</span>
+                  </div>
+                )}
+                {isTpkd && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-purple-700 to-indigo-700 px-4 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-purple-600/30 whitespace-nowrap z-20 flex items-center gap-1.5 border border-white/30">
+                    <Award className="h-3.5 w-3.5 fill-white" />
+                    <span>QUẢN TRỊ ĐỘI NHÓM</span>
+                  </div>
+                )}
+
+                {/* Package Header */}
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <h3
+                      className={`text-lg sm:text-xl font-black ${
+                        isCtv
+                          ? 'text-orange-600'
+                          : isTpkd
+                          ? 'text-purple-900'
+                          : 'text-blue-900'
+                      }`}
+                    >
+                      {pkg.name}
+                    </h3>
+
+                    {isCtv && (
+                      <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+                        189K / THÁNG
+                      </span>
+                    )}
+                    {isTpkd && (
+                      <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+                        499K / THÁNG
+                      </span>
+                    )}
+                    {isCtvFree && (
+                      <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        FREE THÁNG ĐẦU
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-[12px] text-slate-500 font-medium mt-1 min-h-[18px]">
+                    {isCtvFree
+                      ? 'Miễn phí tháng đầu cho môi giới mới'
+                      : isCtv
+                      ? 'Dành cho môi giới hoạt động thường xuyên'
+                      : 'Dành cho Trưởng phòng kinh doanh (Cần xét duyệt)'}
+                  </p>
                 </div>
-              )}
-
-              {/* Package Header */}
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <h3
-                    className={`text-lg sm:text-xl font-black ${
-                      isPro
-                        ? 'text-orange-600'
-                        : isAgency
-                        ? 'text-indigo-950'
-                        : isBasic
-                        ? 'text-[#0a1128]'
-                        : 'text-slate-800'
-                    }`}
-                  >
-                    {pkg.name}
-                  </h3>
-
-                  {isPro && (
-                    <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xs">
-                      VIP
-                    </span>
-                  )}
-                  {isAgency && (
-                    <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-gradient-to-r from-[#0a1128] to-indigo-900 text-amber-300 shadow-2xs">
-                      DOANH NGHIỆP
-                    </span>
-                  )}
-                  {isBasic && (
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-blue-50 text-blue-700 border border-blue-200/80">
-                      MÔI GIỚI
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-[12px] text-slate-500 font-medium mt-1 min-h-[18px]">
-                  {pkg.id === 'free'
-                    ? 'Trải nghiệm cá nhân'
-                    : pkg.id === 'basic'
-                    ? 'Môi giới độc lập'
-                    : pkg.id === 'pro'
-                    ? 'Nhà đầu tư & Môi giới VIP'
-                    : 'Sàn giao dịch BĐS'}
-                </p>
-              </div>
 
               {/* 1. PRICE ANCHORING BLOCK */}
               <div className="pt-4">
@@ -333,7 +334,7 @@ export const PricingTable: React.FC = () => {
                 <div className="my-1 flex items-baseline gap-1.5 whitespace-nowrap min-w-0">
                   <span
                     className={`text-2xl sm:text-[28px] xl:text-3xl font-black tracking-tight shrink-0 ${
-                      isPro ? 'text-slate-900' : 'text-[#0a1128]'
+                      isCtv ? 'text-orange-600' : isTpkd ? 'text-purple-900' : 'text-[#0a1128]'
                     }`}
                   >
                     {calculatedPrice === 0 ? 'Miễn phí' : calculatedPrice.toLocaleString('vi-VN')}
@@ -349,11 +350,11 @@ export const PricingTable: React.FC = () => {
                 <div className="pt-1.5 min-h-[32px] flex items-center">
                   <div
                     className={`w-full h-[28px] rounded-lg overflow-hidden relative flex items-center select-none shadow-2xs ${
-                      isPro
+                      isCtv
                         ? 'bg-gradient-to-r from-orange-100/90 via-amber-100/90 to-orange-100/90 text-orange-900 border border-orange-300/90'
-                        : isAgency || isBasic
-                        ? 'bg-rose-50 text-rose-700 border border-rose-200/90'
-                        : 'bg-slate-100 text-slate-700 border border-slate-200'
+                        : isTpkd
+                        ? 'bg-purple-50 text-purple-700 border border-purple-200/90'
+                        : 'bg-blue-50 text-blue-700 border border-blue-200'
                     }`}
                   >
                     {/* Hiệu ứng làm mờ nhẹ 2 mép viền để chữ vào/ra thanh thoát */}
@@ -394,15 +395,19 @@ export const PricingTable: React.FC = () => {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleSelectPackage(pkg)}
                   className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap ${
-                    isPro
+                    isCtv
                       ? 'bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/35 hover:shadow-orange-500/50'
-                      : isAgency
-                      ? 'bg-gradient-to-r from-[#0a1128] via-[#1a2744] to-[#1e1b4b] hover:from-[#141e34] hover:to-[#2e1065] text-white shadow-md hover:shadow-lg'
-                      : 'bg-gradient-to-r from-[#0a1128] to-[#1a2744] hover:from-[#141e34] hover:to-[#24365d] text-white shadow-md hover:shadow-lg'
+                      : isTpkd
+                      ? 'bg-gradient-to-r from-purple-700 via-purple-800 to-indigo-900 hover:from-purple-800 hover:to-indigo-950 text-white shadow-md hover:shadow-lg'
+                      : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg'
                   }`}
                 >
                   <span className="truncate">
-                    {pkg.id === 'free' ? 'Gói cơ bản (Free)' : `Nâng cấp ${pkg.name}`}
+                    {isCtvFree
+                      ? 'Đăng ký CTV Free'
+                      : isCtv
+                      ? 'Nâng cấp CTV (189.000 đ)'
+                      : 'Tìm hiểu gói TPKD'}
                   </span>
                   <ArrowRight className="h-4 w-4 shrink-0" />
                 </motion.button>
@@ -427,13 +432,11 @@ export const PricingTable: React.FC = () => {
                         </span>
                         <span
                           className={`inline-flex items-center justify-center px-2 py-0.5 text-[11px] rounded-md shrink-0 border ${
-                            isPro
+                            isCtv
                               ? 'bg-orange-100/90 text-orange-700 border-orange-300 font-black shadow-2xs'
-                              : isAgency
-                              ? 'bg-indigo-50 text-indigo-700 border-indigo-200 font-black shadow-2xs'
-                              : isBasic
-                              ? 'bg-blue-50 text-blue-700 border-blue-200 font-extrabold shadow-2xs'
-                              : 'bg-slate-100 text-slate-700 border-slate-200 font-bold'
+                              : isTpkd
+                              ? 'bg-purple-50 text-purple-700 border-purple-200 font-black shadow-2xs'
+                              : 'bg-blue-50 text-blue-700 border-blue-200 font-extrabold shadow-2xs'
                           }`}
                         >
                           {item.badge}

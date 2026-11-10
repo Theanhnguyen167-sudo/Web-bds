@@ -31,35 +31,31 @@ const CreateBuyerRequestSchema = z.object({
   preferred_contact_time: z.string().optional(),
 });
 
-// Helper lấy phiên người dùng hiện tại
+// Helper lấy phiên người dùng hiện tại từ session server tin cậy
 async function getAuthUser(req: NextRequest) {
   try {
     const supabase = createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
+      let dbRole = 'buyer';
+      try {
+        const { data: profile } = await (supabase.from('users' as any) as any)
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (profile?.role) {
+          dbRole = profile.role;
+        }
+      } catch {}
       return {
         id: user.id,
         email: user.email,
-        role: (user.user_metadata?.role as string) || (user.email === 'admin@hanoirealty.vn' ? 'admin' : 'buyer'),
+        role: dbRole,
         name: (user.user_metadata?.full_name as string) || (user.user_metadata?.name as string) || '',
       };
     }
   } catch (err) {
     // Cookie session parse error
-  }
-
-  // Fallback định danh từ header hoặc query parameter khi kiểm thử môi trường dev/local
-  const headerUserId = req.headers.get('x-user-id');
-  const headerRole = req.headers.get('x-user-role');
-  const headerEmail = req.headers.get('x-user-email');
-
-  if (headerUserId) {
-    return {
-      id: headerUserId,
-      email: headerEmail || `${headerUserId}@hanoirealty.vn`,
-      role: headerRole || (headerEmail === 'admin@hanoirealty.vn' ? 'admin' : 'buyer'),
-      name: '',
-    };
   }
 
   return null;
@@ -71,31 +67,21 @@ async function getAuthUser(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const authUser = await getAuthUser(req);
-    
-    // Nếu chưa đăng nhập qua session cookie hoặc header, kiểm tra query parameter dev fallback
-    const queryUserId = req.nextUrl.searchParams.get('userId');
-    const queryRole = req.nextUrl.searchParams.get('role');
-    const effectiveUser = authUser || (queryUserId ? {
-      id: queryUserId,
-      role: queryRole || 'buyer',
-      email: `${queryUserId}@hanoirealty.vn`,
-    } : null);
 
-    if (!effectiveUser) {
+    if (!authUser) {
       return apiError('Vui lòng đăng nhập để xem danh sách nhu cầu tìm mua', 'UNAUTHORIZED', 401);
     }
 
     const isAdminOrOperator =
-      effectiveUser.role === 'admin' ||
-      effectiveUser.role === 'staff' ||
-      effectiveUser.role === 'agent' ||
-      effectiveUser.role === 'broker' ||
-      effectiveUser.email === 'admin@hanoirealty.vn';
+      authUser.role === 'admin' ||
+      authUser.role === 'staff' ||
+      authUser.role === 'agent' ||
+      authUser.role === 'broker';
 
     const status = req.nextUrl.searchParams.get('status') || undefined;
 
     const data = await getBuyerRequestsRecord({
-      userId: effectiveUser.id,
+      userId: authUser.id,
       isAdminOrOperator,
       status,
     });
@@ -164,6 +150,10 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const authUser = await getAuthUser(req);
+    if (!authUser) {
+      return apiError('Vui lòng đăng nhập để thực hiện thao tác', 'UNAUTHORIZED', 401);
+    }
+
     const body = await req.json();
     const { id, status } = body;
 
@@ -171,10 +161,7 @@ export async function PATCH(req: NextRequest) {
       return apiError('Thiếu ID và trạng thái mới', 'VALIDATION_ERROR', 400);
     }
 
-    const effectiveUser = authUser || {
-      id: 'admin_demo_01',
-      role: 'admin',
-    };
+    const effectiveUser = authUser;
 
     const isAdminOrOperator =
       effectiveUser.role === 'admin' ||

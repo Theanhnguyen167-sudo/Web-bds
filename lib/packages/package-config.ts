@@ -9,7 +9,7 @@
  * ==============================================================================
  */
 
-export type PackageTierId = 'free' | 'basic' | 'pro' | 'agency';
+export type PackageTierId = 'ctv_free' | 'ctv' | 'tpkd' | 'free' | 'basic' | 'pro' | 'agency';
 
 export interface PackagePrivilegeDef {
   title: string;
@@ -56,6 +56,119 @@ export interface PackageDefinition {
 }
 
 export const PACKAGE_DEFINITIONS: Record<PackageTierId, PackageDefinition> = {
+  ctv_free: {
+    id: 'ctv_free',
+    name: 'CTV Free Tháng Đầu',
+    badgeLabel: 'TRẢI NGHIỆM',
+    subtitle: 'Miễn phí tháng đầu cho môi giới mới',
+    monthlyPrice: 0,
+    yearlyMonthlyPrice: 0,
+    anchorMonthlyPrice: '',
+    savingsTextMonthly: 'Trải nghiệm miễn phí tháng đầu',
+    savingsTextYearly: 'Trải nghiệm miễn phí',
+    limits: {
+      maxListings: 5,
+      listingDurationDays: 30,
+      featuredListings: 0,
+      aiReports: 0,
+    },
+    features: {
+      planningLevel: 'basic',
+      canView2030Planning: false,
+      canViewLandPrices: false,
+      canExportPDF: false,
+      pdfQuality: 'none',
+      canManageAgencyTeam: false,
+      hasDedicatedAccountManager: false,
+      supportLevel: 'Cộng đồng trực tuyến',
+    },
+    serviceLimitsDisplay: [
+      { label: 'Khai thác kho nguồn mở', badge: 'Chuẩn' },
+    ],
+    privilegesDisplay: [
+      'Cấp Member ID CTV định danh riêng',
+      'Đăng ký bảo lưu khách 72h chống trùng',
+      'Xem kho nguồn BĐS đã xác minh',
+      'Nhận 50% hoa hồng chốt deal',
+    ],
+  },
+
+  ctv: {
+    id: 'ctv',
+    name: 'Gói CTV Tiêu Chuẩn',
+    badgeLabel: 'MÔI GIỚI',
+    subtitle: 'Dành cho môi giới thực chiến',
+    monthlyPrice: 189000,
+    yearlyMonthlyPrice: 151000,
+    anchorMonthlyPrice: '249.000 đ',
+    savingsTextMonthly: 'Tiết kiệm 60.000 đ/tháng',
+    savingsTextYearly: 'Tiết kiệm 20% khi thanh toán năm',
+    isPopular: true,
+    limits: {
+      maxListings: 15,
+      listingDurationDays: 60,
+      featuredListings: 2,
+      aiReports: 0,
+    },
+    features: {
+      planningLevel: 'basic',
+      canView2030Planning: false,
+      canViewLandPrices: false,
+      canExportPDF: false,
+      pdfQuality: 'none',
+      canManageAgencyTeam: false,
+      hasDedicatedAccountManager: false,
+      supportLevel: 'Ticket & Email',
+    },
+    serviceLimitsDisplay: [
+      { label: 'Tiếp cận kho nguồn mở', badge: 'Không giới hạn' },
+    ],
+    privilegesDisplay: [
+      'Toàn quyền khai thác kho nhà mở KHÔNG GIỚI HẠN',
+      'Tủ hàng cá nhân & tải Marketing Kit sạch',
+      'CRM chuyên sâu bảo lưu khách 72h chống trùng',
+      'Ví hoa hồng đối soát 5 trạng thái minh bạch',
+    ],
+  },
+
+  tpkd: {
+    id: 'tpkd',
+    name: 'Gói TPKD Quản Trị',
+    badgeLabel: 'TRƯỞNG PHÒNG',
+    subtitle: 'Dành cho Trưởng phòng kinh doanh',
+    monthlyPrice: 499000,
+    yearlyMonthlyPrice: 399000,
+    anchorMonthlyPrice: '699.000 đ',
+    savingsTextMonthly: 'Tiết kiệm 200.000 đ/tháng',
+    savingsTextYearly: 'Tiết kiệm 20% khi thanh toán năm',
+    limits: {
+      maxListings: 35,
+      listingDurationDays: 90,
+      featuredListings: 10,
+      aiReports: 0,
+    },
+    features: {
+      planningLevel: 'basic',
+      canView2030Planning: false,
+      canViewLandPrices: false,
+      canExportPDF: false,
+      pdfQuality: 'none',
+      canManageAgencyTeam: true,
+      hasDedicatedAccountManager: true,
+      supportLevel: 'Dedicated VIP 24/7',
+    },
+    serviceLimitsDisplay: [
+      { label: 'Quản trị đội nhóm CTV', badge: 'Không giới hạn' },
+    ],
+    privilegesDisplay: [
+      'Toàn bộ đặc quyền của gói CTV Tiêu chuẩn',
+      'Bảng điều khiển quản trị đội nhóm CTV trực thuộc',
+      'Mời và điều phối thành viên CTV',
+      'Nhận Thù lao Quản lý theo từng deal phát sinh',
+      'Lưu ý: Quyền TPKD cần hồ sơ quản trị được duyệt',
+    ],
+  },
+
   free: {
     id: 'free',
     name: 'Free',
