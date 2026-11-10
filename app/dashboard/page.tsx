@@ -9,6 +9,8 @@ import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { CodeBadge } from '@/components/common/CodeBadge';
 import { ReferralAgentConnect } from '@/components/dashboard/ReferralAgentConnect';
+import { MyClientsTab } from '@/components/dashboard/MyClientsTab';
+import { FinancesTab } from '@/components/dashboard/finances/FinancesTab';
 import { getUserAgentCode, getUserOwnerCode, formatHdCode, formatBdsCode } from '@/lib/identification';
 import {
   LayoutDashboard,
@@ -59,6 +61,7 @@ import {
   Award,
   ChevronDown,
   FileText,
+  Wallet,
   X,
   Briefcase,
 } from 'lucide-react';
@@ -75,10 +78,11 @@ import {
   AgencyTeamMember,
   PackageTierId,
 } from '@/lib/packages/package-config';
+import { BuyerRequest } from '@/types/buyer-request';
 
-type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral';
+type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients' | 'finances' | 'buyer-requests';
 
-const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral'];
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients', 'finances', 'buyer-requests'];
 
 interface MenuItem {
   id: TabType;
@@ -187,6 +191,7 @@ function DashboardContent() {
   const [appointmentViewMode, setAppointmentViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedScheduleDate, setSelectedScheduleDate] = useState<Date>(new Date());
   const [selectedScheduleListingId, setSelectedScheduleListingId] = useState<string>('all');
+  const [buyerRequests, setBuyerRequests] = useState<any[]>([]);
 
   // Sync tab with URL query parameter on load
   useEffect(() => {
@@ -215,6 +220,28 @@ function DashboardContent() {
     return () => {
       window.removeEventListener('hanoi_appointments_updated', syncAppointments);
       window.removeEventListener('storage', syncAppointments);
+    };
+  }, []);
+
+  // Load and sync buyer requests từ localStorage
+  useEffect(() => {
+    const syncBuyerRequests = () => {
+      try {
+        const raw = localStorage.getItem('hanoi_realty_buyer_requests');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setBuyerRequests(parsed);
+          }
+        }
+      } catch {}
+    };
+    syncBuyerRequests();
+    window.addEventListener('hanoi_buyer_requests_updated', syncBuyerRequests);
+    window.addEventListener('storage', syncBuyerRequests);
+    return () => {
+      window.removeEventListener('hanoi_buyer_requests_updated', syncBuyerRequests);
+      window.removeEventListener('storage', syncBuyerRequests);
     };
   }, []);
 
@@ -355,11 +382,30 @@ function DashboardContent() {
   };
 
   // Sidebar Menu categorized
+  const isAgentUser = user && (user.role === 'agent' || user.role === 'broker' || user.role === 'agency');
+  const isOwnerUser = user?.role === 'owner';
+  const isBuyerUser = !isAgentUser && !isOwnerUser;
+
   const menuGroups: MenuGroup[] = [
     {
       title: 'QUẢN LÝ',
       items: [
-        { id: 'listings', label: 'Quản lý tin đăng', icon: Home, count: userListings.length },
+        ...(isAgentUser
+          ? [
+              { id: 'clients' as TabType, label: 'Khách hàng của tôi', icon: Users },
+            ]
+          : []),
+        { id: 'finances' as TabType, label: 'Tiền & thanh toán', icon: Wallet },
+        { id: 'listings', label: isOwnerUser ? 'BĐS đã gửi bán' : 'Quản lý tin đăng', icon: Home, count: userListings.length },
+        {
+          id: 'buyer-requests' as TabType,
+          label: 'Nhu cầu mua của tôi',
+          icon: Search,
+          count: buyerRequests.length,
+          badge: buyerRequests.filter((r: any) => r.status === 'pending').length > 0
+            ? `${buyerRequests.filter((r: any) => r.status === 'pending').length} CHỜ`
+            : undefined,
+        },
         {
           id: 'appointments',
           label: 'Lịch hẹn xem nhà',
@@ -369,7 +415,7 @@ function DashboardContent() {
             ? `${userAppointments.filter((a) => a.status === 'pending').length} MỚI`
             : undefined,
         },
-        { id: 'saved', label: 'Tin đã lưu', icon: Heart, count: savedListingIds.length },
+        { id: 'saved', label: 'Tin đã lưu & Giỏ nhà', icon: Heart, count: savedListingIds.length },
         { id: 'contracts', label: 'Hợp đồng & Đặt cọc', icon: FileText, count: 1, badge: 'HD' },
         { id: 'reports', label: 'Báo cáo AI', icon: Sparkles, count: user?.aiReportsUsed || 8 },
       ],
@@ -377,30 +423,38 @@ function DashboardContent() {
     {
       title: 'TÀI KHOẢN & DỊCH VỤ',
       items: [
-        {
-          id: 'referral',
-          label: 'Chuyên viên hỗ trợ',
-          icon: UserCheck,
-          badge: user?.referredByAgentCode ? 'ĐÃ KẾT NỐI' : undefined,
-        },
+        ...(isBuyerUser
+          ? [
+              {
+                id: 'referral' as TabType,
+                label: 'Môi giới giới thiệu bạn',
+                icon: UserCheck,
+                badge: user?.referredByAgentCode ? 'ĐÃ KẾT NỐI' : undefined,
+              },
+            ]
+          : []),
         {
           id: 'notifications',
           label: 'Thông báo',
           icon: Bell,
           badge: unreadNotifCount > 0 ? `${unreadNotifCount} MỚI` : undefined,
         },
-        {
-          id: 'packages',
-          label: 'Gói Hội Viên',
-          icon: Tag,
-          badge: user?.package?.toUpperCase() || 'FREE',
-        },
-        {
-          id: 'agency-team',
-          label: 'Đội Ngũ Môi Giới',
-          icon: Users,
-          badge: user?.package?.toLowerCase() === 'agency' ? 'AGENCY' : 'VIP',
-        },
+        ...(isAgentUser
+          ? [
+              {
+                id: 'packages' as TabType,
+                label: 'Gói Hội Viên',
+                icon: Tag,
+                badge: user?.package?.toUpperCase() || 'FREE',
+              },
+              {
+                id: 'agency-team' as TabType,
+                label: 'Đội Ngũ Môi Giới',
+                icon: Users,
+                badge: user?.package?.toLowerCase() === 'agency' ? 'AGENCY' : 'VIP',
+              },
+            ]
+          : []),
       ],
     },
   ];
@@ -547,84 +601,86 @@ function DashboardContent() {
           {/* Right Main Content */}
           <div className="lg:col-span-3 space-y-6">
 
-            {/* Quick Metrics Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {/* Thẻ 1: Hạn mức tin đăng & Lượt còn lại */}
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
-                  <span>Hạn mức tin ({pkgDef.name})</span>
-                  <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
-                    {pkgDef.badgeLabel}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <p className="text-2xl font-black text-text-primary">
-                    {userListings.length} / {maxListings}
-                  </p>
-                  {userListings.some(l => l.status === 'pending') && (
-                    <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.2 rounded-full animate-pulse">
-                      {userListings.filter(l => l.status === 'pending').length} chờ duyệt
+            {/* Quick Metrics Cards: CHỈ hiển thị khi ở tab Quản lý tin đăng và KHÔNG dành cho khách mua */}
+            {activeTab === 'listings' && !isBuyerUser && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {/* Thẻ 1: Hạn mức tin đăng & Lượt còn lại */}
+                <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                  <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                    <span>Hạn mức tin ({pkgDef.name})</span>
+                    <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
+                      {pkgDef.badgeLabel}
                     </span>
-                  )}
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <p className="text-2xl font-black text-text-primary">
+                      {userListings.length} / {maxListings}
+                    </p>
+                    {userListings.some(l => l.status === 'pending') && (
+                      <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.2 rounded-full animate-pulse">
+                        {userListings.filter(l => l.status === 'pending').length} chờ duyệt
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                    <span className={remainingListings > 0 ? "text-emerald-600" : "text-rose-600"}>
+                      {remainingListings > 0 ? `Còn lại ${remainingListings} lượt đăng` : 'Đã hết hạn mức'}
+                    </span>
+                    <span className="text-slate-400">Hạn: {pkgDef.limits.listingDurationDays} ngày/tin</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
-                  <span className={remainingListings > 0 ? "text-emerald-600" : "text-rose-600"}>
-                    {remainingListings > 0 ? `Còn lại ${remainingListings} lượt đăng` : 'Đã hết hạn mức'}
-                  </span>
-                  <span className="text-slate-400">Hạn: {pkgDef.limits.listingDurationDays} ngày/tin</span>
-                </div>
-              </div>
 
-              {/* Thẻ 2: Tin nổi bật / VIP (Top 1 Tìm Kiếm) */}
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
-                  <span>Tin nổi bật (Top 1)</span>
-                  <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
-                    <Crown className="h-3 w-3" /> VIP
-                  </span>
+                {/* Thẻ 2: Tin nổi bật / VIP (Top 1 Tìm Kiếm) */}
+                <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                  <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                    <span>Tin nổi bật (Top 1)</span>
+                    <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
+                      <Crown className="h-3 w-3" /> VIP
+                    </span>
+                  </div>
+                  <p className="text-2xl font-black text-amber-500 mt-1">
+                    {featuredUsed} / {pkgDef.limits.featuredListings}
+                  </p>
+                  <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                    <span className={remainingFeatured > 0 ? "text-amber-600" : "text-slate-500"}>
+                      {pkgDef.limits.featuredListings > 0 ? `Còn ${remainingFeatured} lượt đẩy Top` : 'Gói Free (0 tin)'}
+                    </span>
+                    <span className="text-slate-400">Ghim đầu tìm kiếm</span>
+                  </div>
                 </div>
-                <p className="text-2xl font-black text-amber-500 mt-1">
-                  {featuredUsed} / {pkgDef.limits.featuredListings}
-                </p>
-                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
-                  <span className={remainingFeatured > 0 ? "text-amber-600" : "text-slate-500"}>
-                    {pkgDef.limits.featuredListings > 0 ? `Còn ${remainingFeatured} lượt đẩy Top` : 'Gói Free (0 tin)'}
-                  </span>
-                  <span className="text-slate-400">Ghim đầu tìm kiếm</span>
-                </div>
-              </div>
 
-              {/* Thẻ 3: Thời hạn hiển thị tin theo gói */}
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
-                <span className="text-[11px] text-text-muted font-semibold">Thời hạn hiển thị tin</span>
-                <p className="text-2xl font-black text-indigo-600 mt-1">
-                  {pkgDef.limits.listingDurationDays} <span className="text-xs font-bold text-slate-500">ngày/tin</span>
-                </p>
-                <div className="text-[10px] font-bold text-slate-500 pt-1 flex items-center gap-1">
-                  <Clock className="h-3 w-3 text-slate-400" />
-                  <span className="truncate">
-                    {pkgDef.id === 'free' ? 'Sau 7 ngày tự động ẩn' : `Gói ${pkgDef.name} (${pkgDef.limits.listingDurationDays} ngày/tin)`}
-                  </span>
+                {/* Thẻ 3: Thời hạn hiển thị tin theo gói */}
+                <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                  <span className="text-[11px] text-text-muted font-semibold">Thời hạn hiển thị tin</span>
+                  <p className="text-2xl font-black text-indigo-600 mt-1">
+                    {pkgDef.limits.listingDurationDays} <span className="text-xs font-bold text-slate-500">ngày/tin</span>
+                  </p>
+                  <div className="text-[10px] font-bold text-slate-500 pt-1 flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-slate-400" />
+                    <span className="truncate">
+                      {pkgDef.id === 'free' ? 'Sau 7 ngày tự động ẩn' : `Gói ${pkgDef.name} (${pkgDef.limits.listingDurationDays} ngày/tin)`}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Thẻ 4: Báo cáo AI & Tin đã lưu */}
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
-                  <span>Báo cáo AI ({aiReportsLimit} lượt)</span>
-                  <span className="text-rose-600 font-bold flex items-center gap-0.5">
-                    <Heart className="h-2.5 w-2.5 fill-rose-600" /> {savedListingIds.length}
-                  </span>
-                </div>
-                <p className="text-2xl font-black text-text-primary mt-1">
-                  {aiReportsUsed} / {aiReportsLimit}
-                </p>
-                <div className="flex items-center justify-between text-[10px] font-bold pt-1">
-                  <span className="text-emerald-600">Còn lại {remainingAiReports} lượt AI</span>
-                  <span className="text-slate-400">{savedListingIds.length} tin đã lưu</span>
+                {/* Thẻ 4: Báo cáo AI & Tin đã lưu */}
+                <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
+                  <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
+                    <span>Báo cáo AI ({aiReportsLimit} lượt)</span>
+                    <span className="text-rose-600 font-bold flex items-center gap-0.5">
+                      <Heart className="h-2.5 w-2.5 fill-rose-600" /> {savedListingIds.length}
+                    </span>
+                  </div>
+                  <p className="text-2xl font-black text-text-primary mt-1">
+                    {aiReportsUsed} / {aiReportsLimit}
+                  </p>
+                  <div className="flex items-center justify-between text-[10px] font-bold pt-1">
+                    <span className="text-emerald-600">Còn lại {remainingAiReports} lượt AI</span>
+                    <span className="text-slate-400">{savedListingIds.length} tin đã lưu</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Tabbed Content Area */}
             <AnimatePresence mode="wait">
@@ -971,6 +1027,172 @@ function DashboardContent() {
                                 </Link>
                               </div>
                             )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* TAB: NHU CẦU MUA CỦA TÔI (DÀNH CHO NGƯỜI MUA BĐS) */}
+              {activeTab === 'buyer-requests' && (
+                <motion.div
+                  key="tab-buyer-requests"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 gap-3">
+                    <div>
+                      <h3 className="text-sm font-extrabold text-text-primary flex items-center gap-2">
+                        <span>Nhu cầu mua BĐS của tôi</span>
+                        <span className="rounded-full bg-orange-100 text-orange-700 px-2 py-0.5 text-[10px] font-black">
+                          {buyerRequests.length} yêu cầu
+                        </span>
+                      </h3>
+                      <p className="text-xs text-text-secondary mt-0.5">
+                        Theo dõi danh sách tiêu chí tìm mua nhà đất đã gửi tới HaNoi Realty (Hoàn toàn miễn phí)
+                      </p>
+                    </div>
+                    <Link
+                      href="/buyer-request"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      <span>Đăng nhu cầu mới</span>
+                    </Link>
+                  </div>
+
+                  {buyerRequests.length === 0 ? (
+                    <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
+                      <Search className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                      <h4 className="font-bold text-sm text-slate-700">Chưa có nhu cầu tìm mua nào</h4>
+                      <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">
+                        Đăng ký tiêu chí căn nhà mơ ước (khu vực, tài chính, hướng nhà) để HaNoi Realty lọc nguồn hàng chính chủ đã xác thực quy hoạch giúp bạn.
+                      </p>
+                      <Link
+                        href="/buyer-request"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        Đăng nhu cầu tìm mua ngay (Miễn phí)
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {buyerRequests.map((req: any) => {
+                        const isPaused = req.status === 'cancelled' || req.status === 'paused';
+                        return (
+                          <div
+                            key={req.id || req.code}
+                            className={`rounded-2xl border p-4 transition-all shadow-xs space-y-3 ${
+                              isPaused
+                                ? 'border-slate-200 bg-slate-50/70 opacity-75'
+                                : 'border-orange-100 bg-orange-50/20 hover:border-orange-300'
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-mono text-xs font-black text-orange-600 bg-orange-100 px-2 py-0.5 rounded-md">
+                                  {req.code}
+                                </span>
+                                <span className="text-xs font-bold text-slate-800">
+                                  Khu vực: {Array.isArray(req.target_districts) ? req.target_districts.join(', ') : req.target_districts || 'Hà Nội'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                                  req.status === 'pending'
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    : req.status === 'matched'
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                    : req.status === 'contacted'
+                                    ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                    : 'bg-slate-200 text-slate-700'
+                                }`}>
+                                  {req.status === 'pending' ? 'Đang tìm kiếm' : req.status === 'matched' ? 'Đã tìm thấy căn phù hợp' : req.status === 'contacted' ? 'Đang tư vấn' : 'Đã tạm dừng'}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Tài chính</span>
+                                <strong className="text-orange-600">
+                                  {formatCurrencyVND(req.budget_min || 0)} – {formatCurrencyVND(req.budget_max || 0)}
+                                </strong>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Loại hình</span>
+                                <span className="font-semibold text-slate-700">
+                                  {Array.isArray(req.property_types) ? req.property_types.join(', ') : req.property_types || 'Nhà đất'}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Tiêu chí</span>
+                                <span className="font-semibold text-slate-700">
+                                  Tối thiểu {req.min_area || 30}m² • {req.min_bedrooms || 1} PN
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Người liên hệ</span>
+                                <span className="font-semibold text-slate-700 truncate block">
+                                  {req.contact_name} ({req.contact_phone})
+                                </span>
+                              </div>
+                            </div>
+
+                            {req.notes && (
+                              <p className="text-[11px] text-slate-600 bg-white p-2.5 rounded-xl border border-slate-200">
+                                <strong>Ghi chú:</strong> {req.notes}
+                              </p>
+                            )}
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                              <span className="text-[10px] text-slate-400">
+                                Ngày đăng: {new Date(req.created_at || Date.now()).toLocaleDateString('vi-VN')}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextStatus = isPaused ? 'pending' : 'paused';
+                                    const updated = buyerRequests.map((r: any) =>
+                                      (r.id === req.id || r.code === req.code) ? { ...r, status: nextStatus } : r
+                                    );
+                                    setBuyerRequests(updated);
+                                    if (typeof window !== 'undefined') {
+                                      localStorage.setItem('hanoi_realty_buyer_requests', JSON.stringify(updated));
+                                      window.dispatchEvent(new Event('hanoi_buyer_requests_updated'));
+                                    }
+                                    addToast(isPaused ? '▶️ Đã tiếp tục kích hoạt tìm kiếm BĐS' : '⏸️ Đã tạm dừng yêu cầu', 'info');
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 font-bold text-[11px] text-slate-700 transition-colors"
+                                >
+                                  {isPaused ? 'Tiếp tục tìm' : 'Tạm dừng'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm('Bạn có chắc chắn muốn xoá yêu cầu tìm mua này?')) {
+                                      const updated = buyerRequests.filter((r: any) => r.id !== req.id && r.code !== req.code);
+                                      setBuyerRequests(updated);
+                                      if (typeof window !== 'undefined') {
+                                        localStorage.setItem('hanoi_realty_buyer_requests', JSON.stringify(updated));
+                                        window.dispatchEvent(new Event('hanoi_buyer_requests_updated'));
+                                      }
+                                      addToast('Đã xoá yêu cầu tìm mua', 'info');
+                                    }
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 font-bold text-[11px] transition-colors"
+                                >
+                                  Xoá
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
@@ -2304,7 +2526,7 @@ function DashboardContent() {
                 </motion.div>
               )}
 
-              {/* TAB: REFERRAL (CHUYÊN VIÊN MÔI GIỚI HỖ TRỢ) */}
+              {/* TAB: REFERRAL (MÔI GIỚI GIỚI THIỆU BẠN - DÀNH CHO KHÁCH MUA) */}
               {activeTab === 'referral' && (
                 <motion.div
                   key="tab-referral"
@@ -2318,7 +2540,43 @@ function DashboardContent() {
                     buyerEmail={user?.email}
                     buyerId={user?.id}
                     initialAgentCode={user?.referredByAgentCode}
+                    onSuccess={(agentCode) => {
+                      if (user) {
+                        setUser({
+                          ...user,
+                          referredByAgentCode: agentCode,
+                        });
+                      }
+                    }}
                   />
+                </motion.div>
+              )}
+
+              {/* TAB: CLIENTS (KHÁCH HÀNG CỦA TÔI - DÀNH CHO MÔI GIỚI / TPKD) */}
+              {activeTab === 'clients' && (
+                <motion.div
+                  key="tab-clients"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  <MyClientsTab user={user} appointments={appointments} />
+                </motion.div>
+              )}
+
+              {/* TAB: FINANCES (TIỀN & THANH TOÁN - CHỦ NHÀ, CTV/TPKD, NGƯỜI MUA, ADMIN) */}
+              {activeTab === 'finances' && (
+                <motion.div
+                  key="tab-finances"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  <FinancesTab user={user} />
                 </motion.div>
               )}
             </AnimatePresence>

@@ -14,6 +14,7 @@ import {
 import { auth as firebaseAuth } from '@/lib/firebase/config';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { parseLocationCoordinates } from '@/lib/utils';
+import { getListingIdentifier } from '@/lib/identification';
 
 import {
   getLocalListings,
@@ -480,7 +481,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addToast('Đã bỏ lưu bất động sản khỏi danh sách', 'info');
     } else {
       setSavedListingIds((prev) => [...prev, id]);
-      addToast('❤️ Đã lưu vào danh sách yêu thích', 'success');
+      addToast('❤️ Đã lưu vào danh sách yêu thích & giỏ nhà', 'success');
+
+      // Ghi nhận liên kết BĐS đã lưu kèm chuyên viên môi giới giới thiệu (nếu có)
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('hanoi_realty_saved_items');
+          const list = raw ? JSON.parse(raw) : [];
+          const matchedListing = listings.find((l) => l.id === id);
+          const itemCode = matchedListing ? getListingIdentifier(matchedListing) : undefined;
+          const entry = {
+            listingId: id,
+            listingCode: itemCode,
+            listingTitle: matchedListing?.title,
+            savedAt: new Date().toISOString(),
+            brokerReferralCode: user.referredByAgentCode || undefined,
+            buyerId: user.id,
+            buyerName: user.name,
+          };
+          localStorage.setItem('hanoi_realty_saved_items', JSON.stringify([entry, ...list.filter((x: any) => x.listingId !== id)]));
+        } catch {}
+      }
     }
 
     // Attempt Supabase sync if user logged in

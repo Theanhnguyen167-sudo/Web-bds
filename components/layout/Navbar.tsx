@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Heart,
   Bell,
+  Home,
   Download,
   Briefcase
 } from 'lucide-react';
@@ -106,11 +107,10 @@ export const Navbar: React.FC = () => {
   };
 
   const handlePostListingClick = () => {
-    if (!user) {
-      addToast('Vui lòng đăng nhập để đăng tin', 'info');
-      router.push('/login');
-    } else {
+    if (user?.role === 'owner') {
       router.push('/listings/create');
+    } else {
+      router.push('/buyer-request');
     }
   };
 
@@ -217,7 +217,6 @@ export const Navbar: React.FC = () => {
             <span className="hidden xl:inline">Sàn </span>
             <span>Môi giới / CTV</span>
           </Link>
-
           {/* Admin Portal Quick Switch Button for Admins */}
           {user?.role === 'admin' && (
             <Link
@@ -231,7 +230,7 @@ export const Navbar: React.FC = () => {
             </Link>
           )}
 
-          {/* Post Listing Button */}
+          {/* Main Action Button: Đăng tìm BĐS (Người mua) / Gửi bán BĐS (Chủ nhà) */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
@@ -239,7 +238,9 @@ export const Navbar: React.FC = () => {
             className="h-9 flex items-center justify-center gap-1.5 rounded-xl bg-accent px-3.5 text-xs font-bold text-white shadow-sm shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             <PlusCircle className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">Đăng tin</span>
+            <span className="whitespace-nowrap">
+              {user?.role === 'owner' ? 'Gửi bán BĐS' : 'Đăng tìm BĐS'}
+            </span>
           </motion.button>
 
           {/* Auth State / Account Dropdown */}
@@ -391,6 +392,28 @@ export const Navbar: React.FC = () => {
                     <span>Quản lý BĐS cá nhân</span>
                   </Link>
 
+                  {user?.role !== 'owner' && (
+                    <Link
+                      href="/dashboard?tab=buyer-requests"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                    >
+                      <Search className="h-4 w-4 text-orange-500" />
+                      <span>Nhu cầu mua của tôi</span>
+                    </Link>
+                  )}
+
+                  {user?.role !== 'buyer' && (
+                    <Link
+                      href="/dashboard?tab=listings"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                    >
+                      <Home className="h-4 w-4 text-blue-500" />
+                      <span>BĐS đã gửi bán</span>
+                    </Link>
+                  )}
+
                   <Link
                     href="/dashboard?tab=saved"
                     onClick={() => setUserDropdownOpen(false)}
@@ -446,12 +469,12 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile Right Actions (Tablet & Mobile < lg) - Thứ tự: Đăng tin, Tìm kiếm, Thông báo, Tài khoản (icon người), 3 gạch */}
         <div className="flex lg:hidden items-center gap-[15px] shrink-0 flex-nowrap ml-auto">
-          {/* 1. Nút Đăng tin: Nút pill màu cam nổi bật, bo tròn tinh tế */}
+          {/* 1. Nút Đăng tìm BĐS (Người mua) / Gửi bán BĐS (Chủ nhà) */}
           <button
             onClick={handlePostListingClick}
             className="h-7.5 flex items-center justify-center rounded-full bg-accent hover:bg-accent-hover active:scale-95 px-2.5 text-[11px] font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
           >
-            Đăng tin
+            {user?.role === 'owner' ? 'Gửi bán BĐS' : 'Đăng tìm BĐS'}
           </button>
 
           {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}

@@ -68,8 +68,8 @@ export function extractIdentificationCode(text: string): {
   if (!text) return { type: null, code: null };
   const trimmed = text.trim();
 
-  // Khớp định dạng chuẩn có dấu gạch ngang: BDS-00125
-  const match = trimmed.match(/^(BDS|MG|CN|HD)-?(\d{3,6})$/i);
+  // Khớp định dạng chuẩn có hoặc không có dấu gạch ngang/khoảng trắng: BDS-00125, bds 125, bds-125
+  const match = trimmed.match(/^(BDS|MG|CN|HD)[-\s]?(\d{1,6})$/i);
   if (match) {
     const prefix = match[1].toUpperCase() as 'BDS' | 'MG' | 'CN' | 'HD';
     const num = match[2].padStart(5, '0');
