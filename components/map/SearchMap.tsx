@@ -339,9 +339,7 @@ export default function SearchMap({
                           color:${zone.type === 'residential' ? '#166534' : zone.type === 'transport' ? '#713f12' : '#1e40af'}">
                 ✅ ${zone.status || 'Đã công bố'}
               </div>
-              <a href="/planning" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f97316;color:#ffffff;font-size:12px;font-weight:700;padding:9px 12px;border-radius:10px;text-decoration:none;box-shadow:0 4px 12px rgba(249,115,22,0.25);">
-                Xem chi tiết trên bản đồ quy hoạch →
-              </a>
+
             </div>
           `
 

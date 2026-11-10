@@ -45,10 +45,10 @@ export function AboutCta() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed"
         >
-          Tìm kiếm bất động sản, tra cứu quy hoạch và kết nối với người đăng tin trên Hanoi Realty.
+          Tìm kiếm bất động sản và kết nối với người đăng tin trên Hanoi Realty.
         </motion.p>
 
-        {/* Two Action Buttons: "Khám phá bất động sản" -> /search, "Tra cứu quy hoạch" -> /planning */}
+        {/* Two Action Buttons: "Khám phá bất động sản" -> /search, "Đăng tin nhà đất" -> /post-property */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -65,11 +65,11 @@ export function AboutCta() {
           </Link>
 
           <Link
-            href="/planning"
+            href="/post-property"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/15 text-white font-bold rounded-2xl text-base border border-white/15 backdrop-blur-md transition-all transform hover:-translate-y-0.5"
           >
             <MapPin className="h-5 w-5 text-orange-400" />
-            <span>Tra cứu quy hoạch</span>
+            <span>Đăng tin nhà đất</span>
           </Link>
         </motion.div>
 

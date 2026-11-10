@@ -5,14 +5,14 @@ import { PricingTable } from '@/components/membership/PricingTable';
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
 
 export const metadata: Metadata = {
-  title: 'Bảng Giá Dịch Vụ & Gói Hội Viên VIP - HaNoi Realty',
-  description: 'Bảng giá niêm yết các gói dịch vụ đăng tin BĐS, thẩm định giá AI chuyên sâu, tra cứu bản đồ quy hoạch Hà Nội 2030-2045 dành cho cá nhân, môi giới và doanh nghiệp.',
+  title: 'Bảng Giá Dịch Vụ & Gói Hội Viên - HaNoi Realty',
+  description: 'Bảng giá niêm yết các gói dịch vụ đăng tin BĐS và tiếp cận khách mua dành cho cá nhân, môi giới và doanh nghiệp tại Hà Nội.',
   alternates: {
     canonical: `${baseUrl}/pricing`,
   },
   openGraph: {
-    title: 'Bảng Giá Dịch Vụ & Hội Viên VIP - HaNoi Realty PropTech',
-    description: 'Bảng giá dịch vụ đăng tin BĐS thông minh, tra cứu quy hoạch và thẩm định AI độc quyền.',
+    title: 'Bảng Giá Dịch Vụ & Hội Viên - HaNoi Realty',
+    description: 'Bảng giá dịch vụ đăng tin BĐS thông minh và tiếp cận khách hàng tiềm năng.',
     url: `${baseUrl}/pricing`,
     type: 'website',
   },
@@ -23,7 +23,7 @@ export default function PricingPage() {
     '@context': 'https://schema.org',
     '@type': 'PriceSpecification',
     name: 'Bảng giá dịch vụ hội viên HaNoi Realty',
-    description: 'Dịch vụ đăng tin BĐS và tra cứu quy hoạch Hà Nội',
+    description: 'Dịch vụ đăng tin BĐS và kết nối giao dịch tại Hà Nội',
     priceCurrency: 'VND',
     validFrom: '2026-01-01',
   };

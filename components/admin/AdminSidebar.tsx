@@ -22,6 +22,19 @@ import {
   Newspaper
 } from 'lucide-react';
 
+interface AdminNavItem {
+  name: string;
+  href: string;
+  icon: any;
+  badge?: string;
+  badgeColor?: string;
+}
+
+interface AdminNavGroup {
+  title: string;
+  items: AdminNavItem[];
+}
+
 export const AdminSidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -33,7 +46,7 @@ export const AdminSidebar: React.FC = () => {
     router.push('/login');
   };
 
-  const navGroups = [
+  const navGroups: AdminNavGroup[] = [
     {
       title: 'Tổng quan',
       items: [
@@ -58,7 +71,6 @@ export const AdminSidebar: React.FC = () => {
           badge: 'Mới',
           badgeColor: 'bg-emerald-500/20 text-emerald-400',
         },
-        { name: 'Báo cáo AI', href: '/admin/reports', icon: FileText },
         {
           name: 'Người dùng',
           href: '/admin/users',
@@ -78,7 +90,6 @@ export const AdminSidebar: React.FC = () => {
     {
       title: 'Hệ thống',
       items: [
-        { name: 'Quy hoạch', href: '/admin/planning', icon: Compass },
         { name: 'Cài đặt', href: '/admin/settings', icon: Settings },
       ],
     },

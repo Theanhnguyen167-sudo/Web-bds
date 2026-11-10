@@ -20,7 +20,7 @@ export function AboutFooter() {
             </span>
           </div>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Nền tảng kết nối bất động sản thông minh nhất Hà Nội. Tiên phong ứng dụng dữ liệu quy hoạch phân khu và thẩm định giá AI.
+            Nền tảng kết nối bất động sản thông minh tại Hà Nội. Kết nối chủ nhà, môi giới và người mua nhanh chóng, minh bạch.
           </p>
           <div className="flex items-center gap-2 pt-1">
             {['Facebook', 'YouTube', 'TikTok', 'LinkedIn'].map((social) => (
@@ -42,9 +42,8 @@ export function AboutFooter() {
           </h4>
           <ul className="space-y-2 text-slate-400">
             <li><Link href="/search" className="hover:text-white transition-colors">Tìm kiếm BĐS</Link></li>
-            <li><Link href="/planning" className="hover:text-white transition-colors">Bản đồ quy hoạch</Link></li>
-            <li><Link href="/reports" className="hover:text-white transition-colors">Báo cáo AI Gemini</Link></li>
-            <li><Link href="/listings/create" className="hover:text-white transition-colors">Đăng tin BĐS</Link></li>
+            <li><Link href="/buyer-request" className="hover:text-white transition-colors">Gửi nhu cầu mua</Link></li>
+            <li><Link href="/post-property" className="hover:text-white transition-colors">Đăng tin BĐS</Link></li>
             <li><Link href="/pricing" className="hover:text-white transition-colors">Gói thành viên</Link></li>
             <li><Link href="/admin" className="text-orange-400 hover:text-white transition-colors font-bold flex items-center gap-1">🛡️ Admin Portal</Link></li>
           </ul>

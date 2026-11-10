@@ -248,13 +248,6 @@ const partnerLogos = [
 
 const heroFeatureCards = [
   {
-    title: 'Định giá & Thẩm định AI',
-    description: 'Báo cáo xu hướng giá, phân tích tiềm năng tăng trưởng theo thời gian thực.',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
-    href: '/reports',
-    actionText: 'Thẩm định AI',
-  },
-  {
     title: 'Không gian Độc bản',
     description: 'Biệt thự, nhà phố kiến trúc tinh hoa tại các quận trung tâm Hà Nội.',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
@@ -267,13 +260,6 @@ const heroFeatureCards = [
     image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80',
     href: '/mua-ban/chung-cu',
     actionText: 'Khám phá ngay',
-  },
-  {
-    title: 'Quy hoạch GIS 2030',
-    description: 'Tra cứu quy hoạch số, chỉ giới đường đỏ & phân khu đô thị minh bạch.',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
-    href: '/planning',
-    actionText: 'Xem bản đồ số',
   },
   {
     title: 'Nhà phố & Shophouse',
@@ -1595,24 +1581,15 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Action Buttons - Phân biệt rõ xem tin theo quận vs tra cứu bản đồ quy hoạch */}
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              {/* Action Button */}
+              <div className="flex">
                 <Link
                   href={`/search?district=${encodeURIComponent(hoveredDistrict)}`}
-                  className="h-11 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/25 transition-all px-2.5"
+                  className="w-full h-11 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/25 transition-all px-4"
                   title={`Xem toàn bộ tin đăng tại Quận ${hoveredDistrict}`}
                 >
                   <MapPin className="h-4 w-4 shrink-0" />
-                  <span className="truncate">Xem tin Quận {hoveredDistrict}</span>
-                </Link>
-
-                <Link
-                  href="/planning"
-                  className="h-11 rounded-xl border border-slate-700 bg-slate-800/90 hover:bg-slate-700 text-slate-100 hover:text-white active:scale-[0.98] font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all px-2.5"
-                  title="Tra cứu bản đồ quy hoạch phân khu TP. Hà Nội"
-                >
-                  <Layers className="h-4 w-4 text-orange-400 shrink-0" />
-                  <span className="truncate">Bản đồ quy hoạch phân khu</span>
+                  <span>Xem tin đăng Quận {hoveredDistrict}</span>
                 </Link>
               </div>
             </div>
@@ -2268,11 +2245,11 @@ export default function HomePage() {
                 <span>Chỉ số thị trường Hà Nội (Cập nhật: Q3/2025)</span>
               </h4>
               <Link
-                href="/reports"
+                href="/search"
                 className="text-xs font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 transition-colors group"
-                title="Xem phân tích chuyên sâu tại trang Báo cáo AI"
+                title="Khám phá bất động sản trên toàn Hà Nội"
               >
-                <span>Xem báo cáo AI chuyên sâu</span>
+                <span>Xem tin đăng theo khu vực</span>
                 <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
@@ -2674,16 +2651,6 @@ export default function HomePage() {
                 <li>
                   <Link href="/search" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
                     Tìm kiếm BĐS
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/planning" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
-                    Bản đồ quy hoạch
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/reports" className="text-slate-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all">
-                    Báo cáo AI
                   </Link>
                 </li>
                 <li>

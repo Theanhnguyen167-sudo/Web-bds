@@ -38,15 +38,15 @@ const STORAGE_KEY_PREFS = 'hanoi_realty_notification_prefs';
 const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'notif-1',
-    recipientUserId: 'all', // Thông báo quy hoạch chung cho toàn bộ người dùng
-    title: 'Cập nhật Quy hoạch Phân khu H2-2 Cầu Giấy',
-    content: 'Đồ án điều chỉnh quy hoạch chi tiết 1/2000 khu đô thị mới Cầu Giấy vừa được UBND Hà Nội phê duyệt.',
-    category: 'planning',
+    recipientUserId: 'all', // Thông báo thị trường chung cho toàn bộ người dùng
+    title: 'Cập nhật tin đăng khu vực Cầu Giấy',
+    content: 'Hệ thống vừa cập nhật danh sách nhà đất bán và cho thuê mới tại quận Cầu Giấy.',
+    category: 'listing',
     createdAt: '5 phút trước',
     timestamp: Date.now() - 5 * 60 * 1000,
     isRead: false,
-    link: '/planning',
-    tag: 'Quy hoạch'
+    link: '/search?district=C%E1%BA%A7u%20Gi%E1%BA%A5y',
+    tag: 'Thị trường'
   },
   {
     id: 'notif-2',
@@ -74,15 +74,14 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'notif-3',
     recipientUserId: 'u1',
-    type: 'ai',
-    title: 'Báo cáo AI Thẩm định hoàn tất',
-    content: 'Gemini AI 1.5 Pro đã hoàn tất định giá tự động và rà soát pháp lý cho bất động sản tại Nam Từ Liêm.',
-    category: 'ai',
+    title: 'Trạng thái tin đăng BĐS',
+    content: 'Tin đăng của bạn tại Nam Từ Liêm đã sẵn sàng kết nối người mua và môi giới.',
+    category: 'listing',
     createdAt: '1 giờ trước',
     timestamp: Date.now() - 60 * 60 * 1000,
     isRead: false,
-    link: '/reports',
-    tag: 'Thẩm định AI'
+    link: '/dashboard',
+    tag: 'Tin đăng'
   },
   {
     id: 'notif-4',
@@ -113,10 +112,10 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
 
 const DEFAULT_PREFS: NotificationPreferences = {
   browserPush: false,
-  planningUpdates: true,
+  planningUpdates: false,
   priceAlerts: true,
   inquiriesAndVisits: true,
-  aiValuationReady: true,
+  aiValuationReady: false,
   weeklyEmailDigest: true
 };
 
@@ -153,7 +152,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     onOpenChange?.(nextVal);
   };
   const [viewMode, setViewMode] = useState<'list' | 'settings'>('list');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'planning' | 'listings' | 'appointments'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'listings' | 'appointments'>('all');
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentData | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>(DEFAULT_NOTIFICATIONS);
   const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFS);
@@ -367,8 +366,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   // Filtered Notifications dựa trên userNotifications
   const filteredNotifications = userNotifications.filter((n) => {
     if (activeFilter === 'unread') return !n.isRead;
-    if (activeFilter === 'planning') return n.category === 'planning';
-    if (activeFilter === 'listings') return ['listing', 'ai'].includes(n.category) && n.tag !== 'Hẹn xem nhà';
+    if (activeFilter === 'listings') return ['listing', 'system'].includes(n.category) && n.tag !== 'Hẹn xem nhà';
     if (activeFilter === 'appointments') return n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData);
     return true;
   });
@@ -514,13 +512,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
         tag: 'Đã duyệt'
       },
       {
-        title: 'Bản đồ quy hoạch Nam Từ Liêm vừa cập nhật',
-        content: 'Tuyến đường kết nối Lê Quang Đạo kéo dài đến Vành Đai 3.5 đã có dữ liệu toạ độ quy hoạch chi tiết.',
-        category: 'planning',
-        link: '/planning',
-        tag: 'Quy hoạch'
-      },
-      {
         title: 'Khách hàng quan tâm BĐS Cầu Giấy',
         content: 'Có khách hàng vừa lưu tin đăng của bạn và để lại số điện thoại liên hệ qua Zalo.',
         category: 'message',
@@ -528,11 +519,11 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
         tag: 'Khách hàng'
       },
       {
-        title: 'AI cảnh báo giá: Đất phân lô Đống Đa',
+        title: 'Biến động giá: Đất phân lô Đống Đa',
         content: 'Biến động giá tăng 1.8% trong tuần qua dựa trên 45 giao dịch thực tế đã công chứng.',
-        category: 'ai',
-        link: '/reports',
-        tag: 'Thẩm định AI'
+        category: 'listing',
+        link: '/search',
+        tag: 'Thị trường'
       }
     ];
 
@@ -690,7 +681,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                       </span>
                     )}
                   </h3>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Quy hoạch, BĐS & Thẩm định AI</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Bất động sản &amp; Lịch hẹn</p>
                 </div>
               </div>
 
@@ -786,17 +777,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                     }`}
                   >
                     📅 Lịch hẹn ({userNotifications.filter(n => n.tag === 'Hẹn xem nhà' || Boolean(n.appointmentData)).length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveFilter('planning')}
-                    className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-all ${
-                      activeFilter === 'planning'
-                        ? 'bg-accent text-white shadow-sm'
-                        : 'text-slate-300 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    🗺️ Quy hoạch
                   </button>
                   <button
                     type="button"
@@ -1104,23 +1084,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                     Chủ đề nhận thông báo
                   </p>
 
-                  {/* Toggle 1: Quy hoạch */}
-                  <label className="flex items-center justify-between p-2 rounded-xl bg-slate-800/40 border border-slate-700/60 cursor-pointer hover:bg-slate-800/70 transition-colors">
-                    <div>
-                      <span className="font-semibold text-slate-200 block text-xs">🗺️ Cập nhật Quy hoạch mới</span>
-                      <span className="text-[10px] text-slate-400">Đồ án phân khu 1/2000 & 1/500 Hà Nội</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={preferences.planningUpdates}
-                      onChange={(e) =>
-                        savePreferences({ ...preferences, planningUpdates: e.target.checked })
-                      }
-                      className="h-4 w-4 rounded accent-orange-500 cursor-pointer"
-                    />
-                  </label>
-
-                  {/* Toggle 2: Biến động giá */}
+                  {/* Toggle 1: Biến động giá */}
                   <label className="flex items-center justify-between p-2 rounded-xl bg-slate-800/40 border border-slate-700/60 cursor-pointer hover:bg-slate-800/70 transition-colors">
                     <div>
                       <span className="font-semibold text-slate-200 block text-xs">📈 Cảnh báo Biến động giá BĐS</span>
@@ -1136,10 +1100,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                     />
                   </label>
 
-                  {/* Toggle 3: Khách hàng */}
+                  {/* Toggle 2: Khách hàng */}
                   <label className="flex items-center justify-between p-2 rounded-xl bg-slate-800/40 border border-slate-700/60 cursor-pointer hover:bg-slate-800/70 transition-colors">
                     <div>
-                      <span className="font-semibold text-slate-200 block text-xs">💬 Khách hỏi mua & Hẹn xem nhà</span>
+                      <span className="font-semibold text-slate-200 block text-xs">💬 Khách hỏi mua &amp; Hẹn xem nhà</span>
                       <span className="text-[10px] text-slate-400">Thông báo từ khách quan tâm tin đăng</span>
                     </div>
                     <input
@@ -1152,23 +1116,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                     />
                   </label>
 
-                  {/* Toggle 4: AI Định giá */}
-                  <label className="flex items-center justify-between p-2 rounded-xl bg-slate-800/40 border border-slate-700/60 cursor-pointer hover:bg-slate-800/70 transition-colors">
-                    <div>
-                      <span className="font-semibold text-slate-200 block text-xs">🤖 Báo cáo Định giá AI</span>
-                      <span className="text-[10px] text-slate-400">Thông báo khi thẩm định AI hoàn thành</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={preferences.aiValuationReady}
-                      onChange={(e) =>
-                        savePreferences({ ...preferences, aiValuationReady: e.target.checked })
-                      }
-                      className="h-4 w-4 rounded accent-orange-500 cursor-pointer"
-                    />
-                  </label>
-
-                  {/* Toggle 5: Email Digest */}
+                  {/* Toggle 3: Email Digest */}
                   <label className="flex items-center justify-between p-2 rounded-xl bg-slate-800/40 border border-slate-700/60 cursor-pointer hover:bg-slate-800/70 transition-colors">
                     <div>
                       <span className="font-semibold text-slate-200 block text-xs">📧 Email báo cáo tuần</span>

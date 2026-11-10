@@ -88,11 +88,10 @@ export default function AdminOverviewPage() {
               <button
                 key={tab.id}
                 onClick={() => setDateRange(tab.id as any)}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  dateRange === tab.id
+                className={`px-3 py-1.5 rounded-lg transition-all ${dateRange === tab.id
                     ? 'bg-orange-500 text-white shadow-xs'
                     : 'text-slate-600 hover:text-navy hover:bg-slate-50'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -140,14 +139,7 @@ export default function AdminOverviewPage() {
             onClick={() => router.push('/admin/listings')}
           />
 
-          <StatsCard
-            title="Báo cáo AI hôm nay"
-            value="156"
-            trend="+23%"
-            trendDirection="up"
-            icon={<Sparkles className="h-5 w-5 text-purple-500" />}
-            onClick={() => router.push('/admin/reports')}
-          />
+
 
           <StatsCard
             title="Giao dịch hôm nay"
@@ -193,7 +185,7 @@ export default function AdminOverviewPage() {
 
         {/* ── ROW 3: TWO TABLES (50/50) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
+
           {/* Left: Pending Approval Listings */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between">
             <div className="flex items-center justify-between">

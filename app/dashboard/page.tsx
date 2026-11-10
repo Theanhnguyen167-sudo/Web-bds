@@ -80,9 +80,9 @@ import {
 } from '@/lib/packages/package-config';
 import { BuyerRequest } from '@/types/buyer-request';
 
-type TabType = 'listings' | 'appointments' | 'reports' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients' | 'finances' | 'buyer-requests';
+type TabType = 'listings' | 'appointments' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients' | 'finances' | 'buyer-requests';
 
-const VALID_TABS: TabType[] = ['listings', 'appointments', 'reports', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients', 'finances', 'buyer-requests'];
+const VALID_TABS: TabType[] = ['listings', 'appointments', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients', 'finances', 'buyer-requests'];
 
 interface MenuItem {
   id: TabType;
@@ -417,7 +417,6 @@ function DashboardContent() {
         },
         { id: 'saved', label: 'Tin đã lưu & Giỏ nhà', icon: Heart, count: savedListingIds.length },
         { id: 'contracts', label: 'Hợp đồng & Đặt cọc', icon: FileText, count: 1, badge: 'HD' },
-        { id: 'reports', label: 'Báo cáo AI', icon: Sparkles, count: user?.aiReportsUsed || 8 },
       ],
     },
     {
@@ -663,20 +662,20 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                {/* Thẻ 4: Báo cáo AI & Tin đã lưu */}
+                {/* Thẻ 4: Tin đã lưu */}
                 <div className="rounded-2xl border border-border bg-white p-4 shadow-sm space-y-1">
                   <div className="flex items-center justify-between text-[11px] text-text-muted font-semibold">
-                    <span>Báo cáo AI ({aiReportsLimit} lượt)</span>
+                    <span>Tin BĐS đã lưu</span>
                     <span className="text-rose-600 font-bold flex items-center gap-0.5">
                       <Heart className="h-2.5 w-2.5 fill-rose-600" /> {savedListingIds.length}
                     </span>
                   </div>
                   <p className="text-2xl font-black text-text-primary mt-1">
-                    {aiReportsUsed} / {aiReportsLimit}
+                    {savedListingIds.length} <span className="text-xs font-normal text-slate-400">tin</span>
                   </p>
                   <div className="flex items-center justify-between text-[10px] font-bold pt-1">
-                    <span className="text-emerald-600">Còn lại {remainingAiReports} lượt AI</span>
-                    <span className="text-slate-400">{savedListingIds.length} tin đã lưu</span>
+                    <span className="text-emerald-600">Đang theo dõi</span>
+                    <span className="text-slate-400">Cập nhật giá</span>
                   </div>
                 </div>
               </div>
@@ -961,14 +960,7 @@ function DashboardContent() {
                                   <span>Sửa</span>
                                 </Link>
 
-                                <Link
-                                  href={`/reports/${listing.id}`}
-                                  className="flex items-center gap-1 rounded-lg bg-accent/10 px-2.5 py-1.5 text-xs font-bold text-accent hover:bg-accent hover:text-white transition-colors"
-                                  title="Báo cáo phân tích AI"
-                                >
-                                  <Sparkles className="h-3.5 w-3.5" />
-                                  <span>AI</span>
-                                </Link>
+
 
                                 <button
                                   onClick={(e) => handleDeleteListing(listing.id, e)}
@@ -1927,16 +1919,6 @@ function DashboardContent() {
                               </button>
 
                               <div className="flex items-center gap-2">
-                                <Link
-                                  href={`/reports/${listing.id}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 rounded-xl bg-accent/10 px-2.5 py-1.5 text-xs font-bold text-accent hover:bg-accent hover:text-white transition-colors"
-                                  title="Xem thẩm định quy hoạch & giá AI"
-                                >
-                                  <Sparkles className="h-3 w-3" />
-                                  <span>Báo cáo AI</span>
-                                </Link>
-
                                 <span className="inline-flex items-center gap-0.5 text-xs font-bold text-primary group-hover:text-accent group-hover:translate-x-0.5 transition-all">
                                   <span>Chi tiết</span>
                                   <ArrowRight className="h-3.5 w-3.5" />
@@ -1948,39 +1930,6 @@ function DashboardContent() {
                       ))}
                     </div>
                   )}
-                </motion.div>
-              )}
-
-              {/* TAB 3: REPORTS */}
-              {activeTab === 'reports' && (
-                <motion.div
-                  key="tab-reports"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="rounded-3xl border border-border bg-white p-6 shadow-sm space-y-4"
-                >
-                  <h3 className="text-sm font-extrabold text-text-primary">Báo cáo Thẩm định AI gần đây</h3>
-                  <div className="rounded-2xl bg-page-bg p-4 border border-border flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-accent" />
-                        <span className="text-xs font-bold text-text-primary">Phố Hào Nam, Đống Đa</span>
-                        <span className="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
-                          Điểm 82/100
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-text-muted">Tạo ngày 2025-08-20 · Được hưởng lợi từ Metro 2A</p>
-                    </div>
-
-                    <Link
-                      href="/reports/1"
-                      className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white shadow-sm"
-                    >
-                      Xem chi tiết
-                    </Link>
-                  </div>
                 </motion.div>
               )}
 
@@ -2111,59 +2060,55 @@ function DashboardContent() {
                         </p>
                       </div>
 
-                      {/* Metric 3: Báo cáo AI */}
+                      {/* Metric 3: Tin đã lưu */}
                       <div className={`p-4 rounded-2xl border ${
                         pkgDef.id === 'agency' ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
                       }`}>
                         <div className="flex items-center justify-between text-xs mb-1.5">
                           <span className="font-bold flex items-center gap-1.5">
-                            <Sparkles className="h-3.5 w-3.5 text-accent" />
-                            Báo cáo AI & Định giá
+                            <Heart className="h-3.5 w-3.5 text-rose-500" />
+                            Tin BĐS đã lưu
                           </span>
                           <span className="font-black">
-                            {user?.aiReportsUsed || 0}/{user?.aiReportsLimit ?? pkgDef.limits.aiReports}
+                            {savedListingIds.length} tin
                           </span>
                         </div>
                         <div className="h-2 rounded-full bg-slate-200/50 overflow-hidden mb-1.5">
                           <div
-                            className="h-full bg-purple-500 rounded-full"
+                            className="h-full bg-rose-500 rounded-full"
                             style={{
-                              width: (user?.aiReportsLimit ?? pkgDef.limits.aiReports) > 0
-                                ? `${Math.min(100, Math.round(((user?.aiReportsUsed || 0) / (user?.aiReportsLimit ?? pkgDef.limits.aiReports)) * 100))}%`
-                                : '0%'
+                              width: `${Math.min(100, savedListingIds.length * 10)}%`
                             }}
                           />
                         </div>
-                        <p className="text-[10px] text-slate-500">
-                          {pkgDef.limits.aiReports > 0
-                            ? `Còn ${Math.max(0, (user?.aiReportsLimit ?? pkgDef.limits.aiReports) - (user?.aiReportsUsed || 0))} lượt phân tích`
-                            : 'Không có (Mở từ Basic)'}
+                        <p className="text-[10px] text-slate-400">
+                          Lưu trữ &amp; theo dõi biến động giá
                         </p>
                       </div>
 
-                      {/* Metric 4: Đặc quyền quy hoạch */}
+                      {/* Metric 4: Thời hạn hiển thị */}
                       <div className={`p-4 rounded-2xl border ${
                         pkgDef.id === 'agency' ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
                       }`}>
                         <div className="flex items-center justify-between text-xs mb-1.5">
                           <span className="font-bold flex items-center gap-1.5">
-                            <Layers className="h-3.5 w-3.5 text-blue-500" />
-                            Cấp độ Bản đồ
+                            <Clock className="h-3.5 w-3.5 text-blue-500" />
+                            Thời hạn hiển thị
                           </span>
                           <span className="font-black text-[11px] text-emerald-500">
-                            {pkgDef.features.planningLevel === 'basic' ? 'Cơ bản' : pkgDef.features.planningLevel === 'detailed' ? 'Chi tiết' : '2030 & Giá đất'}
+                            {pkgDef.limits.listingDurationDays} ngày
                           </span>
                         </div>
                         <div className="h-2 rounded-full bg-slate-200/50 overflow-hidden mb-1.5">
                           <div
                             className="h-full bg-emerald-500 rounded-full"
                             style={{
-                              width: pkgDef.features.planningLevel === 'basic' ? '33%' : pkgDef.features.planningLevel === 'detailed' ? '66%' : '100%'
+                              width: `${Math.min(100, (pkgDef.limits.listingDurationDays / 90) * 100)}%`
                             }}
                           />
                         </div>
                         <p className="text-[10px] text-slate-500 truncate">
-                          {pkgDef.features.canExportPDF ? 'Hỗ trợ Xuất file PDF' : 'Chưa hỗ trợ PDF'}
+                          Tự động gia hạn theo gói
                         </p>
                       </div>
                     </div>
@@ -2264,7 +2209,7 @@ function DashboardContent() {
                           </div>
                           <h2 className="text-2xl font-black">Quản Trị Đội Ngũ Môi Giới & Sàn Giao Dịch</h2>
                           <p className="text-xs text-slate-300 mt-1 max-w-xl">
-                            Phân bổ hạn mức 250 tin đăng, 40 tin nổi bật và 150 báo cáo AI cho các chuyên viên môi giới trực thuộc sàn.
+                            Phân bổ hạn mức 250 tin đăng và 40 tin nổi bật cho các chuyên viên môi giới trực thuộc sàn.
                           </p>
                         </div>
 

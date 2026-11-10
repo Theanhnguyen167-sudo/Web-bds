@@ -51,7 +51,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     },
     {
       id: 3,
-      title: 'Báo cáo AI được tải xuống bởi khách hàng VIP',
+      title: 'Khách hàng VIP đã xem tin đăng nhà phố',
       time: '28 phút trước',
       type: 'info',
       icon: Info,

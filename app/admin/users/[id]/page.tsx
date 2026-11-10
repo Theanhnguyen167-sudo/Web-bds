@@ -35,7 +35,7 @@ export default function AdminUserDetailPage() {
 
   const [selectedPackage, setSelectedPackage] = useState(user.package);
   const [internalNote, setInternalNote] = useState(
-    'Khách hàng thân thiết, thường xuyên tra cứu quy hoạch khu vực Đống Đa.'
+    'Khách hàng thân thiết, thường xuyên theo dõi khu vực Đống Đa.'
   );
 
   const handleSaveNote = () => {
@@ -162,7 +162,7 @@ export default function AdminUserDetailPage() {
                 </div>
                 <div className="py-3 flex items-center justify-between">
                   <div>
-                    <p className="font-bold text-navy">Mua 10 Báo cáo AI định giá bổ sung</p>
+                    <p className="font-bold text-navy">Đăng ký gói tin VIP bổ sung</p>
                     <p className="text-[11px] text-slate-400">10/07/2025 09:30 · MoMo</p>
                   </div>
                   <div className="text-right">
@@ -189,7 +189,7 @@ export default function AdminUserDetailPage() {
                   <p className="text-lg font-black text-navy">{user.listingsCount}</p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl">
-                  <p className="text-slate-400">Báo cáo AI</p>
+                  <p className="text-slate-400">Tin nổi bật</p>
                   <p className="text-lg font-black text-navy">{user.aiReportsUsed}</p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl col-span-2">

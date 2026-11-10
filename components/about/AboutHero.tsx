@@ -42,7 +42,7 @@ export function AboutHero() {
           >
             Hanoi Realty <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-orange-500 bg-clip-text text-transparent">
-              Kết nối Bất động sản &amp; Quy hoạch thông minh
+              Kết nối Bất động sản Thông minh
             </span>
           </motion.h1>
 
@@ -53,7 +53,7 @@ export function AboutHero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-base sm:text-lg lg:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed"
           >
-            Hanoi Realty giúp người mua, người bán và nhà đầu tư tiếp cận thông tin bất động sản minh bạch hơn thông qua dữ liệu, công nghệ AI và thông tin quy hoạch.
+            Hanoi Realty giúp người mua, người bán và nhà đầu tư tiếp cận thông tin bất động sản minh bạch hơn thông qua dữ liệu và kết nối nhanh chóng.
           </motion.p>
 
           {/* Call to Actions */}
@@ -71,11 +71,11 @@ export function AboutHero() {
               <span>Khám phá bất động sản</span>
             </Link>
             <Link
-              href="/planning"
+              href="/post-property"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm border border-white/15 transition-all transform hover:-translate-y-0.5"
             >
               <MapPin className="h-4 w-4 text-orange-400" />
-              <span>Tra cứu quy hoạch</span>
+              <span>Đăng tin nhà đất</span>
             </Link>
           </motion.div>
         </div>
@@ -123,30 +123,30 @@ export function AboutHero() {
             <div className="flex flex-col items-center sm:items-start text-center sm:text-left px-4 sm:px-6 py-4">
               <div className="flex items-center gap-2 text-orange-400 mb-1">
                 <Cpu className="h-4 w-4" />
-                <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">Công nghệ</span>
+                <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">Kết nối</span>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
-                  Tự động
+                  Trực tiếp
                 </span>
               </div>
-              <p className="text-sm font-bold text-slate-200 mt-1">Báo cáo AI</p>
-              <p className="text-xs text-slate-400 mt-0.5 hidden sm:block">Định giá &amp; phân tích theo nhu cầu</p>
+              <p className="text-sm font-bold text-slate-200 mt-1">Chủ nhà &amp; Môi giới</p>
+              <p className="text-xs text-slate-400 mt-0.5 hidden sm:block">Trao đổi nhanh chóng &amp; rõ ràng</p>
             </div>
 
             {/* Metric 4 */}
             <div className="flex flex-col items-center sm:items-start text-center sm:text-left px-4 sm:px-6 py-4">
               <div className="flex items-center gap-2 text-orange-400 mb-1">
                 <Compass className="h-4 w-4" />
-                <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">Trực quan</span>
+                <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">Bản đồ</span>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
-                  24/7
+                  GIS
                 </span>
               </div>
-              <p className="text-sm font-bold text-slate-200 mt-1">Tra cứu quy hoạch</p>
-              <p className="text-xs text-slate-400 mt-0.5 hidden sm:block">Bản đồ số hóa cập nhật liên tục</p>
+              <p className="text-sm font-bold text-slate-200 mt-1">Vị trí thông minh</p>
+              <p className="text-xs text-slate-400 mt-0.5 hidden sm:block">Định vị &amp; tiện ích xung quanh</p>
             </div>
 
           </div>

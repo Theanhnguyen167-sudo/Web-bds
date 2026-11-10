@@ -36,7 +36,7 @@ const PACKAGE_FEATURE_CONFIGS: Record<string, PackageFeatureConfig> = {
     ],
     privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
     privileges: [
-      'Xem bản đồ quy hoạch cơ bản',
+      'Bản đồ vị trí & tiện ích cơ bản',
       'Hỗ trợ cộng đồng trực tuyến',
     ],
   },
@@ -44,13 +44,12 @@ const PACKAGE_FEATURE_CONFIGS: Record<string, PackageFeatureConfig> = {
     serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
     serviceLimits: [
       { label: 'Tin nổi bật / tháng', badge: 'x 2' },
-      { label: 'Báo cáo AI chuyên sâu & định giá', badge: 'x 5' },
       { label: 'Đăng tối đa tin BĐS (Thời hạn 30 ngày)', badge: 'x 20' },
     ],
     privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
     privileges: [
-      'Tra cứu bản đồ quy hoạch chi tiết',
-      'Xuất file báo cáo PDF',
+      'Bản đồ vị trí & tiện ích xung quanh',
+      'Huy hiệu Môi giới xác thực',
       'Hỗ trợ qua Ticket & Email',
     ],
   },
@@ -58,13 +57,12 @@ const PACKAGE_FEATURE_CONFIGS: Record<string, PackageFeatureConfig> = {
     serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
     serviceLimits: [
       { label: 'Tin nổi bật / tháng', badge: 'x 10' },
-      { label: 'Báo cáo AI chuyên sâu & định giá', badge: 'x 30' },
       { label: 'Đăng tối đa tin BĐS (Thời hạn 60 ngày)', badge: 'x 50' },
     ],
     privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
     privileges: [
-      'Tra cứu bản đồ quy hoạch 2030 & giá đất',
-      'Xuất file báo cáo PDF chuẩn chuyên nghiệp',
+      'Đẩy tin tự động lên trang chủ',
+      'Huy hiệu VIP Pro nổi bật',
       'Hỗ trợ ưu tiên 24/7',
     ],
   },
@@ -72,7 +70,6 @@ const PACKAGE_FEATURE_CONFIGS: Record<string, PackageFeatureConfig> = {
     serviceLimitsTitle: 'Hạn mức dịch vụ 30 ngày',
     serviceLimits: [
       { label: 'Tin nổi bật / tháng', badge: 'x 40' },
-      { label: 'Báo cáo AI chuyên sâu & thẩm định giá', badge: 'x 150' },
       { label: 'Đăng tối đa tin BĐS (Thời hạn 90 ngày)', badge: 'x 250' },
     ],
     privilegesTitle: 'Đặc quyền hệ thống & Công nghệ',
@@ -155,7 +152,7 @@ export const PricingTable: React.FC = () => {
           className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border border-orange-500/25 px-4 py-1.5 text-xs font-black text-orange-600 shadow-xs backdrop-blur-xs"
         >
           <Sparkles className="h-4 w-4 text-orange-500 animate-pulse" />
-          <span>Gói Hội Viên Đăng Tin & Thẩm Định AI</span>
+          <span>Gói Hội Viên Đăng Tin &amp; Quảng Bá BĐS</span>
         </motion.div>
 
         <h1 
@@ -172,7 +169,7 @@ export const PricingTable: React.FC = () => {
         </h1>
 
         <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Tối ưu chi phí môi giới, tiếp cận hàng ngàn khách mua và sở hữu công cụ phân tích quy hoạch AI độc quyền tại Hà Nội.
+          Tối ưu chi phí môi giới, tiếp cận hàng ngàn khách mua và quản lý tin đăng bất động sản chuyên nghiệp tại Hà Nội.
         </p>
 
         {/* Monthly / Yearly Switcher */}

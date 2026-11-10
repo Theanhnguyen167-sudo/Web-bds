@@ -84,19 +84,11 @@ export const PropertyPopup: React.FC<PropertyPopupProps> = ({ listing, onClose }
           )}
         </div>
 
-        {/* Buttons */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <Link
-            href={`/reports/${listing.id}`}
-            className="flex items-center justify-center gap-1 rounded-lg bg-primary-light/80 hover:bg-primary-light border border-slate-600 px-2.5 py-1.5 text-[11px] font-bold text-accent transition-colors"
-          >
-            <Sparkles className="h-3 w-3" />
-            <span>Thẩm định AI</span>
-          </Link>
-
+        {/* Button */}
+        <div className="pt-1">
           <Link
             href={getListingUrl(listing)}
-            className="flex items-center justify-center gap-1 rounded-lg bg-accent hover:bg-accent-hover px-2.5 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors"
+            className="w-full flex items-center justify-center gap-1 rounded-lg bg-accent hover:bg-accent-hover px-2.5 py-1.5 text-xs font-bold text-white shadow-sm transition-colors"
           >
             <span>Xem chi tiết</span>
             <ArrowRight className="h-3 w-3" />

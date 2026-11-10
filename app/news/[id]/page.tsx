@@ -335,7 +335,7 @@ export default function NewsDetailPage() {
                     <Sparkles className="h-3.5 w-3.5 text-amber-600" />
                     Lưu ý từ Ban biên tập HaNoi Realty:
                   </p>
-                  Thông tin và số liệu được tổng hợp từ các văn bản công bố chính thức và hệ thống dữ liệu thị trường HaNoi Realty. Nhà đầu tư và quý độc giả có nhu cầu tra cứu thửa đất thực tế vui lòng sử dụng tiện ích Bản đồ Quy hoạch số hóa.
+                  Thông tin và số liệu được tổng hợp từ các văn bản công bố chính thức và hệ thống dữ liệu thị trường HaNoi Realty. Quý độc giả và nhà đầu tư có nhu cầu tra cứu thông tin bất động sản vui lòng tham khảo bản đồ tìm kiếm.
                 </div>
               </div>
 
@@ -366,11 +366,11 @@ export default function NewsDetailPage() {
                 </button>
 
                 <Link
-                  href="/planning"
+                  href="/search"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
                 >
-                  <Compass className="h-4 w-4 text-orange-400" />
-                  <span>Tra cứu quy hoạch Hà Nội</span>
+                  <Search className="h-4 w-4 text-orange-400" />
+                  <span>Tìm kiếm bất động sản Hà Nội</span>
                 </Link>
               </div>
 

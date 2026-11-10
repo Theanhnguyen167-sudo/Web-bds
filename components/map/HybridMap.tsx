@@ -247,14 +247,7 @@ export default function HybridMap({
                   <p>📅 Quy hoạch 2030</p>
                   <p>✅ Cho phép xây dựng</p>
                 </div>
-                <div className="pt-2 border-t border-gray-100">
-                  <a
-                    href="/planning"
-                    className="inline-flex items-center justify-center w-full gap-1.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-600 font-bold text-xs py-1.5 px-3 rounded-lg transition-colors"
-                  >
-                    <span>Click để xem chi tiết →</span>
-                  </a>
-                </div>
+
               </div>
             </Popup>
           </Polygon>

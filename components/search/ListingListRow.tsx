@@ -119,15 +119,7 @@ export const ListingListRow: React.FC<ListingListRowProps> = ({
           </span>
         </div>
 
-        <div className="w-full space-y-1.5 mt-3 sm:mt-0">
-          <Link
-            href={`/reports/${listing.id}`}
-            className="w-full py-1.5 rounded-xl border border-orange-200 dark:border-orange-900/60 hover:bg-orange-50 dark:hover:bg-orange-950/30 text-orange-600 dark:text-orange-400 font-bold text-xs flex items-center justify-center gap-1 transition-colors"
-          >
-            <Sparkles className="h-3 w-3" />
-            <span>Báo cáo AI</span>
-          </Link>
-
+        <div className="w-full mt-3 sm:mt-0">
           <Link
             href={listingUrl}
             className="w-full py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors shadow-sm"

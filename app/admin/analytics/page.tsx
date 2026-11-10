@@ -46,23 +46,7 @@ const annualRevenueComp = [
   { month: 'T8', y2024: 42, y2025: 65 },
 ];
 
-const aiReportsByDate = [
-  { date: '17/08', count: 110 },
-  { date: '18/08', count: 135 },
-  { date: '19/08', count: 98 },
-  { date: '20/08', count: 145 },
-  { date: '21/08', count: 160 },
-  { date: '22/08', count: 175 },
-  { date: '23/08', count: 192 },
-];
 
-const topDistrictsReports = [
-  { district: 'Đống Đa', count: 320 },
-  { district: 'Cầu Giấy', count: 290 },
-  { district: 'Tây Hồ', count: 245 },
-  { district: 'Nam Từ Liêm', count: 210 },
-  { district: 'Hoàn Kiếm', count: 180 },
-];
 
 const districtHeatmap = [
   { name: 'Đống Đa', listings: 1240, intensity: 'bg-orange-600 text-white' },
@@ -227,35 +211,7 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        {/* ── ROW 4: AI REPORTS ANALYTICS ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs space-y-3">
-            <h3 className="font-bold text-sm text-navy">Báo cáo AI theo ngày</h3>
-            <div className="h-56 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={aiReportsByDate}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} />
-                  <YAxis stroke="#94a3b8" fontSize={11} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', color: '#fff', borderRadius: '12px', border: 'none' }} />
-                  <Bar dataKey="count" name="Số báo cáo" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs space-y-3">
-            <h3 className="font-bold text-sm text-navy">Top khu vực được xem báo cáo nhiều nhất</h3>
-            <div className="space-y-2 pt-2 text-xs">
-              {topDistrictsReports.map((d, i) => (
-                <div key={d.district} className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
-                  <span className="font-bold text-navy">#{i + 1} {d.district}</span>
-                  <span className="text-purple-600 font-bold">{d.count} báo cáo</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
         {/* ── ROW 5: SEARCH ANALYTICS ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

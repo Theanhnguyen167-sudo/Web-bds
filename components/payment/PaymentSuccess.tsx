@@ -115,8 +115,8 @@ export const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
           <span className="text-[10px] text-slate-500">Đăng BĐS</span>
         </div>
         <div className="p-2.5 rounded-xl bg-purple-50 border border-purple-100 text-center">
-          <span className="font-black text-purple-600 block">30 lượt</span>
-          <span className="text-[10px] text-slate-500">Báo cáo AI</span>
+          <span className="font-black text-purple-600 block">60 ngày</span>
+          <span className="text-[10px] text-slate-500">Thời hạn tin</span>
         </div>
         <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-100 text-center">
           <span className="font-black text-blue-600 block">10 tin</span>

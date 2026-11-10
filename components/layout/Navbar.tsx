@@ -86,9 +86,7 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Trang chủ', href: '/' },
     { name: 'Tìm kiếm', href: '/search' },
-    { name: 'Quy hoạch', href: '/planning' },
     { name: 'Tin tức', href: '/news' },
-    { name: 'Báo cáo AI', href: '/reports' },
     { name: 'Bảng giá', href: '/pricing' },
     { name: 'Về chúng tôi', href: '/about' },
   ];
@@ -314,7 +312,7 @@ export const Navbar: React.FC = () => {
                     <div className="p-2.5 border-b border-slate-100 mb-1 bg-slate-50/70 rounded-lg">
                       <p className="text-xs font-bold text-text-primary">Tài khoản HaNoi Realty</p>
                       <p className="text-[11px] text-text-secondary mt-0.5">
-                        Đăng nhập để đồng bộ tin đăng, lịch hẹn & báo cáo AI.
+                        Đăng nhập để đồng bộ tin đăng & lịch hẹn.
                       </p>
                       <Link
                         href="/login"

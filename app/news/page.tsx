@@ -917,17 +917,9 @@ function NewsContent() {
                           Quy hoạch &amp; Hạ tầng
                         </h3>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          Bản đồ số hóa quy hoạch phân khu, tiến độ thi công các trục vành đai và mạng lưới Metro
+                          Thông tin tiến độ thi công các trục vành đai và mạng lưới Metro
                         </p>
                       </div>
-                      <Link
-                        href="/planning"
-                        className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors shrink-0"
-                      >
-                        <MapPin className="h-3.5 w-3.5" />
-                        <span>Mở bản đồ quy hoạch số</span>
-                        <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
-                      </Link>
                     </div>
 
                     {/* Lưới 2 cột Card ngang rộng rãi */}
@@ -1105,21 +1097,21 @@ function NewsContent() {
                 </div>
 
                 <h3 className="text-base font-black leading-snug text-white">
-                  Tra cứu quy hoạch Hà Nội trực tuyến
+                  Tìm kiếm Bất động sản Hà Nội
                 </h3>
 
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Xem bản đồ số hóa quy hoạch phân khu, ranh giới lộ giới và tuyến Metro đến năm 2030.
+                  Khám phá hàng ngàn căn nhà phố, chung cư và biệt thự được kiểm tra chính chủ.
                 </p>
 
                 <div className="pt-2">
                   <Link
-                    href="/planning"
+                    href="/search"
                     className="w-full flex items-center justify-between p-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs transition-all shadow-sm"
                   >
                     <span className="flex items-center gap-2">
                       <Compass className="h-4 w-4" />
-                      <span>Tra cứu quy hoạch Hà Nội</span>
+                      <span>Khám phá tin đăng</span>
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </Link>

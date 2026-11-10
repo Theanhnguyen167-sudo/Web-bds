@@ -89,7 +89,7 @@ export const BlockContentBuilder: React.FC<BlockContentBuilderProps> = ({ blocks
         };
         break;
       case 'cta':
-        initialData = { title: 'Cần thẩm định pháp lý hoặc định giá thửa đất này?', btnText: 'Đặt lịch tư vấn chuyên gia', link: '/reports' };
+        initialData = { title: 'Cần hỗ trợ thông tin hoặc liên hệ chủ nhà?', btnText: 'Liên hệ tư vấn', link: '/contact' };
         break;
       case 'featured_property':
         initialData = { title: 'Nhà phố Hoàng Cầu, Đống Đa - 55m² 5 tầng', price: '12.8 Tỷ', address: 'Hoàng Cầu, Ô Chợ Dừa, Đống Đa', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80' };

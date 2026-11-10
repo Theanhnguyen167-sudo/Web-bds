@@ -18,7 +18,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   isOpen,
   onClose,
   featureTitle = 'Tính năng cao cấp VIP',
-  featureDescription = 'Vui lòng nâng cấp gói thành viên để sử dụng tính năng báo cáo AI chuyên sâu và đăng tin nổi bật.',
+  featureDescription = 'Vui lòng nâng cấp gói thành viên để sử dụng tính năng đăng tin nâng cao và tiếp cận nhiều khách hàng hơn.',
 }) => {
   if (!isOpen) return null;
 
@@ -62,7 +62,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 <span className="text-lg font-black text-navy">{formatCurrencyVND(basicPrice)}/th</span>
                 <ul className="space-y-1 text-[11px] text-slate-600 mt-2">
                   <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 20 tin đăng BĐS</li>
-                  <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 5 Báo cáo AI/tháng</li>
+                  <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 2 tin nổi bật/tháng</li>
                 </ul>
               </div>
               <Link
@@ -84,8 +84,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 <span className="text-lg font-black text-orange-600">{formatCurrencyVND(proPrice)}/th</span>
                 <ul className="space-y-1 text-[11px] text-slate-600 mt-2">
                   <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 50 tin đăng BĐS</li>
-                  <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 30 Báo cáo AI/tháng</li>
                   <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> 10 tin VIP nổi bật</li>
+                  <li className="flex items-center gap-1.5"><Check className="h-3 w-3 text-emerald-500" /> Ưu tiên hiển thị</li>
                 </ul>
               </div>
               <Link

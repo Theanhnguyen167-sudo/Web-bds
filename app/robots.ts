@@ -23,12 +23,6 @@ export default function robots(): MetadataRoute.Robots {
     // Tin tức & Cẩm nang thị trường (News)
     '/news',
     '/news/*',
-    // Bản đồ quy hoạch & Dữ liệu quy hoạch (Planning & Land Use)
-    '/planning',
-    '/planning/*',
-    // Báo cáo thị trường & Phân tích hạ tầng (Market Reports)
-    '/reports',
-    '/reports/*',
     // Legacy URLs để crawler tiếp nhận Redirect 308 sang Canonical SEO URLs
     '/listings',
     '/listings/*',

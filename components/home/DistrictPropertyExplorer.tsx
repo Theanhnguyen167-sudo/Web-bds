@@ -409,14 +409,7 @@ export function DistrictPropertyExplorer() {
               </button>
             </div>
 
-            {/* Quick Planning Link */}
-            <Link
-              href="/planning"
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-orange-50 hover:text-[#FF6600] border border-slate-200 px-3.5 py-2.5 rounded-xl transition-all shadow-sm"
-            >
-              <Layers className="w-3.5 h-3.5 text-[#FF6600]" />
-              <span>Quy hoạch 2030</span>
-            </Link>
+
 
             {/* Mobile View Toggle Buttons (Only when in Map Mode) */}
             {!isMasterplanMode && (

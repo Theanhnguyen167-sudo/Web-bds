@@ -565,36 +565,10 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
   // Description expand state (mặc định mở rộng để người dùng luôn đọc được toàn bộ nội dung chi tiết)
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
 
-  // AI Report Generation state
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [currentStepProgress, setCurrentStepProgress] = useState(0);
-
   // Booking Modal State (Hẹn xem nhà)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   const isSaved = savedListingIds.includes(listing.id);
-
-  const progressSteps = [
-    'Đang lấy thông tin quy hoạch phân khu...',
-    'Đang phân tích dự án hạ tầng & Metro lân cận...',
-    'Đang tổng hợp dữ liệu với Gemini AI...',
-    'Đang khởi tạo cấu trúc báo cáo định giá...',
-  ];
-
-  const handleGenerateAIReport = async () => {
-    setIsGeneratingReport(true);
-    setCurrentStepProgress(1);
-
-    setTimeout(() => setCurrentStepProgress(2), 700);
-    setTimeout(() => setCurrentStepProgress(3), 1500);
-    setTimeout(() => setCurrentStepProgress(4), 2200);
-
-    setTimeout(() => {
-      setIsGeneratingReport(false);
-      addToast('✅ Báo cáo AI đã được tạo thành công!', 'success');
-      router.push(`/reports/${listing.id}`);
-    }, 2900);
-  };
 
   const handleShare = () => {
     navigator.clipboard?.writeText(window.location.href);
@@ -915,74 +889,7 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
               />
             </div>
 
-            {/* 2. BANNER THẨM ĐỊNH QUY HOẠCH & ĐỊNH GIÁ AI */}
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 sm:p-5 shadow-sm transition-all">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-600 mt-0.5">
-                    <Sparkles className="h-4 w-4" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <h3 className="text-sm font-bold text-slate-800">
-                      Thẩm Định Quy Hoạch & Định Giá AI
-                    </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed max-w-xl">
-                      Hệ thống AI phân tích tự động dữ liệu quy hoạch đất 2030, hạ tầng giao thông và tính thanh khoản bất động sản này.
-                    </p>
-                  </div>
-                </div>
 
-                <button
-                  disabled={isGeneratingReport}
-                  onClick={handleGenerateAIReport}
-                  className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-semibold shadow-sm transition-all shrink-0 disabled:opacity-75 self-start sm:self-center"
-                >
-                  {isGeneratingReport ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Đang phân tích AI...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-3.5 w-3.5 text-orange-400" />
-                      <span>Tạo báo cáo AI ngay</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Progress steps animation */}
-              <AnimatePresence>
-                {isGeneratingReport && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-3.5 border-t border-slate-200/80 pt-3 space-y-1.5"
-                  >
-                    {progressSteps.map((stepText, stepIdx) => (
-                      <div
-                        key={stepIdx}
-                        className={`flex items-center gap-2 text-xs transition-opacity duration-300 ${
-                          currentStepProgress > stepIdx
-                            ? 'font-medium text-emerald-600'
-                            : currentStepProgress === stepIdx + 1
-                            ? 'font-semibold text-orange-600 animate-pulse'
-                            : 'opacity-40 text-slate-400'
-                        }`}
-                      >
-                        {currentStepProgress > stepIdx ? (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                        ) : (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-500 shrink-0" />
-                        )}
-                        <span>{stepText}</span>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
 
             {/* 3. ĐẶC ĐIỂM BẤT ĐỘNG SẢN */}
             <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm space-y-4">
@@ -1163,18 +1070,6 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
                 />
               </div>
 
-              {/* Nút xem nhanh bản đồ hạ tầng & tiện ích Google Maps */}
-              <Link
-                href={`/reports/${listing.id}`}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 transition-colors border border-orange-200/60 text-xs font-bold shadow-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <Compass className="h-4 w-4 text-orange-600 shrink-0" />
-                  <span>Xem Hạ Tầng & Tiện Ích Google Maps</span>
-                </div>
-                <ChevronRight className="h-3.5 w-3.5 text-orange-600 shrink-0" />
-              </Link>
-
               {/* Bên dưới: Địa chỉ & Action links */}
               <div className="pt-1 space-y-2">
                 <p className="text-xs text-slate-600 flex items-center gap-1.5 truncate">
@@ -1188,13 +1083,13 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
                     className="text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
                   >
                     <Map className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Mở bản đồ quy hoạch</span>
+                    <span>Xem BĐS cùng khu vực</span>
                   </Link>
                   <Link
-                    href="/planning"
+                    href={`/search?district=${encodeURIComponent(listing.district)}`}
                     className="text-orange-600 hover:text-orange-700 transition-colors flex items-center gap-1"
                   >
-                    <span>Tra cứu chi tiết</span>
+                    <span>Khám phá thêm</span>
                     <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>

@@ -1,7 +1,7 @@
 {
-  "name": "HaNoi Realty - Nền tảng BĐS & Quy hoạch Hà Nội",
+  "name": "HaNoi Realty - Nền tảng Bất động sản Hà Nội",
   "short_name": "HaNoi Realty",
-  "description": "Nền tảng tìm kiếm BĐS thông minh, tra cứu quy hoạch đất Hà Nội 2030-2045 và thẩm định AI chuyên sâu.",
+  "description": "Nền tảng tìm kiếm, kết nối giao dịch bất động sản minh bạch tại Hà Nội.",
   "start_url": "/",
   "id": "/",
   "scope": "/",
@@ -49,18 +49,6 @@
     }
   ],
   "shortcuts": [
-    {
-      "name": "Tra cứu Quy hoạch",
-      "short_name": "Quy hoạch",
-      "description": "Bản đồ quy hoạch phân khu & chức năng sử dụng đất Hà Nội",
-      "url": "/planning",
-      "icons": [
-        {
-          "src": "/icons/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
     {
       "name": "Tìm kiếm BĐS",
       "short_name": "Tìm nhà",

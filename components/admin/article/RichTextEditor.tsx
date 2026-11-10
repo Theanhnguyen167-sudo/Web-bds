@@ -407,7 +407,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                   type="text"
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="https://hanoirealty.vn/planning..."
+                  placeholder="https://hanoirealty.vn/search..."
                   className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-orange-500"
                 />
               </div>

@@ -9,26 +9,26 @@ const coreFeatures = [
   {
     number: '01',
     title: 'Tìm kiếm bất động sản',
-    description: 'Khám phá các tin đăng theo khu vực, loại hình, mức giá và nhu cầu.',
+    description: 'Khám phá các tin đăng theo khu vực, loại hình, mức giá và nhu cầu mua bán, cho thuê.',
     icon: Search,
     href: '/search',
     actionText: 'Khám phá tin đăng',
   },
   {
     number: '02',
-    title: 'Tra cứu quy hoạch',
-    description: 'Hỗ trợ người dùng tiếp cận thông tin quy hoạch để có thêm cơ sở trước khi đưa ra quyết định.',
+    title: 'Bản đồ vị trí thông minh',
+    description: 'Trực quan hóa vị trí bất động sản trên bản đồ vệ tinh, tra cứu tiện ích và giao thông xung quanh.',
     icon: Map,
-    href: '/planning',
-    actionText: 'Xem bản đồ quy hoạch',
+    href: '/search',
+    actionText: 'Xem bản đồ vị trí',
   },
   {
     number: '03',
-    title: 'Phân tích & kết nối',
-    description: 'Sử dụng dữ liệu và AI để hỗ trợ đánh giá bất động sản và kết nối người mua với người bán.',
+    title: 'Kết nối giao dịch minh bạch',
+    description: 'Kết nối chủ nhà, môi giới và người mua, giúp mỗi bên nắm rõ thông tin và tiến trình giao dịch.',
     icon: Sparkles,
-    href: '/reports',
-    actionText: 'Công cụ phân tích AI',
+    href: '/danh-cho-moi-gioi',
+    actionText: 'Dành cho môi giới',
   },
 ];
 
@@ -46,7 +46,7 @@ export function AboutWhatIs() {
             Hanoi Realty là gì?
           </h2>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal pt-2">
-            Hanoi Realty là nền tảng công nghệ bất động sản tập trung vào việc kết nối thông tin, dữ liệu và nhu cầu của người tham gia thị trường. Nền tảng giúp người dùng tìm kiếm bất động sản, kiểm tra thông tin quy hoạch, phân tích dữ liệu và kết nối trực tiếp với người đăng tin.
+            Hanoi Realty là nền tảng công nghệ bất động sản tập trung vào việc kết nối thông tin, dữ liệu và nhu cầu của người tham gia thị trường. Nền tảng giúp người dùng tìm kiếm bất động sản, định vị trên bản đồ và kết nối trực tiếp với người đăng tin.
           </p>
         </div>
 

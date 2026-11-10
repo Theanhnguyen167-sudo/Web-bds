@@ -6,7 +6,6 @@ import { ListingItem } from '@/lib/mock-data';
 import { useApp } from '@/lib/context/AppContext';
 import { PropertyMarker } from './PropertyMarker';
 import { PropertyPopup } from './PropertyPopup';
-import { PlanningLegend } from './PlanningLegend';
 import {
   Layers,
   ZoomIn,
@@ -266,11 +265,6 @@ export const MapContainer: React.FC<MapContainerProps> = ({ listings }) => {
           <RotateCcw className="h-4 w-4" />
         </button>
       </div>
-
-      {/* Planning Legend (Bottom Left) */}
-      <AnimatePresence>
-        {showPlanningOverlay && <PlanningLegend />}
-      </AnimatePresence>
 
       {/* Selected Property Popup (Bottom Right) */}
       <AnimatePresence>

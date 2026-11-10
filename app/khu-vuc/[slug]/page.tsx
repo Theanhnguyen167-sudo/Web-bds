@@ -220,10 +220,10 @@ export default async function DistrictHubPage({ params }: DistrictHubPageProps) 
             </div>
 
             <Link
-              href={`/planning?district=${encodeURIComponent(district.shortName)}`}
+              href={`/search?district=${encodeURIComponent(district.shortName)}`}
               className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors pt-2"
             >
-              <span>Xem trực tiếp trên Bản Đồ Quy Hoạch Số Hoá</span>
+              <span>Xem danh sách BĐS {district.shortName} trên bản đồ</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

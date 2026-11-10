@@ -101,9 +101,9 @@ export default function AdminPackagesPage() {
         {/* ── 4 PACKAGE CARDS ── */}
         <div className="space-y-4">
           <div>
-            <h2 className="text-lg font-extrabold text-navy">Gói Thành viên & Giá dịch vụ</h2>
+            <h2 className="text-lg font-extrabold text-navy">Gói Thành viên &amp; Giá dịch vụ</h2>
             <p className="text-xs text-slate-500">
-              Cấu hình quyền lợi tin đăng, báo cáo AI và mức giá định kỳ
+              Cấu hình quyền lợi tin đăng, thời hạn và mức giá định kỳ
             </p>
           </div>
 
