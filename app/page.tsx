@@ -715,10 +715,15 @@ export default function HomePage() {
                 <div className="bg-white/98 backdrop-blur-md rounded-2xl sm:rounded-[24px] p-4.5 sm:p-5 shadow-[0_16px_40px_rgba(10,17,40,0.10)] border border-slate-200/90 flex flex-col justify-between">
 
                   {/* H1 Title: Hero H1 dẫn đầu hệ thống typography desktop */}
-                  <h1 className="text-2xl sm:text-3xl lg:text-[34px] xl:text-[38px] font-black text-[#0a1128] leading-[1.15] tracking-tight mb-3">
-                    Tìm ngôi nhà mơ ước <br className="hidden sm:inline" />
-                    <span className="text-orange-500">tại Hà Nội</span>
+                  <h1 className="text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] font-black text-[#0a1128] leading-[1.2] tracking-tight mb-2">
+                    Kết nối giao dịch <br className="hidden sm:inline" />
+                    <span className="text-orange-500">bất động sản tại Hà Nội</span>
                   </h1>
+
+                  {/* Dòng mô tả dưới H1 */}
+                  <p className="text-xs sm:text-[13px] text-slate-600 font-medium leading-relaxed mb-3">
+                    HaNoi Realty kết nối chủ nhà, môi giới và người mua, giúp mỗi bên nắm rõ thông tin và biết bước tiếp theo trong giao dịch.
+                  </p>
 
                   {/* THANH TÌM KIẾM ĐẦY ĐỦ TÍNH NĂNG */}
                   <div ref={heroSearchBoxRef} className="space-y-2">
@@ -933,6 +938,60 @@ export default function HomePage() {
               </motion.div>
             </div>
 
+          </div>
+
+          {/* BA LỐI VÀO NGAY DƯỚI THANH TÌM KIẾM CHO 3 ĐỐI TƯỢNG */}
+          <div className="mt-4 sm:mt-6 pt-3.5 sm:pt-4 border-t border-slate-200/80 grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3.5">
+            {/* 1. Người mua */}
+            <Link
+              href="/buyer-request"
+              className="group flex items-center justify-between px-3.5 sm:px-4 py-3 rounded-2xl bg-white hover:bg-orange-50/40 border border-slate-200/90 hover:border-orange-500/40 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-200/80 px-2 py-0.5 rounded-lg shrink-0">
+                  Người mua
+                </span>
+                <span className="text-slate-300 font-bold shrink-0">·</span>
+                <span className="text-xs sm:text-[13px] font-bold text-slate-800 group-hover:text-orange-600 transition-colors truncate">
+                  Gửi nhu cầu mua
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
+            </Link>
+
+            {/* 2. Chủ nhà */}
+            <Link
+              href="/post-property"
+              className="group flex items-center justify-between px-3.5 sm:px-4 py-3 rounded-2xl bg-white hover:bg-orange-50/40 border border-slate-200/90 hover:border-orange-500/40 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-200/80 px-2 py-0.5 rounded-lg shrink-0">
+                  Chủ nhà
+                </span>
+                <span className="text-slate-300 font-bold shrink-0">·</span>
+                <span className="text-xs sm:text-[13px] font-bold text-slate-800 group-hover:text-orange-600 transition-colors truncate">
+                  Gửi nhà cần bán hoặc cho thuê
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
+            </Link>
+
+            {/* 3. CTV/môi giới */}
+            <Link
+              href="/danh-cho-moi-gioi"
+              className="group flex items-center justify-between px-3.5 sm:px-4 py-3 rounded-2xl bg-white hover:bg-orange-50/40 border border-slate-200/90 hover:border-orange-500/40 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-200/80 px-2 py-0.5 rounded-lg shrink-0">
+                  CTV/môi giới
+                </span>
+                <span className="text-slate-300 font-bold shrink-0">·</span>
+                <span className="text-xs sm:text-[13px] font-bold text-slate-800 group-hover:text-orange-600 transition-colors truncate">
+                  Dành cho môi giới
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
+            </Link>
           </div>
 
         </div>
