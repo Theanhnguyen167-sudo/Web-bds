@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { 
-  Coins, 
-  Search, 
-  Download, 
-  Filter, 
-  Clock, 
-  CheckCircle2, 
-  FileText, 
-  AlertCircle, 
-  Eye, 
+import {
+  Coins,
+  Search,
+  Download,
+  Filter,
+  Clock,
+  CheckCircle2,
+  FileText,
+  AlertCircle,
+  Eye,
   ExternalLink,
   ShieldAlert,
   ArrowUpDown,
@@ -29,6 +29,7 @@ import { SettlementDetailDrawer } from './SettlementDetailDrawer';
 interface CommissionLedgerProps {
   initialRecords: CommissionRecord[];
   subscriptionTier?: SubscriptionTier;
+  presetSearchQuery?: string;
 }
 
 interface StatusMeta {
@@ -89,13 +90,14 @@ export const STATUS_METADATA: Record<IncomeStatus, StatusMeta> = {
   },
 };
 
-export const CommissionLedger: React.FC<CommissionLedgerProps> = ({ 
+export const CommissionLedger: React.FC<CommissionLedgerProps> = ({
   initialRecords,
   subscriptionTier,
+  presetSearchQuery,
 }) => {
   const [records, setRecords] = useState<CommissionRecord[]>(initialRecords);
   const [activeTab, setActiveTab] = useState<IncomeStatus | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(presetSearchQuery || '');
   const [selectedRecord, setSelectedRecord] = useState<CommissionRecord | null>(null);
   const [showStatusGuide, setShowStatusGuide] = useState(false);
   const [hoveredStatusTooltip, setHoveredStatusTooltip] = useState<IncomeStatus | null>(null);
@@ -155,7 +157,7 @@ export const CommissionLedger: React.FC<CommissionLedgerProps> = ({
 
   return (
     <div className="space-y-5">
-      
+
       {/* Banner Cam Kết Bảo Toàn Quyền Lợi Tài Chính Dù Hết Hạn Gói */}
       {subscriptionTier === 'expired' && (
         <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-4 text-xs text-emerald-950 flex items-start gap-3 shadow-xs">
@@ -176,9 +178,8 @@ export const CommissionLedger: React.FC<CommissionLedgerProps> = ({
             <div
               key={statusKey}
               onClick={() => setActiveTab(statusKey)}
-              className={`relative rounded-2xl border p-4 cursor-pointer transition-all ${
-                isSelected ? meta.activeColor : meta.color
-              } ${statusKey === 'disputed' ? 'col-span-2 sm:col-span-1' : ''}`}
+              className={`relative rounded-2xl border p-4 cursor-pointer transition-all ${isSelected ? meta.activeColor : meta.color
+                } ${statusKey === 'disputed' ? 'col-span-2 sm:col-span-1' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">
@@ -193,7 +194,7 @@ export const CommissionLedger: React.FC<CommissionLedgerProps> = ({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Info className={`h-3.5 w-3.5 ${isSelected ? 'text-white/80' : 'text-slate-400'} hover:opacity-100 transition-opacity`} />
-                  
+
                   {/* Tooltip Content Popover */}
                   <div className="absolute right-0 top-6 z-40 hidden group-hover:block w-64 rounded-xl bg-slate-900 p-3 text-[11px] font-normal text-white shadow-2xl border border-slate-700 animate-in fade-in duration-150 leading-relaxed pointer-events-none">
                     <div className="font-bold text-amber-300 pb-1 border-b border-slate-800">
@@ -275,11 +276,10 @@ export const CommissionLedger: React.FC<CommissionLedgerProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('all')}
-            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${
-              activeTab === 'all'
+            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${activeTab === 'all'
                 ? 'bg-blue-600 text-white border-blue-600'
                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-            }`}
+              }`}
           >
             Tất cả ({records.length})
           </button>
@@ -352,7 +352,7 @@ export const CommissionLedger: React.FC<CommissionLedgerProps> = ({
                           {item.brokerShareRate}% trên {item.totalCommissionRate}% sàn
                         </div>
                         <div className="flex items-center gap-1 mt-1">
-                          <span 
+                          <span
                             className="inline-flex items-center gap-1 font-mono text-[9px] font-bold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200"
                             title="Phiên bản thỏa thuận chốt của deal - không bị ảnh hưởng bởi thay đổi biểu phí sau này"
                           >

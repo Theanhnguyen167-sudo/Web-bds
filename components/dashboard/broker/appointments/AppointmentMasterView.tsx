@@ -1,20 +1,21 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { 
-  CalendarDays, 
-  Plus, 
-  LayoutList, 
-  Calendar as CalendarIcon, 
-  Filter, 
-  Lock, 
-  Clock, 
-  CheckCircle2, 
-  FileCheck, 
-  AlertCircle 
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  CalendarDays,
+  Plus,
+  LayoutList,
+  Calendar as CalendarIcon,
+  Filter,
+  Lock,
+  Clock,
+  CheckCircle2,
+  FileCheck,
+  AlertCircle
 } from 'lucide-react';
 import { AppointmentItem, AppointmentStatus, VisitOutcome } from '@/types/broker-appointment';
 import { BrokerProfile } from '@/types/broker-nav';
+import { getBrokerAppointments, saveBrokerAppointment } from '@/lib/services/broker-state-service';
 import { AppointmentCard } from './AppointmentCard';
 import { AppointmentWeekView } from './AppointmentWeekView';
 import { CreateAppointmentModal } from './CreateAppointmentModal';
@@ -35,13 +36,28 @@ export const AppointmentMasterView: React.FC<AppointmentMasterViewProps> = ({
   presetLeadId,
   presetListingId,
 }) => {
-  const [appointments, setAppointments] = useState<AppointmentItem[]>(initialAppointments);
+  const [appointments, setAppointments] = useState<AppointmentItem[]>(() => {
+    return getBrokerAppointments();
+  });
   const [viewMode, setViewMode] = useState<'cards' | 'week'>('cards');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(!!presetListingId || false);
   const [selectedAptForOutcome, setSelectedAptForOutcome] = useState<AppointmentItem | null>(null);
+
+  // Sync realtime khi có thay đổi lịch hẹn từ các component khác
+  useEffect(() => {
+    const handleSync = () => {
+      setAppointments(getBrokerAppointments());
+    };
+    window.addEventListener('hanoi_broker_appointments_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('hanoi_broker_appointments_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
 
   const canCreateAppointment =
     profile.verificationStatus === 'verified' && profile.subscriptionTier !== 'expired';
@@ -61,7 +77,7 @@ export const AppointmentMasterView: React.FC<AppointmentMasterViewProps> = ({
   }, [appointments, statusFilter]);
 
   const handleCreateSuccess = (newApt: AppointmentItem) => {
-    setAppointments((prev) => [newApt, ...prev]);
+    setAppointments(saveBrokerAppointment(newApt));
   };
 
   const handleSaveOutcome = (aptId: string, outcome: VisitOutcome) => {
@@ -69,10 +85,10 @@ export const AppointmentMasterView: React.FC<AppointmentMasterViewProps> = ({
       prev.map((item) =>
         item.id === aptId
           ? {
-              ...item,
-              status: 'completed',
-              outcome,
-            }
+            ...item,
+            status: 'completed',
+            outcome,
+          }
           : item
       )
     );
@@ -97,18 +113,17 @@ export const AppointmentMasterView: React.FC<AppointmentMasterViewProps> = ({
 
   return (
     <div className="space-y-4">
-      
+
       {/* 1. THANH CÔNG CỤ TOOLBAR */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-        
+
         {/* Switch View (Danh sách vs Lịch tuần) */}
         <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100 p-1 self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setViewMode('cards')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              viewMode === 'cards' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'cards' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             <LayoutList className="h-4 w-4" />
             <span>Danh sách</span>
@@ -116,9 +131,8 @@ export const AppointmentMasterView: React.FC<AppointmentMasterViewProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('week')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              viewMode === 'week' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'week' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             <CalendarIcon className="h-4 w-4" />
             <span>Lịch tuần</span>
@@ -135,11 +149,10 @@ export const AppointmentMasterView: React.FC<AppointmentMasterViewProps> = ({
             }
             setIsCreateModalOpen(true);
           }}
-          className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-xs ${
-            canCreateAppointment
+          className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-xs ${canCreateAppointment
               ? 'bg-blue-600 text-white hover:bg-blue-500'
               : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-          }`}
+            }`}
         >
           {canCreateAppointment ? <Plus className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5" />}
           <span>+ Tạo lịch hẹn xem nhà mới</span>
@@ -153,17 +166,15 @@ export const AppointmentMasterView: React.FC<AppointmentMasterViewProps> = ({
             key={tab.key}
             type="button"
             onClick={() => setStatusFilter(tab.key)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-              statusFilter === tab.key
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${statusFilter === tab.key
                 ? 'bg-blue-600 text-white shadow'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-            }`}
+              }`}
           >
             <span>{tab.label}</span>
             <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                statusFilter === tab.key ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-600'
-              }`}
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${statusFilter === tab.key ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-600'
+                }`}
             >
               {tab.count}
             </span>

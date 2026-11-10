@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { 
   Coins, 
   ShieldCheck, 
@@ -27,6 +28,8 @@ const DEFAULT_PROFILE: BrokerProfile = {
 };
 
 function BrokerFinancesContent() {
+  const searchParams = useSearchParams();
+  const presetDealCode = searchParams.get('dealCode') || undefined;
   const [profile, setProfile] = useState<BrokerProfile>(DEFAULT_PROFILE);
 
   const isExpired = profile.subscriptionTier === 'expired';
@@ -86,6 +89,7 @@ function BrokerFinancesContent() {
       <CommissionLedger 
         initialRecords={BROKER_MOCK_COMMISSIONS} 
         subscriptionTier={profile.subscriptionTier}
+        presetSearchQuery={presetDealCode}
       />
 
     </div>

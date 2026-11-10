@@ -26,16 +26,19 @@ import {
 } from '@/lib/data/broker-mock-subscriptions';
 import { SubscriptionPaymentModal } from './SubscriptionPaymentModal';
 import { SubscriptionBillingHistory } from './SubscriptionBillingHistory';
+import { activateBrokerSubscription, getBrokerProfile } from '@/lib/services/broker-state-service';
 
 interface SubscriptionManagerProps {
   profile?: BrokerProfile;
 }
 
 export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ profile }) => {
-  // Trạng thái tier hiện tại lấy từ props hoặc mock
-  const currentTier: SubscriptionTier = profile?.subscriptionTier || 'ctv_monthly';
+  // Trạng thái tier hiện tại lấy từ profile hoặc persistent state
+  const [currentTier, setCurrentTier] = useState<SubscriptionTier>(() => {
+    return profile?.subscriptionTier || getBrokerProfile().subscriptionTier || 'ctv_monthly';
+  });
   const isExpired = currentTier === 'expired';
-  const brokerCode = profile?.brokerCode || 'CTV-HN1089';
+  const brokerCode = profile?.brokerCode || getBrokerProfile().brokerCode || 'CTV-HN1089';
 
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<SubscriptionPlan>(
@@ -46,6 +49,12 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ profil
   // Xử lý khi thanh toán thành công
   const handlePaymentSuccess = (planId: string, cycle: BillingCycle) => {
     const targetPlan = MOCK_SUBSCRIPTION_PLANS.find((p) => p.id === planId) || MOCK_SUBSCRIPTION_PLANS[1];
+    const nextTier: SubscriptionTier = targetPlan.id === 'tpkd_monthly' ? 'tpkd_monthly' : 'ctv_monthly';
+
+    // Kích hoạt ngay trên UI và lưu persistent state
+    setCurrentTier(nextTier);
+    activateBrokerSubscription(nextTier);
+
     const newInvoice = {
       id: `sub-inv-${Date.now()}`,
       invoiceCode: `INV-2026-SUB${Math.floor(100 + Math.random() * 900)}`,
@@ -109,7 +118,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ profil
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      
+
       {/* Banner Sticky Cảnh Báo Nếu Hết Hạn Gói */}
       {isExpired && (
         <div className="sticky top-16 z-30 rounded-2xl border-2 border-rose-400 bg-rose-50/95 backdrop-blur-md p-4 sm:p-5 shadow-lg animate-in slide-in-from-top-2 duration-300">
@@ -250,13 +259,12 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ profil
             return (
               <div
                 key={plan.id}
-                className={`rounded-2xl p-6 flex flex-col justify-between transition-all bg-white relative ${
-                  plan.popular
+                className={`rounded-2xl p-6 flex flex-col justify-between transition-all bg-white relative ${plan.popular
                     ? 'border-2 border-blue-600 shadow-xl ring-2 ring-blue-600/10'
                     : isPlanTpkd
-                    ? 'border-2 border-purple-400 shadow-md'
-                    : 'border border-slate-200 shadow-xs'
-                }`}
+                      ? 'border-2 border-purple-400 shadow-md'
+                      : 'border border-slate-200 shadow-xs'
+                  }`}
               >
                 {/* Badge nổi bật */}
                 {plan.popular && (
@@ -324,15 +332,14 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ profil
                   <button
                     type="button"
                     onClick={() => handleOpenPayment(plan)}
-                    className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                      isPlanCurrent
+                    className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${isPlanCurrent
                         ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                         : isPlanTpkd
-                        ? 'bg-purple-600 text-white hover:bg-purple-500 shadow-md'
-                        : plan.popular
-                        ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-md'
-                        : 'bg-slate-900 text-white hover:bg-slate-800'
-                    }`}
+                          ? 'bg-purple-600 text-white hover:bg-purple-500 shadow-md'
+                          : plan.popular
+                            ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-md'
+                            : 'bg-slate-900 text-white hover:bg-slate-800'
+                      }`}
                   >
                     <span>{isPlanCurrent ? 'Gia hạn gói này' : plan.ctaText}</span>
                     <ChevronRight className="h-3.5 w-3.5" />

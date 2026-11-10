@@ -21,7 +21,8 @@ import {
   ShieldCheck,
   Heart,
   Bell,
-  Download
+  Download,
+  Briefcase
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
@@ -206,6 +207,17 @@ export const Navbar: React.FC = () => {
             <Search className="h-4 w-4 shrink-0" />
           </Link>
 
+          {/* Broker Workspace Quick Link for Brokers & Agents */}
+          <Link
+            href="/dashboard/broker"
+            className="h-9 hidden md:flex items-center gap-1.5 rounded-xl bg-blue-500/10 border border-blue-500/30 px-3 text-xs font-bold text-blue-700 hover:bg-blue-600 hover:text-white transition-all shadow-xs whitespace-nowrap shrink-0"
+            title="Bàn làm việc Môi giới (Kho mở & Ví hoa hồng)"
+          >
+            <Briefcase className="h-4 w-4 shrink-0" />
+            <span className="hidden xl:inline">Sàn </span>
+            <span>Môi giới / CTV</span>
+          </Link>
+
           {/* Admin Portal Quick Switch Button for Admins */}
           {user?.role === 'admin' && (
             <Link
@@ -355,13 +367,28 @@ export const Navbar: React.FC = () => {
                     )}
                   </button>
 
+                  {/* Lối vào Bàn làm việc Môi giới / CTV */}
+                  <Link
+                    href="/dashboard/broker"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/70 hover:bg-blue-100 transition-colors mb-1 border border-blue-200/60"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-blue-600" />
+                      <span>Bàn làm việc Môi giới (CTV)</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold bg-blue-600 text-white px-1.5 py-0.5 rounded-full">
+                      Kho mở
+                    </span>
+                  </Link>
+
                   <Link
                     href="/dashboard"
                     onClick={() => setUserDropdownOpen(false)}
                     className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
                   >
                     <LayoutDashboard className="h-4 w-4 text-accent" />
-                    <span>Bảng điều khiển</span>
+                    <span>Quản lý BĐS cá nhân</span>
                   </Link>
 
                   <Link
@@ -544,6 +571,24 @@ export const Navbar: React.FC = () => {
                       <span>🛡️ Vào trang Quản trị (Admin)</span>
                     </Link>
                   )}
+                  {/* Lối vào Bàn làm việc Môi giới (Mobile) */}
+                  <Link
+                    href="/dashboard/broker"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-bold ${isScrolled
+                      ? 'bg-blue-50 border-blue-200 text-blue-700'
+                      : 'bg-blue-500/20 border-blue-500/40 text-blue-300'
+                      }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-4 w-4" />
+                      <span>Bàn làm việc Môi giới (CTV)</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                      Kho mở
+                    </span>
+                  </Link>
+
                   <Link
                     href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}

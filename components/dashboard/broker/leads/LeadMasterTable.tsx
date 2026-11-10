@@ -1,20 +1,20 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Search, 
-  Plus, 
-  ShieldAlert, 
-  ShieldCheck, 
-  Clock, 
-  CalendarDays, 
-  FileText, 
-  Eye, 
-  AlertTriangle, 
-  Filter, 
-  Building2, 
-  CheckCircle2, 
+import {
+  Search,
+  Plus,
+  ShieldAlert,
+  ShieldCheck,
+  Clock,
+  CalendarDays,
+  FileText,
+  Eye,
+  AlertTriangle,
+  Filter,
+  Building2,
+  CheckCircle2,
   MoreHorizontal,
   Lock,
   ArrowRight
@@ -22,6 +22,7 @@ import {
 import { LeadItem, LeadStage, ProtectionStatus } from '@/types/broker-lead';
 import { BrokerProfile } from '@/types/broker-nav';
 import { formatCurrencyVND } from '@/lib/utils';
+import { getBrokerLeads, saveBrokerLead } from '@/lib/services/broker-state-service';
 import { LeadEvidencePreviewModal } from './LeadEvidencePreviewModal';
 import { DuplicateCheckModal } from './DuplicateCheckModal';
 import { RegisterLeadModal } from './RegisterLeadModal';
@@ -38,7 +39,9 @@ export const LeadMasterTable: React.FC<LeadMasterTableProps> = ({
   profile,
   onRestrictedClick,
 }) => {
-  const [leads, setLeads] = useState<LeadItem[]>(initialLeads);
+  const [leads, setLeads] = useState<LeadItem[]>(() => {
+    return getBrokerLeads();
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<LeadStage>('all');
 
@@ -47,6 +50,19 @@ export const LeadMasterTable: React.FC<LeadMasterTableProps> = ({
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [previewEvidenceLead, setPreviewEvidenceLead] = useState<LeadItem | null>(null);
   const [selectedDrawerLead, setSelectedDrawerLead] = useState<LeadItem | null>(null);
+
+  // Sync realtime khi có khách hàng mới được tạo
+  useEffect(() => {
+    const handleSync = () => {
+      setLeads(getBrokerLeads());
+    };
+    window.addEventListener('hanoi_broker_leads_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('hanoi_broker_leads_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
 
   // Điều kiện được đăng ký khách mới (hồ sơ phải hợp lệ & gói không expired)
   const canRegisterNewLead =
@@ -96,10 +112,10 @@ export const LeadMasterTable: React.FC<LeadMasterTableProps> = ({
       prev.map((l) =>
         l.id === leadId
           ? {
-              ...l,
-              lastContactAt: 'Vừa xong',
-              timeline: [newEntry, ...l.timeline],
-            }
+            ...l,
+            lastContactAt: 'Vừa xong',
+            timeline: [newEntry, ...l.timeline],
+          }
           : l
       )
     );
@@ -108,17 +124,17 @@ export const LeadMasterTable: React.FC<LeadMasterTableProps> = ({
       setSelectedDrawerLead((prev) =>
         prev
           ? {
-              ...prev,
-              lastContactAt: 'Vừa xong',
-              timeline: [newEntry, ...prev.timeline],
-            }
+            ...prev,
+            lastContactAt: 'Vừa xong',
+            timeline: [newEntry, ...prev.timeline],
+          }
           : null
       );
     }
   };
 
   const handleRegisterSuccess = (newLead: LeadItem) => {
-    setLeads((prev) => [newLead, ...prev]);
+    setLeads(saveBrokerLead(newLead));
   };
 
   // Render badge trạng thái bảo lưu
@@ -166,7 +182,7 @@ export const LeadMasterTable: React.FC<LeadMasterTableProps> = ({
 
   return (
     <div className="space-y-4">
-      
+
       {/* 1. THANH CÔNG CỤ TOOLBAR */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
         {/* Ô tìm kiếm */}
@@ -203,11 +219,10 @@ export const LeadMasterTable: React.FC<LeadMasterTableProps> = ({
               }
               setIsRegisterModalOpen(true);
             }}
-            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-xs ${
-              canRegisterNewLead
+            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-xs ${canRegisterNewLead
                 ? 'bg-blue-600 text-white hover:bg-blue-500'
                 : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-            }`}
+              }`}
           >
             {canRegisterNewLead ? (
               <Plus className="h-4 w-4" />
@@ -226,18 +241,16 @@ export const LeadMasterTable: React.FC<LeadMasterTableProps> = ({
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-              activeTab === tab.key
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${activeTab === tab.key
                 ? 'bg-blue-600 text-white shadow'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-            }`}
+              }`}
           >
             <span>{tab.label}</span>
             {tab.count !== undefined && (
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  activeTab === tab.key ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-600'
-                }`}
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${activeTab === tab.key ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-600'
+                  }`}
               >
                 {tab.count}
               </span>

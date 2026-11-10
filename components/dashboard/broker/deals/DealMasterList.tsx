@@ -1,22 +1,23 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { 
-  Briefcase, 
-  Search, 
-  LayoutGrid, 
-  List, 
-  Coins, 
-  TrendingUp, 
-  Filter, 
-  Building2, 
-  ShieldCheck, 
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  Briefcase,
+  Search,
+  LayoutGrid,
+  List,
+  Coins,
+  TrendingUp,
+  Filter,
+  Building2,
+  ShieldCheck,
   Clock,
   Columns3
 } from 'lucide-react';
 import { DealItem, DealStage } from '@/types/broker-deal';
 import { BrokerProfile } from '@/types/broker-nav';
 import { formatCurrencyVND } from '@/lib/utils';
+import { getBrokerDeals, advanceDealStage } from '@/lib/services/broker-state-service';
 import { DealCard } from './DealCard';
 import { DealDetailDrawer } from './DealDetailDrawer';
 
@@ -29,11 +30,34 @@ export const DealMasterList: React.FC<DealMasterListProps> = ({
   initialDeals,
   profile,
 }) => {
-  const [deals, setDeals] = useState<DealItem[]>(initialDeals);
+  const [deals, setDeals] = useState<DealItem[]>(() => {
+    return getBrokerDeals();
+  });
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [selectedDeal, setSelectedDeal] = useState<DealItem | null>(null);
+
+  // Sync realtime khi có deal mới được sinh ra từ lịch hẹn xem nhà
+  useEffect(() => {
+    const handleSync = () => {
+      setDeals(getBrokerDeals());
+    };
+    window.addEventListener('hanoi_broker_deals_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('hanoi_broker_deals_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  const handleAdvanceStage = (dealId: string, nextStage: DealStage) => {
+    const updated = advanceDealStage(dealId, nextStage);
+    setDeals(updated);
+    if (selectedDeal && selectedDeal.id === dealId) {
+      setSelectedDeal(updated.find((d) => d.id === dealId) || null);
+    }
+  };
 
   // Thống kê tổng
   const totalAgreedPrice = useMemo(
@@ -96,7 +120,7 @@ export const DealMasterList: React.FC<DealMasterListProps> = ({
 
   return (
     <div className="space-y-5">
-      
+
       {/* 1. THẺ THỐNG KÊ TỔNG DÒNG TIỀN GIAO DỊCH */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
@@ -155,9 +179,8 @@ export const DealMasterList: React.FC<DealMasterListProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('kanban')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              viewMode === 'kanban' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             <Columns3 className="h-4 w-4" />
             <span>Kanban 4 bước</span>
@@ -165,9 +188,8 @@ export const DealMasterList: React.FC<DealMasterListProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('list')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              viewMode === 'list' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             <List className="h-4 w-4" />
             <span>Danh sách</span>
@@ -230,6 +252,7 @@ export const DealMasterList: React.FC<DealMasterListProps> = ({
         isOpen={!!selectedDeal}
         onClose={() => setSelectedDeal(null)}
         onSendMessage={handleSendMessage}
+        onAdvanceStage={handleAdvanceStage}
       />
 
     </div>

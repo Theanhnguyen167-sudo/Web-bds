@@ -27,6 +27,7 @@ interface DealDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onSendMessage: (dealId: string, message: string) => void;
+  onAdvanceStage?: (dealId: string, nextStage: DealStage) => void;
 }
 
 export const DealDetailDrawer: React.FC<DealDetailDrawerProps> = ({
@@ -34,6 +35,7 @@ export const DealDetailDrawer: React.FC<DealDetailDrawerProps> = ({
   isOpen,
   onClose,
   onSendMessage,
+  onAdvanceStage,
 }) => {
   const [activeTab, setActiveTab] = useState<'progress' | 'fees' | 'documents' | 'chat'>('progress');
   const [chatInput, setChatInput] = useState('');
@@ -229,6 +231,51 @@ export const DealDetailDrawer: React.FC<DealDetailDrawerProps> = ({
                     <span className="text-blue-600 text-[10px] block font-semibold">Admin điều phối & Pháp chế:</span>
                     <strong className="text-blue-900">{deal.adminCoordinator}</strong>
                   </div>
+                </div>
+
+                {/* Hộp hành động chuyển giai đoạn giao dịch */}
+                <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block">
+                        Cập nhật tiến độ giao dịch:
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        Giai đoạn hiện tại: <strong>{stagesOrder[currentStageIndex]?.label}</strong>
+                      </span>
+                    </div>
+
+                    {currentStageIndex < stagesOrder.length - 1 && onAdvanceStage && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextStage = stagesOrder[currentStageIndex + 1]?.key;
+                          if (nextStage) onAdvanceStage(deal.id, nextStage);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 shadow-md transition-all"
+                      >
+                        <span>Chuyển sang: {stagesOrder[currentStageIndex + 1]?.label}</span>
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {deal.stage === 'handover_settlement' && (
+                    <div className="pt-2 border-t border-blue-200/60 flex items-center justify-between">
+                      <span className="text-emerald-700 font-bold text-xs flex items-center gap-1.5">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Giao dịch đã hoàn tất bàn giao & đủ điều kiện đối soát!
+                      </span>
+                      <Link
+                        href={`/dashboard/broker/finances?dealCode=${deal.dealCode}`}
+                        onClick={onClose}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 shadow-xs"
+                      >
+                        <Coins className="h-3.5 w-3.5" />
+                        <span>Xem đối soát hoa hồng Deal này</span>
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
               </div>
