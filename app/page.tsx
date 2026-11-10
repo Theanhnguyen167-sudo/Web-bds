@@ -272,17 +272,6 @@ const heroFeatureCards = [
   },
 ];
 
-const propertyCategories = [
-  { name: 'Nhà phố', count: '4,231 tin', icon: '🏠', href: '/mua-ban/nha-pho' },
-  { name: 'Chung cư', count: '2,891 tin', icon: '🏢', href: '/mua-ban/chung-cu' },
-  { name: 'Đất nền', count: '1,432 tin', icon: '🌿', href: '/mua-ban/dat-nen' },
-  { name: 'Biệt thự', count: '456 tin', icon: '🏰', href: '/mua-ban/biet-thu' },
-  { name: 'Thương mại', count: '234 tin', icon: '🏪', href: '/search?type=commercial' },
-  { name: 'Dự án mới', count: '89 dự án', icon: '🏗️', href: '/search?type=project' },
-  { name: 'Nhà mặt phố', count: '890 tin', icon: '🏬', href: '/mua-ban/nha-mat-pho' },
-  { name: 'Penthouse', count: '128 tin', icon: '✨', href: '/mua-ban/penthouse' },
-];
-
 // ── Hero Search Constants ──
 const heroPopularDistricts = [
   { name: 'Đống Đa', count: 1234, avgPrice: '~85tr/m²' },
@@ -323,60 +312,6 @@ const heroRentPricePresets = [
   { label: '20 - 40 triệu/tháng', value: '20-40' },
   { label: 'Trên 40 triệu/tháng', value: '40-999' },
 ];
-
-function CategoryCarousel() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollTo = direction === 'left' ? scrollLeft - clientWidth * 0.6 : scrollLeft + clientWidth * 0.6;
-      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-    }
-  };
-
-  return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative group mt-2">
-      <button
-        onClick={() => scroll('left')}
-        aria-label="Cuộn trái"
-        className="hidden sm:flex absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-slate-800 shadow-xl border border-slate-200/80 items-center justify-center opacity-90 group-hover:opacity-100 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer"
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-
-      <div
-        ref={scrollRef}
-        className="flex gap-3 sm:gap-3.5 lg:gap-4 overflow-x-auto scrollbar-none py-3 px-1 scroll-smooth snap-x snap-mandatory"
-      >
-        {propertyCategories.map((cat) => (
-          <Link
-            key={cat.name}
-            href={cat.href}
-            className="shrink-0 w-[136px] sm:w-[148px] lg:w-[156px] xl:w-[162px] h-[120px] sm:h-[128px] lg:h-[134px] xl:h-[138px] flex flex-col items-center justify-center text-center p-3 sm:p-3.5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/15 hover:ring-2 hover:ring-orange-500/20 transition-all duration-300 group/item cursor-pointer hover:-translate-y-1 active:scale-98 select-none snap-start"
-          >
-            <span className="text-2xl sm:text-3xl mb-2.5 sm:mb-3 group-hover/item:scale-115 group-hover/item:-translate-y-0.5 transition-transform duration-300 inline-block leading-none">
-              {cat.icon}
-            </span>
-            <span className="font-bold text-sm sm:text-[15px] lg:text-base text-[#0a1128] group-hover/item:text-orange-500 transition-colors whitespace-nowrap leading-tight tracking-tight">
-              {cat.name}
-            </span>
-            <span className="text-xs sm:text-[13px] text-slate-400 mt-1.5 group-hover/item:text-orange-500 font-normal transition-colors whitespace-nowrap leading-none">
-              {cat.count}
-            </span>
-          </Link>
-        ))}
-      </div>
-
-      <button
-        onClick={() => scroll('right')}
-        aria-label="Cuộn phải"
-        className="hidden sm:flex absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-slate-800 shadow-xl border border-slate-200/80 items-center justify-center opacity-90 group-hover:opacity-100 hover:text-orange-500 hover:border-orange-400 hover:scale-105 active:scale-95 transition-all z-20 cursor-pointer"
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
-    </div>
-  );
-}
 
 export default function HomePage() {
   const router = useRouter();
@@ -472,15 +407,6 @@ export default function HomePage() {
     if (heroCardsScrollRef.current) {
       const offset = direction === 'left' ? -340 : 340;
       heroCardsScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
-    }
-  };
-
-  // ── Section 2: Property Categories Carousel Scroll ──
-  const categoriesScrollRef = useRef<HTMLDivElement>(null);
-  const scrollCategories = (direction: 'left' | 'right') => {
-    if (categoriesScrollRef.current) {
-      const offset = direction === 'left' ? -260 : 260;
-      categoriesScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
     }
   };
 
@@ -999,119 +925,73 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 1.5 + SECTION 2: DẢI THỐNG KÊ + DANH MỤC BĐS (Chuyển tiếp êm dịu, không giật cục)
+          📌 SECTION 2: HANOI REALTY HOẠT ĐỘNG THẾ NÀO?
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div id="stats-and-categories" className="flex flex-col border-b border-slate-200/80">
-
-        {/* 1. KHỐI: HANOI REALTY HOẠT ĐỘNG THẾ NÀO? (Thay thế dải số liệu hero-stats) */}
-        <section id="how-it-works" className="bg-white py-8 sm:py-10 lg:py-12 border-b border-slate-200/80">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-7 sm:mb-9">
-              <h2 className="text-xl sm:text-2xl lg:text-[26px] font-black text-[#0a1128] tracking-tight mb-2">
-                HaNoi Realty hoạt động thế nào?
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                Quy trình HaNoi Realty đang xây dựng để kết nối chủ nhà, môi giới và người mua.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-              {/* Thẻ 1 */}
-              <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
-                <div>
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
-                      1
-                    </span>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
-                      Tiếp nhận và kiểm tra thông tin
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
-                    Chủ nhà gửi thông tin BĐS. HaNoi Realty tiếp nhận, kiểm tra và đề nghị bổ sung khi cần trước khi duyệt công bố.
-                  </p>
-                </div>
-              </div>
-
-              {/* Thẻ 2 */}
-              <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
-                <div>
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
-                      2
-                    </span>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
-                      Kết nối theo nhu cầu
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
-                    Người mua tự tìm nhà hoặc gửi tiêu chí. Môi giới đã được duyệt có thể khai thác kho nhà chung và hỗ trợ tìm căn phù hợp.
-                  </p>
-                </div>
-              </div>
-
-              {/* Thẻ 3 */}
-              <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
-                <div>
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
-                      3
-                    </span>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
-                      Phối hợp xem nhà và trao đổi
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
-                    Khi người mua quan tâm, HaNoi Realty hỗ trợ phối hợp lịch xem để các bên trao đổi về căn nhà và điều kiện giao dịch.
-                  </p>
-                </div>
-              </div>
-            </div>
+      <section id="how-it-works" className="bg-white py-10 sm:py-12 lg:py-14 border-b border-slate-200/80">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-7 sm:mb-9">
+            <h2 className="text-xl sm:text-2xl lg:text-[26px] font-black text-[#0a1128] tracking-tight mb-2">
+              HaNoi Realty hoạt động thế nào?
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              Quy trình HaNoi Realty đang xây dựng để kết nối chủ nhà, môi giới và người mua.
+            </p>
           </div>
-        </section>
 
-        {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Nền trung tính nhẹ #F8FAFC, liền mạch với Hero & Stats) */}
-        <section id="categories" className="bg-slate-50/70 py-8 sm:py-10 lg:py-12 relative text-slate-900 flex flex-col justify-center">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {/* Thẻ 1 */}
+            <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
               <div>
-                <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">
-                  KHÁM PHÁ THEO NHU CẦU
-                </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] leading-tight tracking-tight">
-                  Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
-                </h2>
-                <p className="text-sm sm:text-base text-slate-500 font-normal mt-2 sm:mt-2.5 max-w-xl leading-relaxed">
-                  Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
+                <div className="flex items-center gap-2.5 mb-3">
+                  <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
+                    1
+                  </span>
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
+                    Tiếp nhận và kiểm tra thông tin
+                  </h3>
+                </div>
+                <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
+                  Chủ nhà gửi thông tin BĐS. HaNoi Realty tiếp nhận, kiểm tra và đề nghị bổ sung khi cần trước khi duyệt công bố.
                 </p>
               </div>
+            </div>
 
-              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
-                <Link
-                  href="/cho-thue"
-                  className="text-xs sm:text-sm font-semibold text-slate-700 hover:text-orange-600 bg-white hover:bg-orange-50/60 border border-slate-200/80 hover:border-orange-300 px-3 sm:px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 transition-all shadow-xs group cursor-pointer"
-                >
-                  <span>🔑</span>
-                  <span className="font-bold">Cho thuê</span>
-                  <span className="text-xs text-slate-400 group-hover:text-orange-500 font-normal">· 1,876 tin</span>
-                </Link>
+            {/* Thẻ 2 */}
+            <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
+              <div>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
+                    2
+                  </span>
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
+                    Kết nối theo nhu cầu
+                  </h3>
+                </div>
+                <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
+                  Người mua tự tìm nhà hoặc gửi tiêu chí. Môi giới đã được duyệt có thể khai thác kho nhà chung và hỗ trợ tìm căn phù hợp.
+                </p>
+              </div>
+            </div>
 
-                <Link
-                  href="/search"
-                  className="text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 group py-1.5 cursor-pointer"
-                >
-                  <span>Xem tất cả loại BĐS</span>
-                  <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
+            {/* Thẻ 3 */}
+            <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
+              <div>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
+                    3
+                  </span>
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
+                    Phối hợp xem nhà và trao đổi
+                  </h3>
+                </div>
+                <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
+                  Khi người mua quan tâm, HaNoi Realty hỗ trợ phối hợp lịch xem để các bên trao đổi về căn nhà và điều kiện giao dịch.
+                </p>
               </div>
             </div>
           </div>
-
-          {/* Lưới Danh mục ô vuông cuộn ngang có nút điều hướng */}
-          <CategoryCarousel />
-        </section>
-
-      </div>
+        </div>
+      </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           📌 SECTION 3 — BẤT ĐỘNG SẢN NỔI BẬT (Nền trắng tinh sạch, tôn vinh hình ảnh BĐS)
