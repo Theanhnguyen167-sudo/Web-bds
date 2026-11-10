@@ -6,8 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
 import {
-  Layers,
-  Sparkles,
   Tag,
   PlusCircle,
   User,
@@ -16,7 +14,6 @@ import {
   X,
   Search,
   LayoutDashboard,
-  Navigation,
   ChevronDown,
   ShieldCheck,
   Heart,
@@ -104,6 +101,11 @@ export const Navbar: React.FC = () => {
   };
 
   const handlePostListingClick = () => {
+    if (!user) {
+      addToast('Vui lòng đăng nhập để sử dụng tính năng Đăng tìm BĐS', 'info');
+      router.push('/login?redirect=/buyer-request');
+      return;
+    }
     if (user?.role === 'owner') {
       router.push('/listings/create');
     } else {

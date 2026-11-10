@@ -11,27 +11,21 @@ import { CodeBadge } from '@/components/common/CodeBadge';
 import { ReferralAgentConnect } from '@/components/dashboard/ReferralAgentConnect';
 import { MyClientsTab } from '@/components/dashboard/MyClientsTab';
 import { FinancesTab } from '@/components/dashboard/finances/FinancesTab';
-import { getUserAgentCode, getUserOwnerCode, formatHdCode, formatBdsCode } from '@/lib/identification';
+import { getUserAgentCode, getUserOwnerCode } from '@/lib/identification';
 import {
-  LayoutDashboard,
   Home,
   Sparkles,
   Heart,
   HeartCrack,
   Tag,
-  Settings,
   PlusCircle,
-  Eye,
   Trash2,
   ExternalLink,
   ShieldCheck,
-  TrendingUp,
   Clock,
   CheckCircle2,
   Layers,
   RefreshCw,
-  Cpu,
-  Key,
   Check,
   MapPin,
   Maximize2,
@@ -57,20 +51,30 @@ import {
   Lock,
   Building2,
   Mail,
-  Smartphone,
-  Award,
   ChevronDown,
   FileText,
   Wallet,
   X,
+  LayoutGrid,
+  ClipboardList,
+  Handshake,
+  Camera,
   Briefcase,
+  Headphones,
+  Pencil,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
+import { BuyerOverviewTab } from '@/components/dashboard/BuyerOverviewTab';
+import { OwnerOverviewTab } from '@/components/dashboard/OwnerOverviewTab';
+import { OwnerSurveysTab } from '@/components/dashboard/OwnerSurveysTab';
+import { OwnerLeadsTab } from '@/components/dashboard/OwnerLeadsTab';
+import { OwnerBrokersTab } from '@/components/dashboard/OwnerBrokersTab';
+import { OwnerProfileTab } from '@/components/dashboard/OwnerProfileTab';
+import { OwnerSupportTab } from '@/components/dashboard/OwnerSupportTab';
 
 import { getListingExpiryInfo } from '@/lib/services/listing-service';
 import { getListingUrl } from '@/lib/listing-slug';
 import { mockListings } from '@/lib/mock-data';
-import { Pencil } from 'lucide-react';
 import {
   getPackageDefinition,
   DEFAULT_AGENCY_TEAM,
@@ -78,15 +82,54 @@ import {
   AgencyTeamMember,
   PackageTierId,
 } from '@/lib/packages/package-config';
-import { BuyerRequest } from '@/types/buyer-request';
 
-type TabType = 'listings' | 'appointments' | 'saved' | 'packages' | 'notifications' | 'agency-team' | 'contracts' | 'referral' | 'clients' | 'finances' | 'buyer-requests';
+type TabType =
+  | 'overview'
+  | 'listings'
+  | 'appointments'
+  | 'reports'
+  | 'saved'
+  | 'packages'
+  | 'notifications'
+  | 'agency-team'
+  | 'contracts'
+  | 'referral'
+  | 'clients'
+  | 'finances'
+  | 'buyer-requests'
+  | 'owner-overview'
+  | 'owner-surveys'
+  | 'owner-leads'
+  | 'owner-brokers'
+  | 'owner-profile'
+  | 'owner-support';
 
-const VALID_TABS: TabType[] = ['listings', 'appointments', 'saved', 'packages', 'notifications', 'agency-team', 'contracts', 'referral', 'clients', 'finances', 'buyer-requests'];
+const VALID_TABS: TabType[] = [
+  'overview',
+  'listings',
+  'appointments',
+  'reports',
+  'saved',
+  'packages',
+  'notifications',
+  'agency-team',
+  'contracts',
+  'referral',
+  'clients',
+  'finances',
+  'buyer-requests',
+  'owner-overview',
+  'owner-surveys',
+  'owner-leads',
+  'owner-brokers',
+  'owner-profile',
+  'owner-support',
+];
 
 interface MenuItem {
   id: TabType;
   label: string;
+  sublabel?: string;
   icon: any;
   count?: number;
   badge?: string;
@@ -179,11 +222,81 @@ function DashboardContent() {
     addToast(`⚡ Đã kích hoạt nhanh Gói ${def.name}! Toàn bộ hạn mức và đặc quyền công nghệ đã được nạp.`, 'success');
   };
 
-  const [activeTab, setActiveTab] = useState<TabType>(
-    tabQuery && VALID_TABS.includes(tabQuery)
-      ? tabQuery
-      : 'listings'
-  );
+  const queryRole = searchParams.get('role');
+
+  // Nhận diện vai trò chuẩn xác và linh hoạt theo query param hoặc thuộc tính user
+  const isOwnerUser =
+    queryRole === 'owner' ||
+    (!queryRole && (user?.role === 'owner' || user?.email === 'chunha@hanoirealty.vn' || Boolean(user?.name && user.name.includes('Chủ nhà'))));
+
+  const isBuyerUser =
+    !isOwnerUser &&
+    (queryRole === 'buyer' ||
+      (!queryRole && (user?.role === 'buyer' || user?.role === 'user' || user?.role === 'customer' || user?.email === 'khachhang@hanoirealty.vn' || Boolean(user?.name && user.name.includes('Khách mua')))) ||
+      (!queryRole && !user?.role));
+
+  const isAgentUser = !isOwnerUser && !isBuyerUser;
+
+  // Chuyển đổi vai trò nhanh để kiểm thử trực quan tức thì
+  const handleSwitchDemoRole = (targetRole: 'buyer' | 'owner' | 'agent') => {
+    let demoName = 'Nguyễn Minh Tuấn (Khách mua)';
+    let demoEmail = 'khachhang@hanoirealty.vn';
+    let demoPhone = '0912 345 678';
+    let demoPackage = 'Free';
+    let defaultTab: TabType = 'overview';
+
+    if (targetRole === 'owner') {
+      demoName = 'Phạm Quốc Dũng';
+      demoEmail = 'chunha@hanoirealty.vn';
+      demoPhone = '0988 765 432';
+      demoPackage = 'Free';
+      defaultTab = 'owner-overview';
+    } else if (targetRole === 'agent') {
+      demoName = 'Trần Thị Thu Hà (Môi giới VIP)';
+      demoEmail = 'moigioi@hanoirealty.vn';
+      demoPhone = '0977 889 900';
+      demoPackage = 'Pro';
+      defaultTab = 'listings';
+    }
+
+    const updatedUser = {
+      ...(user || {}),
+      id: `${targetRole}_demo_01`,
+      name: demoName,
+      email: demoEmail,
+      phone: demoPhone,
+      role: targetRole,
+      package: demoPackage,
+      agentCode: targetRole === 'agent' ? 'MG-00102' : undefined,
+      ownerCode: targetRole === 'owner' ? 'CN-00086' : undefined,
+    };
+
+    setUser(updatedUser as any);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('hanoi_current_user', JSON.stringify(updatedUser));
+      } catch {}
+      const url = new URL(window.location.href);
+      url.searchParams.set('role', targetRole);
+      url.searchParams.set('tab', defaultTab);
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    setActiveTab(defaultTab);
+    addToast(
+      `Đã chuyển sang vai trò: ${targetRole === 'buyer' ? 'Khách hàng (Buyer)' : targetRole === 'owner' ? 'Chủ nhà (Owner)' : 'Môi giới (Agent)'}`,
+      'info'
+    );
+  };
+
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    if (tabQuery && VALID_TABS.includes(tabQuery)) {
+      return tabQuery;
+    }
+    if (isOwnerUser) return 'owner-overview';
+    if (isBuyerUser) return 'overview';
+    return 'listings';
+  });
   const [unreadNotifCount, setUnreadNotifCount] = useState<number>(3);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [appointmentFilter, setAppointmentFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
@@ -197,8 +310,12 @@ function DashboardContent() {
   useEffect(() => {
     if (tabQuery && VALID_TABS.includes(tabQuery)) {
       setActiveTab(tabQuery);
+    } else if (isOwnerUser && (activeTab === 'overview' || activeTab === 'listings')) {
+      setActiveTab('owner-overview');
+    } else if (isBuyerUser && (activeTab === 'listings' || activeTab === 'owner-overview')) {
+      setActiveTab('overview');
     }
-  }, [tabQuery]);
+  }, [tabQuery, isOwnerUser, isBuyerUser]);
 
   // Load and sync appointments for the current user
   useEffect(() => {
@@ -381,11 +498,155 @@ function DashboardContent() {
     );
   };
 
-  // Sidebar Menu categorized
-  const isAgentUser = user && (user.role === 'agent' || user.role === 'broker' || user.role === 'agency');
-  const isOwnerUser = user?.role === 'owner';
-  const isBuyerUser = !isAgentUser && !isOwnerUser;
+  // MENU DÀNH RIÊNG CHO KHÁCH HÀNG (7 CHỨC NĂNG THEO MẪU ẢNH 2)
+  const buyerMenuItems: MenuItem[] = [
+    {
+      id: 'overview',
+      label: 'Tổng quan',
+      sublabel: 'Tiến độ tìm mua và việc cần làm',
+      icon: LayoutGrid,
+    },
+    {
+      id: 'buyer-requests',
+      label: 'Nhu cầu mua của tôi',
+      sublabel: 'Đăng, sửa, quản lý nhu cầu',
+      icon: ClipboardList,
+      count: buyerRequests.length,
+      badge: buyerRequests.filter((r: any) => r.status === 'pending').length > 0
+        ? `${buyerRequests.filter((r: any) => r.status === 'pending').length} CHỜ`
+        : undefined,
+    },
+    {
+      id: 'saved',
+      label: 'BĐS yêu thích',
+      sublabel: 'Lưu nhà và theo dõi thay đổi',
+      icon: Heart,
+      count: savedListingIds.length,
+    },
+    {
+      id: 'appointments',
+      label: 'Lịch xem nhà',
+      sublabel: 'Đặt lịch, xác nhận, đổi lịch',
+      icon: CalendarDays,
+      count: userAppointments.length,
+      badge: userAppointments.filter((a) => a.status === 'pending').length > 0
+        ? `${userAppointments.filter((a) => a.status === 'pending').length} MỚI`
+        : undefined,
+    },
+    {
+      id: 'referral',
+      label: 'Môi giới hỗ trợ tôi',
+      sublabel: 'CTV phụ trách và lịch sử hỗ trợ',
+      icon: UserCheck,
+      badge: user?.referredByAgentCode ? 'ĐÃ KẾT NỐI' : undefined,
+    },
+    {
+      id: 'contracts',
+      label: 'Giao dịch của tôi',
+      sublabel: 'Đề nghị mua, hợp đồng, đặt cọc',
+      icon: Handshake,
+      count: 1,
+      badge: 'HD',
+    },
+    {
+      id: 'notifications',
+      label: 'Thông báo & tài khoản',
+      sublabel: 'Cập nhật và thông tin cá nhân',
+      icon: Bell,
+      badge: unreadNotifCount > 0 ? `${unreadNotifCount} MỚI` : undefined,
+    },
+  ];
 
+  // MENU DÀNH RIÊNG CHO CHỦ NHÀ (11 CHỨC NĂNG THEO MẪU ẢNH CHỦ NHÀ)
+  const ownerMenuGroups: MenuGroup[] = [
+    {
+      title: 'QUẢN LÝ BÁN BẤT ĐỘNG SẢN',
+      items: [
+        {
+          id: 'owner-overview',
+          label: 'Tổng quan',
+          sublabel: 'Tiến độ bán nhà và công việc cần xử lý',
+          icon: LayoutGrid,
+        },
+        {
+          id: 'listings',
+          label: 'Bất động sản của tôi',
+          sublabel: 'Gửi bán, hồ sơ và tình trạng xác minh',
+          icon: Home,
+          count: userListings.length > 0 ? userListings.length : 1,
+        },
+        {
+          id: 'owner-surveys',
+          label: 'Lịch khảo sát & quay chụp',
+          sublabel: 'Đặt lịch, xác nhận và thay đổi lịch',
+          icon: Camera,
+        },
+        {
+          id: 'appointments',
+          label: 'Lịch xem nhà',
+          sublabel: 'Thiết lập giờ trống, xác nhận khách đến xem',
+          icon: CalendarDays,
+          count: userAppointments.length || 2,
+          badge: userAppointments.filter((a) => a.status === 'pending').length > 0
+            ? `${userAppointments.filter((a) => a.status === 'pending').length} MỚI`
+            : undefined,
+        },
+        {
+          id: 'owner-leads',
+          label: 'Khách quan tâm & đề nghị mua',
+          sublabel: 'Theo dõi khách, phản hồi giá, thương lượng',
+          icon: Users,
+          count: 2,
+        },
+        {
+          id: 'owner-brokers',
+          label: 'Hoạt động môi giới',
+          sublabel: 'Theo dõi CTV đang khai thác BĐS',
+          icon: Briefcase,
+        },
+        {
+          id: 'contracts',
+          label: 'Giao dịch của tôi',
+          sublabel: 'Hợp đồng, đặt cọc, công chứng, bàn giao',
+          icon: Handshake,
+          count: 1,
+          badge: 'HD',
+        },
+        {
+          id: 'finances',
+          label: 'Phí môi giới & thanh toán',
+          sublabel: 'Phí dịch vụ, công nợ và chứng từ',
+          icon: Wallet,
+        },
+      ],
+    },
+    {
+      title: 'TÀI KHOẢN & HỖ TRỢ',
+      items: [
+        {
+          id: 'notifications',
+          label: 'Thông báo',
+          sublabel: 'Lịch hẹn, hồ sơ, đề nghị mua và giao dịch',
+          icon: Bell,
+          badge: unreadNotifCount > 0 ? `${unreadNotifCount} MỚI` : undefined,
+        },
+        {
+          id: 'owner-profile',
+          label: 'Tài khoản cá nhân',
+          sublabel: 'Thông tin, xác minh danh tính và bảo mật',
+          icon: User,
+        },
+        {
+          id: 'owner-support',
+          label: 'Hỗ trợ & khiếu nại',
+          sublabel: 'Gửi yêu cầu hỗ trợ và theo dõi xử lý',
+          icon: Headphones,
+        },
+      ],
+    },
+  ];
+
+  // Sidebar Menu categorized (DÀNH CHO MÔI GIỚI / ADMIN)
   const menuGroups: MenuGroup[] = [
     {
       title: 'QUẢN LÝ',
@@ -463,39 +724,111 @@ function DashboardContent() {
       <Navbar />
 
       <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+        {/* THANH CHUYỂN NHANH VAI TRÒ ĐỂ KIỂM TRA PHÂN QUYỀN TRỰC TIẾP */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-xs font-bold text-slate-500">Chế độ xem vai trò:</span>
+            <div className="inline-flex rounded-xl bg-slate-100 p-1 gap-1">
+              <button
+                type="button"
+                onClick={() => handleSwitchDemoRole('buyer')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  isBuyerUser
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                }`}
+              >
+                <span>👤 Khách hàng (Buyer)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSwitchDemoRole('owner')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  isOwnerUser
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                }`}
+              >
+                <span>🏠 Chủ nhà (Owner)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSwitchDemoRole('agent')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  isAgentUser
+                    ? 'bg-orange-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                }`}
+              >
+                <span>💼 Môi giới (Agent)</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="text-[11px] font-semibold text-slate-400">
+            {isBuyerUser && '✓ Đang hiển thị 7 chức năng dành riêng cho Khách hàng'}
+            {isOwnerUser && '✓ Đang hiển thị giao diện dành riêng cho Chủ nhà BĐS'}
+            {isAgentUser && '✓ Đang hiển thị giao diện dành riêng cho CTV / Môi giới'}
+          </div>
+        </div>
+
         {/* User Profile Header Banner */}
         <div className="rounded-3xl border border-border bg-white p-6 sm:p-8 shadow-sm mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <img
-              src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'}
+              src={
+                isOwnerUser
+                  ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80'
+                  : user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'
+              }
               alt="avatar"
               className="h-16 w-16 rounded-2xl object-cover ring-4 ring-accent/20"
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold text-text-primary">{user?.name || 'Môi giới BĐS'}</h1>
-                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase ${
-                  pkgDef.id === 'agency'
-                    ? 'bg-indigo-900 text-amber-300'
-                    : pkgDef.id === 'pro'
-                    ? 'bg-orange-500 text-white'
-                    : pkgDef.id === 'basic'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-200 text-slate-700'
-                }`}>
-                  Gói {pkgDef.name} {pkgDef.badgeLabel}
-                </span>
+                <h1 className="text-xl font-extrabold text-text-primary">
+                  {isOwnerUser ? 'Phạm Quốc Dũng' : user?.name || 'Môi giới BĐS'}
+                </h1>
+                {isOwnerUser ? (
+                  <span className="rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase bg-orange-100 text-orange-700">
+                    Chủ nhà BĐS
+                  </span>
+                ) : isBuyerUser ? (
+                  <span className="rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase bg-slate-100 text-slate-700">
+                    Khách mua cá nhân
+                  </span>
+                ) : (
+                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase ${
+                    pkgDef.id === 'agency'
+                      ? 'bg-indigo-900 text-amber-300'
+                      : pkgDef.id === 'pro'
+                      ? 'bg-orange-500 text-white'
+                      : pkgDef.id === 'basic'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    Gói {pkgDef.name} {pkgDef.badgeLabel}
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-text-secondary mt-0.5">{user?.email || 'an@example.com'}</p>
+              <p className="text-xs text-text-secondary mt-0.5">
+                {isOwnerUser ? 'chunha@hanoirealty.vn' : user?.email || 'an@example.com'}
+              </p>
               <p className="text-[11px] text-text-muted mt-1">Hạn gói: {user?.packageExpiry || '2026-12-31'}</p>
 
               {/* Mã định danh tài khoản: mỗi tài khoản CHỈ có 1 mã duy nhất theo đúng loại vai trò đăng ký */}
               <div className="flex flex-wrap items-center gap-2 mt-2">
-                {user && (user.role === 'agent' || user.role === 'broker' || user.role === 'agency') && getUserAgentCode(user) && (
-                  <CodeBadge code={getUserAgentCode(user)!} label="Mã CTV & Giới thiệu" size="sm" />
-                )}
-                {user && user.role === 'owner' && getUserOwnerCode(user) && (
-                  <CodeBadge code={getUserOwnerCode(user)!} label="Mã Chủ nhà" size="sm" />
+                {isOwnerUser ? (
+                  <CodeBadge code="CN-00086" label="Mã Chủ nhà" size="sm" />
+                ) : (
+                  <>
+                    {user && (user.role === 'agent' || user.role === 'broker' || user.role === 'agency') && getUserAgentCode(user) && (
+                      <CodeBadge code={getUserAgentCode(user)!} label="Mã CTV & Giới thiệu" size="sm" />
+                    )}
+                    {user && user.role === 'owner' && getUserOwnerCode(user) && (
+                      <CodeBadge code={getUserOwnerCode(user)!} label="Mã Chủ nhà" size="sm" />
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -503,11 +836,11 @@ function DashboardContent() {
 
           <div className="flex items-center gap-2.5">
             <Link
-              href="/listings/create"
+              href={isBuyerUser ? "/buyer-request" : "/listings/create"}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-xs font-black text-white shadow-lg shadow-accent/25 hover:bg-accent-hover transition-all"
             >
-              <PlusCircle className="h-4 w-4" />
-              <span>Đăng tin BĐS mới</span>
+              {isBuyerUser ? <Search className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
+              <span>{isBuyerUser ? "Đăng tìm BĐS" : isOwnerUser ? "Gửi bán BĐS mới" : "Đăng tin BĐS mới"}</span>
             </Link>
           </div>
         </div>
@@ -541,15 +874,118 @@ function DashboardContent() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
           {/* Left Menu Categorized Tabs */}
-          <div className="space-y-5">
-            {menuGroups.map((group) => (
-              <div key={group.title} className="space-y-1.5">
-                <div className="px-3 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                  {group.title}
+          <div className="space-y-4">
+            {isOwnerUser ? (
+              // GIAO DIỆN MENU DÀNH RIÊNG CHO CHỦ NHÀ (11 CHỨC NĂNG CHUẨN MOCKUP)
+              <div className="rounded-3xl border border-slate-200/90 bg-white p-3 shadow-xs space-y-2">
+                {/* Profile Header Đầu Menu Theo Đúng Mockup */}
+                <div className="flex items-center gap-3 p-2.5">
+                  <div className="w-11 h-11 rounded-full bg-orange-50 border border-orange-200/80 text-orange-600 flex items-center justify-center shrink-0">
+                    <Home className="w-5 h-5 stroke-[1.8]" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-slate-900 leading-tight truncate">
+                      Phạm Quốc Dũng
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      Chủ nhà BĐS • Mã CN-00086
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  {menuGroups.find(g => g.title === group.title)?.items.map((item) => {
+                <div className="h-px bg-slate-100 my-1 mx-1" />
+
+                {/* 2 Nhóm Menu Chủ Nhà */}
+                {ownerMenuGroups.map((group, gIdx) => (
+                  <div key={group.title} className="space-y-1">
+                    {gIdx > 0 && <div className="h-px bg-slate-100 my-2 mx-1" />}
+                    <div className="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                      {group.title}
+                    </div>
+
+                    <div className="space-y-1">
+                      {group.items.map((item) => {
+                        const Icon = item.icon;
+                        const isActive =
+                          activeTab === item.id ||
+                          (item.id === 'owner-overview' && activeTab === 'overview');
+
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => handleSelectTab(item.id)}
+                            className={`group relative flex w-full items-center justify-between rounded-2xl p-2.5 text-left transition-all ${
+                              isActive
+                                ? 'bg-[#fff8f5] border border-orange-100/90 text-orange-950 shadow-sm'
+                                : 'bg-transparent text-slate-700 hover:bg-slate-50 border border-transparent'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div
+                                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                                  isActive
+                                    ? 'bg-white text-orange-600 shadow-xs border border-orange-100/70'
+                                    : 'text-slate-500 group-hover:text-slate-800'
+                                }`}
+                              >
+                                <Icon className="w-5 h-5 stroke-[1.8]" />
+                              </div>
+
+                              <div className="min-w-0">
+                                <h4
+                                  className={`text-sm font-bold leading-tight ${
+                                    isActive ? 'text-slate-900' : 'text-slate-800'
+                                  }`}
+                                >
+                                  {item.label}
+                                </h4>
+                                <p
+                                  className={`text-xs mt-0.5 leading-snug truncate ${
+                                    isActive ? 'text-slate-600' : 'text-slate-400'
+                                  }`}
+                                >
+                                  {item.sublabel}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                              {item.count !== undefined && item.count > 0 && (
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                    isActive
+                                      ? 'bg-orange-100 text-orange-700'
+                                      : 'bg-slate-100 text-slate-600'
+                                  }`}
+                                >
+                                  {item.count}
+                                </span>
+                              )}
+                              {item.badge && (
+                                <span className="rounded-full px-2 py-0.5 text-[10px] font-extrabold bg-orange-500 text-white">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Nút mũi tên cuộn ở đáy card theo đúng mockup */}
+                <div className="pt-2 pb-1 flex justify-center">
+                  <div className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            ) : isBuyerUser ? (
+              // GIAO DIỆN RIÊNG DÀNH CHO KHÁCH HÀNG (7 CHỨC NĂNG THEO MẪU ẢNH 2)
+              <div className="space-y-2">
+                <div className="space-y-2">
+                  {buyerMenuItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
 
@@ -557,44 +993,134 @@ function DashboardContent() {
                       <button
                         key={item.id}
                         onClick={() => handleSelectTab(item.id)}
-                        className={`group relative flex w-full items-center justify-between rounded-2xl p-3.5 text-xs font-bold transition-all ${isActive
-                            ? 'bg-primary text-white shadow-md'
-                            : 'bg-white text-text-secondary hover:bg-slate-50 border border-border'
-                          }`}
+                        className={`group relative flex w-full items-center justify-between rounded-2xl p-3 text-left transition-all ${
+                          isActive
+                            ? 'bg-slate-900 text-white shadow-md'
+                            : 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-200/80'
+                        }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <Icon
-                            className={`h-4 w-4 transition-colors ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          {/* Khung icon bo góc mềm theo đúng Ảnh 2 */}
+                          <div
+                            className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${
+                              isActive
+                                ? 'bg-white/15 text-white'
+                                : 'bg-slate-100 text-slate-700 group-hover:bg-slate-200'
+                            }`}
+                          >
+                            <Icon className="w-5 h-5 stroke-[1.8]" />
+                          </div>
+
+                          <div className="min-w-0">
+                            <h4
+                              className={`text-sm font-bold leading-tight ${
+                                isActive ? 'text-white' : 'text-slate-900'
                               }`}
-                          />
-                          <span>{item.label}</span>
+                            >
+                              {item.label}
+                            </h4>
+                            <p
+                              className={`text-xs mt-0.5 leading-snug truncate ${
+                                isActive ? 'text-slate-300' : 'text-slate-500'
+                              }`}
+                            >
+                              {item.sublabel}
+                            </p>
+                          </div>
                         </div>
 
-                        {item.count !== undefined && (
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-colors ${isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-text-secondary'
+                        <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                          {item.count !== undefined && item.count > 0 && (
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                isActive
+                                  ? 'bg-white/20 text-white'
+                                  : 'bg-slate-100 text-slate-600'
                               }`}
-                          >
-                            {item.count}
-                          </span>
-                        )}
+                            >
+                              {item.count}
+                            </span>
+                          )}
 
-                        {item.badge && (
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${item.badge === 'CONNECTED'
-                                ? 'bg-emerald-500 text-white'
-                                : 'bg-accent text-white'
+                          {item.badge && (
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                                item.badge.includes('CHỜ')
+                                  ? 'bg-orange-500 text-white'
+                                  : item.badge === 'ĐÃ KẾT NỐI'
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-orange-500 text-white'
                               }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
                 </div>
               </div>
-            ))}
+            ) : (
+              // GIỮ NGUYÊN GIAO DIỆN CỦA CÁC VAI TRÒ KHÁC (CHỦ NHÀ, MÔI GIỚI, ADMIN)
+              menuGroups.map((group) => (
+                <div key={group.title} className="space-y-1.5">
+                  <div className="px-3 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                    {group.title}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeTab === item.id;
+
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleSelectTab(item.id)}
+                          className={`group relative flex w-full items-center justify-between rounded-2xl p-3.5 text-xs font-bold transition-all ${
+                            isActive
+                              ? 'bg-primary text-white shadow-md'
+                              : 'bg-white text-text-secondary hover:bg-slate-50 border border-border'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Icon
+                              className={`h-4 w-4 transition-colors ${
+                                isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'
+                              }`}
+                            />
+                            <span>{item.label}</span>
+                          </div>
+
+                          {item.count !== undefined && (
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                                isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-text-secondary'
+                              }`}
+                            >
+                              {item.count}
+                            </span>
+                          )}
+
+                          {item.badge && (
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                                item.badge === 'CONNECTED'
+                                  ? 'bg-emerald-500 text-white'
+                                  : 'bg-accent text-white'
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Right Main Content */}
@@ -683,6 +1209,107 @@ function DashboardContent() {
 
             {/* Tabbed Content Area */}
             <AnimatePresence mode="wait">
+              {/* TAB OVERVIEW CHO CHỦ NHÀ */}
+              {(activeTab === 'owner-overview' || (activeTab === 'overview' && isOwnerUser)) && (
+                <motion.div
+                  key="tab-owner-overview"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <OwnerOverviewTab
+                    user={user}
+                    userListings={userListings}
+                    appointments={userAppointments}
+                    onNavigateTab={handleSelectTab}
+                  />
+                </motion.div>
+              )}
+
+              {/* TAB 0: OVERVIEW (DÀNH CHO KHÁCH HÀNG THEO MẪU ẢNH 2) */}
+              {activeTab === 'overview' && !isOwnerUser && (
+                <motion.div
+                  key="tab-overview"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <BuyerOverviewTab
+                    user={user}
+                    buyerRequests={buyerRequests}
+                    savedListings={savedListings}
+                    appointments={userAppointments}
+                    onNavigateTab={handleSelectTab}
+                  />
+                </motion.div>
+              )}
+
+              {/* TAB CHỦ NHÀ: LỊCH KHẢO SÁT & QUAY CHỤP */}
+              {activeTab === 'owner-surveys' && (
+                <motion.div
+                  key="tab-owner-surveys"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <OwnerSurveysTab />
+                </motion.div>
+              )}
+
+              {/* TAB CHỦ NHÀ: KHÁCH QUAN TÂM & ĐỀ NGHỊ MUA */}
+              {activeTab === 'owner-leads' && (
+                <motion.div
+                  key="tab-owner-leads"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <OwnerLeadsTab />
+                </motion.div>
+              )}
+
+              {/* TAB CHỦ NHÀ: HOẠT ĐỘNG MÔI GIỚI */}
+              {activeTab === 'owner-brokers' && (
+                <motion.div
+                  key="tab-owner-brokers"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <OwnerBrokersTab />
+                </motion.div>
+              )}
+
+              {/* TAB CHỦ NHÀ: TÀI KHOẢN CÁ NHÂN */}
+              {activeTab === 'owner-profile' && (
+                <motion.div
+                  key="tab-owner-profile"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <OwnerProfileTab />
+                </motion.div>
+              )}
+
+              {/* TAB CHỦ NHÀ: HỖ TRỢ & KHIẾU NẠI */}
+              {activeTab === 'owner-support' && (
+                <motion.div
+                  key="tab-owner-support"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <OwnerSupportTab />
+                </motion.div>
+              )}
               {/* TAB 1: LISTINGS */}
               {activeTab === 'listings' && (
                 <motion.div

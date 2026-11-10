@@ -128,6 +128,15 @@ export default function AuthPageContent({
   const pathname = usePathname();
   const { setUser, addToast } = useApp();
 
+  const redirectTarget = searchParams?.get('redirect');
+  const navigateAfterAuth = (defaultRoute: string) => {
+    if (redirectTarget) {
+      router.push(redirectTarget);
+    } else {
+      router.push(defaultRoute);
+    }
+  };
+
   // Mode: login or register
   const [mode, setMode] = useState<'login' | 'register'>(() => {
     if (initialMode === 'register') return 'register';
@@ -269,7 +278,7 @@ export default function AuthPageContent({
       });
 
       addToast(`🎉 Đăng ký thành công! Chào mừng ${fullName} gia nhập HaNoi Realty (${meta.badge})`, 'success');
-      router.push(meta.targetRoute);
+      navigateAfterAuth(meta.targetRoute);
     } catch (err: any) {
       addToast(err?.message || 'Không thể tạo tài khoản, vui lòng thử lại!', 'error');
     } finally {
@@ -342,7 +351,7 @@ export default function AuthPageContent({
         const roleTitle = getRoleBadgeTitle(userRole);
 
         addToast(`👋 Đăng nhập thành công! Chào mừng ${userName} (${roleTitle})`, 'success');
-        router.push(targetRoute);
+        navigateAfterAuth(targetRoute);
       } catch (err: any) {
         addToast(err?.message || 'Đăng nhập không thành công, vui lòng kiểm tra lại!', 'error');
       } finally {
@@ -370,7 +379,7 @@ export default function AuthPageContent({
         });
         addToast(`🎉 Đăng nhập thành công với số ${phoneNumber}!`, 'success');
         setLoading(false);
-        router.push('/search');
+        navigateAfterAuth('/search');
       }, 400);
     }
   };
@@ -440,7 +449,7 @@ export default function AuthPageContent({
 
         const targetRoute = getRouteForRole(detectedRole);
         addToast(`🎉 Đăng nhập Google thành công! Xin chào ${detectedName}`, 'success');
-        router.push(targetRoute);
+        navigateAfterAuth(targetRoute);
       }
     } catch (err: any) {
       addToast(`Không thể kết nối Google: ${err?.message || 'Vui lòng thử lại'}`, 'error');
@@ -506,7 +515,7 @@ export default function AuthPageContent({
 
       addToast(`⚡ Đăng nhập kiểm thử: ${demoName}`, 'success');
       setLoading(false);
-      router.push(getRouteForRole(role));
+      navigateAfterAuth(getRouteForRole(role));
     }, 300);
   };
 
@@ -547,6 +556,18 @@ export default function AuthPageContent({
             🏠
           </Link>
         </div>
+
+        {/* Thông báo yêu cầu đăng nhập nếu chuyển hướng từ tính năng Đăng tìm BĐS */}
+        {redirectTarget && (
+          <div className="mb-5 p-3.5 rounded-2xl bg-orange-500/15 border border-orange-500/35 text-orange-200 text-xs font-semibold flex items-center gap-2.5 shadow-sm">
+            <span className="text-base shrink-0">🔒</span>
+            <span className="leading-snug">
+              {redirectTarget === '/buyer-request'
+                ? 'Vui lòng đăng nhập tài khoản để sử dụng tính năng Đăng tìm Bất động sản.'
+                : 'Vui lòng đăng nhập tài khoản để tiếp tục sử dụng tính năng này.'}
+            </span>
+          </div>
+        )}
 
         {/* Mode Switcher Tabs */}
         <div className="grid grid-cols-2 p-1 bg-[#1e293b]/70 rounded-2xl border border-slate-800 mb-5">
