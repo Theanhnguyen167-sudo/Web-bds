@@ -29,7 +29,6 @@ export interface BuyerRequest {
   referral_code?: string;                 // Mã giới thiệu CTV (nếu có)
   urgency?: UrgencyLevel;                 // Cần mua gấp, trong 1 tháng, 3 tháng
   needs_loan_support?: boolean;           // Cần tư vấn gói vay ngân hàng
-  needs_planning_check?: boolean;         // Cần kiểm tra quy hoạch phân khu Hà Nội
   notes?: string;                         // Yêu cầu đặc thù khác
   
   // Bước 4: Thông tin liên hệ
@@ -39,6 +38,7 @@ export interface BuyerRequest {
   preferred_contact_time?: string;        // 'Bất kỳ lúc nào', 'Giờ hành chính', 'Buổi tối'
   
   status: BuyerRequestStatus;
+  assigned_agent_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -60,7 +60,6 @@ export interface CreateBuyerRequestDTO {
   support_type?: 'connect_ctv' | 'self_search' | 'has_broker';
   referral_code?: string;
   needs_loan_support?: boolean;
-  needs_planning_check?: boolean;
   notes?: string;
   contact_name: string;
   contact_phone: string;

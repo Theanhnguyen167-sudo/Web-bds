@@ -19,7 +19,8 @@ import {
   LogOut,
   ShieldCheck,
   Compass,
-  Newspaper
+  Newspaper,
+  ClipboardList
 } from 'lucide-react';
 
 interface AdminNavItem {
@@ -63,6 +64,13 @@ export const AdminSidebar: React.FC = () => {
           icon: Building2,
           badge: '23',
           badgeColor: 'bg-orange-500 text-white animate-pulse',
+        },
+        {
+          name: 'Nhu cầu mua',
+          href: '/admin/buyer-requests',
+          icon: ClipboardList,
+          badge: 'Mới',
+          badgeColor: 'bg-amber-500/20 text-amber-400',
         },
         {
           name: 'Bài viết',

@@ -269,6 +269,42 @@ CREATE INDEX IF NOT EXISTS idx_payment_orders_order_id ON public.payment_orders(
 CREATE INDEX IF NOT EXISTS idx_payment_orders_user ON public.payment_orders(user_id);
 
 -- ==============================================================================
+-- 11B. BẢNG TIẾP NHẬN NHU CẦU MUA BĐS (buyer_requests)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.buyer_requests (
+  id TEXT PRIMARY KEY,
+  code TEXT UNIQUE NOT NULL,
+  user_id TEXT REFERENCES public.users(id) ON DELETE SET NULL,
+  purpose TEXT NOT NULL DEFAULT 'living',
+  property_types TEXT[] NOT NULL DEFAULT ARRAY['house']::TEXT[],
+  target_districts TEXT[] NOT NULL DEFAULT ARRAY['Hà Nội']::TEXT[],
+  budget_min BIGINT NOT NULL DEFAULT 0,
+  budget_max BIGINT NOT NULL DEFAULT 0,
+  min_area NUMERIC,
+  min_bedrooms INTEGER,
+  preferred_directions TEXT[],
+  car_access BOOLEAN DEFAULT FALSE,
+  support_type TEXT DEFAULT 'connect_ctv',
+  referral_code TEXT,
+  urgency TEXT DEFAULT 'within_1_month',
+  needs_loan_support BOOLEAN DEFAULT FALSE,
+  notes TEXT,
+  contact_name TEXT NOT NULL,
+  contact_phone TEXT NOT NULL,
+  contact_email TEXT,
+  preferred_contact_time TEXT DEFAULT 'Bất kỳ lúc nào',
+  status TEXT NOT NULL DEFAULT 'pending',
+  assigned_agent_id TEXT REFERENCES public.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_buyer_requests_user_id ON public.buyer_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_buyer_requests_code ON public.buyer_requests(code);
+CREATE INDEX IF NOT EXISTS idx_buyer_requests_status ON public.buyer_requests(status);
+CREATE INDEX IF NOT EXISTS idx_buyer_requests_created_at ON public.buyer_requests(created_at DESC);
+
+-- ==============================================================================
 -- 12. STORED PROCEDURES (RPC) - TÍNH TOÁN POSTGIS HIỆU NĂNG CAO (<15ms)
 -- ==============================================================================
 

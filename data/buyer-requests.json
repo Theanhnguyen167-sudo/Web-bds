@@ -1,0 +1,92 @@
+[
+  {
+    "id": "req_1794306613264_yp7hx",
+    "code": "HR-REQ-2026-7158",
+    "user_id": "buyer_test_01",
+    "purpose": "living",
+    "property_types": [
+      "house"
+    ],
+    "target_districts": [
+      "Cầu Giấy"
+    ],
+    "budget_min": 3000000000,
+    "budget_max": 5000000000,
+    "min_area": 45,
+    "min_bedrooms": 3,
+    "car_access": true,
+    "urgency": "within_1_month",
+    "support_type": "connect_ctv",
+    "needs_loan_support": false,
+    "notes": "Tìm nhà ngõ ô tô khu Dịch Vọng",
+    "contact_name": "Nguyễn Văn A",
+    "contact_phone": "0912345678",
+    "contact_email": "nguyenvana@gmail.com",
+    "preferred_contact_time": "Sau 18h",
+    "status": "contacted",
+    "created_at": "2026-11-10T10:30:13.264Z",
+    "updated_at": "2026-11-10T10:30:15.120Z",
+    "assigned_agent_id": "admin_user"
+  },
+  {
+    "id": "req_seed_001",
+    "code": "HR-REQ-2026-1001",
+    "user_id": "buyer_demo_01",
+    "purpose": "living",
+    "property_types": [
+      "house"
+    ],
+    "target_districts": [
+      "Cầu Giấy",
+      "Đống Đa"
+    ],
+    "budget_min": 4500000000,
+    "budget_max": 6500000000,
+    "min_area": 45,
+    "min_bedrooms": 3,
+    "preferred_directions": [
+      "Đông Nam",
+      "Nam"
+    ],
+    "car_access": true,
+    "urgency": "within_1_month",
+    "support_type": "connect_ctv",
+    "needs_loan_support": false,
+    "notes": "Ưu tiên nhà gần trường Cầu Giấy, ngõ nông thông thoáng.",
+    "contact_name": "Nguyễn Hải Đăng",
+    "contact_phone": "0912 345 678",
+    "contact_email": "haidang.nguyen@gmail.com",
+    "preferred_contact_time": "Sau 17h hoặc cuối tuần",
+    "status": "pending",
+    "created_at": "2026-11-09T10:30:13.253Z",
+    "updated_at": "2026-11-09T10:30:13.253Z"
+  },
+  {
+    "id": "req_seed_002",
+    "code": "HR-REQ-2026-1002",
+    "user_id": "buyer_demo_02",
+    "purpose": "investment",
+    "property_types": [
+      "apartment"
+    ],
+    "target_districts": [
+      "Nam Từ Liêm"
+    ],
+    "budget_min": 2800000000,
+    "budget_max": 3800000000,
+    "min_area": 65,
+    "min_bedrooms": 2,
+    "car_access": true,
+    "urgency": "within_3_months",
+    "support_type": "self_search",
+    "needs_loan_support": true,
+    "notes": "Tìm căn hộ 2 ngủ có ban công thoáng, sẵn sổ hồng.",
+    "contact_name": "Phạm Thuỳ Linh",
+    "contact_phone": "0988 654 321",
+    "contact_email": "thuylinh.bds@gmail.com",
+    "preferred_contact_time": "Giờ hành chính",
+    "status": "contacted",
+    "created_at": "2026-11-08T10:30:13.253Z",
+    "updated_at": "2026-11-09T22:30:13.253Z"
+  }
+]

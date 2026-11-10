@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -223,27 +223,48 @@ function DashboardContent() {
     };
   }, []);
 
-  // Load and sync buyer requests từ localStorage
-  useEffect(() => {
-    const syncBuyerRequests = () => {
-      try {
-        const raw = localStorage.getItem('hanoi_realty_buyer_requests');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            setBuyerRequests(parsed);
-          }
+  // Load and sync buyer requests từ API có kiểm thực quyền và fallback
+  const [buyerRequestsLoading, setBuyerRequestsLoading] = useState<boolean>(false);
+
+  const fetchBuyerRequests = useCallback(async () => {
+    if (!user) {
+      setBuyerRequests([]);
+      return;
+    }
+    setBuyerRequestsLoading(true);
+    try {
+      const headers: Record<string, string> = {
+        'x-user-id': user.id,
+        'x-user-role': user.role || 'buyer',
+      };
+      if (user.email) headers['x-user-email'] = user.email;
+
+      const res = await fetch(`/api/buyer-requests?userId=${encodeURIComponent(user.id)}&role=${encodeURIComponent(user.role || 'buyer')}`, {
+        headers,
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setBuyerRequests(json.data);
+          return;
         }
-      } catch {}
-    };
-    syncBuyerRequests();
-    window.addEventListener('hanoi_buyer_requests_updated', syncBuyerRequests);
-    window.addEventListener('storage', syncBuyerRequests);
+      }
+    } catch (err) {
+      console.error('Error fetching buyer requests:', err);
+    } finally {
+      setBuyerRequestsLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchBuyerRequests();
+    window.addEventListener('hanoi_buyer_requests_updated', fetchBuyerRequests);
+    window.addEventListener('storage', fetchBuyerRequests);
     return () => {
-      window.removeEventListener('hanoi_buyer_requests_updated', syncBuyerRequests);
-      window.removeEventListener('storage', syncBuyerRequests);
+      window.removeEventListener('hanoi_buyer_requests_updated', fetchBuyerRequests);
+      window.removeEventListener('storage', fetchBuyerRequests);
     };
-  }, []);
+  }, [fetchBuyerRequests]);
 
   // Sync unread notification count CHỈ cho tài khoản hiện tại từ localStorage
   useEffect(() => {
@@ -1049,13 +1070,24 @@ function DashboardContent() {
                         Theo dõi danh sách tiêu chí tìm mua nhà đất đã gửi tới HaNoi Realty (Hoàn toàn miễn phí)
                       </p>
                     </div>
-                    <Link
-                      href="/buyer-request"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all"
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      <span>Đăng nhu cầu mới</span>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      {(isAgentUser || user?.role === 'admin') && (
+                        <Link
+                          href="/admin/buyer-requests"
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition-all"
+                        >
+                          <ShieldCheck className="h-4 w-4 text-amber-400" />
+                          <span>Bàn tiếp nhận vận hành</span>
+                        </Link>
+                      )}
+                      <Link
+                        href="/buyer-request"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all"
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                        <span>Đăng nhu cầu mới</span>
+                      </Link>
+                    </div>
                   </div>
 
                   {buyerRequests.length === 0 ? (
@@ -1103,9 +1135,19 @@ function DashboardContent() {
                                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                                     : req.status === 'contacted'
                                     ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                    : req.status === 'completed'
+                                    ? 'bg-purple-100 text-purple-800 border border-purple-300'
                                     : 'bg-slate-200 text-slate-700'
                                 }`}>
-                                  {req.status === 'pending' ? 'Đang tìm kiếm' : req.status === 'matched' ? 'Đã tìm thấy căn phù hợp' : req.status === 'contacted' ? 'Đang tư vấn' : 'Đã tạm dừng'}
+                                  {req.status === 'pending'
+                                    ? 'Chờ xử lý'
+                                    : req.status === 'matched'
+                                    ? 'Đã khớp căn'
+                                    : req.status === 'contacted'
+                                    ? 'Đang liên hệ'
+                                    : req.status === 'completed'
+                                    ? 'Đã hoàn tất'
+                                    : 'Đã tạm dừng'}
                                 </span>
                               </div>
                             </div>
@@ -1150,17 +1192,28 @@ function DashboardContent() {
                               <div className="flex items-center gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    const nextStatus = isPaused ? 'pending' : 'paused';
-                                    const updated = buyerRequests.map((r: any) =>
-                                      (r.id === req.id || r.code === req.code) ? { ...r, status: nextStatus } : r
-                                    );
-                                    setBuyerRequests(updated);
-                                    if (typeof window !== 'undefined') {
-                                      localStorage.setItem('hanoi_realty_buyer_requests', JSON.stringify(updated));
-                                      window.dispatchEvent(new Event('hanoi_buyer_requests_updated'));
+                                  onClick={async () => {
+                                    const nextStatus = isPaused ? 'pending' : 'cancelled';
+                                    try {
+                                      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+                                      if (user) {
+                                        headers['x-user-id'] = user.id;
+                                        headers['x-user-role'] = user.role || 'buyer';
+                                      }
+                                      const res = await fetch('/api/buyer-requests', {
+                                        method: 'PATCH',
+                                        headers,
+                                        body: JSON.stringify({ id: req.id, status: nextStatus }),
+                                      });
+                                      if (res.ok) {
+                                        fetchBuyerRequests();
+                                        addToast(isPaused ? '▶️ Đã tiếp tục kích hoạt tìm kiếm BĐS' : '⏸️ Đã tạm dừng yêu cầu', 'info');
+                                      } else {
+                                        addToast('Không thể cập nhật trạng thái', 'error');
+                                      }
+                                    } catch {
+                                      addToast('Lỗi kết nối khi cập nhật', 'error');
                                     }
-                                    addToast(isPaused ? '▶️ Đã tiếp tục kích hoạt tìm kiếm BĐS' : '⏸️ Đã tạm dừng yêu cầu', 'info');
                                   }}
                                   className="px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 font-bold text-[11px] text-slate-700 transition-colors"
                                 >
@@ -1168,20 +1221,33 @@ function DashboardContent() {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    if (confirm('Bạn có chắc chắn muốn xoá yêu cầu tìm mua này?')) {
-                                      const updated = buyerRequests.filter((r: any) => r.id !== req.id && r.code !== req.code);
-                                      setBuyerRequests(updated);
-                                      if (typeof window !== 'undefined') {
-                                        localStorage.setItem('hanoi_realty_buyer_requests', JSON.stringify(updated));
-                                        window.dispatchEvent(new Event('hanoi_buyer_requests_updated'));
+                                  onClick={async () => {
+                                    if (confirm('Bạn có chắc chắn muốn huỷ yêu cầu tìm mua này?')) {
+                                      try {
+                                        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+                                        if (user) {
+                                          headers['x-user-id'] = user.id;
+                                          headers['x-user-role'] = user.role || 'buyer';
+                                        }
+                                        const res = await fetch('/api/buyer-requests', {
+                                          method: 'PATCH',
+                                          headers,
+                                          body: JSON.stringify({ id: req.id, status: 'cancelled' }),
+                                        });
+                                        if (res.ok) {
+                                          fetchBuyerRequests();
+                                          addToast('Đã huỷ yêu cầu tìm mua', 'info');
+                                        } else {
+                                          addToast('Không thể huỷ yêu cầu', 'error');
+                                        }
+                                      } catch {
+                                        addToast('Lỗi kết nối khi huỷ', 'error');
                                       }
-                                      addToast('Đã xoá yêu cầu tìm mua', 'info');
                                     }
                                   }}
                                   className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 font-bold text-[11px] transition-colors"
                                 >
-                                  Xoá
+                                  Huỷ
                                 </button>
                               </div>
                             </div>
