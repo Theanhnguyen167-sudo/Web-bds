@@ -75,6 +75,14 @@ export const BuyerRequestWizard: React.FC = () => {
   const router = useRouter();
   const { user, addToast } = useApp();
 
+  // Yêu cầu đăng nhập trước khi sử dụng tính năng Đăng tìm BĐS
+  React.useEffect(() => {
+    if (!user) {
+      addToast('Vui lòng đăng nhập để sử dụng tính năng Đăng tìm BĐS', 'info');
+      router.push('/login?redirect=/buyer-request');
+    }
+  }, [user, router, addToast]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRequest, setSubmittedRequest] = useState<BuyerRequest | null>(null);
@@ -329,6 +337,30 @@ export const BuyerRequestWizard: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  // ==================== MÀN HÌNH YÊU CẦU ĐĂNG NHẬP NẾU CHƯA CÓ PHIÊN ĐĂNG NHẬP ====================
+  if (!user) {
+    return (
+      <div className="max-w-xl mx-auto py-16 px-4 text-center rounded-3xl bg-white border border-slate-200/80 shadow-xs">
+        <div className="w-16 h-16 mx-auto rounded-3xl bg-orange-100 text-orange-600 flex items-center justify-center mb-4">
+          <Search className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">Yêu cầu đăng nhập tài khoản</h2>
+        <p className="text-xs text-slate-500 mt-2 leading-relaxed max-w-md mx-auto">
+          Tính năng Đăng tìm BĐS yêu cầu bạn đăng nhập để hệ thống tự động lưu nhu cầu, kết nối CTV và gửi thông báo BĐS phù hợp vào Dashboard của bạn.
+        </p>
+        <div className="mt-6">
+          <Link
+            href="/login?redirect=/buyer-request"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-orange-600 text-white font-bold text-xs shadow-md hover:bg-orange-700 transition-all"
+          >
+            <span>Đăng nhập ngay</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // ==================== MÀN HÌNH THÀNH CÔNG: ĐÃ TIẾP NHẬN ====================
   if (submittedRequest) {

@@ -88,7 +88,7 @@ export interface SellerValidationErrors {
  */
 export function isValidVNPhone(phone: string): boolean {
   if (!phone) return false;
-  const cleaned = phone.replace(/[\s\.\-\(\)]/g, '');
+  const cleaned = phone.replace(/[\s.\-()]/g, '');
   return /^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/.test(cleaned);
 }
 
