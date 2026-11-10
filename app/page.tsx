@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
@@ -48,7 +47,6 @@ import {
   Sliders,
   Check,
   Download,
-  Compass,
   DollarSign,
   Briefcase,
   X,
@@ -58,16 +56,6 @@ import {
   Mail
 } from 'lucide-react';
 
-// Dynamic import for Leaflet GIS Map with SSR false
-const MiniSearchMap = dynamic(() => import('@/components/map/SearchMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] w-full rounded-2xl bg-slate-900 flex flex-col items-center justify-center text-slate-400 gap-3 border border-slate-700">
-      <div className="h-8 w-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
-      <span className="text-xs font-semibold">Đang tải bản đồ Hà Nội...</span>
-    </div>
-  ),
-});
 
 // Reusable Scroll Animation Wrapper
 function FadeInSection({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -612,28 +600,6 @@ export default function HomePage() {
       .slice(0, 10);
   }, [remoteApprovedListings, listings, activeSection3Tab]);
 
-  // ── Section 4: District selection for Mini Map ──
-  const [hoveredDistrict, setHoveredDistrict] = useState<string>('Cầu Giấy');
-  const [showAllDistricts, setShowAllDistricts] = useState<boolean>(false);
-
-  // Popular Districts for Section 4 (Ưu tiên các quận có dữ liệu nguồn cung dồi dào nhất)
-  const popularDistricts = useMemo(() => [
-    { name: 'Cầu Giấy', count: 2102, avgPrice: '~65tr/m²' },
-    { name: 'Hà Đông', count: 2001, avgPrice: '~35tr/m²' },
-    { name: 'Hoàng Mai', count: 1456, avgPrice: '~45tr/m²' },
-    { name: 'Đống Đa', count: 1234, avgPrice: '~85tr/m²' },
-    { name: 'Nam Từ Liêm', count: 1234, avgPrice: '~42tr/m²' },
-    { name: 'Hai Bà Trưng', count: 1089, avgPrice: '~72tr/m²' },
-    { name: 'Long Biên', count: 892, avgPrice: '~38tr/m²' },
-    { name: 'Hoàn Kiếm', count: 891, avgPrice: '~120tr/m²' },
-    { name: 'Ba Đình', count: 743, avgPrice: '~110tr/m²' },
-    { name: 'Tây Hồ', count: 567, avgPrice: '~95tr/m²' },
-  ], []);
-
-  const displayedDistricts = useMemo(() => {
-    return showAllDistricts ? popularDistricts : popularDistricts.slice(0, 5);
-  }, [showAllDistricts, popularDistricts]);
-
   // ── Section 5: Personalized Filter Pill ──
   const [personalFilter, setPersonalFilter] = useState<string>('all');
   const personalizedListings = useMemo(() => {
@@ -1172,8 +1138,8 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setActiveSection3Tab('sale')}
                   className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-[13px] font-bold transition-all cursor-pointer ${activeSection3Tab === 'sale'
-                      ? 'bg-[#0a1128] text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+                    ? 'bg-[#0a1128] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
                     }`}
                 >
                   Đang bán
@@ -1182,8 +1148,8 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setActiveSection3Tab('rent')}
                   className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-[13px] font-bold transition-all cursor-pointer ${activeSection3Tab === 'rent'
-                      ? 'bg-[#0a1128] text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+                    ? 'bg-[#0a1128] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
                     }`}
                 >
                   Đang cho thuê
@@ -1473,150 +1439,6 @@ export default function HomePage() {
             </Link>
           </div>
 
-        </div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 4 — BẢN ĐỒ MINI + BĐS THEO KHU VỰC
-         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="map-search" className="bg-[#0a1128] z-10 py-10 sm:py-14 lg:py-16 border-y border-slate-800/80 text-white relative overflow-hidden scroll-mt-6">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-10 items-stretch">
-
-            {/* Left 40-42%: District List & Filter Control */}
-            <div className="lg:col-span-5 flex flex-col justify-between lg:h-[520px] xl:h-[540px]">
-              {/* Section Header */}
-              <div>
-                <span className="inline-flex items-center gap-1.5 text-orange-400 font-bold text-[11px] sm:text-xs tracking-widest uppercase mb-2">
-                  <Compass className="w-3.5 h-3.5 text-orange-400" />
-                  <span>KHÁM PHÁ THEO KHU VỰC</span>
-                </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
-                  Tìm nhà trên bản đồ Hà Nội
-                </h2>
-                <p className="text-sm sm:text-base text-slate-300 font-normal mt-2 sm:mt-2.5 leading-relaxed">
-                  Rê chuột vào quận để xem vị trí trực quan hoặc nhấp để lọc tin đăng chính xác
-                </p>
-              </div>
-
-              {/* District Table Panel - Structured 3-column scan */}
-              <div className="rounded-2xl sm:rounded-[20px] border border-slate-200/90 bg-white shadow-2xl flex-1 my-3 sm:my-3.5 overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
-                {/* Column Headers for Easy Scanning (Chuẩn metadata 12-14px) */}
-                <div className="grid grid-cols-12 px-3 sm:px-4 py-2 sm:py-2.5 text-xs font-semibold tracking-wider text-slate-400 uppercase border-b border-slate-100 bg-slate-50/90 select-none">
-                  <span className="col-span-5 flex items-center gap-1.5">
-                    Khu vực
-                  </span>
-                  <span className="col-span-3 text-center">Nguồn cung</span>
-                  <span className="col-span-4 text-right" title="Đơn giá trung bình tham khảo theo m²">
-                    Đơn giá TB*
-                  </span>
-                </div>
-
-                {/* District Rows - Rút gọn 5 quận ban đầu, loại bỏ thanh cuộn lồng nhau */}
-                <div className={`flex-1 divide-y divide-slate-100 p-1.5 sm:p-2 ${showAllDistricts ? 'overflow-y-auto max-h-[290px] scrollbar-thin scrollbar-thumb-slate-200' : 'overflow-hidden'}`}>
-                  {displayedDistricts.map((d) => {
-                    const isSelected = hoveredDistrict === d.name;
-                    return (
-                      <div
-                        key={d.name}
-                        onMouseEnter={() => setHoveredDistrict(d.name)}
-                        onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
-                        className={`grid grid-cols-12 items-center py-2 px-2.5 sm:px-3 rounded-xl cursor-pointer transition-all duration-150 ${isSelected
-                          ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 font-semibold'
-                          : 'hover:bg-orange-50/70 text-slate-700'
-                          }`}
-                      >
-                        {/* District Name with Pin */}
-                        <div className="col-span-5 flex items-center gap-2 min-w-0 pr-1">
-                          <MapPin
-                            className={`h-3.5 w-3.5 shrink-0 transition-colors ${isSelected ? 'text-white' : 'text-orange-500'
-                              }`}
-                          />
-                          <span className="font-bold text-xs sm:text-sm truncate">
-                            Quận {d.name}
-                          </span>
-                        </div>
-
-                        {/* Supply Count Badge */}
-                        <div className="col-span-3 text-center">
-                          <span
-                            className={`inline-block px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-normal transition-colors ${isSelected
-                              ? 'bg-white/20 text-white font-medium'
-                              : 'bg-slate-100 text-slate-600'
-                              }`}
-                          >
-                            {d.count.toLocaleString()} tin
-                          </span>
-                        </div>
-
-                        {/* Avg Price per m² */}
-                        <div className="col-span-4 text-right">
-                          <span
-                            className={`font-mono font-bold text-xs sm:text-sm transition-colors ${isSelected
-                              ? 'text-yellow-200 drop-shadow-xs'
-                              : 'text-orange-600'
-                              }`}
-                          >
-                            {d.avgPrice}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Bottom Bar: Mở rộng / Thu gọn danh sách quận & Chú thích đơn giá */}
-                <div className="border-t border-slate-100 bg-slate-50/70 px-2 py-1.5 flex flex-col gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setShowAllDistricts((prev) => !prev)}
-                    className="w-full py-1 px-3 rounded-xl text-xs font-bold text-slate-600 hover:text-orange-600 hover:bg-orange-50/60 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <span>{showAllDistricts ? 'Thu gọn danh sách quận' : `Xem tất cả ${popularDistricts.length} quận`}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAllDistricts ? 'rotate-180' : ''}`} />
-                  </button>
-                  <p className="text-[10px] text-slate-400 italic text-center">
-                    *Đơn giá TB tham khảo mặt bằng thị trường theo m²
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="flex">
-                <Link
-                  href={`/search?district=${encodeURIComponent(hoveredDistrict)}`}
-                  className="w-full h-11 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/25 transition-all px-4"
-                  title={`Xem toàn bộ tin đăng tại Quận ${hoveredDistrict}`}
-                >
-                  <MapPin className="h-4 w-4 shrink-0" />
-                  <span>Xem tin đăng Quận {hoveredDistrict}</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Right 58-60%: Interactive Leaflet GIS Map */}
-            <div className="lg:col-span-7 flex flex-col h-[380px] sm:h-[440px] lg:h-[520px] xl:h-[540px]">
-              <div className="rounded-2xl sm:rounded-[20px] overflow-hidden shadow-2xl border border-slate-700/80 w-full h-full relative bg-slate-900 ring-1 ring-white/10 flex-1">
-                {/* Active Indicator Floating Badge */}
-                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[400] bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-xl flex items-center gap-2 pointer-events-none">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="text-[11px] sm:text-xs font-medium text-slate-200">
-                    Đang xem: <strong className="text-orange-400 font-bold">Quận {hoveredDistrict}</strong>
-                  </span>
-                </div>
-
-                <MiniSearchMap
-                  listings={mockListings as any}
-                  targetDistrict={hoveredDistrict}
-                  onMarkerClick={(id) => {
-                    const item = mockListings.find((l) => l.id === id);
-                    router.push(item ? getListingUrl(item) : `/listings/${id}`);
-                  }}
-                />
-              </div>
-            </div>
-
-          </div>
         </div>
       </section>
 
