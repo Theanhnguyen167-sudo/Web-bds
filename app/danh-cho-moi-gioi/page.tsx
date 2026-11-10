@@ -368,6 +368,7 @@ export default function BrokerLandingPage() {
                 return (
                   <div
                     key={p.id}
+                    id={p.id}
                     className={`rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all bg-white relative ${
                       p.popular
                         ? 'border-2 border-blue-600 shadow-xl ring-4 ring-blue-600/10'

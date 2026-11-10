@@ -2224,78 +2224,120 @@ export default function HomePage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          📌 SECTION 10 — ĐĂNG TIN FINAL CTA
+          📌 SECTION 10 — BẮT ĐẦU CÙNG HANOI REALTY (3 VAI TRÒ)
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
-        id="cta-dang-tin"
+        id="bat-dau"
         className="bg-slate-50 py-12 sm:py-16 lg:py-20 border-t border-slate-200/80 relative"
       >
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl bg-gradient-to-br from-[#0c1636] via-[#0a1128] to-[#070d1e] border border-slate-800/90 shadow-2xl overflow-hidden p-8 sm:p-10 lg:p-14">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+              Bắt đầu cùng HaNoi Realty
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 font-normal mt-2.5 leading-relaxed">
+              Lựa chọn đúng vai trò để tiếp cận quy trình và công cụ được chuẩn hóa cho từng nhu cầu giao dịch.
+            </p>
+          </div>
 
-            {/* Ambient Background Glows */}
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 lg:gap-12">
-
-              {/* Left Column: Heading & Value Proposition */}
-              <div className="max-w-2xl text-left">
-                {/* Eyebrow — Uppercase Tracking-Widest Accent */}
-                <div className="inline-flex items-center gap-1.5 text-orange-400 font-bold text-[11px] sm:text-xs tracking-widest uppercase mb-2">
-                  <Sparkles className="w-3.5 h-3.5 text-orange-400" />
-                  <span>DÀNH CHO CHỦ NHÀ & MÔI GIỚI</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+            {/* Ô 1: Tôi là chủ nhà */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5 border border-emerald-100/80">
+                  <Key className="w-6 h-6" />
                 </div>
-
-                {/* Section Heading — Primary Information (Nổi bật nhất) */}
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
-                  Bạn muốn đăng tin bán hoặc cho thuê nhà?
-                </h2>
-
-                {/* Description — Supporting Text (Nhẹ hơn heading) */}
-                <p className="text-sm sm:text-base text-slate-300 font-normal mt-2 sm:mt-2.5 leading-relaxed max-w-xl">
-                  Đăng tin bán hoặc cho thuê nhanh chóng, ghim vị trí trên bản đồ và kết nối trực tiếp với người tìm nhà tại Hà Nội.
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2.5 tracking-tight">
+                  Tôi là chủ nhà
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed font-normal">
+                  Gửi thông tin nhà cần bán hoặc cho thuê để HaNoi Realty tiếp nhận và kiểm tra.
                 </p>
+              </div>
 
-                {/* Trust / Benefit Checkpoints (Chỉ giữ tính năng có dữ liệu và chức năng thực tế hỗ trợ) */}
-                <div className="flex flex-wrap items-center gap-y-2 gap-x-4 pt-3.5 text-xs sm:text-sm font-normal text-slate-300">
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    Đăng tin miễn phí không cần thẻ
-                  </span>
-                  <span className="text-slate-600 hidden sm:inline">•</span>
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    Hiển thị toạ độ trên bản đồ tìm kiếm
-                  </span>
-                  <span className="text-slate-600 hidden sm:inline">•</span>
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    Quản lý tin đăng thuận tiện
-                  </span>
+              <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
+                <Link
+                  href="/register?role=owner"
+                  className="h-11 sm:h-12 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all text-center"
+                >
+                  <span>Đăng ký chủ nhà</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/post-property"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold text-emerald-700 hover:text-emerald-800 transition-colors py-1 text-center"
+                >
+                  <span>Gửi nhà cần bán hoặc cho thuê</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Ô 2: Tôi là môi giới hoặc TPKD */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-5 border border-orange-100/80">
+                  <Briefcase className="w-6 h-6" />
                 </div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2.5 tracking-tight">
+                  Tôi là môi giới hoặc TPKD
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed font-normal">
+                  Tìm hiểu điều kiện tham gia và công cụ dành cho CTV, môi giới và trưởng nhóm.
+                </p>
+                <p className="mt-3 text-[11px] leading-relaxed text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
+                  Quyền TPKD chỉ có hiệu lực sau khi hồ sơ quản trị được xét duyệt.
+                </p>
               </div>
 
-              {/* Right Column: CTA Buttons Hierarchy */}
-              <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center gap-3.5 w-full lg:w-auto shrink-0">
-                {/* Primary CTA - Bold Orange */}
+              <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
                 <Link
-                  href="/listings/create"
-                  className="h-12 sm:h-13 px-6 sm:px-8 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-extrabold text-sm sm:text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all text-center whitespace-nowrap group cursor-pointer"
+                  href="/register?role=agent"
+                  className="h-11 sm:h-12 px-5 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm shadow-orange-500/20 transition-all text-center"
                 >
-                  <span>Đăng tin miễn phí</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Đăng ký CTV/môi giới</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
-
-                {/* Secondary CTA - Elegant Muted Slate */}
                 <Link
-                  href="/pricing"
-                  className="h-12 sm:h-13 px-6 sm:px-7 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white active:scale-[0.98] font-bold text-sm sm:text-[15px] flex items-center justify-center gap-2 transition-all text-center whitespace-nowrap cursor-pointer"
+                  href="/danh-cho-moi-gioi#tpkd"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold text-orange-700 hover:text-orange-800 transition-colors py-1 text-center"
                 >
-                  <span>Xem các gói Pro</span>
+                  <span>Tìm hiểu gói TPKD</span>
+                  <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
+            </div>
 
+            {/* Ô 3: Tôi muốn tìm nhà */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-5 border border-sky-100/80">
+                  <Search className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2.5 tracking-tight">
+                  Tôi muốn tìm nhà
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed font-normal">
+                  Tạo tài khoản để lưu căn quan tâm và gửi nhu cầu tìm nhà tại Hà Nội.
+                </p>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
+                <Link
+                  href="/register?role=buyer"
+                  className="h-11 sm:h-12 px-5 rounded-xl bg-sky-600 hover:bg-sky-700 active:scale-[0.98] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all text-center"
+                >
+                  <span>Đăng ký tài khoản người mua</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/search"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold text-sky-700 hover:text-sky-800 transition-colors py-1 text-center"
+                >
+                  <span>Tìm nhà ngay</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>

@@ -137,7 +137,12 @@ export default function AuthPageContent({
   });
 
   // Role selection ONLY FOR REGISTER
-  const [registerRole, setRegisterRole] = useState<'buyer' | 'owner' | 'agent'>('buyer');
+  const [registerRole, setRegisterRole] = useState<'buyer' | 'owner' | 'agent'>(() => {
+    const r = searchParams?.get('role');
+    if (r === 'owner' || r === 'seller') return 'owner';
+    if (r === 'agent' || r === 'broker' || r === 'ctv') return 'agent';
+    return 'buyer';
+  });
 
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [showPassword, setShowPassword] = useState(false);
@@ -169,6 +174,10 @@ export default function AuthPageContent({
     } else if (searchParams && searchParams.get('mode') === 'register') {
       setMode('register');
     }
+    const r = searchParams?.get('role');
+    if (r === 'owner' || r === 'seller') setRegisterRole('owner');
+    else if (r === 'agent' || r === 'broker' || r === 'ctv') setRegisterRole('agent');
+    else if (r === 'buyer') setRegisterRole('buyer');
   }, [pathname, searchParams]);
 
   // ============================================================================
