@@ -206,16 +206,6 @@ export const Navbar: React.FC = () => {
             <Search className="h-4 w-4 shrink-0" />
           </Link>
 
-          {/* Broker Workspace Quick Link for Brokers & Agents */}
-          <Link
-            href="/dashboard/broker"
-            className="h-9 hidden md:flex items-center gap-1.5 rounded-xl bg-blue-500/10 border border-blue-500/30 px-3 text-xs font-bold text-blue-700 hover:bg-blue-600 hover:text-white transition-all shadow-xs whitespace-nowrap shrink-0"
-            title="Bàn làm việc Môi giới (Kho mở & Ví hoa hồng)"
-          >
-            <Briefcase className="h-4 w-4 shrink-0" />
-            <span className="hidden xl:inline">Sàn </span>
-            <span>Môi giới / CTV</span>
-          </Link>
           {/* Admin Portal Quick Switch Button for Admins */}
           {user?.role === 'admin' && (
             <Link
