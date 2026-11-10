@@ -740,8 +740,8 @@ export default function HomePage() {
                           type="button"
                           onClick={() => setHeroSearchTab(tab.key as any)}
                           className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${heroSearchTab === tab.key
-                              ? 'bg-[#0a1128] text-white shadow-xs'
-                              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                            ? 'bg-[#0a1128] text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                             }`}
                         >
                           <span>{tab.icon}</span>
@@ -829,8 +829,8 @@ export default function HomePage() {
                             setHeroLocationDropdownOpen(false);
                           }}
                           className={`w-full h-10 flex items-center justify-between px-3 rounded-xl border text-xs sm:text-[13px] font-semibold transition-all ${heroTypeDropdownOpen
-                              ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
-                              : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
+                            ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
+                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
                             }`}
                         >
                           <span className="truncate">
@@ -858,8 +858,8 @@ export default function HomePage() {
                                     setHeroTypeDropdownOpen(false);
                                   }}
                                   className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${heroType === t.value
-                                      ? 'bg-orange-500 text-white shadow-sm'
-                                      : 'hover:bg-slate-50 text-slate-700'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'hover:bg-slate-50 text-slate-700'
                                     }`}
                                 >
                                   <span className="shrink-0">{t.icon}</span>
@@ -881,8 +881,8 @@ export default function HomePage() {
                             setHeroLocationDropdownOpen(false);
                           }}
                           className={`w-full h-10 flex items-center justify-between px-3 rounded-xl border text-xs sm:text-[13px] font-semibold transition-all ${heroPriceDropdownOpen
-                              ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
-                              : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
+                            ? 'border-orange-500 ring-3 ring-orange-500/15 bg-orange-50/20 text-[#0a1128]'
+                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/60 hover:bg-white text-slate-700'
                             }`}
                         >
                           <span className="truncate">
@@ -910,8 +910,8 @@ export default function HomePage() {
                                     setHeroPriceDropdownOpen(false);
                                   }}
                                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${heroPriceRange === p.value
-                                      ? 'bg-orange-500 text-white shadow-sm'
-                                      : 'hover:bg-slate-50 text-slate-700'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'hover:bg-slate-50 text-slate-700'
                                     }`}
                                 >
                                   <span className="truncate">{p.label}</span>
@@ -1002,57 +1002,113 @@ export default function HomePage() {
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div id="stats-and-categories" className="flex flex-col border-b border-slate-200/80">
 
-        {/* 1. DẢI THỐNG KÊ (Social proof nối tiếp Hero: Gọn gàng, giảm khoảng trắng thừa, căn theo Grid chuẩn max-w-7xl) */}
-        <section id="hero-stats" className="bg-white py-6 sm:py-7 lg:py-8 border-b border-slate-200/80">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-3 divide-x divide-slate-200/80 items-center">
-              <CodiStatCounter value={10247} suffix="+" label="tin đăng đang hoạt động" />
-              <CodiStatCounter value={5832} suffix="+" highlight={true} label="người dùng tháng này" />
-              <CodiStatCounter value={98} suffix="%" label="tỷ lệ khách hàng hài lòng" />
-            </div>
-          </div>
-        </section>
+          {/* 1. KHỐI: HANOI REALTY HOẠT ĐỘNG THẾ NÀO? (Thay thế dải số liệu hero-stats) */}
+          <section id="how-it-works" className="bg-white py-8 sm:py-10 lg:py-12 border-b border-slate-200/80">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center max-w-2xl mx-auto mb-7 sm:mb-9">
+                  <h2 className="text-xl sm:text-2xl lg:text-[26px] font-black text-[#0a1128] tracking-tight mb-2">
+                    HaNoi Realty hoạt động thế nào?
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                    Quy trình HaNoi Realty đang xây dựng để kết nối chủ nhà, môi giới và người mua.
+                  </p>
+                </div>
 
-        {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Nền trung tính nhẹ #F8FAFC, liền mạch với Hero & Stats) */}
-        <section id="categories" className="bg-slate-50/70 py-8 sm:py-10 lg:py-12 relative text-slate-900 flex flex-col justify-center">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-              <div>
-                <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">
-                  KHÁM PHÁ THEO NHU CẦU
-                </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] leading-tight tracking-tight">
-                  Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
-                </h2>
-                <p className="text-sm sm:text-base text-slate-500 font-normal mt-2 sm:mt-2.5 max-w-xl leading-relaxed">
-                  Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
-                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                  {/* Thẻ 1 */}
+                  <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
+                    <div>
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
+                          1
+                        </span>
+                        <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
+                          Tiếp nhận và kiểm tra thông tin
+                        </h3>
+                      </div>
+                      <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
+                        Chủ nhà gửi thông tin BĐS. HaNoi Realty tiếp nhận, kiểm tra và đề nghị bổ sung khi cần trước khi duyệt công bố.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Thẻ 2 */}
+                  <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
+                    <div>
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
+                          2
+                        </span>
+                        <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
+                          Kết nối theo nhu cầu
+                        </h3>
+                      </div>
+                      <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
+                        Người mua tự tìm nhà hoặc gửi tiêu chí. Môi giới đã được duyệt có thể khai thác kho nhà chung và hỗ trợ tìm căn phù hợp.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Thẻ 3 */}
+                  <div className="rounded-2xl p-5 sm:p-6 bg-slate-50/70 border border-slate-200/80 flex flex-col justify-between hover:border-orange-500/40 hover:bg-white hover:shadow-md transition-all duration-200">
+                    <div>
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-500 text-white font-black text-xs shadow-xs shrink-0">
+                          3
+                        </span>
+                        <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
+                          Phối hợp xem nhà và trao đổi
+                        </h3>
+                      </div>
+                      <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
+                        Khi người mua quan tâm, HaNoi Realty hỗ trợ phối hợp lịch xem để các bên trao đổi về căn nhà và điều kiện giao dịch.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
+          </section>
 
-              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
-                <Link
-                  href="/cho-thue"
-                  className="text-xs sm:text-sm font-semibold text-slate-700 hover:text-orange-600 bg-white hover:bg-orange-50/60 border border-slate-200/80 hover:border-orange-300 px-3 sm:px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 transition-all shadow-xs group cursor-pointer"
-                >
-                  <span>🔑</span>
-                  <span className="font-bold">Cho thuê</span>
-                  <span className="text-xs text-slate-400 group-hover:text-orange-500 font-normal">· 1,876 tin</span>
-                </Link>
+          {/* 2. DANH MỤC BẤT ĐỘNG SẢN HÀ NỘI (Nền trung tính nhẹ #F8FAFC, liền mạch với Hero & Stats) */}
+          <section id="categories" className="bg-slate-50/70 py-8 sm:py-10 lg:py-12 relative text-slate-900 flex flex-col justify-center">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                <div>
+                  <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">
+                    KHÁM PHÁ THEO NHU CẦU
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0a1128] leading-tight tracking-tight">
+                    Danh mục bất động sản <span className="text-orange-500">Hà Nội</span>
+                  </h2>
+                  <p className="text-sm sm:text-base text-slate-500 font-normal mt-2 sm:mt-2.5 max-w-xl leading-relaxed">
+                    Hơn 10,000+ tin đăng chính chủ đã thẩm định quy hoạch thực tế, phân loại đầy đủ theo từng phân khúc
+                  </p>
+                </div>
 
-                <Link
-                  href="/search"
-                  className="text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 group py-1.5 cursor-pointer"
-                >
-                  <span>Xem tất cả loại BĐS</span>
-                  <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
+                  <Link
+                    href="/cho-thue"
+                    className="text-xs sm:text-sm font-semibold text-slate-700 hover:text-orange-600 bg-white hover:bg-orange-50/60 border border-slate-200/80 hover:border-orange-300 px-3 sm:px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 transition-all shadow-xs group cursor-pointer"
+                  >
+                    <span>🔑</span>
+                    <span className="font-bold">Cho thuê</span>
+                    <span className="text-xs text-slate-400 group-hover:text-orange-500 font-normal">· 1,876 tin</span>
+                  </Link>
+
+                  <Link
+                    href="/search"
+                    className="text-xs sm:text-sm font-bold text-orange-600 hover:text-orange-700 inline-flex items-center gap-1 group py-1.5 cursor-pointer"
+                  >
+                    <span>Xem tất cả loại BĐS</span>
+                    <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Lưới Danh mục ô vuông cuộn ngang có nút điều hướng */}
-          <CategoryCarousel />
-        </section>
+            {/* Lưới Danh mục ô vuông cuộn ngang có nút điều hướng */}
+            <CategoryCarousel />
+          </section>
 
       </div>
 
@@ -1342,18 +1398,16 @@ export default function HomePage() {
                         key={d.name}
                         onMouseEnter={() => setHoveredDistrict(d.name)}
                         onClick={() => router.push(`/search?district=${encodeURIComponent(d.name)}`)}
-                        className={`grid grid-cols-12 items-center py-2 px-2.5 sm:px-3 rounded-xl cursor-pointer transition-all duration-150 ${
-                          isSelected
+                        className={`grid grid-cols-12 items-center py-2 px-2.5 sm:px-3 rounded-xl cursor-pointer transition-all duration-150 ${isSelected
                             ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 font-semibold'
                             : 'hover:bg-orange-50/70 text-slate-700'
-                        }`}
+                          }`}
                       >
                         {/* District Name with Pin */}
                         <div className="col-span-5 flex items-center gap-2 min-w-0 pr-1">
                           <MapPin
-                            className={`h-3.5 w-3.5 shrink-0 transition-colors ${
-                              isSelected ? 'text-white' : 'text-orange-500'
-                            }`}
+                            className={`h-3.5 w-3.5 shrink-0 transition-colors ${isSelected ? 'text-white' : 'text-orange-500'
+                              }`}
                           />
                           <span className="font-bold text-xs sm:text-sm truncate">
                             Quận {d.name}
@@ -1363,11 +1417,10 @@ export default function HomePage() {
                         {/* Supply Count Badge */}
                         <div className="col-span-3 text-center">
                           <span
-                            className={`inline-block px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-normal transition-colors ${
-                              isSelected
+                            className={`inline-block px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-normal transition-colors ${isSelected
                                 ? 'bg-white/20 text-white font-medium'
                                 : 'bg-slate-100 text-slate-600'
-                            }`}
+                              }`}
                           >
                             {d.count.toLocaleString()} tin
                           </span>
@@ -1376,11 +1429,10 @@ export default function HomePage() {
                         {/* Avg Price per m² */}
                         <div className="col-span-4 text-right">
                           <span
-                            className={`font-mono font-bold text-xs sm:text-sm transition-colors ${
-                              isSelected
+                            className={`font-mono font-bold text-xs sm:text-sm transition-colors ${isSelected
                                 ? 'text-yellow-200 drop-shadow-xs'
                                 : 'text-orange-600'
-                            }`}
+                              }`}
                           >
                             {d.avgPrice}
                           </span>
@@ -1490,8 +1542,8 @@ export default function HomePage() {
                     key={pill.id}
                     onClick={() => setPersonalFilter(pill.id)}
                     className={`px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shrink-0 transition-all cursor-pointer ${personalFilter === pill.id
-                        ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:text-slate-900'
+                      ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 hover:text-slate-900'
                       }`}
                   >
                     {pill.label}
@@ -1792,8 +1844,8 @@ export default function HomePage() {
                               type="button"
                               onClick={() => setModalActiveImageIdx(idx)}
                               className={`relative w-20 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${modalActiveImageIdx === idx
-                                  ? 'border-orange-500 ring-2 ring-orange-500/30 scale-105'
-                                  : 'border-transparent opacity-70 hover:opacity-100'
+                                ? 'border-orange-500 ring-2 ring-orange-500/30 scale-105'
+                                : 'border-transparent opacity-70 hover:opacity-100'
                                 }`}
                             >
                               <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
@@ -1874,8 +1926,8 @@ export default function HomePage() {
                         <div className="flex items-center gap-2">
                           <a
                             href={`tel:${user && (selectedListingDetail.userId === user.id || selectedListingDetail.authorEmail === user.email)
-                                ? user.phone || '0988123456'
-                                : selectedListingDetail.authorPhone || selectedListingDetail.users?.phone || '0988123456'
+                              ? user.phone || '0988123456'
+                              : selectedListingDetail.authorPhone || selectedListingDetail.users?.phone || '0988123456'
                               }`}
                             className="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                           >
@@ -2257,8 +2309,8 @@ export default function HomePage() {
                 onClick={() => goToReview(idx)}
                 aria-label={`Chuyển đến đánh giá ${idx + 1}`}
                 className={`transition-all duration-300 rounded-full cursor-pointer ${activeReviewIdx === idx
-                    ? 'w-2 h-2 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.9)] ring-2 ring-blue-500/30'
-                    : 'w-1.5 h-1.5 bg-slate-600/70 hover:bg-slate-400'
+                  ? 'w-2 h-2 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.9)] ring-2 ring-blue-500/30'
+                  : 'w-1.5 h-1.5 bg-slate-600/70 hover:bg-slate-400'
                   }`}
               />
             ))}
