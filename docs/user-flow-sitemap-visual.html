@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sơ Đồ Sitemap & User Flow Chuẩn — HaNoi Realty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* Brand Color Palette matching HaNoi Realty */
+      --brand-orange: #ea580c;
+      --brand-orange-light: #fff7ed;
+      --brand-orange-border: #fed7aa;
+      --brand-navy: #1a2744;
+      --brand-navy-light: #24365d;
+      --brand-slate: #334155;
+      --tree-line: #f59e0b;
+      --page-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-light: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--page-bg);
+      color: var(--text-main);
+      padding: 20px;
+      min-width: 1480px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Action Bar */
+    .brand-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1720px;
+      margin: 0 auto 20px auto;
+      background: white;
+      padding: 12px 28px;
+      border-radius: 16px;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 4px 16px -2px rgba(26, 39, 68, 0.06);
+    }
+
+    .brand-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: var(--brand-orange);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
+    }
+
+    .logo-text h2 {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--brand-navy);
+      line-height: 1.1;
+    }
+
+    .logo-text span {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--brand-orange);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .tab-btn {
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #475569;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tab-btn:hover { color: var(--brand-navy); }
+
+    .tab-btn.active {
+      background: var(--brand-navy);
+      color: white;
+      box-shadow: 0 4px 12px rgba(26, 39, 68, 0.25);
+    }
+
+    .btn-action-print {
+      background: var(--brand-orange);
+      color: white;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 12.5px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+      transition: all 0.2s;
+    }
+
+    .btn-action-print:hover {
+      background: #c2410c;
+      transform: translateY(-1px);
+    }
+
+    /* Main Chart Board */
+    .main-canvas {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 10px 35px -5px rgba(26, 39, 68, 0.06);
+      padding: 36px 18px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Main Title */
+    .chart-heading {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .chart-heading h1 {
+      font-size: 24px;
+      font-weight: 900;
+      color: #b91c1c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ==========================================================================
+       TAB 1: SITEMAP (EXACT MATCHING THE REFERENCE DIAGRAM & WEBSITE NAVBAR)
+       ========================================================================== */
+    .sitemap-tree-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      position: relative;
+    }
+
+    /* Root box: Trang chủ */
+    .root-node-pill {
+      background: #ef4444;
+      color: white;
+      padding: 12px 36px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+      z-index: 5;
+      text-align: center;
+      min-width: 140px;
+    }
+
+    /* SVG Tree Connector Lines */
+    .tree-lines-svg {
+      width: 100%;
+      height: 48px;
+      margin-top: -2px;
+      margin-bottom: 6px;
+      overflow: visible;
+    }
+
+    .sitemap-columns-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      width: 100%;
+      align-items: start;
+    }
+
+    .sitemap-col {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      position: relative;
+    }
+
+    /* Column Header (Matching reference colored pills) */
+    .col-header {
+      padding: 10px 6px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 12px;
+      text-align: center;
+      color: white;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+
+    /* Column 10 Color Themes (Brand harmonious palette) */
+    .c-timkiem .col-header { background: #0284c7; } /* Xanh dương biển */
+    .c-quyhoach .col-header { background: #0d9488; } /* Xanh ngọc quy hoạch */
+    .c-tintuc .col-header { background: #ea580c; } /* Cam đậm thị trường */
+    .c-baocao .col-header { background: #7c3aed; } /* Tím công nghệ AI */
+    .c-banggia .col-header { background: #16a34a; } /* Xanh lá tài chính */
+    .c-vechungtoi .col-header { background: #475569; } /* Xám thanh lịch */
+    .c-dangtin .col-header { background: #f97316; } /* Cam rực rỡ nút đăng tin */
+    .c-taikhoan .col-header { background: #2563eb; } /* Xanh hoàng gia Auth */
+    .c-dashboard .col-header { background: #1e293b; } /* Dark Navy bảng điều khiển */
+    .c-admin .col-header { background: #991b1b; } /* Đỏ đô quản trị */
+
+    /* Cards stack inside column */
+    .cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      position: relative;
+    }
+
+    /* Individual Card (Item) */
+    .tree-card {
+      background: #ffffff;
+      border: 1.5px solid;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      line-height: 1.3;
+      text-align: left;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+
+    .tree-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+
+    /* Sub-branch item (Thụt lề và có đường nối chữ L như ảnh mẫu Trọ Xinh) */
+    .sub-tree-item {
+      margin-left: 14px;
+      background: #fafafa;
+      border: 1px dashed;
+      border-radius: 5px;
+      padding: 6px 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .sub-tree-item::before {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      width: 8px;
+      height: 1px;
+      background: #cbd5e1;
+    }
+
+    .sub-tree-item::after {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: -6px;
+      width: 1px;
+      height: calc(50% + 6px);
+      background: #cbd5e1;
+    }
+
+    /* Theme colors for items */
+    .c-timkiem .tree-card { border-color: #bae6fd; color: #0369a1; }
+    .c-timkiem .sub-tree-item { border-color: #7dd3fc; color: #0284c7; background: #f0f9ff; }
+
+    .c-quyhoach .tree-card { border-color: #99f6e4; color: #0f766e; }
+    .c-quyhoach .sub-tree-item { border-color: #5eead4; color: #0d9488; background: #f0fdfa; }
+
+    .c-tintuc .tree-card { border-color: #fed7aa; color: #c2410c; }
+    .c-tintuc .sub-tree-item { border-color: #fdba74; color: #ea580c; background: #fff7ed; }
+
+    .c-baocao .tree-card { border-color: #ddd6fe; color: #6d28d9; }
+    .c-baocao .sub-tree-item { border-color: #c4b5fd; color: #7c3aed; background: #faf5ff; }
+
+    .c-banggia .tree-card { border-color: #bbf7d0; color: #15803d; }
+    .c-banggia .sub-tree-item { border-color: #86efac; color: #16a34a; background: #f0fdf4; }
+
+    .c-vechungtoi .tree-card { border-color: #cbd5e1; color: #334155; }
+    .c-vechungtoi .sub-tree-item { border-color: #94a3b8; color: #475569; background: #f8fafc; }
+
+    .c-dangtin .tree-card { border-color: #fdba74; color: #c2410c; }
+    .c-dangtin .sub-tree-item { border-color: #fb923c; color: #ea580c; background: #fff7ed; }
+
+    .c-taikhoan .tree-card { border-color: #bfdbfe; color: #1d4ed8; }
+    .c-taikhoan .sub-tree-item { border-color: #93c5fd; color: #2563eb; background: #eff6ff; }
+
+    .c-dashboard .tree-card { border-color: #cbd5e1; color: #1e293b; }
+    .c-dashboard .sub-tree-item { border-color: #94a3b8; color: #0f172a; background: #f1f5f9; }
+
+    .c-admin .tree-card { border-color: #fecdd3; color: #9f1239; }
+    .c-admin .sub-tree-item { border-color: #fda4af; color: #be123c; background: #fff1f2; }
+
+
+    /* ==========================================================================
+       TAB 2: USER FLOW (BRAND TONE)
+       ========================================================================== */
+    .flow-entry-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .traffic-channels {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1100px;
+      margin-bottom: 14px;
+    }
+
+    .channel-box {
+      background: white;
+      border: 1.5px solid var(--brand-orange);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--brand-navy);
+      box-shadow: 0 3px 8px rgba(234, 88, 12, 0.1);
+      width: 320px;
+      text-align: center;
+    }
+
+    .channel-box span {
+      display: block;
+      font-size: 10.5px;
+      color: var(--brand-orange);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .central-gateway {
+      width: 440px;
+      background: var(--brand-navy);
+      border: 2px solid var(--brand-orange);
+      color: white;
+      border-radius: 12px;
+      padding: 12px 20px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 14px;
+      box-shadow: 0 4px 14px rgba(26, 39, 68, 0.2);
+    }
+
+    .swimlanes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .lane-box {
+      background: #fafafa;
+      border-radius: 14px;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid var(--border-light);
+    }
+
+    .lane-header-brand {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 800;
+      font-size: 13.5px;
+      text-align: center;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin-bottom: 4px;
+    }
+
+    .l1 .lane-header-brand { background: #334155; }
+    .l2 .lane-header-brand { background: #1a2744; }
+    .l3 .lane-header-brand { background: #ea580c; }
+    .l4 .lane-header-brand { background: #0f172a; }
+
+    .action-step-card {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.35;
+      background: white;
+      border: 1.5px solid var(--border-light);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .action-step-card span.note {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .step-arrow-line {
+      width: 2px;
+      height: 10px;
+      background: #94a3b8;
+    }
+
+    /* Decision Diamond */
+    .decision-block {
+      width: 200px;
+      background: #fffbeb;
+      border: 1.5px solid #f59e0b;
+      border-radius: 8px;
+      padding: 9px 12px;
+      text-align: center;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #92400e;
+      position: relative;
+      line-height: 1.3;
+    }
+
+    .decision-block span.yes-tag {
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #16a34a;
+      background: #dcfce7;
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid #bbf7d0;
+    }
+
+    .decision-block span.no-tag {
+      position: absolute;
+      right: -38px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #fecaca;
+    }
+
+    .lane-transfer-pill {
+      width: 100%;
+      background: #fff7ed;
+      border: 1.5px dashed var(--brand-orange);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--brand-orange);
+      text-align: center;
+    }
+
+    .end-pill-badge {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #ef4444;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 900;
+      text-transform: uppercase;
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+      margin-top: 8px;
+    }
+
+    .bottom-conclusion-box {
+      max-width: 780px;
+      margin: 10px auto 0 auto;
+      padding: 14px 28px;
+      background: white;
+      border: 1.5px solid #ef4444;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: #b91c1c;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+      line-height: 1.35;
+    }
+
+    @media print {
+      body { padding: 0; background: white; min-width: 100%; }
+      .brand-top-bar { display: none; }
+      .main-canvas { border: none; box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Navigation Bar -->
+  <div class="brand-top-bar">
+    <div class="brand-logo-wrap">
+      <div class="logo-badge">🏠</div>
+      <div class="logo-text">
+        <h2>HaNoi Realty</h2>
+        <span>PROPTECH & QUY HOẠCH HÀ NỘI</span>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchBrandTab('sitemap')">1. SƠ ĐỒ SITEMAP (CHUẨN 10 CỘT NAVBAR & CÂY NỐI)</button>
+      <button class="tab-btn" onclick="switchBrandTab('userflow')">2. SƠ ĐỒ USER FLOW TỔNG HỢP (TONE BRAND)</button>
+    </div>
+
+    <button class="btn-action-print" onclick="window.print()">
+      🖨️ In / Xuất PDF 4K Sắc Nét
+    </button>
+  </div>
+
+  <!-- Main Canvas Board -->
+  <div class="main-canvas">
+
+    <!-- ======================================================================
+         TAB 1: SITEMAP (CHUẨN 10 CỘT NAVBAR THỰC TẾ + CÂY NỐI NHƯ MẪU)
+         ====================================================================== -->
+    <div id="tab-sitemap" class="tab-content active">
+      <div class="chart-heading">
+        <h1>SƠ ĐỒ SITEMAP — HANOI REALTY</h1>
+      </div>
+
+      <div class="sitemap-tree-container">
+        <!-- Root node: Trang chủ -->
+        <div class="root-node-pill">
+          Trang chủ
+        </div>
+
+        <!-- SVG Tree Lines connecting Trang chủ to all 10 columns -->
+        <svg class="tree-lines-svg" viewBox="0 0 1600 48" preserveAspectRatio="none">
+          <!-- Vertical stem from Trang chủ -->
+          <line x1="800" y1="0" x2="800" y2="22" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Horizontal crossbar connecting all 10 columns -->
+          <line x1="80" y1="22" x2="1520" y2="22" stroke="#f59e0b" stroke-width="2.5" />
+          
+          <!-- 10 Vertical stems dropping into each column header -->
+          <!-- Col 1: center ~ 80 -->
+          <line x1="80" y1="22" x2="80" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 2: center ~ 240 -->
+          <line x1="240" y1="22" x2="240" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 3: center ~ 400 -->
+          <line x1="400" y1="22" x2="400" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 4: center ~ 560 -->
+          <line x1="560" y1="22" x2="560" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 5: center ~ 720 -->
+          <line x1="720" y1="22" x2="720" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 6: center ~ 880 -->
+          <line x1="880" y1="22" x2="880" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 7: center ~ 1040 -->
+          <line x1="1040" y1="22" x2="1040" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 8: center ~ 1200 -->
+          <line x1="1200" y1="22" x2="1200" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 9: center ~ 1360 -->
+          <line x1="1360" y1="22" x2="1360" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Col 10: center ~ 1520 -->
+          <line x1="1520" y1="22" x2="1520" y2="48" stroke="#f59e0b" stroke-width="2.5" />
+        </svg>
+
+        <!-- 10 Columns Grid in exact navbar sequence (NO SEO Silo column) -->
+        <div class="sitemap-columns-grid">
+
+          <!-- 1. TÌM KIẾM -->
+          <div class="sitemap-col c-timkiem">
+            <div class="col-header">Tìm kiếm</div>
+            <div class="cards-stack">
+              <div class="tree-card">Tìm kiếm thông minh</div>
+              <div class="sub-tree-item">Mua bán nhà đất</div>
+              <div class="sub-tree-item">Cho thuê nhà đất</div>
+              <div class="sub-tree-item">Dự án bất động sản</div>
+              <div class="tree-card">Bản đồ tra cứu BĐS</div>
+              <div class="tree-card">Bộ lọc đa tiêu chí</div>
+            </div>
+          </div>
+
+          <!-- 2. QUY HOẠCH -->
+          <div class="sitemap-col c-quyhoach">
+            <div class="col-header">Quy hoạch</div>
+            <div class="cards-stack">
+              <div class="tree-card">Bản đồ quy hoạch 2030</div>
+              <div class="tree-card">Quy hoạch phân khu</div>
+              <div class="tree-card">Kế hoạch sử dụng đất</div>
+              <div class="tree-card">Tra cứu theo toạ độ</div>
+              <div class="tree-card">So sánh trượt (Swipe)</div>
+            </div>
+          </div>
+
+          <!-- 3. TIN TỨC -->
+          <div class="sitemap-col c-tintuc">
+            <div class="col-header">Tin tức</div>
+            <div class="cards-stack">
+              <div class="tree-card">Tất cả tin tức</div>
+              <div class="tree-card">Chuyên mục thị trường</div>
+              <div class="sub-tree-item">Thị trường BĐS</div>
+              <div class="sub-tree-item">Quy hoạch & Hạ tầng</div>
+              <div class="sub-tree-item">Biến động giá đất</div>
+              <div class="sub-tree-item">Chính sách & Pháp lý</div>
+              <div class="tree-card">Chi tiết bài viết</div>
+            </div>
+          </div>
+
+          <!-- 4. BÁO CÁO AI -->
+          <div class="sitemap-col c-baocao">
+            <div class="col-header">Báo cáo AI</div>
+            <div class="cards-stack">
+              <div class="tree-card">Báo cáo thị trường</div>
+              <div class="tree-card">Định giá nhà đất tự động</div>
+              <div class="tree-card">Dự báo xu hướng giá</div>
+              <div class="tree-card">Chi tiết báo cáo AI</div>
+              <div class="sub-tree-item">Điểm đầu tư (0–100)</div>
+              <div class="sub-tree-item">Ma trận SWOT</div>
+              <div class="sub-tree-item">Xuất báo cáo PDF</div>
+            </div>
+          </div>
+
+          <!-- 5. BẢNG GIÁ -->
+          <div class="sitemap-col c-banggia">
+            <div class="col-header">Bảng giá</div>
+            <div class="cards-stack">
+              <div class="tree-card">Bảng giá 4 gói hội viên</div>
+              <div class="sub-tree-item">Gói Free (Cá nhân)</div>
+              <div class="sub-tree-item">Gói Basic (Môi giới)</div>
+              <div class="sub-tree-item">Gói Pro (VIP)</div>
+              <div class="sub-tree-item">Gói Agency (Sàn)</div>
+              <div class="tree-card">So sánh đặc quyền các gói</div>
+              <div class="tree-card">Checkout thanh toán</div>
+            </div>
+          </div>
+
+          <!-- 6. VỀ CHÚNG TÔI -->
+          <div class="sitemap-col c-vechungtoi">
+            <div class="col-header">Về chúng tôi</div>
+            <div class="cards-stack">
+              <div class="tree-card">Giới thiệu HaNoi Realty</div>
+              <div class="tree-card">Đội ngũ chuyên gia</div>
+              <div class="tree-card">Liên hệ hợp tác</div>
+              <div class="tree-card">Điều khoản & Bảo mật</div>
+            </div>
+          </div>
+
+          <!-- 7. ĐĂNG TIN -->
+          <div class="sitemap-col c-dangtin">
+            <div class="col-header">Đăng tin</div>
+            <div class="cards-stack">
+              <div class="tree-card">Wizard đăng tin 6 bước</div>
+              <div class="sub-tree-item">B1: Loại & Nhu cầu</div>
+              <div class="sub-tree-item">B2: Định vị GPS Map</div>
+              <div class="sub-tree-item">B3 & B4: Thông số & Ảnh</div>
+              <div class="sub-tree-item">B5 & B6: Xem & Ghim VIP</div>
+              <div class="tree-card">Quản lý tin chờ duyệt</div>
+            </div>
+          </div>
+
+          <!-- 8. TÀI KHOẢN -->
+          <div class="sitemap-col c-taikhoan">
+            <div class="col-header">Tài khoản</div>
+            <div class="cards-stack">
+              <div class="tree-card">Đăng nhập tài khoản</div>
+              <div class="tree-card">Đăng ký thành viên</div>
+              <div class="tree-card">Quên mật khẩu</div>
+              <div class="tree-card">Hồ sơ cá nhân</div>
+              <div class="sub-tree-item">Gói cước đang dùng</div>
+              <div class="sub-tree-item">Cập nhật thông tin</div>
+              <div class="tree-card">Đăng xuất</div>
+            </div>
+          </div>
+
+          <!-- 9. BẢNG ĐIỀU KHIỂN (DASHBOARD) -->
+          <div class="sitemap-col c-dashboard">
+            <div class="col-header">Bảng điều khiển</div>
+            <div class="cards-stack">
+              <div class="tree-card">Tổng quan Dashboard</div>
+              <div class="tree-card">Thông báo hệ thống</div>
+              <div class="tree-card">Quản lý tin đăng</div>
+              <div class="tree-card">Tin đã lưu yêu thích</div>
+              <div class="tree-card">Lịch hẹn xem nhà</div>
+              <div class="tree-card">Nâng cấp gói & Quota</div>
+              <div class="tree-card">Quản trị Agency Team</div>
+              <div class="sub-tree-item">Phân quyền môi giới</div>
+              <div class="sub-tree-item">Phân bổ quota tin sàn</div>
+            </div>
+          </div>
+
+          <!-- 10. QUẢN TRỊ (ADMIN) -->
+          <div class="sitemap-col c-admin">
+            <div class="col-header">Quản trị</div>
+            <div class="cards-stack">
+              <div class="tree-card">Dashboard quản trị</div>
+              <div class="tree-card">Kiểm duyệt tin đăng</div>
+              <div class="tree-card">Quản lý người dùng</div>
+              <div class="tree-card">Quản lý gói & Coupon</div>
+              <div class="tree-card">Quản lý giao dịch</div>
+              <div class="tree-card">Quản lý quy hoạch số</div>
+              <div class="tree-card">Thống kê doanh thu</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         TAB 2: USER FLOW (BRAND TONE & EXACT FLOW AS REFERENCE)
+         ====================================================================== -->
+        <div id="tab-userflow" class="tab-content">
+      <div class="userflow-svg-container" style="width: 100%; overflow-x: auto; padding: 10px 0;">
+        <svg viewBox="0 0 1720 1020" style="width: 100%; min-width: 1560px; height: auto; display: block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Marker: Solid Arrow Gray -->
+            <marker id="uf-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#64748b" />
+            </marker>
+            <!-- Marker: Solid Arrow Orange -->
+            <marker id="uf-arrow-orange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#ea580c" />
+            </marker>
+            <!-- Marker: Solid Arrow Blue -->
+            <marker id="uf-arrow-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7" />
+            </marker>
+            <!-- Marker: Solid Arrow Emerald -->
+            <marker id="uf-arrow-emerald" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#059669" />
+            </marker>
+            <!-- Marker: Solid Arrow Purple -->
+            <marker id="uf-arrow-purple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7c3aed" />
+            </marker>
+            <!-- Card Drop Shadow Filter -->
+            <filter id="uf-shadow" x="-5%" y="-5%" width="110%" height="115%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.07"/>
+            </filter>
+          </defs>
+
+          <!-- DIAGRAM TITLE -->
+          <text x="860" y="38" text-anchor="middle" font-size="23" font-weight="900" fill="#b91c1c" letter-spacing="0.5">
+            USER FLOW TỔNG HỢP — HANOI REALTY (SÀN XÁC MINH 3 BÊN)
+          </text>
+
+          <!-- ==========================================
+               TOP ENTRY CHANNELS (3 BOXES)
+               ========================================== -->
+          <!-- Box 1: Left -->
+          <rect x="230" y="62" width="280" height="40" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="370" y="87" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">Quảng cáo / Google SEO / Bản đồ số</text>
+
+          <!-- Box 2: Center -->
+          <rect x="720" y="62" width="280" height="40" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="860" y="87" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">Trang chủ / Link BĐS chi tiết</text>
+
+          <!-- Box 3: Right -->
+          <rect x="1210" y="62" width="280" height="40" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1350" y="87" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">Giới thiệu / Ref CTV / Mạng xã hội</text>
+
+          <!-- Top Channels Converging Lines to Gateway -->
+          <path d="M 370 102 V 122 H 860" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <path d="M 1350 102 V 122 H 860" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <line x1="860" y1="102" x2="860" y2="136" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+
+          <!-- CENTRAL GATEWAY BOX -->
+          <rect x="700" y="138" width="320" height="38" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="860" y="162" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">Khám phá hoặc đăng nhập</text>
+
+          <!-- MAIN HORIZONTAL BUS BAR TO 5 LANES -->
+          <line x1="860" y1="176" x2="860" y2="208" stroke="#64748b" stroke-width="1.5"/>
+          <line x1="165" y1="208" x2="1555" y2="208" stroke="#64748b" stroke-width="1.5"/>
+          
+          <!-- Dropdown Arrows into 5 Lanes -->
+          <line x1="165" y1="208" x2="165" y2="236" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <line x1="512" y1="208" x2="512" y2="236" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <line x1="860" y1="208" x2="860" y2="236" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <line x1="1207" y1="208" x2="1207" y2="236" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <line x1="1555" y1="208" x2="1555" y2="236" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+
+          <!-- ==========================================
+               THE 5 COLUMN HEADERS
+               ========================================== -->
+          <!-- Col 1 Header: USER (Khách) -->
+          <rect x="40" y="238" width="250" height="40" rx="8" fill="#059669" filter="url(#uf-shadow)"/>
+          <text x="165" y="263" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff" letter-spacing="0.3">USER (Khách)</text>
+
+          <!-- Col 2 Header: NGƯỜI MUA / THUÊ -->
+          <rect x="387" y="238" width="250" height="40" rx="8" fill="#0284c7" filter="url(#uf-shadow)"/>
+          <text x="512" y="263" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff" letter-spacing="0.3">NGƯỜI MUA / THUÊ</text>
+
+          <!-- Col 3 Header: CHỦ NHÀ BĐS -->
+          <rect x="735" y="238" width="250" height="40" rx="8" fill="#0d9488" filter="url(#uf-shadow)"/>
+          <text x="860" y="263" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff" letter-spacing="0.3">CHỦ NHÀ BĐS</text>
+
+          <!-- Col 4 Header: CTV / MÔI GIỚI -->
+          <rect x="1082" y="238" width="250" height="40" rx="8" fill="#ea580c" filter="url(#uf-shadow)"/>
+          <text x="1207" y="263" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff" letter-spacing="0.3">CTV / MÔI GIỚI</text>
+
+          <!-- Col 5 Header: ADMIN HỆ THỐNG -->
+          <rect x="1430" y="238" width="250" height="40" rx="8" fill="#7c3aed" filter="url(#uf-shadow)"/>
+          <text x="1555" y="263" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff" letter-spacing="0.3">ADMIN / ĐIỀU PHỐI</text>
+
+
+          <!-- ==========================================
+               COLUMN 1: USER (Khách vãng lai)
+               ========================================== -->
+          <!-- Step 1: Trang chủ -->
+          <line x1="165" y1="278" x2="165" y2="295" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="40" y="295" width="250" height="38" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="165" y="319" text-anchor="middle" font-size="12.5" font-weight="700" fill="#166534">Trang chủ</text>
+
+          <!-- Step 2: Tìm kiếm / Bản đồ quy hoạch -->
+          <line x1="165" y1="333" x2="165" y2="355" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="40" y="355" width="250" height="38" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="165" y="379" text-anchor="middle" font-size="12.5" font-weight="700" fill="#166534">Tìm kiếm / Bản đồ</text>
+
+          <!-- Step 3: Xem chi tiết BĐS & Pháp lý -->
+          <line x1="165" y1="393" x2="165" y2="415" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="40" y="415" width="250" height="38" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="165" y="439" text-anchor="middle" font-size="12.5" font-weight="700" fill="#166534">Xem chi tiết BĐS</text>
+
+          <!-- Diamond 1: Muốn thuê / mua? -->
+          <line x1="165" y1="453" x2="165" y2="475" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <polygon points="165,475 235,501 165,527 95,501" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="165" y="505" text-anchor="middle" font-size="11.5" font-weight="800" fill="#92400e">Muốn thuê / mua?</text>
+          
+          <!-- Diamond 1 Loopback "Không" -->
+          <path d="M 95 501 H 15 V 374 H 38" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="2" y="430" width="32" height="18" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+          <text x="18" y="443" text-anchor="middle" font-size="10" font-weight="800" fill="#64748b">Không</text>
+
+          <!-- Diamond 1 Branch "Có" -->
+          <line x1="165" y1="527" x2="165" y2="555" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <text x="177" y="542" font-size="10.5" font-weight="800" fill="#059669">Có</text>
+
+          <!-- Step 4: Đăng ký tài khoản -->
+          <rect x="40" y="555" width="250" height="38" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="165" y="579" text-anchor="middle" font-size="12.5" font-weight="700" fill="#166534">Đăng ký tài khoản</text>
+
+          <!-- Step 5: Trở thành Người mua/thuê -->
+          <line x1="165" y1="593" x2="165" y2="615" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="40" y="615" width="250" height="38" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="165" y="639" text-anchor="middle" font-size="12.5" font-weight="700" fill="#166534">Trở thành Người mua/thuê</text>
+
+          <!-- Cross-Lane Dashed Arrow: Trở thành Người mua/thuê ➔ Đăng nhập (Col 2) -->
+          <path d="M 290 634 H 338 V 314 H 385" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#uf-arrow)"/>
+          <rect x="296" y="625" width="82" height="18" rx="4" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+          <text x="337" y="638" text-anchor="middle" font-size="9.5" font-weight="700" fill="#64748b">đăng ký xong</text>
+
+
+          <!-- ==========================================
+               COLUMN 2: NGƯỜI MUA / THUÊ
+               ========================================== -->
+          <!-- Step 1: Đăng nhập -->
+          <line x1="512" y1="278" x2="512" y2="295" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="387" y="295" width="250" height="38" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="512" y="319" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0369a1">Đăng nhập</text>
+
+          <!-- Step 2: Tìm BĐS ưng ý -->
+          <line x1="512" y1="333" x2="512" y2="355" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="387" y="355" width="250" height="38" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="512" y="379" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0369a1">Tìm BĐS ưng ý</text>
+
+          <!-- Step 3: Đặt lịch xem nhà -->
+          <line x1="512" y1="393" x2="512" y2="415" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="387" y="415" width="250" height="38" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="512" y="439" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0369a1">Đặt lịch xem nhà</text>
+
+          <!-- Cross-Lane Dashed Arrow: Đặt lịch xem nhà (Col 2) ➔ Xác nhận lịch hẹn (Col 3) -->
+          <path d="M 637 434 H 685 V 624 H 733" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#uf-arrow)"/>
+          <rect x="662" y="520" width="46" height="18" rx="4" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+          <text x="685" y="533" text-anchor="middle" font-size="9.5" font-weight="700" fill="#64748b">đặt lịch</text>
+
+          <!-- Step 4: Nhận tin chủ nhà / CTV -->
+          <line x1="512" y1="453" x2="512" y2="480" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="387" y="480" width="250" height="38" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="512" y="504" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0369a1">Nhận tin chủ nhà / CTV</text>
+
+          <!-- Diamond 2: Ưng BĐS? -->
+          <line x1="512" y1="518" x2="512" y2="540" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <polygon points="512,540 582,566 512,592 442,566" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="512" y="570" text-anchor="middle" font-size="11.5" font-weight="800" fill="#92400e">Ưng BĐS?</text>
+
+          <!-- Diamond 2 Loopback "Không" -->
+          <path d="M 442 566 H 355 V 374 H 385" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="340" y="470" width="32" height="18" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+          <text x="356" y="483" text-anchor="middle" font-size="10" font-weight="800" fill="#64748b">Không</text>
+
+          <!-- Diamond 2 Branch "Có" -->
+          <line x1="512" y1="592" x2="512" y2="620" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <text x="524" y="608" font-size="10.5" font-weight="800" fill="#059669">Có</text>
+
+          <!-- Step 5: Ký hợp đồng / đặt cọc -->
+          <rect x="387" y="620" width="250" height="38" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="512" y="644" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0369a1">Ký hợp đồng / đặt cọc</text>
+
+          <!-- Step 6: Thanh toán -->
+          <line x1="512" y1="658" x2="512" y2="685" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="387" y="685" width="250" height="38" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="512" y="709" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0369a1">Thanh toán</text>
+
+          <!-- End Badge Col 2: Kết thúc -->
+          <line x1="512" y1="723" x2="512" y2="760" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <circle cx="512" cy="776" r="16" fill="#ef4444" filter="url(#uf-shadow)"/>
+          <text x="512" y="780" text-anchor="middle" font-size="9" font-weight="800" fill="#ffffff">Kết thúc</text>
+
+
+          <!-- ==========================================
+               COLUMN 3: CHỦ NHÀ BĐS (Ký gửi)
+               ========================================== -->
+          <!-- Step 1: Đăng ký chủ nhà -->
+          <line x1="860" y1="278" x2="860" y2="295" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="735" y="295" width="250" height="38" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="860" y="319" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">Đăng ký chủ nhà</text>
+
+          <!-- Diamond 3: Admin duyệt? -->
+          <line x1="860" y1="333" x2="860" y2="355" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <polygon points="860,355 930,381 860,407 790,381" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="860" y="385" text-anchor="middle" font-size="11.5" font-weight="800" fill="#92400e">Admin duyệt?</text>
+          
+          <!-- Diamond 3 Loopback "Không" -->
+          <path d="M 790 381 H 705 V 314 H 733" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="690" y="340" width="32" height="18" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+          <text x="706" y="353" text-anchor="middle" font-size="10" font-weight="800" fill="#64748b">Không</text>
+
+          <!-- Diamond 3 Branch "Có" -->
+          <line x1="860" y1="407" x2="860" y2="435" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <text x="872" y="423" font-size="10.5" font-weight="800" fill="#059669">Có</text>
+
+          <!-- Step 2: Tạo BĐS chuẩn (Canonical) -->
+          <rect x="735" y="435" width="250" height="38" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="860" y="459" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">Tạo BĐS chuẩn</text>
+
+          <!-- Step 3: Đăng BĐS mới & Pháp lý -->
+          <line x1="860" y1="473" x2="860" y2="495" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="735" y="495" width="200" height="38" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="835" y="519" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">Đăng BĐS mới</text>
+
+          <!-- Diamond 4: Duyệt / từ chối (Between Col 3 & Col 4) -->
+          <line x1="935" y1="514" x2="978" y2="514" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <polygon points="1030,488 1080,514 1030,540 980,514" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1030" y="518" text-anchor="middle" font-size="10.5" font-weight="800" fill="#92400e">Duyệt / từ chối</text>
+
+          <!-- Diamond 4 Loopback "Từ chối: sửa tin" -->
+          <path d="M 1030 488 V 468 H 835 V 493" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="886" y="459" width="88" height="18" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+          <text x="930" y="472" text-anchor="middle" font-size="9" font-weight="800" fill="#64748b">Từ chối: sửa tin</text>
+
+          <!-- Diamond 4 Branch "Duyệt" (send to Admin and to Step 4) -->
+          <path d="M 1030 540 V 580 H 860 V 603" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="926" y="571" width="44" height="18" rx="4" fill="#ffffff" stroke="#bbf7d0" stroke-width="1"/>
+          <text x="948" y="584" text-anchor="middle" font-size="10" font-weight="800" fill="#15803d">Duyệt</text>
+
+          <!-- Cross-Lane Dashed to Admin Thẩm định -->
+          <path d="M 1080 514 H 1428" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#uf-arrow-purple)"/>
+          <rect x="1225" y="505" width="62" height="18" rx="4" fill="#ffffff" stroke="#7c3aed" stroke-width="1"/>
+          <text x="1256" y="518" text-anchor="middle" font-size="9" font-weight="700" fill="#7c3aed">thẩm định</text>
+
+          <!-- Step 4: Xác nhận lịch hẹn -->
+          <rect x="735" y="605" width="250" height="38" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="860" y="629" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">Xác nhận lịch hẹn</text>
+
+          <!-- Step 5: Quản lý BĐS / tin -->
+          <line x1="860" y1="643" x2="860" y2="665" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="735" y="665" width="250" height="38" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="860" y="689" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">Quản lý BĐS / tin</text>
+
+          <!-- Step 6: Nhận cọc & Trả phí -->
+          <line x1="860" y1="703" x2="860" y2="725" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="735" y="725" width="250" height="38" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="860" y="749" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">Nhận cọc &amp; Trả phí</text>
+
+          <!-- End Badge Col 3: Kết thúc -->
+          <line x1="860" y1="763" x2="860" y2="785" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <circle cx="860" cy="801" r="16" fill="#ef4444" filter="url(#uf-shadow)"/>
+          <text x="860" y="805" text-anchor="middle" font-size="9" font-weight="800" fill="#ffffff">Kết thúc</text>
+
+
+          <!-- ==========================================
+               COLUMN 4: CTV / MÔI GIỚI (Khai thác kho mở)
+               ========================================== -->
+          <!-- Step 1: Đăng ký CTV / Môi giới -->
+          <line x1="1207" y1="278" x2="1207" y2="295" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1082" y="295" width="250" height="38" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1207" y="319" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">Đăng ký CTV Môi giới</text>
+
+          <!-- Step 2: Tiếp cận Kho nguồn mở -->
+          <line x1="1207" y1="333" x2="1207" y2="355" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1082" y="355" width="250" height="38" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1207" y="379" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">Khai thác Kho mở</text>
+
+          <!-- Step 3: Lấy link chia sẻ / QR -->
+          <line x1="1207" y1="393" x2="1207" y2="415" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1082" y="415" width="250" height="38" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1207" y="439" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">Lấy link ref / QR</text>
+
+          <!-- Step 4: Đăng ký Lead Claim (Bảo hộ) -->
+          <line x1="1207" y1="453" x2="1207" y2="475" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1082" y="475" width="250" height="38" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1207" y="499" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">Đăng ký Lead Claim</text>
+
+          <!-- Cross-Lane Dashed to Admin Duyệt Lead Claim -->
+          <path d="M 1332 494 H 1380 V 574 H 1428" fill="none" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#uf-arrow-orange)"/>
+          <rect x="1348" y="530" width="68" height="18" rx="4" fill="#ffffff" stroke="#ea580c" stroke-width="1"/>
+          <text x="1382" y="543" text-anchor="middle" font-size="9" font-weight="700" fill="#ea580c">claim khách</text>
+
+          <!-- Step 5: Đặt lịch dẫn khách -->
+          <line x1="1207" y1="513" x2="1207" y2="555" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1082" y="555" width="250" height="38" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1207" y="579" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">Dẫn khách xem nhà</text>
+
+          <!-- Step 6: Hỗ trợ chốt cọc -->
+          <line x1="1207" y1="593" x2="1207" y2="635" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1082" y="635" width="250" height="38" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1207" y="659" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">Hỗ trợ chốt cọc</text>
+
+          <!-- Step 7: Nhận hoa hồng qua Ledger -->
+          <line x1="1207" y1="673" x2="1207" y2="715" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1082" y="715" width="250" height="38" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1207" y="739" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">Nhận hoa hồng qua ví</text>
+
+          <!-- End Badge Col 4: Kết thúc -->
+          <line x1="1207" y1="753" x2="1207" y2="785" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <circle cx="1207" cy="801" r="16" fill="#ef4444" filter="url(#uf-shadow)"/>
+          <text x="1207" y="805" text-anchor="middle" font-size="9" font-weight="800" fill="#ffffff">Kết thúc</text>
+
+
+          <!-- ==========================================
+               COLUMN 5: ADMIN / ĐIỀU PHỐI
+               ========================================== -->
+          <!-- Step 1: Đăng nhập admin -->
+          <line x1="1555" y1="278" x2="1555" y2="295" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1430" y="295" width="250" height="38" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1555" y="319" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Đăng nhập admin</text>
+
+          <!-- Step 2: Dashboard kiểm duyệt -->
+          <line x1="1555" y1="333" x2="1555" y2="355" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1430" y="355" width="250" height="38" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1555" y="379" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Dashboard kiểm duyệt</text>
+
+          <!-- Step 3: Thẩm định BĐS & PostGIS -->
+          <line x1="1555" y1="393" x2="1555" y2="415" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1430" y="415" width="250" height="38" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1555" y="439" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Xử lý kiểm duyệt BĐS</text>
+
+          <!-- Step 4: Duyệt đơn chủ nhà & CTV -->
+          <line x1="1555" y1="453" x2="1555" y2="495" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1430" y="495" width="250" height="38" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1555" y="519" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Duyệt đơn chủ trọ / CTV</text>
+
+          <!-- Step 5: Điều phối Slot xem nhà -->
+          <line x1="1555" y1="533" x2="1555" y2="575" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1430" y="575" width="250" height="38" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1555" y="599" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Điều phối Slot xem nhà</text>
+
+          <!-- Step 6: Quản lý người dùng & cọc -->
+          <line x1="1555" y1="613" x2="1555" y2="655" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1430" y="655" width="250" height="38" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1555" y="679" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Quản lý người dùng</text>
+
+          <!-- Step 7: Giải ngân hoa hồng -->
+          <line x1="1555" y1="693" x2="1555" y2="725" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <rect x="1430" y="725" width="250" height="38" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#uf-shadow)"/>
+          <text x="1555" y="749" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Giải ngân hoa hồng</text>
+
+          <!-- Dashed Arrow: Giải ngân hoa hồng sang CTV -->
+          <path d="M 1430 744 H 1334" fill="none" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#uf-arrow-orange)"/>
+          <rect x="1350" y="735" width="60" height="18" rx="4" fill="#ffffff" stroke="#ea580c" stroke-width="1"/>
+          <text x="1380" y="748" text-anchor="middle" font-size="9" font-weight="700" fill="#ea580c">hoa hồng</text>
+
+          <!-- End Badge Col 5: Kết thúc -->
+          <line x1="1555" y1="763" x2="1555" y2="785" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+          <circle cx="1555" cy="801" r="16" fill="#ef4444" filter="url(#uf-shadow)"/>
+          <text x="1555" y="805" text-anchor="middle" font-size="9" font-weight="800" fill="#ffffff">Kết thúc</text>
+
+
+          <!-- ==========================================
+               BOTTOM CONVERGENCE & CONCLUSION BANNER
+               ========================================== -->
+          <path d="M 512 817 V 855 H 1555 V 817" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <line x1="860" y1="817" x2="860" y2="855" stroke="#64748b" stroke-width="1.5"/>
+          <line x1="1207" y1="817" x2="1207" y2="855" stroke="#64748b" stroke-width="1.5"/>
+          <line x1="860" y1="855" x2="860" y2="890" stroke="#64748b" stroke-width="1.5" marker-end="url(#uf-arrow)"/>
+
+          <!-- Conclusion Box (Exact wording as requested) -->
+          <rect x="440" y="892" width="840" height="46" rx="8" fill="#ffffff" stroke="#ef4444" stroke-width="1.8" filter="url(#uf-shadow)"/>
+          <text x="860" y="920" text-anchor="middle" font-size="14" font-weight="800" fill="#b91c1c" letter-spacing="0.3">
+            Website có đủ dữ liệu thật và luồng vận hành khép kín
+          </text>
+
+
+          <!-- ==========================================
+               LEGEND (CHÚ THÍCH) - BOTTOM LEFT
+               ========================================== -->
+          <rect x="40" y="780" width="220" height="168" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" filter="url(#uf-shadow)"/>
+          <text x="56" y="805" font-size="11.5" font-weight="900" fill="#1e293b" letter-spacing="0.4">CHÚ THÍCH</text>
+          
+          <!-- Item 1: Bắt đầu / Kết thúc -->
+          <circle cx="66" cy="828" r="7" fill="#ef4444"/>
+          <text x="82" y="832" font-size="11" font-weight="600" fill="#475569">Bắt đầu / Kết thúc</text>
+
+          <!-- Item 2: Trang / bước -->
+          <rect x="58" y="852" width="16" height="13" rx="3" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+          <text x="82" y="863" font-size="11" font-weight="600" fill="#475569">Trang / bước</text>
+
+          <!-- Item 3: Câu hỏi quyết định -->
+          <polygon points="66,884 74,892 66,900 58,892" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+          <text x="82" y="896" font-size="11" font-weight="600" fill="#475569">Câu hỏi quyết định</text>
+
+          <!-- Item 4: Chuyển luồng vai trò -->
+          <line x1="58" y1="924" x2="74" y2="924" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#uf-arrow)"/>
+          <text x="82" y="928" font-size="11" font-weight="600" fill="#475569">Chuyển luồng vai trò</text>
+
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchBrandTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      if (tabId === 'sitemap') {
+        document.getElementById('tab-sitemap').classList.add('active');
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+      } else {
+        document.getElementById('tab-userflow').classList.add('active');
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>

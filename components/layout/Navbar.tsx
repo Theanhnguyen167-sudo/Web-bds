@@ -21,7 +21,9 @@ import {
   ShieldCheck,
   Heart,
   Bell,
-  Download
+  Home,
+  Download,
+  Briefcase
 } from 'lucide-react';
 import { NotificationBell } from '@/components/notification/NotificationBell';
 
@@ -104,11 +106,10 @@ export const Navbar: React.FC = () => {
   };
 
   const handlePostListingClick = () => {
-    if (!user) {
-      addToast('Vui lòng đăng nhập để đăng tin', 'info');
-      router.push('/login');
-    } else {
+    if (user?.role === 'owner') {
       router.push('/listings/create');
+    } else {
+      router.push('/buyer-request');
     }
   };
 
@@ -116,7 +117,11 @@ export const Navbar: React.FC = () => {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-[100] bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-md border-b border-slate-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.06)] text-slate-800 transition-all duration-200"
+      className={`fixed top-0 left-0 right-0 z-[100] text-slate-800 transition-all duration-200 ${
+        isScrolled
+          ? 'bg-transparent border-transparent shadow-none'
+          : 'bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-md border-b border-slate-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.06)]'
+      }`}
     >
       <div
         className={`header-container w-full max-w-7xl 2xl:max-w-[1440px] mx-auto flex items-center justify-between px-2.5 min-[375px]:px-3 sm:px-6 lg:px-8 transition-all duration-300 flex-nowrap ${isScrolled ? 'h-16' : 'h-16 sm:h-[68px]'
@@ -218,7 +223,7 @@ export const Navbar: React.FC = () => {
             </Link>
           )}
 
-          {/* Post Listing Button */}
+          {/* Main Action Button: Đăng tìm BĐS (Người mua) / Gửi bán BĐS (Chủ nhà) */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
@@ -226,7 +231,9 @@ export const Navbar: React.FC = () => {
             className="h-9 flex items-center justify-center gap-1.5 rounded-xl bg-accent px-3.5 text-xs font-bold text-white shadow-sm shadow-accent/20 hover:bg-accent-hover transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             <PlusCircle className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">Đăng tin</span>
+            <span className="whitespace-nowrap">
+              {user?.role === 'owner' ? 'Gửi bán BĐS' : 'Đăng tìm BĐS'}
+            </span>
           </motion.button>
 
           {/* Auth State / Account Dropdown */}
@@ -354,14 +361,51 @@ export const Navbar: React.FC = () => {
                     )}
                   </button>
 
+                  {/* Lối vào Bàn làm việc Môi giới / CTV */}
+                  <Link
+                    href="/dashboard/broker"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/70 hover:bg-blue-100 transition-colors mb-1 border border-blue-200/60"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-blue-600" />
+                      <span>Bàn làm việc Môi giới (CTV)</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold bg-blue-600 text-white px-1.5 py-0.5 rounded-full">
+                      Kho mở
+                    </span>
+                  </Link>
+
                   <Link
                     href="/dashboard"
                     onClick={() => setUserDropdownOpen(false)}
                     className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
                   >
                     <LayoutDashboard className="h-4 w-4 text-accent" />
-                    <span>Bảng điều khiển</span>
+                    <span>Quản lý BĐS cá nhân</span>
                   </Link>
+
+                  {user?.role !== 'owner' && (
+                    <Link
+                      href="/dashboard?tab=buyer-requests"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                    >
+                      <Search className="h-4 w-4 text-orange-500" />
+                      <span>Nhu cầu mua của tôi</span>
+                    </Link>
+                  )}
+
+                  {user?.role !== 'buyer' && (
+                    <Link
+                      href="/dashboard?tab=listings"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                    >
+                      <Home className="h-4 w-4 text-blue-500" />
+                      <span>BĐS đã gửi bán</span>
+                    </Link>
+                  )}
 
                   <Link
                     href="/dashboard?tab=saved"
@@ -386,6 +430,15 @@ export const Navbar: React.FC = () => {
                   >
                     <Tag className="h-4 w-4 text-emerald-600" />
                     <span>Nâng cấp gói VIP</span>
+                  </Link>
+
+                  <Link
+                    href="/danh-cho-moi-gioi"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                  >
+                    <Briefcase className="h-4 w-4 text-slate-500" />
+                    <span>Chính sách Cộng tác viên (CTV)</span>
                   </Link>
 
                   {user && (
@@ -417,14 +470,15 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile Right Actions (Tablet & Mobile < lg) - Thứ tự: Đăng tin, Tìm kiếm, Thông báo, Tài khoản (icon người), 3 gạch */}
-          <div className="flex lg:hidden items-center gap-2 min-[360px]:gap-2.5 min-[390px]:gap-[15px] shrink-0 flex-nowrap ml-auto">
-            {/* 1. Nút Đăng tin: Nút pill màu cam nổi bật, bo tròn tinh tế */}
-            <button
-              onClick={handlePostListingClick}
-              className="h-7.5 flex items-center justify-center rounded-full bg-accent hover:bg-accent-hover active:scale-95 px-2.5 text-[11px] font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
-            >
-              Đăng tin
-            </button>
+        <div className="flex lg:hidden items-center gap-2 min-[360px]:gap-2.5 min-[390px]:gap-[15px] shrink-0 flex-nowrap ml-auto">
+          {/* 1. Nút Đăng tìm BĐS (Người mua) / Gửi bán BĐS (Chủ nhà) */}
+          <button
+            onClick={handlePostListingClick}
+            className="h-7.5 flex items-center justify-center rounded-full bg-accent hover:bg-accent-hover active:scale-95 px-2 min-[360px]:px-2.5 text-[10.5px] min-[360px]:text-[11px] font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
+          >
+            <span className="hidden min-[360px]:inline">{user?.role === 'owner' ? 'Gửi bán BĐS' : 'Đăng tìm BĐS'}</span>
+            <span className="min-[360px]:hidden">{user?.role === 'owner' ? 'Gửi bán' : 'Đăng tìm'}</span>
+          </button>
 
             {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}
             <Link
@@ -543,6 +597,25 @@ export const Navbar: React.FC = () => {
                         <span>🛡️ Vào trang Quản trị (Admin)</span>
                       </Link>
                     )}
+
+                    {/* Lối vào Bàn làm việc Môi giới (Mobile) */}
+                    <Link
+                      href="/dashboard/broker"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-bold ${isScrolled
+                        ? 'bg-blue-50 border-blue-200 text-blue-700'
+                        : 'bg-blue-500/20 border-blue-500/40 text-blue-300'
+                        }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-4 w-4" />
+                        <span>Bàn làm việc Môi giới (CTV)</span>
+                      </div>
+                      <span className="text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                        Kho mở
+                      </span>
+                    </Link>
+
                     <Link
                       href="/dashboard"
                       onClick={() => setMobileMenuOpen(false)}

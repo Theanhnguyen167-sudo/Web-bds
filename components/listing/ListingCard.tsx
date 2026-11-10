@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { ListingItem } from '@/lib/mock-data';
 import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
+import { CodeBadge } from '@/components/common/CodeBadge';
+import { getListingIdentifier } from '@/lib/identification';
 import {
   MapPin,
   Bed,
@@ -154,6 +156,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
 
         {/* Content Details */}
         <div className="flex flex-1 flex-col p-3.5">
+          <div className="mb-1.5 flex items-center justify-between">
+            <CodeBadge code={getListingIdentifier(listing)} size="sm" showLabel={false} />
+            <span className="text-[10px] font-semibold text-slate-400 truncate max-w-[140px]">{listing.planningZone}</span>
+          </div>
+
           {/* Title — Card Title khoảng 18-20px (text-base lg:text-[18px]) */}
           <Link
             href={listingUrl}

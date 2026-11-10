@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Building,
   HelpCircle,
+  Crown,
   X
 } from 'lucide-react';
 import { BrokerProfile, BrokerRole } from '@/types/broker-nav';
@@ -117,6 +118,12 @@ export const BrokerSidebar: React.FC<BrokerSidebarProps> = ({
 
   // Khối mục dành riêng cho Trưởng phòng kinh doanh (TPKD)
   const tpkdNavItems: NavItemConfig[] = [
+    {
+      title: 'Tổng quan đội nhóm',
+      href: '/dashboard/broker/team',
+      icon: Crown,
+      tooltip: 'Bảng điều khiển quản trị đội nhóm & Thù lao quản lý',
+    },
     {
       title: 'Thành viên nhóm',
       href: '/dashboard/broker/team/members',

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/lib/context/AppContext';
 import { getListingUrl } from '@/lib/listing-slug';
+import { getListingIdentifier } from '@/lib/identification';
 import { NotificationItem } from '@/types/notification';
 
 export interface BookingModalProps {
@@ -222,14 +223,17 @@ export default function BookingModal({
 
       const finalSellerEmail = sellerEmail || targetListing?.authorEmail;
 
+      const brokerRefCode = user?.referredByAgentCode || (typeof window !== 'undefined' ? sessionStorage.getItem('active_booking_referral_code') : null) || undefined;
+      const targetListingCode = targetListing ? getListingIdentifier(targetListing) : undefined;
+
       // 1. Tạo thông báo mới chi tiết cho NGƯỜI BÁN (Chủ tin)
       const newNotif: NotificationItem = {
         id: notifId,
         recipientUserId: sellerOwnerId, // CHỈ chủ sở hữu tin đăng mới nhận thông báo
         type: 'appointment',
         title: 'Bạn có lịch hẹn xem nhà mới',
-        message: `${name.trim()} đã đặt lịch xem "${listingTitle}" vào lúc ${selectedTime} ngày ${formattedDateStr}.`,
-        content: `Khách hàng ${name.trim()} (SĐT: ${phone.trim()}) vừa đặt lịch hẹn xem căn "${listingTitle}" vào lúc ${selectedTime}, ${formattedDateStr}.${note.trim() ? ` Ghi chú: "${note.trim()}"` : ''}`,
+        message: `${name.trim()} đã đặt lịch xem "${listingTitle}" (${targetListingCode || 'BDS'}) vào lúc ${selectedTime} ngày ${formattedDateStr}.${brokerRefCode ? ` [Môi giới: ${brokerRefCode}]` : ''}`,
+        content: `Khách hàng ${name.trim()} (SĐT: ${phone.trim()}) vừa đặt lịch hẹn xem căn "${listingTitle}" [${targetListingCode || 'BDS'}] vào lúc ${selectedTime}, ${formattedDateStr}.${brokerRefCode ? ` Người giới thiệu: ${brokerRefCode}.` : ''}${note.trim() ? ` Ghi chú: "${note.trim()}"` : ''}`,
         category: 'message',
         createdAt: 'Vừa xong',
         timestamp: Date.now(),
@@ -245,12 +249,14 @@ export default function BookingModal({
           time: selectedTime,
           listingId: listingId,
           listingTitle: listingTitle,
+          listingCode: targetListingCode,
           sellerId: sellerOwnerId,
           sellerEmail: finalSellerEmail,
           note: note.trim() || undefined,
           purpose: VISIT_PURPOSES.find(p => p.id === purpose)?.label,
           createdAt: new Date().toISOString(),
-          status: 'pending'
+          status: 'pending',
+          brokerReferralCode: brokerRefCode,
         }
       };
 
@@ -274,10 +280,12 @@ export default function BookingModal({
           time: selectedTime,
           listingId,
           listingTitle,
+          listingCode: targetListingCode,
           note: note.trim(),
           purpose,
           agentName,
           agentPhone,
+          brokerReferralCode: brokerRefCode,
           createdAt: new Date().toISOString(),
           status: 'pending'
         };
@@ -300,9 +308,15 @@ export default function BookingModal({
           signal: controller.signal,
           body: JSON.stringify({
             listingId,
+            listingCode: targetListingCode,
+            brokerReferralCode: brokerRefCode,
             bookingData: {
               title: newNotif.title,
-              content: newNotif.content
+              content: newNotif.content,
+              buyerName: name.trim(),
+              buyerPhone: phone.trim(),
+              brokerReferralCode: brokerRefCode,
+              listingCode: targetListingCode,
             }
           })
         })
@@ -791,6 +805,14 @@ export default function BookingModal({
                       {name} ({phone})
                     </span>
                   </div>
+                  {typeof window !== 'undefined' && sessionStorage.getItem('active_booking_referral_code') && (
+                    <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                      <span className="text-slate-500">Chuyên viên đồng hành:</span>
+                      <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs border border-blue-200">
+                        {sessionStorage.getItem('active_booking_referral_name') || sessionStorage.getItem('active_booking_referral_code')}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2">

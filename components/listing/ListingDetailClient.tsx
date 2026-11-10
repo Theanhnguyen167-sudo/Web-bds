@@ -8,11 +8,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import FloatingContactWidget from '@/components/contact/FloatingContactWidget';
 import BookingModal from '@/components/contact/BookingModal';
+import { BrokerReferralBadge } from '@/components/listing/BrokerReferralBadge';
 import { useApp } from '@/lib/context/AppContext';
 import { mockListings, mockUser, ListingItem } from '@/lib/mock-data';
 import PropertyAmenities from '@/components/listing/PropertyAmenities';
 import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
 import { getListingSiloData } from '@/lib/listing-slug';
+import { CodeBadge } from '@/components/common/CodeBadge';
+import { getListingIdentifier } from '@/lib/identification';
 import { ListingCard } from '@/components/listing/ListingCard';
 import {
   Home,
@@ -732,7 +735,10 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             </Link>
           </div>
 
-          {/* Tiêu đề bài đăng */}
+          {/* Mã định danh căn nhà & Tiêu đề bài đăng */}
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <CodeBadge code={getListingIdentifier(listing)} label="Mã căn" size="sm" />
+          </div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
             {listing.title}
           </h1>
@@ -892,7 +898,13 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             </div>
 
             {/* THẺ LIÊN HỆ NGƯỜI BÁN TRÊN THIẾT BỊ DI ĐỘNG (< lg) */}
-            <div className="block lg:hidden">
+            <div className="block lg:hidden space-y-3">
+              <BrokerReferralBadge
+                propertyId={listing.id}
+                propertyTitle={listing.title}
+                defaultSellerName={sellerName}
+                defaultSellerPhone={sellerPhone}
+              />
               <SellerContactCard
                 sellerAvatar={sellerAvatar}
                 sellerName={sellerName}
@@ -1192,7 +1204,13 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
           </div>
 
           {/* ── CỘT PHẢI (lg:col-span-4): STICKY SIDEBAR CỐ ĐỊNH KHI CUỘN TRÊN DESKTOP ── */}
-          <aside className="hidden lg:block lg:col-span-4 lg:sticky lg:top-24 self-start">
+          <aside className="hidden lg:block lg:col-span-4 lg:sticky lg:top-24 self-start space-y-4">
+            <BrokerReferralBadge
+              propertyId={listing.id}
+              propertyTitle={listing.title}
+              defaultSellerName={sellerName}
+              defaultSellerPhone={sellerPhone}
+            />
             <SellerContactCard
               sellerAvatar={sellerAvatar}
               sellerName={sellerName}

@@ -17,12 +17,14 @@ export interface AppointmentData {
   time: string;
   listingId: string;
   listingTitle: string;
+  listingCode?: string;
   sellerId?: string;
   sellerEmail?: string;
   note?: string;
   purpose?: string;
   createdAt?: string;
   status?: 'pending' | 'confirmed' | 'cancelled';
+  brokerReferralCode?: string;
 }
 
 export interface NotificationItem {

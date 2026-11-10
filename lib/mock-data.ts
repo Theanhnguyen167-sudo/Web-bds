@@ -1,5 +1,7 @@
 export interface ListingItem {
   id: string;
+  code?: string;
+  listing_code?: string;
   title: string;
   slug?: string;
   /** ID tài khoản đã tạo tin đăng (BẮT BUỘC để phân quyền thông báo cho đúng chủ tin) */
@@ -28,6 +30,10 @@ export interface ListingItem {
   city?: string;
   propertyType?: "house" | "apartment" | "land" | "villa";
   appointments?: number;
+  propertyCode?: string;
+  verificationStatus?: string;
+  surveyDate?: string;
+  surveyTimeSlot?: string;
   seller?: {
     fullName: string;
     phone: string;
@@ -432,6 +438,9 @@ export interface UserProfile {
   featuredListingsLimit?: number;
   activeListings: number;
   avatar: string;
+  agentCode?: string;
+  ownerCode?: string;
+  referredByAgentCode?: string;
 }
 
 export const mockUser: UserProfile = {
@@ -440,6 +449,7 @@ export const mockUser: UserProfile = {
   email: "an@example.com",
   phone: "0988 123 456",
   role: "agent",
+  agentCode: "MG-00102",
   package: "pro",
   packageExpiry: "2026-12-31",
   aiReportsUsed: 8,

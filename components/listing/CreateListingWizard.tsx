@@ -6,53 +6,32 @@ import Link from 'next/link';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/lib/context/AppContext';
-import { formatCurrencyVND, formatPricePerM2, HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
+import { formatCurrencyVND } from '@/lib/utils';
 import type { LocationData } from '@/components/map/LocationPicker';
-import { POPULAR_HANOI_LOCATIONS } from '@/lib/leaflet/hanoi-streets';
 import {
-  Home,
-  Building2,
-  Trees,
-  Landmark,
-  MapPin,
+  ShieldCheck,
+  Check,
+  ChevronDown,
+  Calendar,
   Image as ImageIcon,
-  DollarSign,
-  CheckCircle2,
-  ArrowRight,
-  ArrowLeft,
+  MapPin,
+  Lock,
   UploadCloud,
   Trash2,
-  Sparkles,
-  Maximize2,
-  Bed,
-  Bath,
-  Building,
-  Compass,
-  Check,
   Star,
-  Loader2,
-  Plus,
-  Pencil,
-  X,
-  ShieldCheck,
-  FileText,
-  Save
+  FileCheck2,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+  ExternalLink,
+  Search
 } from 'lucide-react';
 import {
   PostingData,
   SellerValidationErrors,
-  isValidVNPhone,
-  isValidEmail,
-  isCompanyRequired
+  isValidVNPhone
 } from './wizard/PostingDataTypes';
-import { getPackageDefinition } from '@/lib/packages/package-config';
-import { Step5SellerInfo } from './wizard/Step5SellerInfo';
-import { Step6ReviewPublish } from './wizard/Step6ReviewPublish';
-import { PublishSuccessView } from './wizard/PublishSuccessView';
 
-/**
- * Hàm nén và đọc file ảnh sang DataURL (JPEG chất lượng cao, tối đa 1600px)
- */
 function processImageFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -105,67 +84,37 @@ function processImageFile(file: File): Promise<string> {
 
 const LocationPicker = dynamic(
   () => import('@/components/map/LocationPicker'),
-  { 
+  {
     ssr: false,
     loading: () => (
-      <div className="h-[380px] bg-gray-100 dark:bg-gray-700 rounded-2xl animate-pulse flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Đang tải bản đồ...</p>
+      <div className="h-[320px] bg-slate-100 rounded-2xl animate-pulse flex items-center justify-center">
+        <p className="text-slate-400 text-xs">Đang tải bản đồ định vị...</p>
       </div>
-    )
+    ),
   }
 );
 
-const HANOI_DISTRICTS = [
-  'Quốc Oai',
-  'Hoài Đức',
-  'Thạch Thất',
-  'Đông Anh',
-  'Gia Lâm',
-  'Cầu Giấy',
-  'Nam Từ Liêm',
-  'Bắc Từ Liêm',
-  'Hà Đông',
-  'Thanh Xuân',
-  'Đống Đa',
-  'Ba Đình',
-  'Hoàn Kiếm',
-  'Tây Hồ',
-  'Long Biên',
-  'Hoàng Mai',
-  'Hai Bà Trưng',
-  'Thanh Trì',
-  'Sơn Tây',
-  'Ba Vì',
-  'Đan Phượng',
-  'Chương Mỹ',
-  'Thanh Oai',
-  'Thường Tín',
-  'Phú Xuyên',
-  'Ứng Hòa',
-  'Mỹ Đức',
-  'Phúc Thọ',
-  'Mê Linh',
-  'Sóc Sơn',
+const STEP_LABELS = [
+  'Thông tin nhà',
+  'Vị trí',
+  'Hình ảnh & lịch',
+  'Giá bán',
+  'Xác minh',
+  'Kiểm tra & Gửi',
 ];
+
+const STEP_PERCENTAGES = ['17%', '33%', '50%', '67%', '83%', '100%'];
 
 export const CreateListingWizard: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
-  const { user, listings, addNewListing, updateListing, addToast, incrementFeaturedUsage } = useApp();
+  const { user, listings, addNewListing, updateListing, addToast } = useApp();
 
   const editId = searchParams?.get('editId') || searchParams?.get('id');
   const isEditMode = Boolean(editId);
 
-  // Hạn mức và thông tin gói thành viên hiện tại
-  const pkgDef = getPackageDefinition(user?.package);
-  const userListings = listings.filter(
-    (l) => l.ownerId === user?.id || l.userId === user?.id || l.createdBy === user?.id
-  );
-  const maxListings = user?.listingsLimit ?? pkgDef.limits.maxListings;
-  const isOverLimit = !isEditMode && userListings.length >= maxListings;
-
-  // Step state (1 to 6)
+  // Phân tích bước từ URL
   const stepParamFromPath = params?.step as string | undefined;
   let parsedStep = 1;
   if (stepParamFromPath) {
@@ -181,27 +130,26 @@ export const CreateListingWizard: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [publishedListingId, setPublishedListingId] = useState<string | null>(null);
-  const [isCommitted, setIsCommitted] = useState(false);
-  const [sellerErrors, setSellerErrors] = useState<SellerValidationErrors>({});
+  const [showMapPicker, setShowMapPicker] = useState<boolean>(false);
 
   const [pickedLocation, setPickedLocation] = useState<LocationData | null>({
     lat: 21.0315,
     lng: 105.7825,
-    displayName: 'Phố Duy Tân, Cầu Giấy, Hà Nội',
+    displayName: 'Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội',
     district: 'Cầu Giấy',
     ward: 'Dịch Vọng Hậu',
     road: 'Duy Tân',
     houseNumber: '18',
   });
 
-  // UNIFIED POSTING DATA STATE DÙNG CHUNG CHO TOÀN BỘ FLOW (STEP 1 ĐẾN STEP 6)
+  // State Posting Data đầy đủ
   const [postingData, setPostingData] = useState<PostingData>(() => {
     if (typeof window !== 'undefined' && !isEditMode) {
       try {
-        const cached = localStorage.getItem('listing_wizard_draft');
+        const cached = localStorage.getItem('owner_listing_wizard_draft');
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (parsed && parsed.propertyType && parsed.seller) {
+          if (parsed && parsed.propertyType) {
             return parsed;
           }
         }
@@ -213,18 +161,17 @@ export const CreateListingWizard: React.FC = () => {
       location: {
         district: 'Cầu Giấy',
         ward: 'Dịch Vọng Hậu',
-        street: 'Duy Tân',
-        addressNumber: 'Số 18',
+        street: 'Số 18, ngõ 86 Duy Tân',
+        addressNumber: '18',
         lat: 21.0315,
         lng: 105.7825,
-        displayName: 'Phố Duy Tân, Cầu Giấy, Hà Nội',
+        displayName: 'Số 18, ngõ 86 Duy Tân, Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
       },
       images: [
         'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
       ],
-      price: 8500000000,
-      area: 75,
+      price: 5000000000,
+      area: 65,
       floors: 5,
       bedrooms: 4,
       bathrooms: 3,
@@ -233,9 +180,25 @@ export const CreateListingWizard: React.FC = () => {
       title: '',
       description: '',
 
+      // Bước 3: Hình ảnh & lịch khảo sát
+      imageMethod: 'has_images',
+      surveyDate: '',
+      surveyTimeSlot: 'Buổi sáng',
+
+      // Bước 4: Tình trạng sử dụng
+      usageStatus: 'empty',
+
+      // Bước 5: Xác minh chủ nhà & hồ sơ
+      ownershipRole: 'sole_owner',
+      certificateStatus: 'Có giấy chứng nhận',
+      mortgageStatus: 'Chưa rõ / cần kiểm tra',
+      disputeStatus: 'Không có tranh chấp (theo khai báo)',
+      confidentialDocs: [],
+      ownerDeclarationChecked: true,
+
       seller: {
-        fullName: 'Nguyễn Văn A',
-        phone: '0912 345 678',
+        fullName: 'Nguyễn Minh Tuấn',
+        phone: '0912345678',
         email: '',
         sellerType: 'Chính chủ',
         companyName: '',
@@ -243,225 +206,68 @@ export const CreateListingWizard: React.FC = () => {
         showPhone: true,
         allowEmailContact: true,
         showCompany: false,
-        isPhoneVerified: false,
+        isPhoneVerified: true,
       },
 
       status: 'pending',
     };
   });
 
-  // Nếu là edit mode: load dữ liệu của tin cần chỉnh sửa
-  useEffect(() => {
-    if (editId && listings.length > 0) {
-      const existing = listings.find((l) => l.id === editId);
-      if (existing) {
-        setPostingData({
-          propertyType: (existing.propertyType || existing.type || 'house') as any,
-          location: {
-            district: existing.district || 'Cầu Giấy',
-            ward: existing.ward || '',
-            street: existing.address || '',
-            addressNumber: '',
-            lat: existing.lat || 21.0315,
-            lng: existing.lng || 105.7825,
-            displayName: existing.address || '',
-          },
-          images: existing.images && existing.images.length > 0 ? existing.images : [],
-          price: existing.price,
-          area: existing.area,
-          floors: existing.floors || 1,
-          bedrooms: existing.bedrooms || 1,
-          bathrooms: existing.bathrooms || 1,
-          direction: existing.direction || 'Đông Nam',
-          legalStatus: existing.legalStatus || 'Sổ đỏ chính chủ',
-          title: existing.title || '',
-          description: existing.description || '',
-          seller: {
-            fullName: existing.seller?.fullName || existing.authorName || user?.name || 'Chủ nhà',
-            phone: existing.seller?.phone || existing.authorPhone || user?.phone || '0912 345 678',
-            email: existing.seller?.email || existing.authorEmail || user?.email || '',
-            sellerType: (existing.seller?.sellerType || (existing as any).sellerType || 'Chính chủ') as any,
-            companyName: existing.seller?.companyName || (existing as any).companyName || '',
-            contactAddress: existing.seller?.contactAddress || (existing as any).contactAddress || '',
-            showPhone: true,
-            allowEmailContact: true,
-            showCompany: Boolean(existing.seller?.companyName || (existing as any).companyName),
-            isPhoneVerified: true,
-          },
-          status: existing.status,
-        });
-        setPickedLocation({
-          lat: existing.lat || 21.0315,
-          lng: existing.lng || 105.7825,
-          displayName: existing.address || '',
-          district: existing.district || '',
-          ward: existing.ward || '',
-          road: '',
-          houseNumber: '',
-        });
-      }
-    }
-  }, [editId, listings]);
+  const [priceInput, setPriceInput] = useState<string>(
+    postingData.price ? String(postingData.price) : '5000000000'
+  );
+  const [areaInput, setAreaInput] = useState<string>(
+    postingData.area ? String(postingData.area) : '65'
+  );
+  const [floorsInput, setFloorsInput] = useState<string>(
+    postingData.floors ? String(postingData.floors) : '5'
+  );
+  const [streetAddressInput, setStreetAddressInput] = useState<string>(
+    postingData.location.street || 'Số 18, ngõ 86 Duy Tân'
+  );
+  const [wardDistrictInput, setWardDistrictInput] = useState<string>(
+    postingData.location.ward && postingData.location.district
+      ? `${postingData.location.ward}, ${postingData.location.district}`
+      : 'Dịch Vọng Hậu, Cầu Giấy'
+  );
 
-  // Tự động điền email và thông tin tài khoản nếu user đã đăng nhập (chỉ khi không phải edit)
+  // Đồng bộ user info
   useEffect(() => {
     if (user && !editId) {
       setPostingData((prev) => ({
         ...prev,
         seller: {
           ...prev.seller,
-          fullName:
-            prev.seller.fullName === 'Nguyễn Văn A' && user.name
-              ? user.name
-              : prev.seller.fullName,
-          email: !prev.seller.email && user.email ? user.email : prev.seller.email,
-          phone:
-            prev.seller.phone === '0912 345 678' && user.phone
-              ? user.phone
-              : prev.seller.phone,
-          isPhoneVerified: Boolean(user.phone) || prev.seller.isPhoneVerified,
+          fullName: user.name || prev.seller.fullName,
+          phone: user.phone || prev.seller.phone,
+          email: user.email || prev.seller.email,
         },
       }));
     }
   }, [user, editId]);
 
-  // Lưu tự động dữ liệu vào localStorage để không bị mất khi refresh hay chuyển bước (chỉ khi tạo mới)
+  // Lưu nháp tự động
   useEffect(() => {
     if (typeof window !== 'undefined' && !publishedListingId && !editId) {
       try {
-        localStorage.setItem('listing_wizard_draft', JSON.stringify(postingData));
+        localStorage.setItem('owner_listing_wizard_draft', JSON.stringify(postingData));
       } catch {}
     }
   }, [postingData, publishedListingId, editId]);
 
-  const propertyTypes = [
-    { id: 'house', title: 'Nhà phố / Nhà riêng', icon: Home, desc: 'Nhà liền kề, nhà phân lô, nhà mặt ngõ ô tô' },
-    { id: 'apartment', title: 'Chung cư cao cấp', icon: Building2, desc: 'Căn hộ chung cư, Penthouse, Duplex' },
-    { id: 'land', title: 'Đất nền / Đất thổ cư', icon: Trees, desc: 'Đất phân lô đấu giá, đất sổ đỏ xây tự do' },
-    { id: 'villa', title: 'Biệt thự / Shophouse', icon: Landmark, desc: 'Biệt thự đơn lập, song lập, nhà thương mại' },
-  ];
-
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const confidentialFileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
 
-  // Validate form Step 5
-  const validateStep5 = (): boolean => {
-    const errors: SellerValidationErrors = {};
-    const seller = postingData.seller;
-
-    // Họ tên: không để trống, tối thiểu 2 ký tự
-    if (!seller.fullName || seller.fullName.trim().length < 2) {
-      errors.fullName = 'Họ và tên không được để trống và tối thiểu 2 ký tự';
-    }
-
-    // Số điện thoại: không để trống, đúng format VN
-    if (!seller.phone || !seller.phone.trim()) {
-      errors.phone = 'Vui lòng nhập số điện thoại';
-    } else if (!isValidVNPhone(seller.phone)) {
-      errors.phone = 'Số điện thoại không hợp lệ (VD: 0912 345 678)';
-    }
-
-    // Email: nếu có nhập thì kiểm tra format
-    if (seller.email && seller.email.trim() && !isValidEmail(seller.email)) {
-      errors.email = 'Email không đúng định dạng (VD: example@email.com)';
-    }
-
-    // Loại người đăng: bắt buộc chọn
-    if (!seller.sellerType) {
-      errors.sellerType = 'Vui lòng chọn loại người đăng';
-    }
-
-    // Tên công ty: bắt buộc nếu là Môi giới / Sàn / Chủ đầu tư
-    if (isCompanyRequired(seller.sellerType)) {
-      if (!seller.companyName || !seller.companyName.trim()) {
-        errors.companyName = `Vui lòng nhập tên công ty hoặc sàn giao dịch cho ${seller.sellerType}`;
-      }
-    }
-
-    setSellerErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const clearSellerError = (field: keyof SellerValidationErrors) => {
-    setSellerErrors((prev) => {
-      const updated = { ...prev };
-      delete updated[field];
-      return updated;
-    });
-  };
-
-  // Điều hướng Tiếp theo
-  const handleNext = () => {
-    if (currentStep === 2 && !postingData.location.street && !pickedLocation) {
-      addToast('Vui lòng ghim vị trí hoặc nhập tên đường / phố', 'warning');
-      return;
-    }
-    if (currentStep === 3 && postingData.images.length === 0) {
-      addToast('Vui lòng tải lên ít nhất 1 hình ảnh của bất động sản', 'warning');
-      return;
-    }
-    if (currentStep === 4 && (!postingData.price || !postingData.area)) {
-      addToast('Vui lòng nhập giá bán và diện tích', 'warning');
-      return;
-    }
-    if (currentStep === 5) {
-      const isValid = validateStep5();
-      if (!isValid) {
-        addToast('Vui lòng kiểm tra và hoàn thiện các trường thông tin bắt buộc', 'warning');
-        return;
-      }
-    }
-
-    setCurrentStep((prev) => Math.min(6, prev + 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Điều hướng Quay lại
-  const handleBack = () => {
-    setCurrentStep((prev) => Math.max(1, prev - 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Upload ảnh
+  // Upload ảnh hiện trạng nhà
   const handleFiles = async (fileList: FileList | File[]) => {
     const files = Array.from(fileList);
     if (!files.length) return;
 
-    const MAX_IMAGES = 20;
-    const remainingSlots = MAX_IMAGES - postingData.images.length;
-
-    if (remainingSlots <= 0) {
-      addToast(`Đã đạt giới hạn tối đa ${MAX_IMAGES} ảnh. Hãy xóa bớt ảnh trước khi thêm mới.`, 'warning');
-      return;
-    }
-
-    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    const validFiles: File[] = [];
-
-    for (const file of files) {
-      if (!validImageTypes.includes(file.type.toLowerCase()) && !file.type.startsWith('image/')) {
-        addToast(`File "${file.name}" không phải định dạng ảnh (JPG, PNG, WEBP)`, 'warning');
-        continue;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        addToast(`Ảnh "${file.name}" vượt quá dung lượng tối đa 10MB`, 'error');
-        continue;
-      }
-      validFiles.push(file);
-    }
-
-    if (!validFiles.length) return;
-
-    const filesToProcess = validFiles.slice(0, remainingSlots);
-    if (validFiles.length > remainingSlots) {
-      addToast(`Chỉ có thể tải thêm ${remainingSlots} ảnh (giới hạn tối đa 20 ảnh)`, 'info');
-    }
-
     setIsUploading(true);
     try {
       const processedUrls: string[] = [];
-      for (const file of filesToProcess) {
+      for (const file of files) {
         try {
           const dataUrl = await processImageFile(file);
           processedUrls.push(dataUrl);
@@ -475,1104 +281,1268 @@ export const CreateListingWizard: React.FC = () => {
           ...prev,
           images: [...prev.images, ...processedUrls],
         }));
-        addToast(`🎉 Đã tải lên thành công ${processedUrls.length} ảnh!`, 'success');
+        addToast(`Đã thêm thành công ${processedUrls.length} ảnh`, 'success');
       }
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
-    }
-  };
+  // Upload hồ sơ bảo mật (sổ đỏ/giấy tờ)
+  const handleConfidentialFiles = async (fileList: FileList | File[]) => {
+    const files = Array.from(fileList);
+    if (!files.length) return;
 
-  const handleSetCoverImage = (index: number) => {
-    if (index === 0) return;
-    setPostingData((prev) => {
-      const updated = [...prev.images];
-      const [cover] = updated.splice(index, 1);
-      updated.unshift(cover);
-      return { ...prev, images: updated };
-    });
-    addToast('⭐ Đã đổi ảnh đại diện thành công!', 'success');
-  };
-
-  const handleClearAllImages = () => {
-    setPostingData((prev) => ({ ...prev, images: [] }));
-    addToast('Đã xóa tất cả ảnh', 'info');
-  };
-
-  const handleAddSampleImage = () => {
-    const samples = [
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80',
-    ];
-    const randomImg = samples[Math.floor(Math.random() * samples.length)];
-    if (postingData.images.length < 20) {
-      setPostingData((prev) => ({ ...prev, images: [...prev.images, randomImg] }));
-      addToast('Đã thêm 1 hình ảnh mẫu', 'info');
-    }
-  };
-
-  const handleDeleteImage = (index: number) => {
-    setPostingData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
-  };
-
-  // Lưu nháp (Lưu dữ liệu hiện tại, status = draft, không xuất bản tin)
-  const handleSaveDraft = async () => {
     try {
-      const draftData: PostingData = {
-        ...postingData,
-        status: 'draft',
-      };
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('listing_wizard_draft', JSON.stringify(draftData));
+      const processedUrls: string[] = [];
+      for (const file of files) {
+        const dataUrl = await processImageFile(file);
+        processedUrls.push(dataUrl);
       }
-      setPostingData(draftData);
-      addToast('💾 Đã lưu nháp tin đăng thành công! Bạn có thể tiếp tục bất cứ lúc nào.', 'success');
+      setPostingData((prev) => ({
+        ...prev,
+        confidentialDocs: [...(prev.confidentialDocs || []), ...processedUrls],
+      }));
+      addToast(`Đã tải lên ${processedUrls.length} giấy tờ hồ sơ bảo mật`, 'success');
     } catch {
-      addToast('Có lỗi xảy ra khi lưu nháp', 'error');
+      addToast('Có lỗi xảy ra khi tải tài liệu', 'error');
+    } finally {
+      if (confidentialFileInputRef.current) confidentialFileInputRef.current.value = '';
     }
   };
 
-  // Xuất bản tin (Validate Step 1-5, tạo tin với status: 'pending' chờ admin duyệt)
+  const handleNext = () => {
+    // Validate từng bước
+    if (currentStep === 1) {
+      const a = parseFloat(areaInput);
+      if (isNaN(a) || a <= 0) {
+        addToast('Vui lòng nhập diện tích hợp lệ (m²)', 'warning');
+        return;
+      }
+      setPostingData((prev) => ({
+        ...prev,
+        area: a,
+        floors: parseInt(floorsInput, 10) || prev.floors,
+      }));
+    }
+
+    if (currentStep === 2) {
+      if (!streetAddressInput.trim()) {
+        addToast('Vui lòng nhập địa chỉ bất động sản', 'warning');
+        return;
+      }
+      if (!wardDistrictInput.trim()) {
+        addToast('Vui lòng nhập phường/xã, khu vực tại Hà Nội', 'warning');
+        return;
+      }
+      setPostingData((prev) => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          street: streetAddressInput,
+          displayName: `${streetAddressInput}, ${wardDistrictInput}, Hà Nội`,
+        },
+      }));
+    }
+
+    if (currentStep === 4) {
+      const p = parseFloat(priceInput);
+      if (isNaN(p) || p <= 0) {
+        addToast('Vui lòng nhập giá bán mong muốn hợp lệ (VNĐ)', 'warning');
+        return;
+      }
+      setPostingData((prev) => ({
+        ...prev,
+        price: p,
+      }));
+    }
+
+    if (currentStep === 5) {
+      if (!postingData.seller.fullName.trim()) {
+        addToast('Vui lòng nhập họ tên người gửi trên giấy tờ', 'warning');
+        return;
+      }
+      if (!postingData.seller.phone.trim() || !isValidVNPhone(postingData.seller.phone)) {
+        addToast('Vui lòng nhập số điện thoại liên hệ hợp lệ để xác thực OTP', 'warning');
+        return;
+      }
+      if (!postingData.ownerDeclarationChecked) {
+        addToast('Vui lòng tích xác nhận quyền cung cấp thông tin và giấy tờ', 'warning');
+        return;
+      }
+    }
+
+    setCurrentStep((prev) => Math.min(6, prev + 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    setCurrentStep((prev) => Math.max(1, prev - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Submit gửi duyệt BĐS
   const handleSubmitListing = async () => {
     if (isSubmitting) return;
 
-    if (!isCommitted) {
-      addToast('Vui lòng tích chọn cam kết tính chính xác trước khi xuất bản', 'warning');
-      return;
-    }
-
-    if (!postingData.location.street && !pickedLocation) {
-      addToast('Vui lòng kiểm tra lại địa chỉ ở Bước 2', 'warning');
-      setCurrentStep(2);
-      return;
-    }
-    if (postingData.images.length === 0) {
-      addToast('Vui lòng tải lên ít nhất 1 ảnh ở Bước 3', 'warning');
-      setCurrentStep(3);
-      return;
-    }
-    if (!postingData.price || !postingData.area) {
-      addToast('Vui lòng kiểm tra lại giá bán và diện tích ở Bước 4', 'warning');
-      setCurrentStep(4);
-      return;
-    }
-    if (!validateStep5()) {
-      addToast('Vui lòng hoàn thiện thông tin người đăng ở Bước 5', 'warning');
-      setCurrentStep(5);
-      return;
-    }
-
-    if (!isEditMode && isOverLimit) {
-      addToast(
-        `⚠️ Bạn đã đạt hạn mức tối đa ${maxListings} tin của Gói ${pkgDef.name}. Vui lòng nâng cấp gói để tiếp tục đăng tin mới!`,
-        'error'
-      );
-      router.push('/pricing');
+    if (user?.role === 'buyer') {
+      addToast('Tài khoản Người mua không thể gửi bán BĐS. Vui lòng chuyển sang Đăng tìm BĐS!', 'error');
+      router.push('/buyer-request');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const fullAddress = `${postingData.location.addressNumber ? `${postingData.location.addressNumber} ` : ''}${postingData.location.street}, ${postingData.location.ward}, ${postingData.location.district}, Hà Nội`;
-      const finalTitle =
-        postingData.title ||
-        `Bán ${propertyTypes.find((t) => t.id === postingData.propertyType)?.title || 'BĐS'} ${postingData.area}m² tại ${postingData.location.district}`;
+      const generatedCode = `HR-PROP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const fullAddress = `${streetAddressInput}, ${wardDistrictInput}, Hà Nội`;
+      const finalTitle = `Bán ${
+        postingData.propertyType === 'house'
+          ? 'Nhà riêng / Nhà phố'
+          : postingData.propertyType === 'apartment'
+          ? 'Căn hộ chung cư'
+          : postingData.propertyType === 'land'
+          ? 'Đất nền / Đất thổ cư'
+          : 'Biệt thự / Shophouse'
+      } ${postingData.area}m² tại ${wardDistrictInput}`;
 
       let resultId = editId;
 
       if (isEditMode && editId) {
-        // CẬP NHẬT TIN ĐĂNG HIỆN TẠI (SECTION 11 & SECTION 12)
-        // Không tạo duplicate listing, giữ nguyên ID, kiểm tra đưa về pending nếu sửa trường quan trọng
-        const updated = await updateListing(editId, {
+        await updateListing(editId, {
           title: finalTitle,
-          description: postingData.description,
-          type: postingData.propertyType,
           propertyType: postingData.propertyType,
           price: postingData.price,
           area: postingData.area,
           pricePerM2: Math.round(postingData.price / (postingData.area || 1)),
           floors: postingData.floors,
-          bedrooms: postingData.bedrooms,
-          bathrooms: postingData.bathrooms,
-          direction: postingData.direction,
-          legalStatus: postingData.legalStatus,
           address: fullAddress,
-          district: postingData.location.district,
-          ward: postingData.location.ward,
-          lat: postingData.location.lat,
-          lng: postingData.location.lng,
-          images: postingData.images,
+          images: postingData.images.length > 0 ? postingData.images : [
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'
+          ],
           authorName: postingData.seller.fullName,
           authorPhone: postingData.seller.phone,
-          authorEmail: postingData.seller.email || undefined,
-          seller: {
-            fullName: postingData.seller.fullName,
-            phone: postingData.seller.phone,
-            email: postingData.seller.email,
-            sellerType: postingData.seller.sellerType,
-            companyName: postingData.seller.companyName,
-            contactAddress: postingData.seller.contactAddress,
-          },
-          sellerType: postingData.seller.sellerType,
-          companyName: postingData.seller.companyName,
-          contactAddress: postingData.seller.contactAddress,
-          showPhone: postingData.seller.showPhone,
-          allowEmailContact: postingData.seller.allowEmailContact,
-          showCompany: postingData.seller.showCompany,
-          isPhoneVerified: postingData.seller.isPhoneVerified,
+          status: 'pending',
         });
-
-        if (updated?.status === 'pending') {
-          addToast('🔄 Tin đã cập nhật và gửi tới Admin kiểm duyệt lại do thay đổi thông tin quan trọng!', 'info');
-        } else {
-          addToast('🎉 Đã cập nhật tin đăng thành công!', 'success');
-        }
+        addToast('Đã cập nhật BĐS và gửi vào kho thẩm định!', 'success');
       } else {
-        // TẠO TIN ĐĂNG MỚI (SECTION 4 & SECTION 5)
         const newId = await addNewListing({
           title: finalTitle,
-          description: postingData.description,
+          description: `BĐS chính chủ gửi bán qua hệ thống HaNoi Realty. Tình trạng sử dụng: ${
+            postingData.usageStatus === 'empty'
+              ? 'Nhà trống, có thể bàn giao'
+              : postingData.usageStatus === 'occupied'
+              ? 'Đang có người sử dụng'
+              : 'Đang có hợp đồng cho thuê'
+          }. Pháp lý: ${postingData.certificateStatus}.`,
           type: postingData.propertyType,
           propertyType: postingData.propertyType,
           price: postingData.price,
           area: postingData.area,
           pricePerM2: Math.round(postingData.price / (postingData.area || 1)),
           floors: postingData.floors,
-          bedrooms: postingData.bedrooms,
-          bathrooms: postingData.bathrooms,
-          direction: postingData.direction,
-          legalStatus: postingData.legalStatus,
+          bedrooms: postingData.bedrooms || 3,
+          bathrooms: postingData.bathrooms || 2,
+          direction: postingData.direction || 'Đông Nam',
+          legalStatus: postingData.certificateStatus || 'Sổ đỏ chính chủ',
           address: fullAddress,
-          district: postingData.location.district,
-          ward: postingData.location.ward,
-          lat: postingData.location.lat,
-          lng: postingData.location.lng,
-          images: postingData.images,
+          district: postingData.location.district || 'Cầu Giấy',
+          ward: postingData.location.ward || 'Dịch Vọng Hậu',
+          lat: postingData.location.lat || 21.0315,
+          lng: postingData.location.lng || 105.7825,
+          images: postingData.images.length > 0 ? postingData.images : [
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'
+          ],
           authorName: postingData.seller.fullName,
           authorPhone: postingData.seller.phone,
           authorEmail: postingData.seller.email || undefined,
-          status: 'pending', // Luôn ở trạng thái Chờ duyệt ban đầu
-          isFeatured: Boolean(postingData.isFeatured),
-          durationDays: pkgDef.limits.listingDurationDays,
-          seller: {
-            fullName: postingData.seller.fullName,
-            phone: postingData.seller.phone,
-            email: postingData.seller.email,
-            sellerType: postingData.seller.sellerType,
-            companyName: postingData.seller.companyName,
-            contactAddress: postingData.seller.contactAddress,
-          },
-          sellerType: postingData.seller.sellerType,
-          companyName: postingData.seller.companyName,
-          contactAddress: postingData.seller.contactAddress,
-          showPhone: postingData.seller.showPhone,
-          allowEmailContact: postingData.seller.allowEmailContact,
-          showCompany: postingData.seller.showCompany,
-          isPhoneVerified: postingData.seller.isPhoneVerified,
+          status: 'pending',
+          propertyCode: generatedCode,
+          verificationStatus: 'in_review',
+          surveyDate: postingData.surveyDate,
+          surveyTimeSlot: postingData.surveyTimeSlot,
         });
 
-        if (postingData.isFeatured) {
-          incrementFeaturedUsage?.();
-        }
-
         resultId = newId;
-        addToast('🎉 Đăng tin thành công! Tin đang chờ hệ thống kiểm duyệt.', 'success');
+        addToast('🎉 Gửi BĐS thành công! Hồ sơ đang ở trạng thái Chờ xác minh.', 'success');
       }
 
       if (typeof window !== 'undefined') {
         try {
-          localStorage.removeItem('listing_wizard_draft');
+          localStorage.removeItem('owner_listing_wizard_draft');
         } catch {}
       }
 
-      setPublishedListingId(resultId || 'lst_' + Date.now());
+      setPublishedListingId(resultId || generatedCode);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
-      console.error('Error publishing/updating listing:', e);
-      addToast('Có lỗi xảy ra khi lưu tin đăng', 'error');
+      console.error(e);
+      addToast('Có lỗi xảy ra khi lưu BĐS', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="w-full max-w-4xl mx-auto py-8">
+  // MÀN HÌNH THÀNH CÔNG (STEP 6 SUCCESS STATE)
+  if (publishedListingId !== null) {
+    const finalPropCode = publishedListingId.startsWith('HR-PROP-')
+      ? publishedListingId
+      : `HR-PROP-2026-${publishedListingId.slice(-4).toUpperCase()}`;
 
-      {/* 🌟 BANNER HẠN MỨC GÓI ĐĂNG TIN THÀNH VIÊN 🌟 */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
-            pkgDef.id === 'agency'
-              ? 'bg-[#0a1128] text-amber-300'
-              : pkgDef.id === 'pro'
-              ? 'bg-orange-500 text-white'
-              : pkgDef.id === 'basic'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-200 text-slate-700'
-          }`}>
-            Gói {pkgDef.name}
+    return (
+      <div className="w-full max-w-3xl mx-auto py-10 px-4 text-center space-y-6">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-md shadow-emerald-500/20"
+        >
+          <CheckCircle2 className="w-10 h-10" />
+        </motion.div>
+
+        <div className="space-y-2">
+          <span className="px-3.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+            Property ID: {finalPropCode}
           </span>
-          <span className="text-xs font-bold text-slate-700">
-            Hạn mức: <strong className={isOverLimit ? 'text-rose-600' : 'text-slate-900'}>{userListings.length}/{maxListings} tin</strong>
-            {' · '}Thời hạn hiển thị tin: <strong>{pkgDef.limits.listingDurationDays} ngày</strong>
-          </span>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            Gửi Bất Động Sản Thành Công!
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto">
+            Hồ sơ BĐS của bạn đã được đưa vào kho thẩm định ở trạng thái{' '}
+            <strong className="text-orange-600 font-bold">Chờ xác minh</strong>. Ban quản trị HaNoi Realty sẽ đối chiếu hồ sơ, liên hệ sắp xếp khảo sát và cập nhật tiến độ công khai.
+          </p>
         </div>
 
-        {isOverLimit ? (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-rose-600">⚠️ Đã hết lượt đăng tin</span>
-            <Link
-              href="/pricing"
-              className="px-3 py-1 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs"
-            >
-              Nâng cấp gói ngay →
-            </Link>
+        {/* Tóm tắt BĐS vừa gửi */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-xs space-y-4 max-w-xl mx-auto">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Trạng thái</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 mt-1">
+                <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
+                Chờ xác minh
+              </span>
+            </div>
+            <div className="text-right">
+              <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Giá chào bán</span>
+              <span className="text-base font-bold text-orange-600 mt-1 block">
+                {formatCurrencyVND(postingData.price)}
+              </span>
+            </div>
           </div>
-        ) : (
+
+          <div className="space-y-2 text-xs sm:text-sm">
+            <div>
+              <span className="text-slate-400">Loại BĐS & Quy mô: </span>
+              <span className="font-semibold text-slate-800">
+                {postingData.propertyType === 'house'
+                  ? 'Nhà riêng / Nhà phố'
+                  : postingData.propertyType === 'apartment'
+                  ? 'Căn hộ chung cư'
+                  : postingData.propertyType === 'land'
+                  ? 'Đất nền / Đất thổ cư'
+                  : 'Biệt thự / Shophouse'}{' '}
+                • {postingData.area} m² {postingData.floors ? `• ${postingData.floors} tầng` : ''}
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-400">Địa chỉ: </span>
+              <span className="font-semibold text-slate-800">
+                {streetAddressInput}, {wardDistrictInput}, Hà Nội
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-400">Người gửi: </span>
+              <span className="font-semibold text-slate-800">
+                {postingData.seller.fullName} ({postingData.seller.phone})
+              </span>
+            </div>
+            {postingData.imageMethod === 'need_survey' && (
+              <div className="text-emerald-700 bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
+                📅 Đã ghi nhận yêu cầu khảo sát/quay chụp: <strong>{postingData.surveyDate || 'Sớm nhất'} ({postingData.surveyTimeSlot})</strong>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
-            href="/pricing"
-            className="text-xs font-bold text-orange-600 hover:underline inline-flex items-center gap-1"
+            href="/dashboard?tab=properties"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-slate-950 hover:bg-slate-800 text-white font-medium text-xs sm:text-sm transition-all text-center"
           >
-            Bảng giá & Hạn mức VIP →
+            Quản lý BĐS đã gửi bán
           </Link>
-        )}
+          <button
+            type="button"
+            onClick={() => {
+              setPublishedListingId(null);
+              setCurrentStep(1);
+            }}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs sm:text-sm transition-all text-center"
+          >
+            Gửi thêm BĐS khác
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-3xl mx-auto py-6 sm:py-10 px-4 space-y-6">
+      {/* 1. HEADER: Gửi bán bất động sản */}
+      <div className="space-y-1 pb-4 border-b border-slate-100">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          Gửi bán bất động sản
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-400 font-medium">
+          Dành cho Chủ nhà • Miễn phí đăng nguồn hàng
+        </p>
       </div>
 
-      {/* 1. THANH TIẾN ĐỘ 6 BƯỚC CHUẨN */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-3">
+      {/* 2. THANH TIẾN ĐỘ 6 BƯỚC: NÉT ĐỨT / ĐƯỜNG THẲNG & DẤU TÍCH XANH LÁ HOÀN THÀNH (ĐỒNG BỘ FORM NGƯỜI MUA) */}
+      <div className="pb-6 border-b border-slate-100">
+        <div className="flex items-center justify-between max-w-2xl mx-auto px-1 sm:px-3">
           {[
-            { step: 1, label: 'Loại hình' },
-            { step: 2, label: 'Vị trí' },
-            { step: 3, label: 'Hình ảnh' },
-            { step: 4, label: 'Giá & Thông số' },
-            { step: 5, label: 'Thông tin người đăng' },
-            { step: 6, label: 'Kiểm tra & xuất bản' },
-          ].map((item) => {
-            const isCompleted = publishedListingId !== null || currentStep > item.step;
-            const isCurrent = publishedListingId === null && currentStep === item.step;
+            { step: 1, title: 'Loại BĐS' },
+            { step: 2, title: 'Vị trí' },
+            { step: 3, title: 'Ảnh & lịch' },
+            { step: 4, title: 'Giá bán' },
+            { step: 5, title: 'Xác minh' },
+            { step: 6, title: 'Xác nhận' },
+          ].map((item, idx) => {
+            const isCompleted = item.step < currentStep;
+            const isCurrent = item.step === currentStep;
 
             return (
-              <div key={item.step} className="flex flex-col items-center">
-                <motion.div
-                  animate={{
-                    scale: isCurrent ? 1.15 : 1,
-                  }}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold transition-all shadow-sm ${
-                    isCompleted
-                      ? 'bg-success text-white'
-                      : isCurrent
-                      ? 'bg-accent text-white ring-4 ring-accent/20'
-                      : 'bg-slate-200 text-text-muted'
-                  }`}
-                >
-                  {isCompleted ? <Check className="h-4 w-4" /> : item.step}
-                </motion.div>
-                <span
-                  className={`text-[11px] font-bold mt-1.5 hidden sm:block ${
-                    isCurrent ? 'text-accent' : isCompleted ? 'text-text-primary' : 'text-text-muted'
-                  }`}
-                >
-                  {item.label}
-                </span>
-              </div>
+              <React.Fragment key={item.step}>
+                <div className="flex flex-col items-center shrink-0">
+                  <div
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 ${
+                      isCompleted
+                        ? 'bg-emerald-600 text-white shadow-sm ring-4 ring-emerald-50'
+                        : isCurrent
+                        ? 'bg-orange-600 text-white shadow-sm ring-4 ring-orange-100'
+                        : 'bg-slate-100 text-slate-400'
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <Check className="w-4 h-4 text-white stroke-[3]" />
+                    ) : (
+                      item.step
+                    )}
+                  </div>
+                  <span
+                    className={`text-[10px] sm:text-xs mt-2 text-center whitespace-nowrap ${
+                      isCurrent
+                        ? 'text-slate-900 font-bold'
+                        : isCompleted
+                        ? 'text-slate-700 font-medium'
+                        : 'text-slate-400 font-medium'
+                    }`}
+                  >
+                    {item.title}
+                  </span>
+                </div>
+
+                {/* Đoạn nối giữa bước idx và idx + 1: Nét đứt (chưa xong) -> Đường liền (đã xong) */}
+                {idx < 5 && (
+                  <div
+                    className={`flex-1 mx-1 sm:mx-2.5 -mt-5 transition-all duration-300 ${
+                      currentStep > item.step
+                        ? 'border-t-2 border-solid border-emerald-500'
+                        : 'border-t-2 border-dashed border-slate-300'
+                    }`}
+                  />
+                )}
+              </React.Fragment>
             );
           })}
         </div>
-
-        {/* Progress Bar Track:
-            - Step 4: ~67%
-            - Step 5: ~80%
-            - Step 6 / Published: 100%
-        */}
-        <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
-          <motion.div
-            className="h-full bg-accent"
-            animate={{
-              width:
-                publishedListingId !== null || currentStep === 6
-                  ? '100%'
-                  : currentStep === 5
-                  ? '80%'
-                  : `${Math.round((currentStep / 6) * 100)}%`,
-            }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
       </div>
 
-      {/* Main Wizard Form Card */}
-      <div className="rounded-3xl border border-border bg-white p-6 sm:p-10 shadow-xl min-h-[460px] flex flex-col justify-between">
-        
-        {/* HIỂN THỊ KẾT QUẢ XUẤT BẢN THÀNH CÔNG (STEP 6 SUCCESS STATE) */}
-        {publishedListingId !== null ? (
-          <PublishSuccessView listingId={publishedListingId} data={postingData} />
-        ) : (
-          <AnimatePresence mode="wait">
-            
-            {/* STEP 1: Property Type Selection */}
-            {currentStep === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                <div>
-                  <h2 className="text-lg font-extrabold text-text-primary">Bước 1: Chọn loại hình bất động sản</h2>
-                  <p className="text-xs text-text-secondary mt-1">Lựa chọn đúng phân khúc để tiếp cận khách hàng tìm kiếm chính xác</p>
-                </div>
+      {/* NỘI DUNG TỪNG BƯỚC */}
+      <div className="pt-2 min-h-[380px]">
+        <AnimatePresence mode="wait">
+          {/* ==================== BƯỚC 1: THÔNG TIN BẤT ĐỘNG SẢN ==================== */}
+          {currentStep === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 1. Thông tin bất động sản
+                </h2>
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {propertyTypes.map((type) => {
-                    const Icon = type.icon;
-                    const isSelected = postingData.propertyType === type.id;
+              {/* Loại bất động sản */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-slate-700 block">
+                  Loại bất động sản
+                </label>
+                <div className="space-y-3 pt-0.5">
+                  {[
+                    { id: 'house', label: 'Nhà riêng / Nhà phố' },
+                    { id: 'apartment', label: 'Căn hộ chung cư' },
+                    { id: 'land', label: 'Đất nền / Đất thổ cư' },
+                    { id: 'villa', label: 'Biệt thự / Shophouse' },
+                  ].map((item) => {
+                    const isSelected = postingData.propertyType === item.id;
                     return (
-                      <motion.div
-                        key={type.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <label
+                        key={item.id}
                         onClick={() =>
                           setPostingData((prev) => ({
                             ...prev,
-                            propertyType: type.id as any,
+                            propertyType: item.id as any,
                           }))
                         }
-                        className={`relative cursor-pointer rounded-2xl border-2 p-5 transition-all ${
-                          isSelected
-                            ? 'border-accent bg-orange-50/40 shadow-md ring-2 ring-accent/20'
-                            : 'border-border bg-page-bg opacity-75 hover:opacity-100 hover:border-slate-300'
-                        }`}
+                        className="flex items-center gap-3.5 py-1.5 cursor-pointer select-none group"
                       >
-                        {isSelected && (
-                          <div className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-white shadow-sm">
-                            <Check className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-                        <div className="flex items-center gap-3.5">
+                        <div className="relative flex items-center justify-center">
                           <div
-                            className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-                              isSelected ? 'bg-accent text-white' : 'bg-white text-text-secondary'
-                            } shadow-sm`}
+                            className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${
+                              isSelected
+                                ? 'border-slate-900 bg-white'
+                                : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                            }`}
                           >
-                            <Icon className="h-6 w-6" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-text-primary">{type.title}</h4>
-                            <p className="text-[11px] text-text-secondary mt-0.5">{type.desc}</p>
+                            {isSelected && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                            )}
                           </div>
                         </div>
-                      </motion.div>
+                        <span
+                          className={`text-sm sm:text-base transition-colors ${
+                            isSelected
+                              ? 'text-slate-900 font-medium'
+                              : 'text-slate-700 group-hover:text-slate-900 font-normal'
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </label>
                     );
                   })}
                 </div>
-              </motion.div>
-            )}
+              </div>
 
-            {/* STEP 2: Address & Location Pin */}
-            {currentStep === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
+              {/* Diện tích & Số tầng */}
+              <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
-                  <h2 className="text-lg font-extrabold text-text-primary">Bước 2: Địa chỉ & Vị trí trên bản đồ</h2>
-                  <p className="text-xs text-text-secondary mt-1">Định vị chính xác để người mua dễ dàng tra cứu quy hoạch phân khu và tiện ích lân cận</p>
-                </div>
-
-                {/* Interactive Leaflet Map Pin Picker */}
-                <div>
-                  <label className="text-sm font-semibold text-navy dark:text-white mb-1.5 block">
-                    📍 Chọn vị trí trên bản đồ
-                    <span className="text-orange-500 ml-1">*</span>
+                  <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                    Diện tích (m²)
                   </label>
-                  <p className="text-xs text-gray-500 mb-3">
-                    Nhấp vào bản đồ hoặc tìm kiếm địa chỉ để gắn pin vị trí BĐS chính xác
-                  </p>
-                  <LocationPicker
-                    value={pickedLocation}
-                    onChange={(loc) => {
-                      setPickedLocation(loc);
-                      if (loc) {
-                        const cleanDistrict = loc.district ? loc.district.replace(/^(Quận|Huyện|Thị xã)\s+/i, '').trim() : '';
-                        const matchedDistrict = HANOI_DISTRICTS.find(d => d.toLowerCase() === cleanDistrict.toLowerCase()) || loc.district;
-                        setPostingData((prev) => ({
-                          ...prev,
-                          location: {
-                            ...prev.location,
-                            district: matchedDistrict || prev.location.district,
-                            ward: loc.ward || prev.location.ward,
-                            street: loc.road || prev.location.street,
-                            addressNumber: loc.houseNumber
-                              ? (/^(số|ngõ|ngách|hẻm|lô|thửa|căn)\s+/i.test(loc.houseNumber)
-                                  ? loc.houseNumber
-                                  : `Số ${loc.houseNumber}`)
-                              : prev.location.addressNumber,
-                            lat: loc.lat,
-                            lng: loc.lng,
-                            displayName: loc.displayName || prev.location.displayName,
-                          },
-                        }));
-                        addToast('📍 Đã cập nhật toạ độ & địa chỉ BĐS chính xác', 'success');
-                      }
-                    }}
-                    height="380px"
+                  <input
+                    type="number"
+                    value={areaInput}
+                    onChange={(e) => setAreaInput(e.target.value)}
+                    placeholder="Ví dụ: 65"
+                    className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
                   />
                 </div>
+                <div>
+                  <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                    Số tầng (nếu có)
+                  </label>
+                  <input
+                    type="number"
+                    value={floorsInput}
+                    onChange={(e) => setFloorsInput(e.target.value)}
+                    placeholder="Ví dụ: 5"
+                    className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
+                  />
+                </div>
+              </div>
 
-                {/* Divider */}
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                  <span className="text-xs text-gray-400">hoặc kiểm tra & điều chỉnh chi tiết bên dưới</span>
-                  <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+              <p className="text-xs text-slate-400">
+                Các trường chi tiết khác sẽ thay đổi tùy loại BĐS được chọn.
+              </p>
+            </motion.div>
+          )}
+
+          {/* ==================== BƯỚC 2: XÁC ĐỊNH VỊ TRÍ ==================== */}
+          {currentStep === 2 && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 2. Xác định vị trí
+                </h2>
+              </div>
+
+              {/* Địa chỉ bất động sản */}
+              <div>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                  Địa chỉ bất động sản
+                </label>
+                <input
+                  type="text"
+                  value={streetAddressInput}
+                  onChange={(e) => setStreetAddressInput(e.target.value)}
+                  placeholder="Số nhà, đường/ngõ, tên tòa nhà"
+                  className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
+                />
+              </div>
+
+              {/* Phường/xã, khu vực tại Hà Nội */}
+              <div>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                  Phường/xã, khu vực tại Hà Nội
+                </label>
+                <input
+                  type="text"
+                  value={wardDistrictInput}
+                  onChange={(e) => setWardDistrictInput(e.target.value)}
+                  placeholder="Nhập hoặc chọn địa giới hiện hành"
+                  className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
+                />
+              </div>
+
+              {/* Khung Vị trí trên bản đồ */}
+              <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6 text-center space-y-2">
+                <div className="w-8 h-8 mx-auto text-slate-600 flex items-center justify-center">
+                  <MapPin className="w-6 h-6 stroke-[1.5]" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-800">
+                  Vị trí trên bản đồ
+                </h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Website thật sẽ cho tìm địa chỉ và ghim vị trí chính xác. Admin sẽ đối chiếu với hồ sơ và khảo sát thực tế.
+                </p>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowMapPicker(!showMapPicker)}
+                    className="text-xs font-semibold text-orange-600 hover:text-orange-700 underline underline-offset-4"
+                  >
+                    {showMapPicker ? 'Thu gọn bản đồ định vị' : 'Mở bản đồ định vị toạ độ GPS'}
+                  </button>
                 </div>
 
-                {/* Address Form Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Quận / Huyện *</label>
-                    <select
-                      value={postingData.location.district}
-                      onChange={(e) => {
-                        const newDistrict = e.target.value;
-                        const districtCenter = HANOI_DISTRICT_COORDINATES[newDistrict];
-                        const distTitle = newDistrict.includes('Thị xã') || newDistrict.includes('Quận') || newDistrict.includes('Huyện')
-                          ? newDistrict
-                          : ['Đống Đa', 'Hoàn Kiếm', 'Cầu Giấy', 'Tây Hồ', 'Ba Đình', 'Hai Bà Trưng', 'Hoàng Mai', 'Long Biên', 'Nam Từ Liêm', 'Bắc Từ Liêm', 'Hà Đông', 'Thanh Xuân'].includes(newDistrict)
-                            ? `Quận ${newDistrict}`
-                            : newDistrict === 'Sơn Tây'
-                              ? 'Thị xã Sơn Tây'
-                              : `Huyện ${newDistrict}`;
-
-                        setPostingData((prev) => ({
-                          ...prev,
-                          location: {
-                            ...prev.location,
-                            district: newDistrict,
-                            lat: districtCenter ? districtCenter.lat : prev.location.lat,
-                            lng: districtCenter ? districtCenter.lng : prev.location.lng,
-                          },
-                        }));
-                        if (districtCenter) {
-                          setPickedLocation({
-                            lat: districtCenter.lat,
-                            lng: districtCenter.lng,
-                            displayName: `${distTitle}, Hà Nội`,
-                            district: newDistrict,
-                            ward: '',
-                            road: '',
-                            houseNumber: '',
-                          });
+                {showMapPicker && (
+                  <div className="pt-3 text-left">
+                    <LocationPicker
+                      value={pickedLocation}
+                      onChange={(loc) => {
+                        setPickedLocation(loc);
+                        if (loc) {
+                          setPostingData((prev) => ({
+                            ...prev,
+                            location: {
+                              ...prev.location,
+                              lat: loc.lat,
+                              lng: loc.lng,
+                              displayName: loc.displayName || prev.location.displayName,
+                            },
+                          }));
+                          addToast('📍 Đã cập nhật toạ độ GPS chính xác', 'success');
                         }
                       }}
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold text-text-primary focus:border-accent focus:bg-white focus:outline-none"
-                    >
-                      {HANOI_DISTRICTS.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* Gợi ý các vị trí tiêu biểu của quận/huyện đã chọn */}
-                    {(() => {
-                      const currentDist = postingData.location.district;
-                      const popularInDistrict = POPULAR_HANOI_LOCATIONS.filter(
-                        (l) => l.district.toLowerCase() === currentDist.toLowerCase()
-                      ).slice(0, 4);
-
-                      if (popularInDistrict.length === 0) return null;
-
-                      return (
-                        <div className="mt-2">
-                          <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1">
-                            <Sparkles size={11} className="text-orange-500" />
-                            <span>Gợi ý tại {currentDist}:</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            {popularInDistrict.map((item, pIdx) => (
-                              <button
-                                key={`dist-sugg-${pIdx}`}
-                                type="button"
-                                onClick={() => {
-                                  const distTitle = item.district.includes('Thị xã') || item.district.includes('Quận') || item.district.includes('Huyện')
-                                    ? item.district
-                                    : ['Đống Đa', 'Hoàn Kiếm', 'Cầu Giấy', 'Tây Hồ', 'Ba Đình', 'Hai Bà Trưng', 'Hoàng Mai', 'Long Biên', 'Nam Từ Liêm', 'Bắc Từ Liêm', 'Hà Đông', 'Thanh Xuân'].includes(item.district)
-                                      ? `Quận ${item.district}`
-                                      : item.district === 'Sơn Tây'
-                                        ? 'Thị xã Sơn Tây'
-                                        : `Huyện ${item.district}`;
-
-                                  setPostingData((prev) => ({
-                                    ...prev,
-                                    location: {
-                                      ...prev.location,
-                                      district: item.district,
-                                      ward: item.ward || prev.location.ward,
-                                      street: item.name,
-                                      lat: item.lat,
-                                      lng: item.lng,
-                                      displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${distTitle}, Hà Nội`,
-                                    },
-                                  }));
-                                  setPickedLocation({
-                                    lat: item.lat,
-                                    lng: item.lng,
-                                    displayName: `${item.name}, ${item.ward ? item.ward + ', ' : ''}${distTitle}, Hà Nội`,
-                                    district: item.district,
-                                    ward: item.ward || '',
-                                    road: item.name,
-                                    houseNumber: '',
-                                  });
-                                  addToast(`📍 Đã định vị nhanh: ${item.name}`, 'success');
-                                }}
-                                className="text-[10px] font-medium bg-page-bg hover:bg-orange-50 dark:hover:bg-orange-950/30 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 px-2 py-0.5 rounded-md border border-input transition-colors"
-                              >
-                                {item.name}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Phường / Xã</label>
-                    <input
-                      type="text"
-                      value={postingData.location.ward}
-                      onChange={(e) =>
-                        setPostingData((prev) => ({
-                          ...prev,
-                          location: { ...prev.location, ward: e.target.value },
-                        }))
-                      }
-                      placeholder="VD: Dịch Vọng Hậu"
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none"
+                      height="300px"
                     />
                   </div>
+                )}
+              </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Tên đường / Phố *</label>
-                    <input
-                      type="text"
-                      required
-                      value={postingData.location.street}
-                      onChange={(e) =>
-                        setPostingData((prev) => ({
-                          ...prev,
-                          location: { ...prev.location, street: e.target.value },
-                        }))
-                      }
-                      placeholder="VD: Phố Duy Tân"
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none"
-                    />
-                  </div>
+              <p className="text-xs text-slate-400">
+                Địa chỉ chính xác có thể được giữ trong hồ sơ nội bộ; trang công khai chỉ hiển thị phạm vi được chủ nhà cho phép.
+              </p>
+            </motion.div>
+          )}
 
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Số nhà / Ngõ ngách</label>
-                    <input
-                      type="text"
-                      value={postingData.location.addressNumber}
-                      onChange={(e) =>
-                        setPostingData((prev) => ({
-                          ...prev,
-                          location: { ...prev.location, addressNumber: e.target.value },
-                        }))
-                      }
-                      placeholder="VD: Số 18, Ngõ 72"
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
+          {/* ==================== BƯỚC 3: HÌNH ẢNH & LỊCH KHẢO SÁT ==================== */}
+          {currentStep === 3 && (
+            <motion.div
+              key="step3"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 3. Hình ảnh & lịch khảo sát
+                </h2>
+              </div>
 
-            {/* STEP 3: Image Upload */}
-            {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-5"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-extrabold text-text-primary">Bước 3: Tải ảnh bất động sản</h2>
-                    <p className="text-xs text-text-secondary mt-1">Tin đăng có từ 3 ảnh trở lên nhận được gấp 4 lần lượt liên hệ</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {postingData.images.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleClearAllImages}
-                        className="text-xs font-semibold text-red-500 hover:text-red-600 px-2 py-1 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        Xóa tất cả
-                      </button>
-                    )}
-                    <span
-                      className={`rounded-lg px-3 py-1 text-xs font-bold ${
-                        postingData.images.length >= 3
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                          : 'bg-slate-100 text-text-secondary'
-                      }`}
-                    >
-                      {postingData.images.length} / 20 ảnh
-                    </span>
-                  </div>
-                </div>
+              {/* Ảnh bất động sản */}
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-slate-700 block">
+                  Ảnh bất động sản
+                </label>
 
-                {/* Hidden File Input */}
+                {/* Box tải ảnh viền nét đứt bo tròn */}
                 <input
-                  ref={fileInputRef}
                   type="file"
+                  ref={fileInputRef}
+                  onChange={(e) => e.target.files && handleFiles(e.target.files)}
                   multiple
-                  accept="image/png,image/jpeg,image/jpg,image/webp"
-                  onChange={handleFileInputChange}
+                  accept="image/jpeg,image/png,image/webp"
                   className="hidden"
                 />
 
-                {/* Drag Drop Zone */}
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragging(true);
-                  }}
-                  onDragEnter={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragging(false);
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragging(false);
-                    if (e.dataTransfer.files?.length) {
-                      handleFiles(e.dataTransfer.files);
-                    }
-                  }}
-                  className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 ${
-                    isDragging
-                      ? 'border-accent bg-accent/15 scale-[1.01] ring-4 ring-accent/20'
-                      : 'border-accent/60 bg-orange-50/20 hover:bg-orange-50/40 hover:border-accent'
-                  }`}
+                  className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors space-y-2 group"
                 >
-                  {isUploading ? (
-                    <div className="py-4">
-                      <Loader2 className="h-10 w-10 text-accent mx-auto mb-2 animate-spin" />
-                      <p className="text-xs font-bold text-accent">Đang xử lý tải ảnh từ máy tính...</p>
-                      <p className="text-[11px] text-text-muted mt-1">Đang tối ưu dung lượng và chất lượng hiển thị</p>
-                    </div>
-                  ) : (
-                    <>
-                      <UploadCloud
-                        className={`h-10 w-10 mx-auto mb-2 transition-transform duration-200 ${
-                          isDragging ? 'text-accent scale-125' : 'text-accent'
-                        }`}
-                      />
-                      <p className="text-xs font-bold text-text-primary">
-                        {isDragging ? 'Thả ảnh vào đây để tải lên ngay!' : 'Kéo thả ảnh vào đây hoặc bấm để chọn ảnh'}
-                      </p>
-                      <p className="text-[11px] text-text-muted mt-1">Hỗ trợ định dạng JPG, PNG, WEBP tối đa 10MB/ảnh (chọn được nhiều ảnh)</p>
-
-                      <div className="mt-4 flex items-center justify-center gap-3">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            fileInputRef.current?.click();
-                          }}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-accent-hover hover:shadow-lg transition-all"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Tải ảnh từ máy tính
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddSampleImage();
-                          }}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-2 text-xs font-semibold text-text-secondary hover:bg-slate-50 hover:text-text-primary transition-colors"
-                        >
-                          + Thêm ảnh mẫu
-                        </button>
-                      </div>
-                    </>
-                  )}
+                  <div className="w-8 h-8 mx-auto text-slate-500 group-hover:text-slate-700 transition-colors flex items-center justify-center">
+                    <ImageIcon className="w-6 h-6 stroke-[1.5]" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-800">
+                    Khu vực tải ảnh hiện trạng nhà
+                  </h3>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                    Bản website thật: tải nhiều ảnh, xem trước và xóa ảnh. Bản mẫu chưa hỗ trợ tải file.
+                  </p>
+                  <span className="inline-block text-[11px] font-semibold text-orange-600 group-hover:underline">
+                    Nhấp vào đây để chọn ảnh từ máy tính (tối đa 20 ảnh)
+                  </span>
                 </div>
 
-                {/* Thumbnails preview grid */}
+                {/* Danh sách ảnh đã tải lên */}
                 {postingData.images.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[11px] text-text-muted">
-                      <span>Di chuột vào ảnh để đặt làm ảnh đại diện hoặc xóa ảnh</span>
-                      <span>Ảnh đầu tiên là ảnh đại diện hiển thị ngoài danh sách</span>
+                  <div className="pt-2">
+                    <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+                      <span>Đã tải {postingData.images.length} ảnh (Ảnh đầu tiên là ảnh bìa)</span>
+                      <button
+                        type="button"
+                        onClick={() => setPostingData((prev) => ({ ...prev, images: [] }))}
+                        className="text-red-500 hover:underline"
+                      >
+                        Xóa tất cả
+                      </button>
                     </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
                       {postingData.images.map((imgUrl, idx) => (
                         <div
                           key={idx}
-                          className={`relative aspect-video rounded-xl overflow-hidden border group bg-slate-100 transition-all ${
-                            idx === 0 ? 'ring-2 ring-accent border-accent' : 'border-border hover:border-accent/60'
-                          }`}
+                          className="relative aspect-4/3 rounded-xl overflow-hidden border border-slate-200 group bg-slate-100"
                         >
-                          <img src={imgUrl} alt={`preview-${idx}`} className="h-full w-full object-cover" />
-
-                          <span className="absolute bottom-1.5 left-1.5 rounded bg-black/60 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-bold text-white">
-                            #{idx + 1}
-                          </span>
-
-                          {idx === 0 ? (
-                            <span className="absolute top-1.5 left-1.5 inline-flex items-center gap-1 rounded bg-accent px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
-                              <Star className="h-3 w-3 fill-white" />
-                              Ảnh đại diện
+                          <img
+                            src={imgUrl}
+                            alt={`Preview ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          {idx === 0 && (
+                            <span className="absolute top-1 left-1 bg-orange-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                              Bìa
                             </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleSetCoverImage(idx)}
-                              className="absolute top-1.5 left-1.5 inline-flex items-center gap-1 rounded bg-black/70 hover:bg-accent px-2 py-0.5 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-all shadow-sm"
-                              title="Đặt làm ảnh đại diện"
-                            >
-                              <Star className="h-3 w-3" />
-                              Đặt làm đại diện
-                            </button>
                           )}
-
                           <button
                             type="button"
-                            onClick={() => handleDeleteImage(idx)}
-                            className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-red-600 hover:bg-red-700 text-white opacity-0 group-hover:opacity-100 transition-all shadow-sm"
-                            title="Xóa ảnh này"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPostingData((prev) => ({
+                                ...prev,
+                                images: prev.images.filter((_, i) => i !== idx),
+                              }));
+                            }}
+                            className="absolute top-1 right-1 p-1 bg-black/60 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-              </motion.div>
-            )}
+              </div>
 
-            {/* STEP 4: Price & Specs */}
-            {currentStep === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-5"
-              >
+              {/* Phương án cung cấp hình ảnh */}
+              <div className="space-y-3 pt-2">
+                <label className="text-xs sm:text-sm font-medium text-slate-700 block">
+                  Phương án cung cấp hình ảnh
+                </label>
+                <div className="space-y-3">
+                  {[
+                    {
+                      id: 'has_images',
+                      label: 'Tôi có ảnh sẵn, muốn bổ sung khảo sát nếu cần',
+                    },
+                    {
+                      id: 'need_survey',
+                      label: 'Tôi muốn HaNoi Realty đến khảo sát/quay chụp',
+                    },
+                  ].map((item) => {
+                    const isSelected = postingData.imageMethod === item.id;
+                    return (
+                      <label
+                        key={item.id}
+                        onClick={() =>
+                          setPostingData((prev) => ({
+                            ...prev,
+                            imageMethod: item.id as any,
+                          }))
+                        }
+                        className="flex items-center gap-3.5 py-1 cursor-pointer select-none group"
+                      >
+                        <div className="relative flex items-center justify-center">
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${
+                              isSelected
+                                ? 'border-slate-900 bg-white'
+                                : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                            }`}
+                          >
+                            {isSelected && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                            )}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-sm sm:text-base transition-colors ${
+                            isSelected
+                              ? 'text-slate-900 font-medium'
+                              : 'text-slate-700 group-hover:text-slate-900 font-normal'
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Ngày thuận tiện & Khung giờ */}
+              <div className="space-y-4 pt-2">
                 <div>
-                  <h2 className="text-lg font-extrabold text-text-primary">Bước 4: Giá bán & Thông số chi tiết</h2>
-                  <p className="text-xs text-text-secondary mt-1">Hệ thống sẽ tự động tính đơn giá / m² và phân tích định giá</p>
+                  <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                    Ngày thuận tiện cho việc khảo sát
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      value={postingData.surveyDate || ''}
+                      onChange={(e) =>
+                        setPostingData((prev) => ({
+                          ...prev,
+                          surveyDate: e.target.value,
+                        }))
+                      }
+                      className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-slate-900 transition-colors"
+                    />
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Price */}
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-text-primary">Mức giá chào bán (VNĐ) *</label>
-                      <span className="text-xs font-black text-accent">{formatCurrencyVND(postingData.price)}</span>
-                    </div>
-                    <input
-                      type="number"
-                      value={postingData.price}
-                      step={100000000}
-                      onChange={(e) =>
-                        setPostingData((prev) => ({
-                          ...prev,
-                          price: Number(e.target.value),
-                        }))
-                      }
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Area */}
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-text-primary">Diện tích sử dụng (m²) *</label>
-                      <span className="text-xs font-bold text-text-secondary">
-                        Đơn giá: {formatPricePerM2(postingData.price, postingData.area)}
-                      </span>
-                    </div>
-                    <input
-                      type="number"
-                      value={postingData.area}
-                      onChange={(e) =>
-                        setPostingData((prev) => ({
-                          ...prev,
-                          area: Number(e.target.value),
-                        }))
-                      }
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Floors */}
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Số tầng</label>
-                    <input
-                      type="number"
-                      value={postingData.floors}
-                      onChange={(e) =>
-                        setPostingData((prev) => ({
-                          ...prev,
-                          floors: Number(e.target.value),
-                        }))
-                      }
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Bedrooms & Bathrooms */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs font-bold text-text-primary">Phòng ngủ</label>
-                      <input
-                        type="number"
-                        value={postingData.bedrooms}
-                        onChange={(e) =>
-                          setPostingData((prev) => ({
-                            ...prev,
-                            bedrooms: Number(e.target.value),
-                          }))
-                        }
-                        className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-text-primary">Phòng tắm</label>
-                      <input
-                        type="number"
-                        value={postingData.bathrooms}
-                        onChange={(e) =>
-                          setPostingData((prev) => ({
-                            ...prev,
-                            bathrooms: Number(e.target.value),
-                          }))
-                        }
-                        className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Direction */}
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Hướng chính</label>
+                <div>
+                  <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                    Khung giờ
+                  </label>
+                  <div className="relative">
                     <select
-                      value={postingData.direction}
+                      value={postingData.surveyTimeSlot || 'Buổi sáng'}
                       onChange={(e) =>
                         setPostingData((prev) => ({
                           ...prev,
-                          direction: e.target.value,
+                          surveyTimeSlot: e.target.value,
                         }))
                       }
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
+                      className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 appearance-none bg-white focus:outline-none focus:border-slate-900 transition-colors pr-10"
                     >
-                      <option value="Đông">Đông</option>
-                      <option value="Tây">Tây</option>
-                      <option value="Nam">Nam</option>
-                      <option value="Bắc">Bắc</option>
-                      <option value="Đông Nam">Đông Nam</option>
-                      <option value="Đông Bắc">Đông Bắc</option>
-                      <option value="Tây Nam">Tây Nam</option>
-                      <option value="Tây Bắc">Tây Bắc</option>
+                      <option value="Buổi sáng">Buổi sáng</option>
+                      <option value="Buổi chiều">Buổi chiều</option>
+                      <option value="Buổi tối">Buổi tối</option>
                     </select>
+                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
+                </div>
+              </div>
 
-                  {/* Legal Status */}
-                  <div>
-                    <label className="text-xs font-bold text-text-primary">Tình trạng pháp lý</label>
-                    <input
-                      type="text"
-                      value={postingData.legalStatus}
+              <p className="text-xs text-slate-400">
+                Lịch chỉ được xác nhận sau khi nhân sự HaNoi Realty tiếp nhận và phản hồi.
+              </p>
+            </motion.div>
+          )}
+
+          {/* ==================== BƯỚC 4: GIÁ BÁN & ĐIỀU KIỆN GIAO DỊCH ==================== */}
+          {currentStep === 4 && (
+            <motion.div
+              key="step4"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 4. Giá bán & điều kiện giao dịch
+                </h2>
+              </div>
+
+              {/* Giá bán mong muốn (VNĐ) */}
+              <div>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                  Giá bán mong muốn (VNĐ)
+                </label>
+                <input
+                  type="number"
+                  value={priceInput}
+                  onChange={(e) => {
+                    setPriceInput(e.target.value);
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val)) {
+                      setPostingData((prev) => ({ ...prev, price: val }));
+                    }
+                  }}
+                  placeholder="Ví dụ: 5000000000"
+                  className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
+                />
+                {postingData.price > 0 && (
+                  <p className="text-xs font-semibold text-orange-600 mt-1.5 pl-2">
+                    ≈ {formatCurrencyVND(postingData.price)} ({postingData.price.toLocaleString('vi-VN')} đ)
+                  </p>
+                )}
+              </div>
+
+              {/* Tình trạng sử dụng */}
+              <div className="space-y-3 pt-2">
+                <label className="text-xs sm:text-sm font-medium text-slate-700 block">
+                  Tình trạng sử dụng
+                </label>
+                <div className="space-y-3">
+                  {[
+                    { id: 'empty', label: 'Nhà trống, có thể bàn giao' },
+                    { id: 'occupied', label: 'Đang có người sử dụng' },
+                    { id: 'rented', label: 'Đang có hợp đồng cho thuê' },
+                  ].map((item) => {
+                    const isSelected = postingData.usageStatus === item.id;
+                    return (
+                      <label
+                        key={item.id}
+                        onClick={() =>
+                          setPostingData((prev) => ({
+                            ...prev,
+                            usageStatus: item.id as any,
+                          }))
+                        }
+                        className="flex items-center gap-3.5 py-1 cursor-pointer select-none group"
+                      >
+                        <div className="relative flex items-center justify-center">
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${
+                              isSelected
+                                ? 'border-slate-900 bg-white'
+                                : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                            }`}
+                          >
+                            {isSelected && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                            )}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-sm sm:text-base transition-colors ${
+                            isSelected
+                              ? 'text-slate-900 font-medium'
+                              : 'text-slate-700 group-hover:text-slate-900 font-normal'
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Thông tin phí môi giới */}
+              <div className="space-y-1.5 pt-2">
+                <h3 className="text-sm font-bold text-slate-900">
+                  Thông tin phí môi giới
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                  Đăng nguồn hàng miễn phí. Phí môi giới, thời điểm phát sinh nghĩa vụ và các điều kiện khác sẽ được thống nhất bằng hợp đồng dịch vụ riêng, không tự áp dụng tỷ lệ mặc định.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ==================== BƯỚC 5: XÁC MINH CHỦ NHÀ & HỒ SƠ ==================== */}
+          {currentStep === 5 && (
+            <motion.div
+              key="step5"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 5. Xác minh chủ nhà & hồ sơ
+                </h2>
+              </div>
+
+              {/* Tư cách người gửi bán */}
+              <div className="space-y-3">
+                <label className="text-xs sm:text-sm font-medium text-slate-700 block">
+                  Tư cách người gửi bán
+                </label>
+                <div className="space-y-3">
+                  {[
+                    { id: 'sole_owner', label: 'Tôi là người đứng tên trên giấy tờ' },
+                    { id: 'co_owner', label: 'Tài sản có đồng sở hữu / sở hữu chung' },
+                    { id: 'authorized', label: 'Tôi là người được ủy quyền hợp pháp' },
+                  ].map((item) => {
+                    const isSelected = postingData.ownershipRole === item.id;
+                    return (
+                      <label
+                        key={item.id}
+                        onClick={() =>
+                          setPostingData((prev) => ({
+                            ...prev,
+                            ownershipRole: item.id as any,
+                          }))
+                        }
+                        className="flex items-center gap-3.5 py-1 cursor-pointer select-none group"
+                      >
+                        <div className="relative flex items-center justify-center">
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${
+                              isSelected
+                                ? 'border-slate-900 bg-white'
+                                : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                            }`}
+                          >
+                            {isSelected && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                            )}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-sm sm:text-base transition-colors ${
+                            isSelected
+                              ? 'text-slate-900 font-medium'
+                              : 'text-slate-700 group-hover:text-slate-900 font-normal'
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Họ tên người gửi */}
+              <div>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                  Họ tên người gửi
+                </label>
+                <input
+                  type="text"
+                  value={postingData.seller.fullName}
+                  onChange={(e) =>
+                    setPostingData((prev) => ({
+                      ...prev,
+                      seller: { ...prev.seller, fullName: e.target.value },
+                    }))
+                  }
+                  placeholder="Họ tên trên giấy tờ"
+                  className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
+                />
+              </div>
+
+              {/* Số điện thoại liên hệ */}
+              <div>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                  Số điện thoại liên hệ
+                </label>
+                <input
+                  type="tel"
+                  value={postingData.seller.phone}
+                  onChange={(e) =>
+                    setPostingData((prev) => ({
+                      ...prev,
+                      seller: { ...prev.seller, phone: e.target.value },
+                    }))
+                  }
+                  placeholder="Số điện thoại để xác thực OTP"
+                  className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
+                />
+              </div>
+
+              {/* Khu vực hồ sơ bảo mật */}
+              <input
+                type="file"
+                ref={confidentialFileInputRef}
+                onChange={(e) => e.target.files && handleConfidentialFiles(e.target.files)}
+                multiple
+                accept="image/*,.pdf"
+                className="hidden"
+              />
+
+              <div
+                onClick={() => confidentialFileInputRef.current?.click()}
+                className="rounded-2xl border border-dashed border-slate-200 p-4.5 bg-slate-50/40 hover:bg-slate-50 cursor-pointer transition-colors space-y-1.5 group"
+              >
+                <div className="flex items-center gap-2 text-slate-800">
+                  <Lock className="w-4 h-4 text-slate-600" />
+                  <span className="text-sm font-bold">Khu vực hồ sơ bảo mật</span>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Website thật cần hỗ trợ tải giấy tờ định danh và giấy chứng nhận, giấy ủy quyền hoặc giấy tờ đồng sở hữu nếu có. Chỉ nhân sự có thẩm quyền được xem.
+                </p>
+                {postingData.confidentialDocs && postingData.confidentialDocs.length > 0 ? (
+                  <p className="text-xs font-semibold text-emerald-600 pt-1">
+                    ✓ Đã đính kèm {postingData.confidentialDocs.length} tệp tài liệu bảo mật
+                  </p>
+                ) : (
+                  <span className="inline-block text-[11px] font-semibold text-orange-600 group-hover:underline pt-0.5">
+                    + Nhấp vào đây để tải ảnh giấy chứng nhận / CCCD (nếu có)
+                  </span>
+                )}
+              </div>
+
+              {/* 3 Dropdown: Giấy chứng nhận, Tình trạng thế chấp, Tình trạng tranh chấp */}
+              <div className="space-y-4 pt-1">
+                <div>
+                  <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                    Giấy chứng nhận
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={postingData.certificateStatus || 'Có giấy chứng nhận'}
                       onChange={(e) =>
                         setPostingData((prev) => ({
                           ...prev,
-                          legalStatus: e.target.value,
+                          certificateStatus: e.target.value,
                         }))
                       }
-                      placeholder="VD: Sổ đỏ chính chủ"
-                      className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-bold focus:border-accent focus:bg-white focus:outline-none"
-                    />
+                      className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 appearance-none bg-white focus:outline-none focus:border-slate-900 transition-colors pr-10"
+                    >
+                      <option value="Có giấy chứng nhận">Có giấy chứng nhận</option>
+                      <option value="Đang chờ cấp giấy chứng nhận">Đang chờ cấp giấy chứng nhận</option>
+                      <option value="Hợp đồng mua bán / Giấy tờ khác">Hợp đồng mua bán / Giấy tờ khác</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
                 </div>
 
-                {/* Title & Description */}
                 <div>
-                  <label className="text-xs font-bold text-text-primary">Tiêu đề tin đăng</label>
-                  <input
-                    type="text"
-                    value={postingData.title}
-                    onChange={(e) =>
-                      setPostingData((prev) => ({
-                        ...prev,
-                        title: e.target.value,
-                      }))
-                    }
-                    placeholder="VD: Bán nhà phân lô Duy Tân Cầu Giấy 75m2 5 tầng ô tô tránh..."
-                    className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-semibold focus:border-accent focus:bg-white focus:outline-none"
-                  />
+                  <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                    Tình trạng thế chấp
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={postingData.mortgageStatus || 'Chưa rõ / cần kiểm tra'}
+                      onChange={(e) =>
+                        setPostingData((prev) => ({
+                          ...prev,
+                          mortgageStatus: e.target.value,
+                        }))
+                      }
+                      className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 appearance-none bg-white focus:outline-none focus:border-slate-900 transition-colors pr-10"
+                    >
+                      <option value="Chưa rõ / cần kiểm tra">Chưa rõ / cần kiểm tra</option>
+                      <option value="Không có thế chấp">Không có thế chấp</option>
+                      <option value="Đang thế chấp ngân hàng">Đang thế chấp ngân hàng</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-text-primary">Mô tả chi tiết</label>
-                  <textarea
-                    rows={3}
-                    value={postingData.description}
-                    onChange={(e) =>
-                      setPostingData((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                    placeholder="Mô tả ưu điểm vị trí, tiện ích, nội thất..."
-                    className="mt-1 w-full rounded-xl border border-input bg-page-bg p-3 text-xs font-medium focus:border-accent focus:bg-white focus:outline-none"
-                  />
+                  <label className="text-xs sm:text-sm font-medium text-slate-700 mb-1.5 block">
+                    Tình trạng tranh chấp
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={postingData.disputeStatus || 'Không có tranh chấp (theo khai báo)'}
+                      onChange={(e) =>
+                        setPostingData((prev) => ({
+                          ...prev,
+                          disputeStatus: e.target.value,
+                        }))
+                      }
+                      className="w-full px-5 py-2.5 rounded-full border border-slate-200 text-sm text-slate-900 appearance-none bg-white focus:outline-none focus:border-slate-900 transition-colors pr-10"
+                    >
+                      <option value="Không có tranh chấp (theo khai báo)">Không có tranh chấp (theo khai báo)</option>
+                      <option value="Đang giải quyết tranh chấp">Đang giải quyết tranh chấp</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
                 </div>
-              </motion.div>
-            )}
+              </div>
 
-            {/* STEP 5: Thông tin người đăng (NEW STEP!) */}
-            {currentStep === 5 && (
-              <Step5SellerInfo
-                seller={postingData.seller}
-                onChange={(updated) =>
-                  setPostingData((prev) => ({
-                    ...prev,
-                    seller: { ...prev.seller, ...updated },
-                  }))
-                }
-                errors={sellerErrors}
-                clearError={clearSellerError}
-                onVerifyPhoneSuccess={() => {
-                  addToast('✓ Số điện thoại đã xác thực thành công!', 'success');
-                }}
-              />
-            )}
+              {/* Checkbox xác nhận */}
+              <div className="pt-2">
+                <label
+                  onClick={() =>
+                    setPostingData((prev) => ({
+                      ...prev,
+                      ownerDeclarationChecked: !prev.ownerDeclarationChecked,
+                    }))
+                  }
+                  className="flex items-start gap-3 cursor-pointer select-none group"
+                >
+                  <div className="relative flex items-center justify-center shrink-0 mt-0.5">
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${
+                        postingData.ownerDeclarationChecked
+                          ? 'border-slate-900 bg-white'
+                          : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                      }`}
+                    >
+                      {postingData.ownerDeclarationChecked && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-xs sm:text-sm text-slate-700 leading-snug">
+                    Tôi xác nhận có quyền cung cấp thông tin, giấy tờ và yêu cầu HaNoi Realty xem xét tài sản này.
+                  </span>
+                </label>
+              </div>
+            </motion.div>
+          )}
 
-            {/* STEP 6: Kiểm tra & xuất bản (UPDATED STEP 6!) */}
-            {currentStep === 6 && (
-              <Step6ReviewPublish
-                data={postingData}
-                onEditStep={(stepNum) => {
-                  setCurrentStep(stepNum);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                isCommitted={isCommitted}
-                setIsCommitted={setIsCommitted}
-              />
-            )}
+          {/* ==================== BƯỚC 6: KIỂM TRA & GỬI DUYỆT ==================== */}
+          {currentStep === 6 && (
+            <motion.div
+              key="step6"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Bước 6. Kiểm tra & gửi duyệt
+                </h2>
+              </div>
 
-          </AnimatePresence>
-        )}
+              {/* 2 dấu tích xanh kiểm tra */}
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-800">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Kiểm tra lại loại nhà, vị trí, giá bán và phương án khảo sát</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-800">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Xác nhận thông tin chủ sở hữu và hồ sơ pháp lý trước khi gửi</span>
+                </div>
+              </div>
 
-        {/* Wizard Footer Controls (Ẩn khi đã xuất bản thành công) */}
-        {publishedListingId === null && (
-          <div className="mt-8 flex items-center justify-between border-t border-border pt-6 gap-3 flex-wrap">
-            {/* Nút Quay lại */}
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                Sau khi gửi, BĐS sẽ được cấp Property ID duy nhất và lưu vào kho thẩm định ở trạng thái &quot;Chờ xác minh&quot;. Bạn có thể theo dõi tiến độ duyệt và lịch khảo sát trong Dashboard Chủ nhà.
+              </p>
+
+              {/* Thẻ tóm tắt thông tin hồ sơ */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 space-y-3 text-xs sm:text-sm">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Tóm tắt hồ sơ BĐS gửi bán
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Loại BĐS:</span>
+                    <span className="font-semibold text-slate-900">
+                      {postingData.propertyType === 'house'
+                        ? 'Nhà riêng / Nhà phố'
+                        : postingData.propertyType === 'apartment'
+                        ? 'Căn hộ chung cư'
+                        : postingData.propertyType === 'land'
+                        ? 'Đất nền / Đất thổ cư'
+                        : 'Biệt thự / Shophouse'}{' '}
+                      ({areaInput} m² {floorsInput ? `• ${floorsInput} tầng` : ''})
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Giá bán mong muốn:</span>
+                    <span className="font-bold text-orange-600">
+                      {formatCurrencyVND(postingData.price)}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Địa chỉ:</span>
+                    <span className="font-semibold text-slate-900">
+                      {streetAddressInput}, {wardDistrictInput}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Khảo sát / Hình ảnh:</span>
+                    <span className="font-semibold text-slate-900">
+                      {postingData.imageMethod === 'has_images'
+                        ? `Đã có ảnh (${postingData.images.length} ảnh)`
+                        : `Đề xuất khảo sát: ${postingData.surveyDate || 'Sớm nhất'} (${postingData.surveyTimeSlot})`}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Người gửi bán:</span>
+                    <span className="font-semibold text-slate-900">
+                      {postingData.seller.fullName} • {postingData.seller.phone}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Pháp lý & Thế chấp:</span>
+                    <span className="font-semibold text-slate-900">
+                      {postingData.certificateStatus} • {postingData.mortgageStatus}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* 3. NÚT ĐIỀU HƯỚNG CHÂN TRANG: Quay lại & Tiếp theo / Gửi BĐS */}
+      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+        <div>
+          {currentStep > 1 && (
             <button
               type="button"
               onClick={handleBack}
-              disabled={currentStep === 1 || isSubmitting}
-              className="flex items-center gap-1.5 rounded-xl border border-border bg-page-bg px-4 py-2.5 text-xs font-bold text-text-primary hover:bg-slate-100 disabled:opacity-40 transition-colors"
+              className="px-6 py-2.5 rounded-full border border-slate-200 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Quay lại</span>
+              Quay lại
             </button>
+          )}
+        </div>
 
-            {/* Cụm nút Tiếp theo / Lưu nháp / Xuất bản */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              {currentStep === 6 && (
-                <button
-                  type="button"
-                  onClick={handleSaveDraft}
-                  disabled={isSubmitting}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 hover:border-slate-400 transition-all disabled:opacity-50"
-                  title="Lưu lại bản nháp vào hệ thống"
-                >
-                  <Save className="h-4 w-4 text-slate-500" />
-                  <span>Lưu nháp</span>
-                </button>
-              )}
-
-              {currentStep < 6 ? (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="button"
-                  onClick={handleNext}
-                  className="flex items-center gap-2 rounded-xl bg-accent px-6 py-2.5 text-xs font-extrabold text-white shadow-md shadow-accent/25 hover:bg-accent-hover transition-all"
-                >
-                  <span>Tiếp theo</span>
-                  <ArrowRight className="h-4 w-4" />
-                </motion.button>
-              ) : (
-                <motion.button
-                  whileHover={{ scale: isSubmitting || !isCommitted ? 1 : 1.03 }}
-                  whileTap={{ scale: isSubmitting || !isCommitted ? 1 : 0.97 }}
-                  type="button"
-                  disabled={isSubmitting || !isCommitted}
-                  onClick={handleSubmitListing}
-                  className={`flex items-center gap-2 rounded-xl px-7 py-3 text-xs font-black text-white shadow-lg transition-all ${
-                    !isCommitted
-                      ? 'bg-slate-300 cursor-not-allowed text-slate-500 shadow-none'
-                      : isSubmitting
-                      ? 'bg-accent/80 cursor-wait shadow-accent/20'
-                      : 'bg-accent hover:bg-accent-hover shadow-accent/25'
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Đang xuất bản...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>Xuất bản tin</span>
-                    </>
-                  )}
-                </motion.button>
-              )}
-            </div>
-          </div>
-        )}
+        <div>
+          {currentStep < 6 ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              className="px-7 py-2.5 rounded-full bg-slate-950 text-white text-xs sm:text-sm font-medium hover:bg-slate-800 transition-colors flex items-center gap-1.5"
+            >
+              <span>Tiếp theo</span>
+              <span className="text-base leading-none">→</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={handleSubmitListing}
+              className="px-8 py-2.5 rounded-full bg-slate-950 text-white text-xs sm:text-sm font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center gap-2"
+            >
+              {isSubmitting ? 'Đang gửi hồ sơ...' : 'Gửi BĐS vào kho thẩm định →'}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

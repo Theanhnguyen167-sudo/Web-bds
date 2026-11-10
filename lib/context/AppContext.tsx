@@ -14,6 +14,7 @@ import {
 import { auth as firebaseAuth } from '@/lib/firebase/config';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { parseLocationCoordinates } from '@/lib/utils';
+import { getListingIdentifier } from '@/lib/identification';
 
 import {
   getLocalListings,
@@ -101,7 +102,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem('hanoi_current_user');
-        if (stored) return JSON.parse(stored);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object') {
+            // Đảm bảo mỗi tài khoản chỉ có 1 mã định danh tương ứng đúng vai trò đăng ký
+            if (parsed.role !== 'agent' && parsed.role !== 'broker' && parsed.role !== 'agency') {
+              delete parsed.agentCode;
+              delete parsed.agent_code;
+            }
+            if (parsed.role !== 'owner') {
+              delete parsed.ownerCode;
+              delete parsed.owner_code;
+            }
+            return parsed;
+          }
+        }
       } catch {}
     }
     const defaultSeller = TEST_SELLERS_LIST[0];
@@ -203,7 +218,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (user && typeof window !== 'undefined') {
       try {
-        localStorage.setItem('hanoi_current_user', JSON.stringify(user));
+        const sanitized = { ...user };
+        if (sanitized.role !== 'agent' && sanitized.role !== 'broker' && sanitized.role !== 'agency') {
+          delete (sanitized as any).agentCode;
+          delete (sanitized as any).agent_code;
+        }
+        if (sanitized.role !== 'owner') {
+          delete (sanitized as any).ownerCode;
+          delete (sanitized as any).owner_code;
+        }
+        localStorage.setItem('hanoi_current_user', JSON.stringify(sanitized));
       } catch {}
     }
   }, [user]);
@@ -289,6 +313,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         phone: profile?.phone || sessionUser.user_metadata?.phone || '',
         role: userRole,
         avatar: avatar,
+        agentCode: (userRole === 'agent') ? (profile?.agent_code || 'MG-00102') : undefined,
+        ownerCode: (userRole === 'owner') ? (profile?.owner_code || 'CN-00086') : undefined,
+        referredByAgentCode: profile?.referred_by_agent_code || undefined,
         package: pkgDef.name,
         packageExpiry: packageExpiry,
         listingsCount: 0,
@@ -331,6 +358,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       // Đồng bộ thông tin người dùng lên bảng public.users của Supabase qua API an toàn
+      let dbUser: any = null;
       try {
         const syncRes = await fetch('/api/sync-user', {
           method: 'POST',
@@ -345,7 +373,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }),
         });
         const syncJson = await syncRes.json();
-        const dbUser = syncJson?.data;
+        dbUser = syncJson?.data;
 
         if (userRole !== 'admin' && dbUser?.package && dbUser.package.toLowerCase() !== 'free') {
           userPackage = dbUser.package;
@@ -364,6 +392,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         phone: fbUser.phoneNumber || '',
         role: userRole,
         avatar: avatar,
+        agentCode: ((userRole as string) === 'agent') ? (dbUser?.agent_code || dbUser?.agentCode || 'MG-00102') : undefined,
+        ownerCode: ((userRole as string) === 'owner') ? (dbUser?.owner_code || dbUser?.ownerCode || 'CN-00086') : undefined,
+        referredByAgentCode: dbUser?.referred_by_agent_code || dbUser?.referredByAgentCode || undefined,
         package: fbPkgDef.name,
         packageExpiry: packageExpiry,
         listingsCount: 0,
@@ -450,7 +481,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addToast('Đã bỏ lưu bất động sản khỏi danh sách', 'info');
     } else {
       setSavedListingIds((prev) => [...prev, id]);
-      addToast('❤️ Đã lưu vào danh sách yêu thích', 'success');
+      addToast('❤️ Đã lưu vào danh sách yêu thích & giỏ nhà', 'success');
+
+      // Ghi nhận liên kết BĐS đã lưu kèm chuyên viên môi giới giới thiệu (nếu có)
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('hanoi_realty_saved_items');
+          const list = raw ? JSON.parse(raw) : [];
+          const matchedListing = listings.find((l) => l.id === id);
+          const itemCode = matchedListing ? getListingIdentifier(matchedListing) : undefined;
+          const entry = {
+            listingId: id,
+            listingCode: itemCode,
+            listingTitle: matchedListing?.title,
+            savedAt: new Date().toISOString(),
+            brokerReferralCode: user.referredByAgentCode || undefined,
+            buyerId: user.id,
+            buyerName: user.name,
+          };
+          localStorage.setItem('hanoi_realty_saved_items', JSON.stringify([entry, ...list.filter((x: any) => x.listingId !== id)]));
+        } catch {}
+      }
     }
 
     // Attempt Supabase sync if user logged in
