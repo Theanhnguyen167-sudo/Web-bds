@@ -90,7 +90,6 @@ export const Navbar: React.FC = () => {
     { name: 'Tin tức', href: '/news' },
     { name: 'Báo cáo AI', href: '/reports' },
     { name: 'Bảng giá', href: '/pricing' },
-    { name: 'Dành cho Môi giới', href: '/danh-cho-moi-gioi' },
     { name: 'Về chúng tôi', href: '/about' },
   ];
 
@@ -437,6 +436,15 @@ export const Navbar: React.FC = () => {
                   >
                     <Tag className="h-4 w-4 text-emerald-600" />
                     <span>Nâng cấp gói VIP</span>
+                  </Link>
+
+                  <Link
+                    href="/danh-cho-moi-gioi"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-slate-50 transition-colors"
+                  >
+                    <Briefcase className="h-4 w-4 text-slate-500" />
+                    <span>Chính sách Cộng tác viên (CTV)</span>
                   </Link>
 
                   {user && (
