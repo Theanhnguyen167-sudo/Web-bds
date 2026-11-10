@@ -128,14 +128,14 @@ export const Navbar: React.FC = () => {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20 h-7.5 w-7.5 min-[360px]:h-8 min-[360px]:w-8 sm:h-9 sm:w-9 shrink-0 transition-all duration-300"
+              className="flex items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20 h-8 w-8 min-[360px]:h-[35px] min-[360px]:w-[35px] sm:h-[42px] sm:w-[42px] shrink-0 transition-all duration-300"
             >
               {/* Biểu tượng Ngôi nhà với 3 lối dẫn vào một cửa chung (Chủ nhà - Môi giới - Người mua) */}
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 sm:h-4.5 sm:w-4.5"
+                className="h-[17px] w-[17px] min-[360px]:h-[18.5px] min-[360px]:w-[18.5px] sm:h-[22px] sm:w-[22px]"
                 aria-hidden="true"
               >
                 {/* Mái nhà */}
@@ -161,12 +161,12 @@ export const Navbar: React.FC = () => {
               </svg>
             </motion.div>
             <div className="flex flex-col">
-              <span className="font-extrabold tracking-tight flex items-center gap-1 text-[13.5px] min-[360px]:text-[14.5px] sm:text-base lg:text-[17px] leading-tight text-slate-900 group-hover:text-slate-900 transition-colors whitespace-nowrap">
-                HaNoi <span className="text-accent font-black">Realty</span>
-              </span>
-              <span className="text-[7.5px] min-[360px]:text-[8.5px] sm:text-[10px] font-semibold tracking-tight min-[360px]:tracking-normal sm:tracking-wide -mt-0.5 leading-none text-slate-500 whitespace-nowrap transition-colors">
-                Kết nối giao dịch BĐS
-              </span>
+                <span className="font-extrabold tracking-tight flex items-center gap-1 text-[14.5px] min-[360px]:text-[15.5px] sm:text-[17.5px] lg:text-[18.5px] leading-tight text-slate-900 group-hover:text-slate-900 transition-colors whitespace-nowrap">
+                  HaNoi <span className="text-accent font-black">Realty</span>
+                </span>
+                <span className="text-[7.5px] min-[360px]:text-[8.5px] sm:text-[10px] font-semibold tracking-tight min-[360px]:tracking-normal sm:tracking-wide -mt-0.5 leading-none text-slate-500 whitespace-nowrap transition-colors">
+                  Kết nối giao dịch BĐS
+                </span>
             </div>
           </Link>
         </div>
@@ -417,208 +417,208 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile Right Actions (Tablet & Mobile < lg) - Thứ tự: Đăng tin, Tìm kiếm, Thông báo, Tài khoản (icon người), 3 gạch */}
-        <div className="flex lg:hidden items-center gap-[15px] shrink-0 flex-nowrap ml-auto">
-          {/* 1. Nút Đăng tin: Nút pill màu cam nổi bật, bo tròn tinh tế */}
-          <button
-            onClick={handlePostListingClick}
-            className="h-7.5 flex items-center justify-center rounded-full bg-accent hover:bg-accent-hover active:scale-95 px-2.5 text-[11px] font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
-          >
-            Đăng tin
-          </button>
+          <div className="flex lg:hidden items-center gap-2 min-[360px]:gap-2.5 min-[390px]:gap-[15px] shrink-0 flex-nowrap ml-auto">
+            {/* 1. Nút Đăng tin: Nút pill màu cam nổi bật, bo tròn tinh tế */}
+            <button
+              onClick={handlePostListingClick}
+              className="h-7.5 flex items-center justify-center rounded-full bg-accent hover:bg-accent-hover active:scale-95 px-2.5 text-[11px] font-bold text-white shadow-sm shadow-accent/25 transition-all whitespace-nowrap cursor-pointer shrink-0"
+            >
+              Đăng tin
+            </button>
 
-          {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}
-          <Link
-            href="/search"
-            className="flex h-7.5 w-[22px] items-center justify-center transition-all shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
-            title="Tìm kiếm BĐS nhanh"
-          >
-            <Search className="w-[22px] h-[22px] stroke-[2.2]" />
-          </Link>
+            {/* 2. Nút Tìm kiếm: Icon kính lúp <Search /> tra cứu BĐS nhanh */}
+            <Link
+              href="/search"
+              className="flex h-7.5 w-[22px] items-center justify-center transition-all shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
+              title="Tìm kiếm BĐS nhanh"
+            >
+              <Search className="w-[22px] h-[22px] stroke-[2.2]" />
+            </Link>
 
-          {/* 3. Nút Thông báo: Icon chuông <Bell /> kích cỡ chuẩn 22px đồng bộ */}
-          <div className="relative shrink-0">
-            <NotificationBell
-              isScrolled={true}
-              onOpenChange={(open) => {
-                if (open) setMobileMenuOpen(false);
-              }}
-              triggerClassName="relative flex h-7.5 w-[22px] items-center justify-center transition-all cursor-pointer shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
-              iconClassName="w-[22px] h-[22px] stroke-[2.2]"
-            />
-          </div>
-
-          {/* 4. Icon hình người (Tài khoản đăng nhập): Kích thước chuẩn 22px x 22px tròn tuyệt đối */}
-          <Link
-            href={user ? '/dashboard' : '/login'}
-            aria-label="Tài khoản người dùng"
-            title={user ? `Quản lý tài khoản: ${user.name}` : 'Đăng nhập / Đăng ký'}
-            className="flex h-7.5 w-[22px] items-center justify-center transition-all shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
-          >
-            {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-[22px] h-[22px] aspect-square rounded-full object-cover ring-1.5 ring-accent shrink-0"
+            {/* 3. Nút Thông báo: Icon chuông <Bell /> kích cỡ chuẩn 22px đồng bộ */}
+            <div className="relative shrink-0">
+              <NotificationBell
+                isScrolled={true}
+                onOpenChange={(open) => {
+                  if (open) setMobileMenuOpen(false);
+                }}
+                triggerClassName="relative flex h-7.5 w-[22px] items-center justify-center transition-all cursor-pointer shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
+                iconClassName="w-[22px] h-[22px] stroke-[2.2]"
               />
-            ) : (
-              <User className="w-[22px] h-[22px] stroke-[2.2]" />
-            )}
-          </Link>
-
-          {/* 5. Nút 3 dấu gạch (Menu): Kích thước chuẩn 22px x 22px đồng bộ, cách ảnh đại diện đúng 15px */}
-          <button
-            type="button"
-            onClick={() => {
-              setNotifOpen(false);
-              setMobileMenuOpen(!mobileMenuOpen);
-            }}
-            aria-expanded={mobileMenuOpen}
-            aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
-            title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu hệ thống'}
-            className="relative flex h-7.5 w-[22px] items-center justify-center p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 text-slate-800 hover:text-orange-500"
-          >
-            {mobileMenuOpen ? (
-              <X className="w-[22px] h-[22px] stroke-[2.2] text-orange-500" />
-            ) : (
-              <Menu className="w-[22px] h-[22px] stroke-[2.2]" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile & Tablet Drawer Menu (< lg) */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.22, ease: 'easeInOut' }}
-            className={`lg:hidden border-t px-4 py-4 shadow-2xl overflow-hidden ${isScrolled
-              ? 'border-slate-200/80 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-xl text-slate-800'
-              : 'border-white/10 bg-[#0a1128]/98 backdrop-blur-xl text-white'
-              }`}
-          >
-            <div className="flex flex-col gap-1.5 max-h-[65vh] overflow-y-auto no-scrollbar py-1">
-              {navLinks.map((link) => {
-                const isActive =
-                  link.href === '/'
-                    ? pathname === '/'
-                    : pathname === link.href || pathname.startsWith(link.href + '/');
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${isActive
-                      ? isScrolled
-                        ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
-                        : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
-                      : isScrolled
-                        ? 'hover:bg-slate-100 text-slate-700'
-                        : 'hover:bg-white/10 text-slate-200'
-                      }`}
-                  >
-                    <span>{link.name}</span>
-                    {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
-                  </Link>
-                );
-              })}
             </div>
 
-            <div className={`border-t pt-3 mt-3 flex flex-col gap-2 ${isScrolled ? 'border-slate-200' : 'border-slate-700'
-              }`}>
-              {user ? (
-                <>
-                  {user.role === 'admin' && (
+            {/* 4. Icon hình người (Tài khoản đăng nhập): Kích thước chuẩn 22px x 22px tròn tuyệt đối */}
+            <Link
+              href={user ? '/dashboard' : '/login'}
+              aria-label="Tài khoản người dùng"
+              title={user ? `Quản lý tài khoản: ${user.name}` : 'Đăng nhập / Đăng ký'}
+              className="flex h-7.5 w-[22px] items-center justify-center transition-all shrink-0 active:scale-95 text-slate-700 hover:text-slate-900"
+            >
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-[22px] h-[22px] aspect-square rounded-full object-cover ring-1.5 ring-accent shrink-0"
+                />
+              ) : (
+                <User className="w-[22px] h-[22px] stroke-[2.2]" />
+              )}
+            </Link>
+
+            {/* 5. Nút 3 dấu gạch (Menu): Kích thước chuẩn 22px x 22px đồng bộ, cách ảnh đại diện đúng 15px */}
+            <button
+              type="button"
+              onClick={() => {
+                setNotifOpen(false);
+                setMobileMenuOpen(!mobileMenuOpen);
+              }}
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
+              title={mobileMenuOpen ? 'Đóng menu' : 'Mở menu hệ thống'}
+              className="relative flex h-7.5 w-[22px] items-center justify-center p-0 border-0 border-none outline-none active:scale-90 transition-all cursor-pointer shrink-0 text-slate-800 hover:text-orange-500"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-[22px] h-[22px] stroke-[2.2] text-orange-500" />
+              ) : (
+                <Menu className="w-[22px] h-[22px] stroke-[2.2]" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile & Tablet Drawer Menu (< lg) */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22, ease: 'easeInOut' }}
+              className={`lg:hidden border-t px-4 py-4 shadow-2xl overflow-hidden ${isScrolled
+                ? 'border-slate-200/80 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-xl text-slate-800'
+                : 'border-white/10 bg-[#0a1128]/98 backdrop-blur-xl text-white'
+                }`}
+            >
+              <div className="flex flex-col gap-1.5 max-h-[65vh] overflow-y-auto no-scrollbar py-1">
+                {navLinks.map((link) => {
+                  const isActive =
+                    link.href === '/'
+                      ? pathname === '/'
+                      : pathname === link.href || pathname.startsWith(link.href + '/');
+                  return (
                     <Link
-                      href="/admin"
+                      key={link.name}
+                      href={link.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${isScrolled
-                        ? 'bg-orange-50 border-orange-200 text-orange-600'
-                        : 'bg-orange-500/20 border-orange-500/40 text-orange-400'
+                      className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${isActive
+                        ? isScrolled
+                          ? 'border border-orange-500/40 bg-orange-50 text-accent font-bold shadow-xs'
+                          : 'border border-orange-500 bg-orange-500/20 text-white font-bold shadow-sm'
+                        : isScrolled
+                          ? 'hover:bg-slate-100 text-slate-700'
+                          : 'hover:bg-white/10 text-slate-200'
                         }`}
                     >
-                      <ShieldCheck className="h-4 w-4" />
-                      <span>🛡️ Vào trang Quản trị (Admin)</span>
+                      <span>{link.name}</span>
+                      {isActive && <span className="h-2 w-2 rounded-full bg-accent" />}
                     </Link>
-                  )}
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
-                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                      : 'bg-primary-light/60 hover:bg-primary-light text-white'
-                      }`}
-                  >
-                    <LayoutDashboard className="h-4 w-4 text-accent" />
-                    <span>Dashboard ({user.name})</span>
-                  </Link>
-                  <Link
-                    href="/dashboard?tab=saved"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
-                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                      : 'bg-primary-light/60 hover:bg-primary-light text-white'
-                      }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Heart className="h-4 w-4 text-red-500 fill-red-500" />
-                      <span>Tin đã lưu</span>
-                    </div>
-                    {savedListingIds.length > 0 && (
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${isScrolled
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-red-500/20 text-red-300'
-                        }`}>
-                        {savedListingIds.length}
-                      </span>
+                  );
+                })}
+              </div>
+
+              <div className={`border-t pt-3 mt-3 flex flex-col gap-2 ${isScrolled ? 'border-slate-200' : 'border-slate-700'
+                }`}>
+                {user ? (
+                  <>
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${isScrolled
+                          ? 'bg-orange-50 border-orange-200 text-orange-600'
+                          : 'bg-orange-500/20 border-orange-500/40 text-orange-400'
+                          }`}
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>🛡️ Vào trang Quản trị (Admin)</span>
+                      </Link>
                     )}
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-danger cursor-pointer"
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
+                        ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                        : 'bg-primary-light/60 hover:bg-primary-light text-white'
+                        }`}
+                    >
+                      <LayoutDashboard className="h-4 w-4 text-accent" />
+                      <span>Dashboard ({user.name})</span>
+                    </Link>
+                    <Link
+                      href="/dashboard?tab=saved"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
+                        ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                        : 'bg-primary-light/60 hover:bg-primary-light text-white'
+                        }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                        <span>Tin đã lưu</span>
+                      </div>
+                      {savedListingIds.length > 0 && (
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${isScrolled
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-red-500/20 text-red-300'
+                          }`}>
+                          {savedListingIds.length}
+                        </span>
+                      )}
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-danger cursor-pointer"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Đăng xuất</span>
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                      : 'bg-primary-light hover:bg-primary-light/80 text-white'
+                      }`}
                   >
-                    <LogOut className="h-4 w-4" />
-                    <span>Đăng xuất</span>
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${isScrolled
-                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                    : 'bg-primary-light hover:bg-primary-light/80 text-white'
+                    <User className="h-4 w-4" />
+                    <span>Đăng nhập / Đăng ký</span>
+                  </Link>
+                )}
+
+                {/* Nút Cài đặt ứng dụng PWA */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    window.dispatchEvent(new CustomEvent('open_pwa_install'));
+                  }}
+                  className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all border ${isScrolled
+                    ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
+                    : 'bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border-orange-500/30'
                     }`}
                 >
-                  <User className="h-4 w-4" />
-                  <span>Đăng nhập / Đăng ký</span>
-                </Link>
-              )}
-
-              {/* Nút Cài đặt ứng dụng PWA */}
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  window.dispatchEvent(new CustomEvent('open_pwa_install'));
-                }}
-                className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all border ${isScrolled
-                  ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
-                  : 'bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border-orange-500/30'
-                  }`}
-              >
-                <Download className="h-4 w-4 text-orange-500" />
-                <span>📲 Cài đặt App HaNoi Realty (PWA)</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  <Download className="h-4 w-4 text-orange-500" />
+                  <span>📲 Cài đặt App HaNoi Realty (PWA)</span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
     </header>
   );
 };
