@@ -38,13 +38,29 @@ export interface ArticleAuthor {
   role?: string;
 }
 
+export interface ArticleSource {
+  title: string;           // Tên bài báo nguồn
+  outlet: string;          // Tên cơ quan báo chí chính thống (VnExpress, Báo Chính phủ, Tuổi Trẻ, Báo Đầu tư...)
+  publishedAt: string;     // Ngày xuất bản nguồn gốc (DD/MM/YYYY hoặc ISO)
+  url: string;             // Đường dẫn trực tiếp có thể click mở bài báo gốc
+}
+
+export interface ArticleTableOfContentsItem {
+  id: string;
+  title: string;
+  level: 2 | 3;
+}
+
 export interface Article {
   id: string;
   title: string;
   slug: string;
   excerpt: string;
+  sapo?: string;
   content: string;
   featuredImage: string;
+  featuredImageCaption?: string;
+  featuredImageCredit?: string;
   category: ArticleCategory;
   categoryLabel?: string;
   categoryColor?: string;
@@ -58,10 +74,13 @@ export interface Article {
   seoKeywords?: string;
   views: number;
   readTime?: string;
+  wordCount?: number;
   blocks?: ArticleBlock[];
   tags?: string[];
-  createdAt: string;
-  updatedAt: string;
+  sources?: ArticleSource[];
+  sourcePublishedAt?: string; // Ngày bài báo nguồn gốc xuất bản
+  createdAt: string;          // Thời điểm bài được tạo trên HaNoi Realty
+  updatedAt: string;          // Thời điểm nội dung được sửa đổi thực sự
   publishedAt?: string;
 }
 

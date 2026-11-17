@@ -254,18 +254,26 @@ function NewsContent() {
           id: a.id,
           title: a.title,
           summary: a.excerpt || a.seoDescription || '',
+          sapo: a.sapo || a.excerpt,
           category: (['planning', 'pricing', 'policy', 'project', 'investment', 'market', 'analysis', 'hanoi', 'legal'].includes(a.category)
             ? a.category
             : 'planning') as any,
           categoryLabel: a.categoryLabel || 'Tin tức',
           categoryColor: a.categoryColor || 'bg-blue-500 text-white',
           image: a.featuredImage?.trim() || getCategoryFallbackImage(a.category),
+          imageCaption: a.featuredImageCaption || a.title,
+          imageCredit: a.featuredImageCredit || 'Ban biên tập HaNoi Realty',
           date: a.createdAt ? new Date(a.createdAt).toLocaleDateString('vi-VN') : 'Mới cập nhật',
+          sourcePublishedAt: a.sourcePublishedAt || (a.createdAt ? new Date(a.createdAt).toLocaleDateString('vi-VN') : 'Mới cập nhật'),
+          createdAt: a.createdAt ? new Date(a.createdAt).toLocaleDateString('vi-VN') : 'Mới cập nhật',
+          updatedAt: a.updatedAt ? new Date(a.updatedAt).toLocaleDateString('vi-VN') : 'Mới cập nhật',
           author: a.authorName || 'Ban biên tập HaNoi Realty',
+          authorRole: a.authorRole || 'Ban biên tập HaNoi Realty',
           readTime: a.readTime || '5 phút đọc',
           views: a.views || 250,
           content: [a.content || a.excerpt || ''],
           tags: a.tags && a.tags.length > 0 ? a.tags : ['Bất động sản', 'Quy hoạch Hà Nội'],
+          sources: a.sources || [],
         }));
 
         const existingIds = new Set(NEWS_ARTICLES.map((na) => na.id));
