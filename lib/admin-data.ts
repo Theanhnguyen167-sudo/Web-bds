@@ -152,7 +152,7 @@ export const mockAdminListings: AdminListing[] = [
     status: 'active',
     createdAt: '2025-08-18',
     expiresAt: '2025-09-18',
-    images: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'],
+    images: ['https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80'],
     views: 432,
     planningZone: 'Đất ở đô thị',
     isFeatured: true

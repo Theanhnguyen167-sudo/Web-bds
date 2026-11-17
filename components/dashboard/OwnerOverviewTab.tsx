@@ -17,6 +17,7 @@ import {
   PhoneCall,
   MessageSquare
 } from 'lucide-react';
+import { PropertyImage } from '@/components/common/PropertyImage';
 
 interface OwnerOverviewTabProps {
   user: any;
@@ -271,11 +272,16 @@ export function OwnerOverviewTab({
         <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white">
           <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <img
-                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80"
-                alt="BĐS của tôi"
-                className="w-24 h-24 rounded-2xl object-cover shrink-0 border border-slate-100"
-              />
+              <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 border border-slate-100">
+                <PropertyImage
+                  src={userListings[0]?.images?.[0] || 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&auto=format&fit=crop&q=80'}
+                  alt="BĐS của tôi"
+                  propertyType={userListings[0]?.type || 'house'}
+                  width={240}
+                  quality={80}
+                  showPlaceholderBadge={false}
+                />
+              </div>
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-orange-100 text-orange-700">

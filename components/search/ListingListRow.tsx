@@ -7,6 +7,8 @@ import { ListingItem } from '@/lib/mock-data';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { MapPin, Bed, Bath, Layers, Sparkles, Heart, ArrowRight, ShieldCheck, Maximize2 } from 'lucide-react';
 import { getListingUrl } from '@/lib/listing-slug';
+import { PropertyImage } from '@/components/common/PropertyImage';
+import { normalizeListingImages } from '@/lib/listing-images';
 
 interface ListingListRowProps {
   listing: ListingItem;
@@ -48,10 +50,13 @@ export const ListingListRow: React.FC<ListingListRowProps> = ({
         }}
         className="relative sm:w-56 h-48 sm:h-auto overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 cursor-pointer"
       >
-        <img
-          src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'}
+        <PropertyImage
+          src={listing.images[0]}
           alt={listing.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          propertyType={listing.type}
+          width={480}
+          quality={80}
+          className="group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {listing.isFeatured && (

@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ListingItem } from '@/lib/mock-data';
-import { formatCurrencyVND, formatPricePerM2, getOptimizedImageUrl } from '@/lib/utils';
+import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { useApp } from '@/lib/context/AppContext';
 import { CodeBadge } from '@/components/common/CodeBadge';
 import { getListingIdentifier } from '@/lib/identification';
+import { normalizeListingImages } from '@/lib/listing-images';
+import { PropertyImage } from '@/components/common/PropertyImage';
 import {
   MapPin,
   Bed,
@@ -63,14 +65,17 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   } = useApp();
 
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const normalizedImages = normalizeListingImages(listing.images);
+  const hasPhotos = normalizedImages.length > 0;
 
   const isSelected = isSelectedProp !== undefined ? isSelectedProp : activeListingId === listing.id;
   const isHovered = hoveredListingId === listing.id;
   const isSaved = savedListingIds.includes(listing.id);
 
   const handleOpenGallery = () => {
+    if (!hasPhotos) return;
     if (onPhotoClick) {
-      onPhotoClick(listing);
+      onPhotoClick({ ...listing, images: normalizedImages });
     } else {
       setIsGalleryOpen(true);
     }
@@ -110,14 +115,16 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             e.stopPropagation();
             handleCardClick();
           }}
-          className="relative aspect-video w-full overflow-hidden bg-slate-100 cursor-pointer"
+          className="relative aspect-video w-full overflow-hidden bg-slate-100 dark:bg-slate-800 cursor-pointer"
         >
-          <img
-            src={getOptimizedImageUrl(listing.images[0], 600, 80)}
+          <PropertyImage
+            src={normalizedImages[0]}
             alt={listing.title}
+            propertyType={listing.type || listing.propertyType}
+            width={600}
+            quality={80}
             loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
+            className="transition-transform duration-500 group-hover:scale-108"
           />
 
           {/* Featured Badge (Top-left) */}
@@ -159,23 +166,25 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           </div>
 
           {/* Hover Slide-up View Photos Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileHover={{ opacity: 1, y: 0 }}
-            className="absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-all duration-200"
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenGallery();
-              }}
-              className="flex items-center gap-1.5 rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-white shadow-lg hover:bg-accent-hover transition-colors cursor-pointer"
+          {hasPhotos && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileHover={{ opacity: 1, y: 0 }}
+              className="absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10"
             >
-              <Eye className="h-3.5 w-3.5" />
-              <span>Xem bộ ảnh</span>
-            </button>
-          </motion.div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenGallery();
+                }}
+                className="flex items-center gap-1.5 rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-white shadow-lg hover:bg-accent-hover transition-colors cursor-pointer"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                <span>Xem bộ ảnh ({normalizedImages.length})</span>
+              </button>
+            </motion.div>
+          )}
         </div>
 
         {/* Content Details */}
@@ -243,7 +252,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       <LightboxModal
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
-        images={listing.images}
+        images={normalizedImages}
         propertyTitle={listing.title}
         propertyPrice={formatCurrencyVND(listing.price)}
       />

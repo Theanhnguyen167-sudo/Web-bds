@@ -17,6 +17,8 @@ import { getListingSiloData } from '@/lib/listing-slug';
 import { CodeBadge } from '@/components/common/CodeBadge';
 import { getListingIdentifier } from '@/lib/identification';
 import { ListingCard } from '@/components/listing/ListingCard';
+import { PropertyImage } from '@/components/common/PropertyImage';
+import { normalizeListingImages } from '@/lib/listing-images';
 import {
   Home,
   MapPin,
@@ -385,9 +387,7 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
     ward: rawListing?.ward || '',
     type: (rawListing?.type as any) || 'house',
     description: rawListing?.description || '',
-    images: Array.isArray(rawListing?.images) && rawListing.images.length > 0
-      ? rawListing.images
-      : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+    images: normalizeListingImages(rawListing?.images),
     lat: typeof rawListing?.lat === 'number' && !isNaN(rawListing.lat) && rawListing.lat !== 0 ? rawListing.lat : 21.0285,
     lng: typeof rawListing?.lng === 'number' && !isNaN(rawListing.lng) && rawListing.lng !== 0 ? rawListing.lng : 105.8542,
     planningZone: rawListing?.planningZone || 'Đất ở đô thị',
@@ -594,9 +594,7 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
   const sellerPhone = rawSellerPhone || '0988 123 456';
   const cleanSellerPhone = (sellerPhone || '0988123456').replace(/\s+/g, '');
 
-  const images: string[] = listing.images && listing.images.length > 0
-    ? listing.images
-    : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'];
+  const images: string[] = normalizeListingImages(listing.images);
 
   // Lightbox State
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -834,26 +832,22 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             <div className="flex flex-col gap-3">
               {/* Ảnh lớn chính (LCP Element - Patent 86) */}
               <div
-                onClick={() => openLightbox(activeImageIndex)}
-                className="relative w-full h-[360px] sm:h-[450px] rounded-2xl overflow-hidden cursor-pointer group bg-slate-950 shadow-md border border-slate-200/80"
+                onClick={() => images.length > 0 && openLightbox(activeImageIndex)}
+                className="relative w-full h-[360px] sm:h-[450px] rounded-2xl overflow-hidden cursor-pointer group bg-slate-100 dark:bg-slate-900 shadow-md border border-slate-200/80"
               >
-                <img
-                  src={getOptimizedImageUrl(images[activeImageIndex] || images[0], 1200, 85)}
-                  srcSet={`
-                    ${getOptimizedImageUrl(images[activeImageIndex] || images[0], 640, 80)} 640w,
-                    ${getOptimizedImageUrl(images[activeImageIndex] || images[0], 1024, 85)} 1024w,
-                    ${getOptimizedImageUrl(images[activeImageIndex] || images[0], 1440, 85)} 1440w
-                  `}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 840px"
+                <PropertyImage
+                  src={images[activeImageIndex] || images[0]}
                   alt={listing.title}
-                  // @ts-ignore
-                  fetchPriority="high"
-                  decoding="async"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  propertyType={listing.type}
+                  width={1200}
+                  quality={85}
+                  className="transition-transform duration-500 group-hover:scale-105"
                 />
 
                 {/* Lớp phủ gradient nhẹ khi hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                {images.length > 0 && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                )}
 
                 {/* Nút lướt ảnh Trước / Sau trực tiếp trên ảnh lớn */}
                 {images.length > 1 && (

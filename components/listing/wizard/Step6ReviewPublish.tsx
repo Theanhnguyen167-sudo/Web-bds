@@ -41,6 +41,7 @@ import { getPackageDefinition } from '@/lib/packages/package-config';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { PostingData } from './PostingDataTypes';
 import { TermsModal } from './TermsModal';
+import { PropertyImage } from '@/components/common/PropertyImage';
 
 interface Step6ReviewPublishProps {
   data: PostingData;
@@ -425,9 +426,10 @@ export const Step6ReviewPublish: React.FC<Step6ReviewPublishProps> = ({
             {/* Ảnh đại diện bên trái preview (5 cols) */}
             <div className="lg:col-span-5 space-y-2">
               <div className="relative aspect-[16/11] w-full overflow-hidden rounded-xl border border-border bg-slate-100 shadow-inner group">
-                <img
-                  src={data.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'}
+                <PropertyImage
+                  src={data.images[0]}
                   alt="Ảnh xem trước"
+                  propertyType={data.propertyType}
                   className="h-full w-full object-cover"
                 />
                 <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-accent/90 backdrop-blur-xs px-2.5 py-1 text-[10px] font-bold text-white shadow-md">
@@ -435,7 +437,7 @@ export const Step6ReviewPublish: React.FC<Step6ReviewPublishProps> = ({
                   {PROPERTY_TYPE_NAMES[data.propertyType] || 'BĐS Hà Nội'}
                 </span>
                 <span className="absolute bottom-2.5 right-2.5 rounded-md bg-black/70 backdrop-blur-xs px-2 py-0.5 text-[10px] font-bold text-white">
-                  1 / {data.images.length} ảnh
+                  {data.images.length > 0 ? `1 / ${data.images.length} ảnh` : 'Chưa có ảnh'}
                 </span>
               </div>
 

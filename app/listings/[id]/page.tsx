@@ -3,6 +3,7 @@ import { permanentRedirect, notFound } from 'next/navigation';
 import { mockListings } from '@/lib/mock-data';
 import { getListingUrl } from '@/lib/listing-slug';
 import { getListingBySlugOrIdServer } from '@/lib/services/listing-lookup';
+import { getListingCoverImage } from '@/lib/listing-images';
 
 interface ListingPageProps {
   params: { id: string };
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
   const formattedPrice = ((listing.price || 0) / 1e9).toFixed(1);
   const pageUrl = listing ? `${baseUrl}${getListingUrl(listing)}` : `${baseUrl}/listings/${params.id}`;
+  const coverImage = getListingCoverImage(listing?.images) || '/images/hanoi-panoramic-hero.jpg';
 
   return {
     title: `${listing.title} - HaNoi Realty`,
@@ -26,7 +28,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
       url: pageUrl,
       images: [
         {
-          url: listing.images?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
+          url: coverImage,
           width: 1200,
           height: 630,
           alt: listing.title,

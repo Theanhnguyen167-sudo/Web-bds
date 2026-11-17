@@ -170,8 +170,13 @@ export function getOptimizedImageUrl(
   width = 800,
   quality = 80
 ): string {
-  if (!url) {
-    return 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80';
+  if (!url || typeof url !== 'string' || !url.trim()) {
+    return '';
+  }
+
+  // Giữ nguyên Data URL base64
+  if (url.startsWith('data:image/')) {
+    return url;
   }
 
   // Nếu là ảnh từ Unsplash, tối ưu query parameters WebP & width

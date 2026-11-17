@@ -32,6 +32,8 @@ import { mockListings, ListingItem } from '@/lib/mock-data';
 import { formatCurrencyVND } from '@/lib/utils';
 import { LightboxModal, GalleryImage } from './LightboxModal';
 import { MasterplanView } from './MasterplanView';
+import { PropertyImage } from '@/components/common/PropertyImage';
+import { normalizeListingImages } from '@/lib/listing-images';
 
 // Dynamic import Leaflet/Google map component with SSR disabled
 const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
@@ -89,99 +91,6 @@ const PURPOSE_OPTIONS = [
   { value: 'rent', label: 'Cho thuê' },
 ];
 
-// Curated multi-angle galleries for realistic real-estate inspection
-const SAMPLE_GALLERIES: GalleryImage[][] = [
-  // Gallery 1: Căn hộ cao cấp view hồ
-  [
-    {
-      url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Mặt tiền & Toàn cảnh kiến trúc hiện đại, view trực diện công viên',
-      tag: 'Toàn cảnh kiến trúc'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Phòng khách sang trọng tràn ngập ánh sáng tự nhiên với trần cao',
-      tag: 'Phòng khách'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Phòng ngủ Master ấm cúng trang bị sàn gỗ tự nhiên & tủ âm tường',
-      tag: 'Phòng ngủ Master'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Khu bếp mở phong cách Bắc Âu tiện nghi, mặt đá thạch anh cao cấp',
-      tag: 'Khu Bếp & Ăn'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Ban công rộng thoáng ngắm hoàng hôn và view toàn cảnh Hà Nội',
-      tag: 'Ban công Skyline'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Phòng tắm Master chuẩn khách sạn 5 sao với bồn tắm kính tràn viền',
-      tag: 'Phòng tắm Master'
-    }
-  ],
-  // Gallery 2: Biệt thự vườn sang trọng
-  [
-    {
-      url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Toàn cảnh biệt thự phong cách Indochine tân cổ điển quý phái',
-      tag: 'Mặt tiền biệt thự'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Phòng khách thông tầng rộng 70m² với sofa da Ý nhập khẩu',
-      tag: 'Phòng khách thông tầng'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Bể bơi riêng ngoài trời và sân vườn cây xanh nhiệt đới',
-      tag: 'Bể bơi & Sân vườn'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Phòng ngủ view hồ bơi riêng tư tuyệt đối cho gia chủ',
-      tag: 'Phòng ngủ VIP'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Sơ đồ mặt bằng thiết kế phân khu chức năng biệt thự',
-      tag: 'Sơ đồ mặt bằng'
-    }
-  ],
-  // Gallery 3: Sky Villa Penthouse
-  [
-    {
-      url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Không gian phòng khách Penthouse với trần cao 6 mét kính Panorama',
-      tag: 'Phòng khách Sky Villa'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Mặt bằng tổng thể tòa tháp và khuôn viên trung tâm',
-      tag: 'Flycam tổng thể'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Cầu thang nghệ thuật kết nối các tầng căn hộ cao cấp',
-      tag: 'Cầu thang nghệ thuật'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Góc thư giãn đọc sách và quầy bar rượu sang trọng',
-      tag: 'Khu thư giãn'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=1400&auto=format&fit=crop&q=80',
-      caption: 'Bản vẽ chi tiết thiết kế căn hộ cao cấp',
-      tag: 'Bản vẽ kiến trúc'
-    }
-  ]
-];
-
 export function DistrictPropertyExplorer() {
   // ── VIEW MODE (Split-Screen Map vs Masterplan Interactive) ──
   const [isMasterplanMode, setIsMasterplanMode] = useState<boolean>(false);
@@ -200,15 +109,12 @@ export function DistrictPropertyExplorer() {
     initialIndex = 0
   ) => {
     const normalizedUrls = images && images.length > 0
-      ? images.map((img) => (typeof img === 'string' ? img : img.url))
-      : [
-          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1400&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1400&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1400&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1400&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1400&auto=format&fit=crop&q=80'
-        ];
+      ? images.map((img) => (typeof img === 'string' ? img : img.url)).filter(Boolean)
+      : [];
+
+    if (normalizedUrls.length === 0) {
+      return;
+    }
     
     setSelectedPhotos(normalizedUrls);
     setSelectedPhotoIndex(initialIndex);
@@ -266,25 +172,23 @@ export function DistrictPropertyExplorer() {
 
     return mockListings.map((item, idx) => {
       const statusObj = statuses[idx % statuses.length];
-      const baseGallery = SAMPLE_GALLERIES[idx % SAMPLE_GALLERIES.length];
+      const validImages = normalizeListingImages(item.images);
 
-      // Custom gallery combining item's primary image and angle shots
-      const gallery: GalleryImage[] = [
-        {
-          url: item.images[0] || baseGallery[0].url,
-          caption: `${item.title} - Toàn cảnh căn hộ & Không gian tổng quan`,
-          tag: 'Tổng quan'
-        },
-        ...baseGallery.slice(1)
-      ];
+      // Mỗi listing sở hữu bộ ảnh riêng từ đúng dữ liệu của chính nó, không lấy ảnh từ listing khác
+      const gallery: GalleryImage[] = validImages.map((imgUrl, i) => ({
+        url: imgUrl,
+        caption: `${item.title} - Hình ảnh ${i + 1}`,
+        tag: i === 0 ? 'Tổng quan' : `Không gian ${i + 1}`,
+      }));
 
       return {
         ...item,
+        images: validImages,
         badgeText: badges[idx % badges.length],
         statusLabel: statusObj.label,
         statusBadgeColor: statusObj.color,
-        purpose: idx % 4 === 1 ? 'rent' : 'sale',
-        gallery
+        purpose: item.purpose || (item.title?.toLowerCase().includes('cho thuê') || item.title?.toLowerCase().includes('thuê') ? 'rent' : 'sale'),
+        gallery,
       };
     });
   }, []);
@@ -791,10 +695,13 @@ export function DistrictPropertyExplorer() {
                             className="relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-slate-100 mb-2.5 cursor-zoom-in group/img"
                             title="Bấm vào ảnh để mở Popup xem bộ ảnh BĐS"
                           >
-                            <img
-                              src={item.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'}
+                            <PropertyImage
+                              src={item.images[0]}
                               alt={item.title}
-                              className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
+                              propertyType={item.type}
+                              width={600}
+                              quality={80}
+                              className="group-hover/img:scale-105 transition-transform duration-500"
                             />
 
                             {/* Tag / Badge đè lên góc trái ảnh */}

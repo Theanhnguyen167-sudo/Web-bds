@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { mockListings, ListingItem } from '@/lib/mock-data';
 import { parseLocationCoordinates } from '@/lib/utils';
 import { findListingBySlug } from '@/lib/listing-slug';
+import { normalizeListingImages } from '@/lib/listing-images';
 
 /**
  * Tạo Supabase Client an toàn cho Server-side queries
@@ -31,14 +32,8 @@ export function mapSupabaseListingToItem(row: any): ListingItem {
   const price = Number(row.price) || 8500000000;
   const pricePerM2 = row.price_per_m2 || Math.round(price / (area || 1));
 
-  let images: string[] = Array.isArray(row.images) && row.images.length > 0 ? row.images : [];
-  if (images.length === 0) {
-    images = [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80',
-    ];
-  }
+  // Chuẩn hóa images an toàn từ dữ liệu gốc, không tự động gán ảnh nhà mẫu villa nếu không có ảnh
+  const images: string[] = normalizeListingImages(row.images);
 
   const rawTitle = row.title?.trim() || 'Bất động sản';
   const formattedTitle = rawTitle.toLowerCase().startsWith('bán') ? rawTitle : `Bán ${rawTitle}`;

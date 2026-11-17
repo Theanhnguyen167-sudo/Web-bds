@@ -6,6 +6,7 @@ import { ListingCard } from '@/components/listing/ListingCard';
 import { HANOI_DISTRICTS_HUB_DATA } from '@/lib/data/hanoi-districts-hub';
 import { mockListings } from '@/lib/mock-data';
 import { createClient } from '@supabase/supabase-js';
+import { normalizeListingImages } from '@/lib/listing-images';
 import {
   MapPin,
   TrendingUp,
@@ -93,7 +94,7 @@ async function getListingsByDistrict(districtName: string) {
         lat: row.lat || 21.03,
         lng: row.lng || 105.80,
         type: row.property_type || 'house',
-        images: Array.isArray(row.images) && row.images.length > 0 ? row.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80'],
+        images: normalizeListingImages(row.images),
         status: row.status || 'active',
         isFeatured: row.is_featured || false,
         views: row.views || 40,

@@ -7,6 +7,8 @@ import { ListingItem } from '@/lib/mock-data';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { MapPin, Heart, Bed, Sparkles, Eye, ArrowRight } from 'lucide-react';
 import { getListingUrl } from '@/lib/listing-slug';
+import { PropertyImage } from '@/components/common/PropertyImage';
+import { normalizeListingImages } from '@/lib/listing-images';
 
 interface SearchListingCardProps {
   listing: ListingItem;
@@ -56,10 +58,14 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
         className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 block group/thumb cursor-pointer"
         title="Nhấp để xem trước bất động sản"
       >
-        <img
-          src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80'}
+        <PropertyImage
+          src={listing.images[0]}
           alt={listing.title}
-          className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300"
+          propertyType={listing.type}
+          width={240}
+          quality={80}
+          showPlaceholderBadge={false}
+          className="group-hover/thumb:scale-105 transition-transform duration-300"
         />
         {listing.isFeatured && (
           <span className="absolute top-1 left-1 bg-orange-500 text-white font-extrabold text-[8px] px-1 py-0.2 rounded shadow">

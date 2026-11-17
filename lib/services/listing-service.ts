@@ -19,6 +19,7 @@ import { ListingItem, mockListings } from '@/lib/mock-data';
 import { getListingUrl } from '@/lib/listing-slug';
 import { NotificationItem } from '@/types/notification';
 import { parseLocationCoordinates } from '@/lib/utils';
+import { normalizeListingImages } from '@/lib/listing-images';
 
 export const STORAGE_KEY_LISTINGS = 'hanoi_platform_user_listings';
 export const STORAGE_KEY_NOTIFICATIONS = 'hanoi_realty_notifications';
@@ -231,9 +232,7 @@ export async function createListingRecord(
     ward: data.ward || '',
     lat,
     lng,
-    images: data.images && data.images.length > 0
-      ? data.images
-      : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+    images: normalizeListingImages(data.images),
     status: 'pending', // Luôn khởi tạo ở trạng thái Chờ duyệt
     isFeatured: Boolean(data.isFeatured),
     featuredBadge: data.isFeatured ? (currentUser?.package?.toUpperCase() || 'VIP') : undefined,

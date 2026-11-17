@@ -12,6 +12,7 @@ import { ReferralAgentConnect } from '@/components/dashboard/ReferralAgentConnec
 import { MyClientsTab } from '@/components/dashboard/MyClientsTab';
 import { FinancesTab } from '@/components/dashboard/finances/FinancesTab';
 import { getUserAgentCode, getUserOwnerCode } from '@/lib/identification';
+import { PropertyImage } from '@/components/common/PropertyImage';
 import {
   Home,
   Sparkles,
@@ -1456,7 +1457,7 @@ function DashboardContent() {
                                   className="shrink-0 block relative"
                                 >
                                   <img
-                                    src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400'}
+                                    src={listing.images[0]}
                                     alt={listing.title}
                                     className="h-16 w-24 rounded-xl object-cover hover:opacity-90 transition-opacity"
                                   />
@@ -2513,7 +2514,7 @@ function DashboardContent() {
                           {/* Card Thumbnail */}
                           <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
                             <img
-                              src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80'}
+                              src={listing.images[0]}
                               alt={listing.title}
                               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                             />

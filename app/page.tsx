@@ -12,6 +12,8 @@ import { ListingItem } from '@/lib/mock-data';
 import { useApp } from '@/lib/context/AppContext';
 import { formatCurrencyVND, formatPricePerM2 } from '@/lib/utils';
 import { getListingUrl } from '@/lib/listing-slug';
+import { PropertyImage } from '@/components/common/PropertyImage';
+import { normalizeListingImages } from '@/lib/listing-images';
 import {
   Search,
   MapPin,
@@ -228,7 +230,7 @@ export default function HomePage() {
             lat: Number(row.lat) || 21.0285,
             lng: Number(row.lng) || 105.8542,
             type: row.property_type || 'house',
-            images: Array.isArray(row.images) && row.images.length > 0 ? row.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+            images: normalizeListingImages(row.images),
             status: row.status || 'active',
             isFeatured: Boolean(row.is_featured),
             views: Number(row.views) || 0,
@@ -272,14 +274,12 @@ export default function HomePage() {
       return true;
     });
 
-    // 2. Mỗi căn hiện một lần theo mã BĐS chuẩn nếu có, dùng ID làm dự phòng
-    const seenKeys = new Set<string>();
+    // 2. Deduplicate theo ID listing (ưu tiên remoteApprovedListings chính thức trước)
+    const seenIds = new Set<string>();
     const deduplicated: ListingItem[] = [];
     for (const item of approvedList) {
-      const standardCode = (item.listing_code || item.code || item.propertyCode || '').trim().toUpperCase();
-      const uniqueKey = standardCode || item.id;
-      if (!uniqueKey || seenKeys.has(uniqueKey)) continue;
-      seenKeys.add(uniqueKey);
+      if (!item.id || seenIds.has(item.id)) continue;
+      seenIds.add(item.id);
       deduplicated.push(item);
     }
 
@@ -775,7 +775,6 @@ export default function HomePage() {
                   const cardPricePerM2 = formatPricePerM2(listing.price, listing.area);
                   const baseFormattedPrice = formatCurrencyVND(listing.price);
                   const formattedPrice = isRent ? `${baseFormattedPrice}/tháng` : baseFormattedPrice;
-                  const firstImage = listing.images?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80';
                   const isVerified = listing.verificationStatus === 'verified' || listing.verificationStatus === 'Đã kiểm tra' || (listing as any).isVerified;
                   const updatedDate = listing.updatedAt ? (listing.updatedAt.includes('T') ? listing.updatedAt.split('T')[0] : listing.updatedAt) : null;
                   const searchTargetUrl = `/search?listingId=${encodeURIComponent(listing.id)}&purpose=${encodeURIComponent(isRent ? 'rent' : 'sale')}${listing.type ? `&type=${encodeURIComponent(listing.type)}` : ''}${listing.district ? `&district=${encodeURIComponent(listing.district)}` : ''}`;
@@ -792,11 +791,13 @@ export default function HomePage() {
                       >
                         {/* Thumbnail Image Container */}
                         <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 shrink-0">
-                          <img
-                            src={firstImage}
+                          <PropertyImage
+                            src={listing.images?.[0]}
                             alt={listing.title}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-108"
-                            loading="lazy"
+                            propertyType={listing.type}
+                            width={600}
+                            quality={80}
+                            className="transition-transform duration-500 group-hover/card:scale-108"
                           />
 
                           {/* Nhãn kiểm tra khi có dữ liệu xác nhận */}

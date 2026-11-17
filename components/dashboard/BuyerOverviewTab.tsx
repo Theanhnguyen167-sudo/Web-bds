@@ -17,6 +17,7 @@ import {
 import { formatCurrencyVND } from '@/lib/utils';
 import { getListingUrl } from '@/lib/listing-slug';
 import { ListingItem } from '@/lib/mock-data';
+import { PropertyImage } from '@/components/common/PropertyImage';
 
 interface BuyerOverviewTabProps {
   user: any;
@@ -365,11 +366,16 @@ export const BuyerOverviewTab: React.FC<BuyerOverviewTabProps> = ({
                   href={getListingUrl(item)}
                   className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors group"
                 >
-                  <img
-                    src={item.images?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80'}
-                    alt={item.title}
-                    className="w-16 h-14 rounded-xl object-cover shrink-0"
-                  />
+                  <div className="w-16 h-14 rounded-xl overflow-hidden shrink-0">
+                    <PropertyImage
+                      src={item.images?.[0]}
+                      alt={item.title}
+                      propertyType={item.type}
+                      width={160}
+                      quality={80}
+                      showPlaceholderBadge={false}
+                    />
+                  </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-orange-600 transition-colors">
                       {item.title}

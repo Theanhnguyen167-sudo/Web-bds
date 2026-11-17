@@ -31,6 +31,7 @@ import {
   SellerValidationErrors,
   isValidVNPhone
 } from './wizard/PostingDataTypes';
+import { normalizeListingImages } from '@/lib/listing-images';
 
 function processImageFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -167,9 +168,7 @@ export const CreateListingWizard: React.FC = () => {
         lng: 105.7825,
         displayName: 'Số 18, ngõ 86 Duy Tân, Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
       },
-      images: [
-        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
-      ],
+      images: [],
       price: 5000000000,
       area: 65,
       floors: 5,
@@ -245,6 +244,49 @@ export const CreateListingWizard: React.FC = () => {
       }));
     }
   }, [user, editId]);
+
+  // Khi chỉnh sửa tin: nạp đúng thông tin và bộ ảnh của tin đăng theo ID
+  useEffect(() => {
+    if (!editId) return;
+    const existing = listings.find((l) => l.id === editId);
+    if (existing) {
+      const normalizedImgs = normalizeListingImages(existing.images);
+      setPostingData((prev) => ({
+        ...prev,
+        title: existing.title || prev.title,
+        description: existing.description || prev.description,
+        price: existing.price || prev.price,
+        area: existing.area || prev.area,
+        floors: existing.floors || prev.floors,
+        bedrooms: existing.bedrooms || prev.bedrooms,
+        bathrooms: existing.bathrooms || prev.bathrooms,
+        direction: existing.direction || prev.direction,
+        legalStatus: existing.legalStatus || prev.legalStatus,
+        propertyType: (existing.type as any) || (existing.propertyType as any) || prev.propertyType,
+        images: normalizedImgs,
+        imageMethod: normalizedImgs.length > 0 ? 'has_images' : 'need_survey',
+        location: {
+          district: existing.district || prev.location.district,
+          ward: existing.ward || prev.location.ward,
+          street: existing.address || prev.location.street,
+          addressNumber: prev.location.addressNumber,
+          lat: existing.lat || prev.location.lat,
+          lng: existing.lng || prev.location.lng,
+          displayName: existing.address || prev.location.displayName,
+        },
+      }));
+
+      if (existing.price) setPriceInput(String(existing.price));
+      if (existing.area) setAreaInput(String(existing.area));
+      if (existing.floors) setFloorsInput(String(existing.floors));
+      if (existing.address) setStreetAddressInput(existing.address);
+      if (existing.district) {
+        setWardDistrictInput(
+          existing.ward ? `${existing.ward}, ${existing.district}` : existing.district
+        );
+      }
+    }
+  }, [editId, listings]);
 
   // Lưu nháp tự động
   useEffect(() => {
@@ -418,9 +460,7 @@ export const CreateListingWizard: React.FC = () => {
           pricePerM2: Math.round(postingData.price / (postingData.area || 1)),
           floors: postingData.floors,
           address: fullAddress,
-          images: postingData.images.length > 0 ? postingData.images : [
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'
-          ],
+          images: normalizeListingImages(postingData.images),
           authorName: postingData.seller.fullName,
           authorPhone: postingData.seller.phone,
           status: 'pending',
@@ -451,9 +491,7 @@ export const CreateListingWizard: React.FC = () => {
           ward: postingData.location.ward || 'Dịch Vọng Hậu',
           lat: postingData.location.lat || 21.0315,
           lng: postingData.location.lng || 105.7825,
-          images: postingData.images.length > 0 ? postingData.images : [
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'
-          ],
+          images: normalizeListingImages(postingData.images),
           authorName: postingData.seller.fullName,
           authorPhone: postingData.seller.phone,
           authorEmail: postingData.seller.email || undefined,

@@ -10,6 +10,8 @@ import { getListingUrl } from '@/lib/listing-slug';
 import { getListingIdentifier } from '@/lib/identification';
 import { CodeBadge } from '@/components/common/CodeBadge';
 import { LightboxModal } from '@/components/home/LightboxModal';
+import { PropertyImage } from '@/components/common/PropertyImage';
+import { normalizeListingImages } from '@/lib/listing-images';
 import {
   X,
   MapPin,
@@ -118,9 +120,7 @@ export const SearchDetailPreview: React.FC<SearchDetailPreviewProps> = ({
   }
 
   // 3. DỮ LIỆU BĐS HỢP LỆ
-  const images = Array.isArray(listing.images) && listing.images.length > 0
-    ? listing.images
-    : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'];
+  const images = normalizeListingImages(listing.images);
 
   const isRent =
     listing.purpose === 'rent' ||
@@ -220,16 +220,18 @@ export const SearchDetailPreview: React.FC<SearchDetailPreviewProps> = ({
         
         {/* A. BỘ ẢNH BẤT ĐỘNG SẢN (IMAGE GALLERY & CAROUSEL) */}
         <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 group border border-slate-200/80 dark:border-slate-700">
-          <img
-            src={images[currentImageIdx]}
+          <PropertyImage
+            src={images[currentImageIdx] || null}
             alt={listing.title}
-            className="w-full h-full object-cover transition-transform duration-300 cursor-pointer"
-            onClick={() => setIsLightboxOpen(true)}
-            title="Nhấp để phóng to toàn màn hình"
+            propertyType={listing.type}
+            width={1200}
+            quality={85}
+            onClick={() => images.length > 0 && setIsLightboxOpen(true)}
+            className="transition-transform duration-300"
           />
 
           {/* Badges trên ảnh */}
-          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none z-10">
             <span
               className={`px-2.5 py-1 rounded-lg text-[11px] font-black tracking-wide uppercase shadow-md ${
                 isRent
@@ -249,9 +251,11 @@ export const SearchDetailPreview: React.FC<SearchDetailPreviewProps> = ({
           </div>
 
           {/* Bộ đếm ảnh (Image Counter) */}
-          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white text-[11px] font-bold">
-            {currentImageIdx + 1} / {images.length} ảnh
-          </div>
+          {images.length > 0 && (
+            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white text-[11px] font-bold z-10">
+              {currentImageIdx + 1} / {images.length} ảnh
+            </div>
+          )}
 
           {/* Nút chuyển ảnh Prev/Next */}
           {images.length > 1 && (

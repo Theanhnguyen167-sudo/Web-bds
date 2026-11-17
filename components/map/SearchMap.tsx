@@ -15,6 +15,7 @@ import { MapLocationSearch } from './MapLocationSearch'
 import { HanoiLocationItem } from '@/lib/data/hanoi-locations'
 import { haversineDistance } from '@/lib/search/filterListings'
 import { getListingUrl } from '@/lib/listing-slug'
+import { PropertyImage } from '@/components/common/PropertyImage'
 
 // ── Types ──
 export interface SearchMapListing {
@@ -969,17 +970,14 @@ export default function SearchMap({
               onClick={(e) => e.stopPropagation()}
               className="relative block h-[140px] bg-gray-100 dark:bg-gray-700 overflow-hidden group cursor-pointer"
             >
-              {popupListing.images && popupListing.images[0] ? (
-                <img
-                  src={popupListing.images[0]}
-                  alt={popupListing.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl">
-                  {TYPE_ICONS[popupListing.type]}
-                </div>
-              )}
+              <PropertyImage
+                src={popupListing.images?.[0]}
+                alt={popupListing.title}
+                propertyType={popupListing.type}
+                width={320}
+                quality={80}
+                className="group-hover:scale-105 transition-transform duration-300"
+              />
               {/* Type badge */}
               <div className="absolute top-2 left-2 bg-navy/80 backdrop-blur-sm 
                               text-white text-xs font-semibold px-2 py-1 rounded-lg">
@@ -1077,18 +1075,14 @@ export default function SearchMap({
               <div className="flex gap-3 pt-3">
                 {/* Thumbnail */}
                 <div className="relative w-28 h-24 rounded-2xl overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800 shadow-sm">
-                  {popupListing.images && popupListing.images[0] ? (
-                    <img
-                      src={popupListing.images[0]}
-                      alt={popupListing.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl">
-                      {TYPE_ICONS[popupListing.type]}
-                    </div>
-                  )}
+                  <PropertyImage
+                    src={popupListing.images?.[0]}
+                    alt={popupListing.title}
+                    propertyType={popupListing.type}
+                    width={240}
+                    quality={80}
+                    showPlaceholderBadge={false}
+                  />
                   <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
                     {popupListing.type === 'house' ? 'Nhà' : popupListing.type === 'apartment' ? 'Chung cư' : 'Đất'}
                   </div>

@@ -20,6 +20,7 @@ import {
 } from '@/lib/services/listing-service';
 import { ListingItem } from '@/lib/mock-data';
 import { getListingUrl } from '@/lib/listing-slug';
+import { PropertyImage } from '@/components/common/PropertyImage';
 import {
   Search,
   PlusCircle,
@@ -189,11 +190,16 @@ export default function AdminListingsPage() {
       sortable: true,
       render: (l) => (
         <div className="flex items-center gap-3">
-          <img
-            src={l.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'}
-            alt={l.title}
-            className="h-12 w-16 rounded-xl object-cover shrink-0 bg-slate-100 ring-1 ring-slate-200"
-          />
+          <div className="h-12 w-16 rounded-xl overflow-hidden shrink-0 bg-slate-100 ring-1 ring-slate-200">
+            <PropertyImage
+              src={l.images[0]}
+              alt={l.title}
+              propertyType={l.type}
+              width={160}
+              quality={80}
+              showPlaceholderBadge={false}
+            />
+          </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 mb-0.5">
               <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
@@ -584,10 +590,12 @@ export default function AdminListingsPage() {
                 {/* Images Gallery */}
                 <div className="space-y-2">
                   <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
-                    <img
-                      src={reviewListing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'}
+                    <PropertyImage
+                      src={reviewListing.images[0]}
                       alt={reviewListing.title}
-                      className="w-full h-full object-cover"
+                      propertyType={reviewListing.type}
+                      width={1000}
+                      quality={85}
                     />
                   </div>
                   {reviewListing.images.length > 1 && (

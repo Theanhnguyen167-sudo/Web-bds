@@ -15,6 +15,7 @@ import { auth as firebaseAuth } from '@/lib/firebase/config';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { parseLocationCoordinates } from '@/lib/utils';
 import { getListingIdentifier } from '@/lib/identification';
+import { normalizeListingImages } from '@/lib/listing-images';
 
 import {
   getLocalListings,
@@ -565,7 +566,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               lat,
               lng,
               type: row.property_type || 'house',
-              images: row.images && row.images.length > 0 ? row.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+              images: normalizeListingImages(row.images),
               status: row.status || 'active',
               isFeatured: row.is_featured || false,
               views: row.views || 48,
@@ -597,6 +598,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return {
             ...item,
             ...remote,
+            images: normalizeListingImages(remote.images && remote.images.length > 0 ? remote.images : item.images),
             lat: remote.lat || item.lat,
             lng: remote.lng || item.lng,
           };
@@ -609,31 +611,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           Math.abs(item.lng - 105.7825) < 0.002
         ) {
           const corrected = parseLocationCoordinates(null, item.district);
-          return { ...item, lat: corrected.lat, lng: corrected.lng };
+          return { ...item, images: normalizeListingImages(item.images), lat: corrected.lat, lng: corrected.lng };
         }
-        return item;
+        return { ...item, images: normalizeListingImages(item.images) };
       });
       saveStoredUserListings(mergedLocals);
 
       const allKnownIds = new Set<string>();
       const combinedList: ListingItem[] = [];
 
-      for (const item of mergedLocals) {
-        allKnownIds.add(item.id);
-        combinedList.push(item);
-      }
-
+      // Ưu tiên bản ghi database chính thức từ Supabase trước
       for (const item of supabaseListings) {
         if (!allKnownIds.has(item.id)) {
           allKnownIds.add(item.id);
-          combinedList.push(item);
+          combinedList.push({ ...item, images: normalizeListingImages(item.images) });
         }
       }
 
+      // Kế tiếp đến các tin local do người dùng lưu trên máy
+      for (const item of mergedLocals) {
+        if (!allKnownIds.has(item.id)) {
+          allKnownIds.add(item.id);
+          combinedList.push({ ...item, images: normalizeListingImages(item.images) });
+        }
+      }
+
+      // Cuối cùng là các tin mẫu mockListings
       for (const item of mockListings) {
         if (!allKnownIds.has(item.id)) {
           allKnownIds.add(item.id);
-          combinedList.push(item);
+          combinedList.push({ ...item, images: normalizeListingImages(item.images) });
         }
       }
 

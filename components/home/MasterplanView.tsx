@@ -122,7 +122,7 @@ const MOCK_UNITS: MasterplanUnit[] = [
         tag: 'Sơ đồ căn góc 3PN'
       },
       {
-        url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80',
+        url: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200&auto=format&fit=crop&q=80',
         caption: 'Không gian mở phòng khách view trọn công viên xanh',
         tag: 'Phòng khách góc'
       },

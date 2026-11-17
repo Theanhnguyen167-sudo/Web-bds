@@ -94,7 +94,7 @@ export const mockListings: ListingItem[] = [
     lng: 105.8412,
     type: "house",
     images: [
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80",
     ],
@@ -341,7 +341,7 @@ export const mockListings: ListingItem[] = [
     lng: 105.8425,
     type: "land",
     images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1524813686514-a57563d77d61?w=1200&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1545459720-aac8509eb02c?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
@@ -374,8 +374,8 @@ export const mockListings: ListingItem[] = [
     type: "apartment",
     purpose: "sale",
     images: [
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,
@@ -406,8 +406,8 @@ export const mockListings: ListingItem[] = [
     type: "apartment",
     purpose: "rent",
     images: [
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1502005229762-ee1b2b8100ff?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,

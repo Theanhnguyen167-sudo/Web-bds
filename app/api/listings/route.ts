@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { parseLocationCoordinates, HANOI_DISTRICT_COORDINATES } from '@/lib/utils';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/api-utils';
+import { normalizeListingImages } from '@/lib/listing-images';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xdqfxsszpglbgvpcqfss.supabase.co';
 const supabaseKey =
@@ -187,7 +188,7 @@ export async function POST(req: Request) {
       district,
       ward: ward || null,
       location: locationWKT,
-      images: images && images.length > 0 ? images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80'],
+      images: normalizeListingImages(images),
       status: 'pending', // Luôn vào hàng đợi kiểm duyệt của Admin
       is_featured: false,
       views: 1,
