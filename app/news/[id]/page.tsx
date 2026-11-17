@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { AboutFooter } from '@/components/about/AboutFooter';
 import { ArticleImage } from '@/components/news/ArticleImage';
+import { ArticleDataChart } from '@/components/news/ArticleDataChart';
 import { getNewsArticleById, NEWS_ARTICLES } from '@/lib/news-data';
 import { generateTableOfContents, slugifyHeading } from '@/lib/editorial-standard';
 import {
@@ -449,6 +450,12 @@ export default function NewsDetailPage() {
                     if (prevPara.match(/^!\[(.*?)\]\((.*?)\)$/)) {
                       return null;
                     }
+                  }
+
+                  // 5b. Cú pháp biểu đồ dữ liệu tương tác [CHART:type]
+                  if (paragraph.trim().startsWith('[CHART:')) {
+                    const chartType = paragraph.trim().replace(/^\[CHART:\s*/, '').replace(/\]$/, '').trim();
+                    return <ArticleDataChart key={idx} type={chartType} />;
                   }
 
                   // 6. Cú pháp bảng Markdown

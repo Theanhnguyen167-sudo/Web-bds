@@ -401,7 +401,7 @@ function NewsContent() {
   const marketTopicArticles = useMemo(() => {
     const list = getArticlesForBlock(allNews, {
       previousBlocks: [heroArticles, latestPool.slice(0, 5)],
-      category: ['pricing', 'investment', 'policy'],
+      category: ['market', 'pricing', 'investment', 'policy'],
       limit: 5,
     });
     if (list.length < 5) {
@@ -454,7 +454,7 @@ function NewsContent() {
 
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl space-y-3">
-            
+
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/15 border border-orange-500/30 px-3.5 py-1 text-[11px] sm:text-xs font-bold text-orange-400 uppercase tracking-wider">
               <Newspaper className="h-3.5 w-3.5 text-orange-400" />
@@ -516,11 +516,10 @@ function NewsContent() {
                   key={heading.id}
                   type="button"
                   onClick={() => scrollToHeading(heading.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
-                    isActive
+                  className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${isActive
                       ? 'bg-orange-500 text-white border-orange-500 shadow-xs font-bold'
                       : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
+                    }`}
                 >
                   {heading.label}
                 </button>
@@ -565,7 +564,7 @@ function NewsContent() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-              
+
               {/* Bên trái: 1 Bài viết nổi bật lớn (Editorial Lead - 7 cols) với ảnh thu nhỏ gọn gàng, chân bằng khít cột bên phải */}
               <div className="lg:col-span-7 flex flex-col">
                 <div
@@ -674,7 +673,7 @@ function NewsContent() {
 
         {/* ── 7, 8, 10, 11. LATEST NEWS + COMPACT SIDEBAR ── */}
         <section id="tin-moi-nhat" className="space-y-6 scroll-mt-32">
-          
+
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
             <div>
               <div className="flex items-center gap-2">
@@ -682,8 +681,8 @@ function NewsContent() {
                   {searchQuery
                     ? `Kết quả tìm kiếm cho "${searchQuery}" (${filteredArticles.length})`
                     : selectedCategory === 'all' || selectedCategory === 'tin-moi-nhat'
-                    ? 'Tin mới nhất'
-                    : CATEGORIES.find((c) => c.id === selectedCategory)?.label || 'Danh sách tin bài'}
+                      ? 'Tin mới nhất'
+                      : CATEGORIES.find((c) => c.id === selectedCategory)?.label || 'Danh sách tin bài'}
                 </h2>
                 {(selectedCategory === 'all' || selectedCategory === 'tin-moi-nhat') && !searchQuery && (
                   <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80 hidden sm:inline-flex items-center gap-1">
@@ -711,10 +710,10 @@ function NewsContent() {
 
           {/* Bố cục 70% Nội dung + 30% Sidebar */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
+
             {/* Cột Trái (Main Content: lg:col-span-8 ~70%) */}
             <div id="news-content-grid" className="lg:col-span-8 space-y-6">
-              
+
               {latestPool.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-3">
                   <Newspaper className="h-10 w-10 text-slate-300 mx-auto" />
@@ -737,7 +736,7 @@ function NewsContent() {
                   {/* Bố cục Tin mới nhất: 1 bài lớn bên trái (Lead Card) + danh sách bài viết ngang có thanh cuộn mượt mà bên phải */}
                   {latestPool.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
-                      
+
                       {/* Cột trái: 1 Bài viết lớn tiêu điểm (Lead Card - 7 cột) */}
                       <div className={`${latestPool.length > 1 ? 'md:col-span-7' : 'md:col-span-12'} flex flex-col`}>
                         <article
@@ -859,7 +858,7 @@ function NewsContent() {
               {/* ── 12. TOPIC SECTIONS (Thị trường BĐS & Quy hoạch Hạ tầng - Nằm trong cột chính cạnh Sidebar bám dính) ── */}
               {selectedCategory === 'all' && !searchQuery && (
                 <div className="space-y-10 sm:space-y-12 pt-8 sm:pt-10 border-t border-slate-200/80">
-                  
+
                   {/* Chuyên đề 1: Thị trường BĐS (1 bài lớn bên trái + 4 bài danh sách ngang bên phải) */}
                   <section id="chuyen-de-thi-truong" className="space-y-6 scroll-mt-32">
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
@@ -876,7 +875,7 @@ function NewsContent() {
                         </p>
                       </div>
                       <button
-                        onClick={() => setSelectedCategory('pricing')}
+                        onClick={() => setSelectedCategory('market')}
                         className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors shrink-0"
                       >
                         <span>Xem tất cả bài viết thị trường</span>
