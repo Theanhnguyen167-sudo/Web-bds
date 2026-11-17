@@ -48,11 +48,13 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
       }`}
     >
       {/* Thumbnail Left (80x80px) */}
-      <Link
-        href={listingUrl}
-        onClick={(e) => e.stopPropagation()}
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick && onClick(listing.id);
+        }}
         className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 block group/thumb cursor-pointer"
-        title="Xem chi tiết bài viết"
+        title="Nhấp để xem trước bất động sản"
       >
         <img
           src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80'}
@@ -64,7 +66,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
             ⭐ HOT
           </span>
         )}
-      </Link>
+      </div>
 
       {/* Content Right */}
       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
@@ -80,16 +82,18 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
           </div>
 
           {/* Title */}
-          <Link
-            href={listingUrl}
-            onClick={(e) => e.stopPropagation()}
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick && onClick(listing.id);
+            }}
             className="block cursor-pointer mt-0.5"
             title={listing.title}
           >
             <h4 className="text-xs font-bold text-navy dark:text-white truncate hover:text-orange-600 transition-colors">
               {listing.title}
             </h4>
-          </Link>
+          </div>
 
           {/* Location */}
           <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1 mt-0.5">

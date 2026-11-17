@@ -75,7 +75,7 @@ export const ListingsPanel: React.FC<ListingsPanelProps> = ({
     <div className="flex flex-col h-full overflow-y-auto p-3 space-y-2.5">
       <div className="flex items-center justify-between px-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
         <span>Hiển thị {listings.length} tin</span>
-        <span className="text-orange-500 font-semibold lowercase">click thẻ để bay tới map</span>
+        <span className="text-orange-500 font-semibold lowercase">chọn căn để xem trước</span>
       </div>
 
       <AnimatePresence mode="popLayout">

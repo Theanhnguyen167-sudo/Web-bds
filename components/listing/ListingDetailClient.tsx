@@ -329,7 +329,50 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
     initialListing ||
     listings.find((l) => l.id === listingId) ||
     mockListings.find((l) => l.id === listingId) ||
-    (isLoading ? null : (listings[0] || mockListings[0]));
+    null;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center p-8">
+          <div className="h-10 w-10 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-sm font-semibold text-slate-600">Đang tải thông tin chi tiết bất động sản...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!rawListing) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+        <Navbar />
+        <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-20 flex flex-col items-center justify-center text-center">
+          <div className="w-20 h-20 rounded-3xl bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center text-3xl mb-6 shadow-inner">
+            🔍
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 mb-2">Không tìm thấy bất động sản</h1>
+          <p className="text-sm text-slate-500 mb-8 max-w-md leading-relaxed">
+            Bất động sản bạn đang tìm kiếm không tồn tại, đã hoàn tất giao dịch hoặc tạm ngừng hiển thị trên hệ thống.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/search"
+              className="px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm shadow-md transition-all"
+            >
+              Xem danh sách tìm kiếm
+            </Link>
+            <Link
+              href="/"
+              className="px-6 py-3 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-sm transition-all"
+            >
+              Về trang chủ
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const listing: ListingItem = {
     id: rawListing?.id || listingId,
@@ -670,6 +713,27 @@ export default function ListingDetailClient({ listingId, initialListing }: Listi
             </button>
           </div>
         </div>
+
+        {/* Status Notice Banner (Sold / Hidden / Expired) */}
+        {listing.status && listing.status !== 'active' && (
+          <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 text-sm flex items-center gap-3 shadow-xs">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <strong className="font-bold block">
+                {listing.status === 'sold'
+                  ? 'Bất động sản này đã được giao dịch thành công.'
+                  : listing.status === 'hidden'
+                  ? 'Bất động sản này hiện đang tạm ẩn.'
+                  : listing.status === 'expired'
+                  ? 'Tin đăng này đã hết hạn hiển thị.'
+                  : 'Bất động sản chưa được kích hoạt công khai.'}
+              </strong>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Dữ liệu được lưu trữ để đối chiếu lịch sử. Bạn có thể chuyển sang trang tìm kiếm để xem các bất động sản đang sẵn sàng giao dịch.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* ── HEADER BÀI ĐĂNG (TIÊU ĐỀ, GIÁ, ĐỊA CHỈ, THÔNG SỐ CỐT LÕI) ── */}
         <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-7 shadow-sm space-y-4 mb-6">

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { findListingBySlug, getListingUrl, getValidListingSlugParams } from '@/lib/listing-slug';
+import { getListingUrl, getValidListingSlugParams } from '@/lib/listing-slug';
 import { ListingBySlugClient } from '@/components/listing/ListingBySlugClient';
+import { getListingBySlugOrIdServer } from '@/lib/services/listing-lookup';
 
 interface RentListingSlugPageProps {
   params: {
@@ -20,7 +21,11 @@ export async function generateMetadata({ params, searchParams }: RentListingSlug
   const { propertyType, district, slug } = params;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
 
-  const listing = findListingBySlug(slug, propertyType, district, undefined, 'cho-thue');
+  const listing = await getListingBySlugOrIdServer(slug, {
+    propertyType,
+    district,
+    transactionType: 'cho-thue',
+  });
   if (!listing) return {};
 
   const canonicalUrl = `${baseUrl}${getListingUrl(listing)}`;
@@ -62,11 +67,15 @@ export async function generateMetadata({ params, searchParams }: RentListingSlug
   };
 }
 
-export default function RentListingSlugPage({ params }: RentListingSlugPageProps) {
+export default async function RentListingSlugPage({ params }: RentListingSlugPageProps) {
   const { propertyType, district, slug } = params;
 
-  // Tra cứu listing từ mock-data / database server-side cho giao dịch cho thuê
-  const listing = findListingBySlug(slug, propertyType, district, undefined, 'cho-thue');
+  // Tra cứu listing từ database Supabase / mock-data server-side cho giao dịch cho thuê
+  const listing = await getListingBySlugOrIdServer(slug, {
+    propertyType,
+    district,
+    transactionType: 'cho-thue',
+  });
 
   if (listing) {
     const canonicalUrl = getListingUrl(listing);
@@ -84,6 +93,7 @@ export default function RentListingSlugPage({ params }: RentListingSlugPageProps
         district={district}
         slug={slug}
         initialListingId={listing.id}
+        initialListing={listing}
         transactionType="cho-thue"
       />
     );

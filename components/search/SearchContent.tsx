@@ -19,6 +19,8 @@ import { FilterSidebar } from '@/components/search/FilterSidebar';
 import { ListingsPanel } from '@/components/search/ListingsPanel';
 import { ListingListRow } from '@/components/search/ListingListRow';
 import { SaveSearchModal } from '@/components/search/SaveSearchModal';
+import { SearchDetailPreview } from '@/components/search/SearchDetailPreview';
+import { ListingItem } from '@/lib/mock-data';
 import { Sliders, ListFilter, X } from 'lucide-react';
 
 const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
@@ -97,11 +99,92 @@ export function SearchContent({
     (searchParams.get('view') as any) || 'map'
   );
   const [sortBy, setSortBy] = useState<string>('newest');
-  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(
+    searchParams.get('listingId') || null
+  );
+  const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
+  const [isLoadingSelected, setIsLoadingSelected] = useState<boolean>(false);
+  const [selectedListingError, setSelectedListingError] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(
+    Boolean(searchParams.get('listingId'))
+  );
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [sidebarTab, setSidebarTab] = useState<'filters' | 'listings'>('listings');
   const [showSaveSearchModal, setShowSaveSearchModal] = useState<boolean>(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
+
+  // ── DEEP LINK & HISTORY SYNC (searchParams.listingId) ──
+  const urlListingId = searchParams.get('listingId');
+  useEffect(() => {
+    if (urlListingId) {
+      setSelectedListingId(urlListingId);
+      setIsPreviewOpen(true);
+      setSidebarTab('listings');
+    } else {
+      // Khi URL không còn listingId (do back/forward)
+      setSelectedListingId(null);
+      setIsPreviewOpen(false);
+      setSelectedListing(null);
+      setSelectedListingError(null);
+    }
+  }, [urlListingId]);
+
+  // ── FETCH / RESOLVE SELECTED LISTING ──
+  useEffect(() => {
+    if (!selectedListingId) {
+      setSelectedListing(null);
+      setSelectedListingError(null);
+      setIsLoadingSelected(false);
+      return;
+    }
+
+    // 1. Kiểm tra trong danh sách context hiện có
+    const foundInContext = listings.find((l) => l.id === selectedListingId);
+    if (foundInContext) {
+      setSelectedListing(foundInContext);
+      setSelectedListingError(null);
+      setIsLoadingSelected(false);
+      return;
+    }
+
+    // 2. Fetch từ API route nếu chưa có trong memory
+    let isCancelled = false;
+    setIsLoadingSelected(true);
+    setSelectedListingError(null);
+
+    fetch(`/api/listings/${encodeURIComponent(selectedListingId)}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error('Không tìm thấy bất động sản này hoặc tin đăng đã hết hạn.');
+        }
+        const json = await res.json();
+        const data = json.data || json;
+        if (!isCancelled) {
+          if (data && data.id) {
+            setSelectedListing(data);
+            setSelectedListingError(null);
+          } else {
+            setSelectedListing(null);
+            setSelectedListingError('Không tìm thấy bất động sản này hoặc tin đăng đã hết hạn.');
+          }
+        }
+      })
+      .catch((err) => {
+        if (!isCancelled) {
+          setSelectedListing(null);
+          setSelectedListingError(err.message || 'Không thể tải thông tin bất động sản.');
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsLoadingSelected(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedListingId, listings]);
 
   // ── URL PARAM SYNC (Debounced 500ms) ──
   const updateURL = useCallback(() => {
@@ -137,9 +220,14 @@ export function SearchContent({
     if (filters.nearMetro) params.set('metro', 'true');
     if (viewMode !== 'map') params.set('view', viewMode);
 
+    // Lưu giữ listingId nếu preview đang mở
+    if (selectedListingId && isPreviewOpen) {
+      params.set('listingId', selectedListingId);
+    }
+
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [filters, viewMode, pathname, router, initialKeyword, initialType, initialPurpose, initialDistrict]);
+  }, [filters, viewMode, pathname, router, initialKeyword, initialType, initialPurpose, initialDistrict, selectedListingId, isPreviewOpen]);
 
   useEffect(() => {
     const timer = setTimeout(updateURL, 500);
@@ -148,9 +236,13 @@ export function SearchContent({
 
   // ── FILTER & SORT DATA ──
   const filteredListings = useMemo(() => {
-    const filtered = filterListings(listings, filters);
+    let filtered = filterListings(listings, filters);
+    // Nếu có selectedListing nhưng bị bộ lọc vô tình loại trừ, tự động đưa lên đầu
+    if (selectedListing && !filtered.some((l) => l.id === selectedListing.id)) {
+      filtered = [selectedListing, ...filtered];
+    }
     return sortListings(filtered, sortBy);
-  }, [listings, filters, sortBy]);
+  }, [listings, filters, sortBy, selectedListing]);
 
   // ── ACTIVE FILTER COUNT ──
   const activeFilterCount = useMemo(() => {
@@ -219,14 +311,39 @@ export function SearchContent({
     []
   );
 
-  // ── BIDIRECTIONAL SYNC HANDLERS ──
+  // ── BIDIRECTIONAL SYNC & PREVIEW HANDLERS ──
   const handleListingSelect = useCallback((id: string) => {
     setSelectedListingId(id);
+    setIsPreviewOpen(true);
+    setSidebarTab('listings');
+
+    // Cập nhật ngay query param ?listingId=... lên URL (không reload trang)
+    if (typeof window !== 'undefined') {
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.set('listingId', id);
+      router.replace(`${pathname}?${currentParams.toString()}`, { scroll: false });
+    }
+
     setTimeout(() => {
       const el = document.getElementById(`listing-card-${id}`);
       el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 50);
-  }, []);
+    }, 80);
+  }, [pathname, router]);
+
+  const handleClosePreview = useCallback(() => {
+    setIsPreviewOpen(false);
+    setSelectedListingId(null);
+    setSelectedListing(null);
+    setSelectedListingError(null);
+
+    // Xóa listingId khỏi URL mà không làm mất các filter khác
+    if (typeof window !== 'undefined') {
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.delete('listingId');
+      const qs = currentParams.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    }
+  }, [pathname, router]);
 
   // ── SEO METADATA (CHỈ ÁP DỤNG TRANG SEARCH GỐC NẾU ĐƯỢC BẬT) ──
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
@@ -381,6 +498,28 @@ export function SearchContent({
         <div className="flex-1 relative min-h-0 overflow-hidden bg-slate-100 dark:bg-slate-950">
           <AnimatePresence mode="wait">
             
+            {/* DETAIL PREVIEW (DESKTOP SPLIT VIEW KHI CHỌN 1 BĐS) */}
+            {isPreviewOpen && (selectedListing || isLoadingSelected || selectedListingError) ? (
+              <motion.div
+                key={`preview-${selectedListingId}`}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+                className="hidden md:flex absolute inset-0 z-30 bg-white dark:bg-slate-900 overflow-hidden flex-col"
+              >
+                <SearchDetailPreview
+                  listing={selectedListing}
+                  isLoading={isLoadingSelected}
+                  error={selectedListingError}
+                  onClose={handleClosePreview}
+                  isSaved={selectedListing ? savedListingIds.includes(selectedListing.id) : false}
+                  onSaveToggle={toggleSaveListing}
+                  isMobile={false}
+                />
+              </motion.div>
+            ) : null}
+
             {/* VIEW MODE 1: Interactive GIS MAP */}
             {viewMode === 'map' && (
               <motion.div
@@ -437,7 +576,13 @@ export function SearchContent({
                 <div className="max-w-7xl mx-auto">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {filteredListings.map((listing) => (
-                      <ListingCard key={listing.id} listing={listing} />
+                      <ListingCard
+                        key={listing.id}
+                        listing={listing}
+                        navigationMode="search"
+                        onSelect={handleListingSelect}
+                        isSelected={selectedListingId === listing.id}
+                      />
                     ))}
                   </div>
                 </div>
@@ -461,7 +606,9 @@ export function SearchContent({
                       listing={listing}
                       index={idx}
                       isSaved={savedListingIds.includes(listing.id)}
+                      isSelected={selectedListingId === listing.id}
                       onSaveToggle={toggleSaveListing}
+                      onSelect={handleListingSelect}
                     />
                   ))}
                 </div>
@@ -472,6 +619,38 @@ export function SearchContent({
         </div>
 
       </div>
+
+      {/* ━━ MOBILE BOTTOM SHEET FOR DETAIL PREVIEW ━━ */}
+      <AnimatePresence>
+        {isPreviewOpen && (selectedListing || isLoadingSelected || selectedListingError) && (
+          <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+              className="bg-white dark:bg-slate-900 rounded-t-3xl h-[88dvh] max-h-[88dvh] flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Mobile handle indicator */}
+              <div className="py-2 flex justify-center shrink-0 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+                <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full" />
+              </div>
+
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <SearchDetailPreview
+                  listing={selectedListing}
+                  isLoading={isLoadingSelected}
+                  error={selectedListingError}
+                  onClose={handleClosePreview}
+                  isSaved={selectedListing ? savedListingIds.includes(selectedListing.id) : false}
+                  onSaveToggle={toggleSaveListing}
+                  isMobile={true}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ━━ MOBILE BOTTOM SHEET FOR FILTERS ━━ */}
       <AnimatePresence>

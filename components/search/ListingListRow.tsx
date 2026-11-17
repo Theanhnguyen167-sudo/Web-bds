@@ -12,33 +12,47 @@ interface ListingListRowProps {
   listing: ListingItem;
   index: number;
   isSaved?: boolean;
+  isSelected?: boolean;
   onSaveToggle?: (id: string) => void;
+  onSelect?: (id: string) => void;
 }
 
 export const ListingListRow: React.FC<ListingListRowProps> = ({
   listing,
   index,
   isSaved,
+  isSelected,
   onSaveToggle,
+  onSelect,
 }) => {
   const listingUrl = getListingUrl(listing);
 
   return (
     <motion.div
+      id={`listing-card-${listing.id}`}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: index * 0.03 }}
-      className="group relative flex flex-col sm:flex-row bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-orange-200 dark:hover:border-orange-900/50 transition-all duration-200 overflow-hidden"
+      onClick={() => onSelect && onSelect(listing.id)}
+      className={`group relative flex flex-col sm:flex-row bg-white dark:bg-slate-900 rounded-2xl border transition-all duration-200 overflow-hidden cursor-pointer ${
+        isSelected
+          ? 'border-orange-500 bg-orange-50/30 dark:bg-orange-950/20 ring-2 ring-orange-500/20 shadow-md'
+          : 'border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-orange-200 dark:hover:border-orange-900/50'
+      }`}
     >
       {/* Image Left */}
-      <div className="relative sm:w-56 h-48 sm:h-auto overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
-        <Link href={listingUrl}>
-          <img
-            src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'}
-            alt={listing.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </Link>
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect && onSelect(listing.id);
+        }}
+        className="relative sm:w-56 h-48 sm:h-auto overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 cursor-pointer"
+      >
+        <img
+          src={listing.images[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80'}
+          alt={listing.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {listing.isFeatured && (
             <span className="bg-orange-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md shadow">

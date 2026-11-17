@@ -778,6 +778,7 @@ export default function HomePage() {
                   const firstImage = listing.images?.[0] || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80';
                   const isVerified = listing.verificationStatus === 'verified' || listing.verificationStatus === 'Đã kiểm tra' || (listing as any).isVerified;
                   const updatedDate = listing.updatedAt ? (listing.updatedAt.includes('T') ? listing.updatedAt.split('T')[0] : listing.updatedAt) : null;
+                  const searchTargetUrl = `/search?listingId=${encodeURIComponent(listing.id)}&purpose=${encodeURIComponent(isRent ? 'rent' : 'sale')}${listing.type ? `&type=${encodeURIComponent(listing.type)}` : ''}${listing.district ? `&district=${encodeURIComponent(listing.district)}` : ''}`;
 
                   return (
                     <div
@@ -785,9 +786,9 @@ export default function HomePage() {
                       className="w-[275px] sm:w-[295px] md:w-[315px] lg:w-[335px] xl:w-[345px] shrink-0 snap-start"
                     >
                       <div
-                        onClick={() => router.push(getListingUrl(listing))}
+                        onClick={() => router.push(searchTargetUrl)}
                         className="group/card relative flex flex-col h-[405px] sm:h-[420px] overflow-hidden rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-sm hover:shadow-2xl hover:shadow-orange-500/15 hover:border-orange-400 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer select-none"
-                        title="Nhấp để xem nội dung chi tiết bài đăng"
+                        title="Nhấp để xem trước trên trang tìm kiếm"
                       >
                         {/* Thumbnail Image Container */}
                         <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 shrink-0">
@@ -850,8 +851,12 @@ export default function HomePage() {
                           {/* Title */}
                           <div className="h-10 sm:h-11 flex items-start mb-1.5">
                             <Link
-                              href={getListingUrl(listing)}
-                              onClick={(e) => e.stopPropagation()}
+                              href={searchTargetUrl}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                router.push(searchTargetUrl);
+                              }}
                               className="line-clamp-2 text-xs sm:text-[13px] font-extrabold leading-snug text-slate-800 transition-colors hover:text-orange-600 block cursor-pointer"
                               title={listing.title}
                             >
@@ -901,7 +906,7 @@ export default function HomePage() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                router.push(getListingUrl(listing));
+                                router.push(searchTargetUrl);
                               }}
                               className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-extrabold text-xs transition-all shadow-xs hover:shadow-md cursor-pointer"
                             >
@@ -909,10 +914,14 @@ export default function HomePage() {
                               <span>Xem chi tiết</span>
                             </button>
                             <Link
-                              href={getListingUrl(listing)}
-                              onClick={(e) => e.stopPropagation()}
+                              href={searchTargetUrl}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                router.push(searchTargetUrl);
+                              }}
                               className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors shrink-0"
-                              title="Mở toàn bộ trang chi tiết riêng"
+                              title="Xem chi tiết trên trang tìm kiếm"
                             >
                               <ExternalLink className="h-3.5 w-3.5" />
                             </Link>

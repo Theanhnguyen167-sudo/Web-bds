@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { findListingBySlug, getListingUrl, getValidListingSlugParams } from '@/lib/listing-slug';
+import { getListingUrl, getValidListingSlugParams } from '@/lib/listing-slug';
 import { ListingBySlugClient } from '@/components/listing/ListingBySlugClient';
+import { getListingBySlugOrIdServer } from '@/lib/services/listing-lookup';
 
 interface ListingSlugPageProps {
   params: {
@@ -20,7 +21,11 @@ export async function generateMetadata({ params, searchParams }: ListingSlugPage
   const { propertyType, district, slug } = params;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hanoirealty.vn';
 
-  const listing = findListingBySlug(slug, propertyType, district, undefined, 'mua-ban');
+  const listing = await getListingBySlugOrIdServer(slug, {
+    propertyType,
+    district,
+    transactionType: 'mua-ban',
+  });
   if (!listing) return {};
 
   const canonicalUrl = `${baseUrl}${getListingUrl(listing)}`;
@@ -58,11 +63,15 @@ export async function generateMetadata({ params, searchParams }: ListingSlugPage
   };
 }
 
-export default function ListingSlugPage({ params }: ListingSlugPageProps) {
+export default async function ListingSlugPage({ params }: ListingSlugPageProps) {
   const { propertyType, district, slug } = params;
 
-  // Tra cứu listing từ mock-data / database server-side
-  const listing = findListingBySlug(slug, propertyType, district, undefined, 'mua-ban');
+  // Tra cứu listing từ database Supabase / mock-data server-side thống nhất
+  const listing = await getListingBySlugOrIdServer(slug, {
+    propertyType,
+    district,
+    transactionType: 'mua-ban',
+  });
 
   if (listing) {
     const canonicalUrl = getListingUrl(listing);
@@ -80,6 +89,7 @@ export default function ListingSlugPage({ params }: ListingSlugPageProps) {
         district={district}
         slug={slug}
         initialListingId={listing.id}
+        initialListing={listing}
         transactionType="mua-ban"
       />
     );

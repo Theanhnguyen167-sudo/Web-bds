@@ -28,11 +28,31 @@ import { getListingUrl } from '@/lib/listing-slug';
 interface ListingCardProps {
   listing: ListingItem;
   onPhotoClick?: (listing: ListingItem) => void;
+  navigationMode?: 'search' | 'detail';
+  onSelect?: (id: string) => void;
+  isSelected?: boolean;
 }
 
-export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick }) => {
+export const ListingCard: React.FC<ListingCardProps> = ({
+  listing,
+  onPhotoClick,
+  navigationMode = 'detail',
+  onSelect,
+  isSelected: isSelectedProp,
+}) => {
   const router = useRouter();
   const listingUrl = getListingUrl(listing);
+
+  const getSearchTargetUrl = (item: ListingItem) => {
+    const params = new URLSearchParams();
+    params.set('listingId', item.id);
+    if (item.purpose) params.set('purpose', item.purpose);
+    if (item.type) params.set('type', item.type);
+    if (item.district) params.set('district', item.district);
+    return `/search?${params.toString()}`;
+  };
+
+  const targetUrl = navigationMode === 'search' ? getSearchTargetUrl(listing) : listingUrl;
   const {
     activeListingId,
     setActiveListingId,
@@ -44,7 +64,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
 
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
-  const isSelected = activeListingId === listing.id;
+  const isSelected = isSelectedProp !== undefined ? isSelectedProp : activeListingId === listing.id;
   const isHovered = hoveredListingId === listing.id;
   const isSaved = savedListingIds.includes(listing.id);
 
@@ -57,7 +77,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
   };
 
   const handleCardClick = () => {
-    router.push(listingUrl);
+    if (onSelect) {
+      onSelect(listing.id);
+      return;
+    }
+    router.push(targetUrl);
   };
 
   return (
@@ -163,8 +187,16 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onPhotoClick 
 
           {/* Title — Card Title khoảng 18-20px (text-base lg:text-[18px]) */}
           <Link
-            href={listingUrl}
-            onClick={(e) => e.stopPropagation()}
+            href={targetUrl}
+            onClick={(e) => {
+              if (navigationMode === 'search') {
+                e.preventDefault();
+                e.stopPropagation();
+                router.push(targetUrl);
+              } else {
+                e.stopPropagation();
+              }
+            }}
             className="line-clamp-2 text-base sm:text-[17px] lg:text-[18px] font-bold leading-snug text-slate-900 hover:text-orange-600 transition-colors block cursor-pointer"
           >
             {listing.title}

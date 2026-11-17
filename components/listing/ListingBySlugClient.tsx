@@ -3,6 +3,7 @@
 import React from 'react';
 import { useApp } from '@/lib/context/AppContext';
 import { findListingBySlug } from '@/lib/listing-slug';
+import { ListingItem } from '@/lib/mock-data';
 import ListingDetailClient from '@/components/listing/ListingDetailClient';
 
 interface ListingBySlugClientProps {
@@ -10,6 +11,7 @@ interface ListingBySlugClientProps {
   district: string;
   slug: string;
   initialListingId?: string;
+  initialListing?: ListingItem | null;
   transactionType?: 'mua-ban' | 'cho-thue';
 }
 
@@ -18,17 +20,20 @@ export function ListingBySlugClient({
   district,
   slug,
   initialListingId,
+  initialListing,
   transactionType = 'mua-ban',
 }: ListingBySlugClientProps) {
   const { listings } = useApp();
 
-  // 1. Nếu server đã xác định được ID từ database / mock-data, ưu tiên dùng ngay
-  // 2. Nếu server chưa có (listing mới tạo trên trình duyệt lưu localStorage), client tìm trong useApp().listings
-  const targetListing = initialListingId
-    ? listings.find((l) => l.id === initialListingId) || { id: initialListingId }
-    : findListingBySlug(slug, propertyType, district, listings, transactionType);
+  // 1. Ưu tiên dữ liệu initialListing được truyền trực tiếp từ Server Component
+  // 2. Nếu chưa có, tìm trong listings của AppContext
+  // 3. Tra cứu slug với tập listings hiện có
+  const targetListing =
+    initialListing ||
+    (initialListingId ? listings.find((l) => l.id === initialListingId) : null) ||
+    findListingBySlug(slug, propertyType, district, listings, transactionType);
 
-  const listingId = targetListing?.id || initialListingId || '1';
+  const listingId = targetListing?.id || initialListingId || slug;
 
-  return <ListingDetailClient listingId={listingId} />;
+  return <ListingDetailClient listingId={listingId} initialListing={initialListing || targetListing} />;
 }
