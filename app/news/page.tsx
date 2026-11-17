@@ -980,6 +980,13 @@ function NewsContent() {
                           Thông tin tiến độ thi công các trục vành đai và mạng lưới Metro
                         </p>
                       </div>
+                      <button
+                        onClick={() => setSelectedCategory('planning')}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors shrink-0"
+                      >
+                        <span>Xem tất cả bài viết quy hoạch</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
                     </div>
 
                     {/* Lưới 2 cột Card ngang rộng rãi */}
