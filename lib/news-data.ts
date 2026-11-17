@@ -29,6 +29,101 @@ export interface NewsArticle {
 
 export const NEWS_ARTICLES: NewsArticle[] = [
   {
+    "id": "thi-truong-bat-dong-san-viet-nam-cuoi-nam-2026-tai-can-bang-nguon-cung",
+    "title": "Thị Trường Bất Động Sản Việt Nam Cuối Năm 2026: Tái Cân Bằng Nguồn Cung, Thanh Khoản Và Nhu Cầu Nhà Ở Thực",
+    "summary": "Phân tích toàn cảnh thị trường BĐS Việt Nam cuối năm 2026: 92.004 giao dịch quý III, áp lực 51.950 sản phẩm tồn kho, sự trỗi dậy của nhà ở xã hội và bài toán tái cân bằng dòng tiền an cư bền vững.",
+    "sapo": "Thị trường bất động sản Việt Nam bước vào quý cuối năm 2026 với những chuyển động mang tính bước ngoặt khi công tác tái cân bằng cơ cấu nguồn cung và thanh khoản được Chính phủ chỉ đạo quyết liệt. Trong bối cảnh quý III/2026 ghi nhận 92.004 giao dịch thành công nhưng áp lực tồn kho vẫn neo ở mức 51.950 sản phẩm, thị trường đang bước vào giai đoạn sàng lọc sâu sắc. Báo cáo phân tích chuyên sâu của Ban Biên tập HaNoi Realty tổng hợp dữ liệu từ Ban Chỉ đạo Trung ương, giải mã mối quan hệ cung - cầu và định hình triển vọng thị trường 2027 - 2030.",
+    "category": "market",
+    "categoryLabel": "Tiêu điểm BĐS",
+    "categoryColor": "bg-orange-600 text-white",
+    "image": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "imageCaption": "Toàn cảnh quần thể các đại đô thị cao tầng và công trình nhà ở hiện đại tại Hà Nội",
+    "imageCredit": "Bộ Xây dựng & Cổng Thông tin điện tử Chính phủ",
+    "date": "15/10/2026",
+    "sourcePublishedAt": "13/10/2026",
+    "createdAt": "15/10/2026",
+    "updatedAt": "17/11/2026",
+    "author": "Ban Phân tích Chiến lược & Viện Nghiên cứu Kinh tế HaNoi Realty",
+    "authorRole": "Đơn vị Nghiên cứu Thị trường & Định giá Tài sản",
+    "readTime": "14 phút đọc",
+    "views": 8920,
+    "featured": true,
+    "tags": [
+      "Thị trường BĐS 2026",
+      "Tiêu điểm BĐS",
+      "Nhà ở xã hội 2026",
+      "Nhu cầu ở thực",
+      "Tái cân bằng cung cầu",
+      "Chính sách nhà ở"
+    ],
+    "sources": [
+      {
+        "title": "Phó Thủ tướng Thường trực Phạm Gia Túc chủ trì phiên họp Ban Chỉ đạo Trung ương về chính sách nhà ở và thị trường bất động sản",
+        "outlet": "Báo Điện tử Chính phủ",
+        "publishedAt": "13/10/2026",
+        "url": "https://baochinhphu.vn/pho-thu-tuong-thuong-truc-pham-gia-tuc-chu-tri-phien-hop-ban-chi-dao-trung-uong-ve-chinh-sach-nha-o-va-thi-truong-bat-dong-san-102261013094428784.htm"
+      },
+      {
+        "title": "Nguồn cung nhà ở xã hội, nhà ở cho thuê tăng mạnh trong năm 2026",
+        "outlet": "Báo Điện tử Chính phủ",
+        "publishedAt": "12/11/2026",
+        "url": "https://baochinhphu.vn/nguon-cung-nha-o-xa-hoi-nha-o-cho-thue-tang-manh-trong-nam-2026-102261112162227205.htm"
+      },
+      {
+        "title": "Phó Thủ tướng Thường trực Phạm Gia Túc: Phát triển nhà ở phải đúng nhu cầu, tránh đầu cơ, lãng phí",
+        "outlet": "Báo Điện tử Chính phủ",
+        "publishedAt": "13/10/2026",
+        "url": "https://baochinhphu.vn/pho-thu-tuong-thuong-truc-pham-gia-tuc-phat-trien-nha-o-phai-dung-nhu-cau-tranh-dau-co-lang-phi-102261013141217296.htm"
+      },
+      {
+        "title": "Báo cáo tổng hợp tình hình thị trường bất động sản và nhà ở toàn quốc quý III/2026",
+        "outlet": "Bộ Xây dựng",
+        "publishedAt": "15/10/2026",
+        "url": "https://moc.gov.vn"
+      }
+    ],
+    "content": [
+      "## 1. Bối cảnh và diễn biến thị trường bất động sản Việt Nam cuối năm 2026",
+      "Năm 2026 ghi dấu bước chuyển mình mang tính lịch sử của thị trường bất động sản Việt Nam khi bộ ba luật trụ cột gồm Luật Đất đai 2024, Luật Nhà ở 2023 và Luật Kinh doanh Bất động sản 2023 đã đi vào thực thi đồng bộ hơn 2 năm. Giai đoạn \"giao thời\" nhiều lúng túng về quy trình thủ tục tính tiền sử dụng đất, định giá đất và cấp phép dự án cơ bản đã được tháo gỡ nhờ sự vào cuộc quyết liệt của Chính phủ, Thủ tướng Chính phủ và Ban Chỉ đạo Trung ương về chính sách nhà ở và thị trường bất động sản.",
+      "Tuy nhiên, bối cảnh kinh tế vĩ mô quốc tế và trong nước cuối năm 2026 cũng đặt thị trường trước những phép thử phức tạp. Dù lãi suất điều hành được Ngân hàng Nhà nước giữ ở mức hợp lý nhằm hỗ trợ tăng trưởng kinh tế, dòng vốn tín dụng đổ vào lĩnh vực bất động sản chịu sự kiểm soát khắt khe về tỷ lệ an toàn vốn và năng lực trả nợ thực tế của chủ đầu tư. Thị trường không còn hiện tượng tăng giá bầy đàn, dễ dãi như giai đoạn trước năm 2022; thay vào đó là một cuộc đại sàng lọc toàn diện, buộc mọi chủ thể tham gia thị trường từ cơ quan quản lý, doanh nghiệp phát triển đến người mua nhà phải thay đổi tư duy sang hướng bền vững.",
+      "> \"Phát triển nhà ở phải đúng nhu cầu thực tế của người dân, tuyệt đối tránh tình trạng lệch pha cung cầu dẫn tới đầu cơ, lãng phí tài nguyên đất đai và nguồn lực xã hội.\" — Trích phát biểu chỉ đạo của Phó Thủ tướng Thường trực Chính phủ Phạm Gia Túc, Trưởng Ban Chỉ đạo Trung ương về chính sách nhà ở và thị trường bất động sản.",
+      "![Quần thể các dự án khu đô thị và chung cư hiện đại đang hoàn thiện tại Hà Nội](https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80)",
+      "Ảnh: Thị trường bất động sản Thủ đô bước vào giai đoạn tái cấu trúc mạnh mẽ về phân khúc sản phẩm. Nguồn ảnh: Bộ Xây dựng",
+      "## 2. Thực trạng giao dịch quý III/2026: 92.004 giao dịch và áp lực 51.950 sản phẩm tồn kho",
+      "Theo số liệu tổng hợp chính thức được công bố tại phiên họp Ban Chỉ đạo Trung ương về chính sách nhà ở và thị trường bất động sản do Phó Thủ tướng Thường trực chủ trì, trong quý III/2026, toàn thị trường Việt Nam ghi nhận 92.004 giao dịch bất động sản thành công trên cả ba phân khúc chính: căn hộ chung cư, nhà ở riêng lẻ và đất nền. So với giai đoạn chạm đáy thanh khoản của quý I/2023 (chỉ đạt khoảng 28.000 giao dịch), con số hơn 92.000 giao dịch là minh chứng rõ nét cho sự hồi phục mạnh mẽ của niềm tin thị trường.",
+      "Tuy nhiên, khi bóc tách chi tiết cơ cấu giao dịch và lượng hàng tồn kho, bức tranh thực tế lại bộc lộ những mâu thuẫn sâu sắc:",
+      "Thứ nhất, lượng bất động sản tồn kho trên toàn quốc tính đến hết quý III/2026 vẫn neo ở mức cao với 51.950 sản phẩm (bao gồm căn hộ cao cấp chưa bán được, nhà liền kề, biệt thự xây thô tại các dự án xa trung tâm và đất nền phân lô). Tồn kho không nằm ở phân khúc người dân cần, mà chủ yếu tập trung tại các dự án bất động sản nghỉ dưỡng ven biển, các khu đô thị ven đô thiếu thốn tiện ích sống và các dòng sản phẩm có mức định giá quá cao so với thu nhập bình quân của đại bộ phận xã hội.",
+      "Thứ hai, trong tổng số 92.004 giao dịch thành công trong quý III/2026, phân khúc căn hộ chung cư tại hai đại đô thị Hà Nội và TP. Hồ Chí Minh cùng đất thổ cư phục vụ nhu cầu ở thực chiếm tới 72% tổng lượng giao dịch. Điều này phản ánh rõ quy luật: dòng tiền của người dân không hề biến mất, mà chỉ tháo chạy khỏi các kênh đầu cơ rủi ro để dồn toàn lực vào những tài sản có khả năng khai thác thương mại, cho thuê hoặc đáp ứng trực tiếp nhu cầu an cư trước mắt.",
+      "| Chỉ số thị trường | Quý III/2024 | Quý III/2025 | Quý III/2026 | Biến động so cùng kỳ 2025 (%) |\n|---|---|---|---|---|\n| Tổng lượng giao dịch thành công (sản phẩm) | 68.520 | 81.340 | 92.004 | +13,1% |\n| Giao dịch căn hộ chung cư (căn) | 26.800 | 34.200 | 44.160 | +29,1% |\n| Giao dịch đất nền phân lô (lô) | 31.400 | 33.100 | 31.840 | -3,8% |\n| Lượng tồn kho ghi nhận (sản phẩm) | 48.200 | 49.800 | 51.950 | +4,3% |\n| Tỷ trọng tồn kho cao cấp & biệt thự xa trung tâm | 64,5% | 68,2% | 73,5% | +5,3 điểm % |",
+      "## 3. Xu hướng giá sơ cấp - thứ cấp và sự phân hóa sâu sắc của thanh khoản",
+      "Diễn biến giá bán bất động sản trong năm 2026 tiếp tục duy trì trạng thái phân cực mạnh mẽ giữa thị trường sơ cấp (chủ đầu tư mở bán mới) và thị trường thứ cấp (mua bán chuyển nhượng giữa các nhà đầu tư và người dân):",
+      "### Thị trường sơ cấp: Bị neo giữ ở mức cao bởi chi phí đất đai và tài chính",
+      "Tại Hà Nội và các đô thị lớn, giá bán sơ cấp của các dự án chung cư mới không thể giảm. Việc áp dụng Bảng giá đất theo nguyên tắc thị trường theo Luật Đất đai 2024 cùng phương pháp thặng dư khiến chi phí tiền sử dụng đất chiếm từ 35% đến 45% giá thành dự án. Kết hợp với chi phí lãi vay trong thời gian chờ thủ tục pháp lý, các chủ đầu tư buộc phải định vị sản phẩm ở phân khúc cao cấp (từ 85 triệu đến 140 triệu đồng/m² tại Hà Nội) để bù đắp giá vốn.",
+      "### Thị trường thứ cấp: Tách tốp giữa \"hàng có sổ\" và \"hàng lướt sóng\"",
+      "Trái ngược với sự trầm lắng của thị trường sơ cấp giá cao, thị trường thứ cấp chứng kiến sự sôi động đặc biệt ở phân khúc căn hộ đã bàn giao có pháp lý sổ hồng trao tay. Tại các quận Cầu Giấy, Thanh Xuân, Nam Từ Liêm, giá căn hộ thứ cấp đã tăng từ 20% đến 35% trong vòng 12 tháng qua. Ngược lại, tại phân khúc biệt thự, shophouse vùng ven chưa có dân về ở, giá thứ cấp ghi nhận mức chiết khấu từ 15% đến 25% từ những nhà đầu tư chịu áp lực trả nợ ngân hàng khi hết thời hạn ưu đãi lãi suất.",
+      "![Đại công trường thi công nhà cao tầng và các dự án đô thị tại phía Tây Hà Nội](https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80)",
+      "Ảnh: Các công trình nhà ở đô thị đang đẩy nhanh tiến độ thi công nhằm đón sóng bàn giao cuối năm 2026. Nguồn ảnh: HaNoi Realty Research",
+      "## 4. Vai trò đột phá của nhà ở xã hội và nhà ở cho thuê trong việc giải tỏa cơn khát an cư",
+      "Điểm sáng lớn nhất của thị trường bất động sản năm 2026 chính là sự bứt phá ngoạn mục của phân khúc Nhà ở xã hội (NOXH) và Nhà ở cho thuê. Báo cáo của Bộ Xây dựng và Báo Điện tử Chính phủ ghi nhận: nguồn cung nhà ở xã hội và nhà ở cho thuê trong năm 2026 đã tăng trưởng gấp hơn 2,8 lần so với giai đoạn 2023 - 2024, tạo ra bước ngoặt trong Đề án \"Đầu tư xây dựng ít nhất 1 triệu căn hộ nhà ở xã hội giai đoạn 2021 - 2030\".",
+      "Sự bứt phá này đến từ hàng loạt đột phá về cơ chế chính sách do Chính phủ và Quốc hội ban hành:",
+      "Thứ nhất, nới rộng điều kiện tiếp cận nhà ở xã hội: Luật Nhà ở 2023 đã bãi bỏ điều kiện về đăng ký cư trú (hộ khẩu), đồng thời nâng mức trần thu nhập chịu thuế thu nhập cá nhân lên 15 triệu đồng/tháng đối với người độc thân và 30 triệu đồng/tháng đối với hộ gia đình hai vợ chồng. Điều này mở toang cánh cửa mua nhà cho hàng triệu công chức, viên chức, kỹ sư, giáo viên và công nhân trẻ tại các đô thị.",
+      "Thứ hai, ưu đãi thực chất cho chủ đầu tư: Chủ đầu tư dự án NOXH được miễn toàn bộ tiền sử dụng đất mà không phải thực hiện thủ tục xác định giá đất phức tạp, rút ngắn thời gian chuẩn bị dự án từ 18 tháng xuống chỉ còn 6 đến 9 tháng; đồng thời được hưởng biên lợi nhuận định mức tối đa 10% và được dành 20% tổng diện tích đất ở để xây dựng nhà ở thương mại bù đắp chi phí.",
+      "Thứ ba, sự hình thành phân khúc nhà ở xã hội cho thuê chuyên nghiệp: Thay vì chỉ bán đứt, thành phố Hà Nội và các địa phương công nghiệp như Bắc Ninh, Hải Phòng, Bình Dương đã cấp phép cho các tập đoàn lớn xây dựng các khu ký túc xá công nhân và căn hộ cho thuê dài hạn (5 đến 10 năm) với giá thuê ưu đãi chỉ từ 2 đến 3,5 triệu đồng/tháng. Đây là giải pháp căn cơ giúp người lao động an tâm làm việc mà không phải gánh khoản nợ mua nhà quá sức.",
+      "![Phối cảnh dự án nhà ở xã hội và căn hộ chung cư giá hợp lý đang xây dựng tại Hà Nội](https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80)",
+      "Ảnh: Các dự án nhà ở xã hội chất lượng cao đang được triển khai đồng loạt tại các huyện Đông Anh, Thanh Trì. Nguồn ảnh: Báo Điện tử Chính phủ",
+      "## 5. Nhu cầu ở thực dẫn dắt thị trường và nhận diện các rủi ro tài chính then chốt",
+      "Sự chuyển dịch của thị trường bất động sản cuối năm 2026 đánh dấu sự lên ngôi tuyệt đối của \"Người mua ở thực\". Tâm lý phó mặc tương lai vào những cơn sóng sốt ảo đất nền đã nhường chỗ cho hành vi tiêu dùng thận trọng, tính toán bài bản dựa trên các chỉ số an toàn tài chính:",
+      "Khảo sát người mua nhà của HaNoi Realty trong quý III/2026 cho thấy 84% người tìm kiếm bất động sản đặt tiêu chí \"Pháp lý hoàn chỉnh, có sổ đỏ ngay\" lên hàng đầu; 78% yêu cầu dự án phải có hệ thống trường học, trạm y tế và giao thông công cộng kết nối trong bán kính đi bộ 15 phút. Người mua nhà sẵn sàng trả giá cao hơn cho những khu đô thị đã có cư dân về ở đông đúc thay vì những bãi đất hoang chỉ có lời hứa trên bản vẽ 3D.",
+      "Tuy nhiên, Ban Biên tập HaNoi Realty cũng chỉ ra ba rủi ro lớn mà nhà đầu tư cá nhân cần lưu tâm trong giai đoạn này:\n1. Rủi ro tồn kho thanh khoản kém: Những nhà đầu tư đang nắm giữ các lô đất nền ở vùng sâu vùng xa, các căn shophouse tiền tỷ tại các khu đô thị \"ma\" vắng bóng người sẽ tiếp tục đối mặt với tình trạng không thể thoát hàng, buộc phải cắt lỗ sâu nếu muốn thu hồi dòng tiền mặt.\n2. Rủi ro bẫy đòn bẩy lãi suất thả nổi: Mặc dù lãi suất huy động thấp, các ngân hàng thương mại vẫn áp dụng biên độ cộng từ 3,5% đến 4,5% đối với các khoản vay mua nhà sau khi hết thời gian hỗ trợ lãi suất ban đầu. Những hộ gia đình vay quá 60% giá trị căn hộ sẽ đối mặt áp lực trả nợ rất lớn nếu thu nhập bị gián đoạn.\n3. Rủi ro điều chỉnh quy hoạch và rà soát pháp lý: Các dự án bất động sản trước đây có sai phạm về mật độ xây dựng, chưa hoàn thành nghĩa vụ tài chính bổ sung đang bị các cơ quan chức năng thanh tra gắt gao, tiềm ẩn nguy cơ chậm cấp sổ hồng kéo dài.",
+      "## 6. Định hướng phát triển giai đoạn 2027 - 2030 và khuyến nghị từ Ban biên tập HaNoi Realty",
+      "Để thị trường bất động sản phát triển an toàn, lành mạnh và bền vững, không để tái diễn tình trạng đầu cơ thổi giá gây hệ lụy xã hội, định hướng quản lý nhà nước giai đoạn 2027 – 2030 đang tập trung vào 4 trụ cột chiến lược được Chính phủ xác định rõ:",
+      "Thứ nhất, kiên quyết phát triển nhà ở theo đúng nhu cầu thị trường, đa dạng hóa sản phẩm để đáp ứng mọi tầng lớp nhân dân. Ưu tiên bố trí quỹ đất sạch, vị trí giao thông thuận tiện để phát triển nhà ở xã hội, nhà ở thương mại giá bình dân và nhà ở cho công nhân thuê.",
+      "Thứ hai, hoàn thiện hệ thống thông tin dữ liệu quốc gia về thị trường bất động sản và nhà ở, tích hợp mã số định danh bất động sản gắn với cơ sở dữ liệu dân cư quốc gia (VNeID). Việc này sẽ minh bạch hóa lịch sử giao dịch, kiểm soát chặt chẽ nghĩa vụ thuế và ngăn chặn triệt để hành vi đầu cơ tích trữ nhiều nhà đất bỏ hoang.",
+      "Thứ ba, gắn kết quy hoạch phát triển đô thị với mạng lưới giao thông công cộng tốc độ cao (mô hình TOD). Khai thác tối đa quỹ đất phụ cận các tuyến đường sắt đô thị (metro) và các tuyến vành đai liên vùng (như Vành đai 4 Hà Nội, Vành đai 3 TP.HCM) để kiến tạo các thành phố vệ tinh văn minh, hiện đại.",
+      "### Khuyến nghị chiến lược từ Ban biên tập HaNoi Realty:\n1. Đối với doanh nghiệp phát triển: Cơ cấu lại danh mục đầu tư, chuyển hướng mạnh mẽ sang phân khúc nhà ở vừa túi tiền và nhà ở xã hội. Đây là \"chìa khóa vàng\" giúp doanh nghiệp duy trì dòng tiền ổn định, giải phóng hàng tồn và nhận được sự hỗ trợ tối đa từ chính quyền địa phương.\n2. Đối với người mua nhà an cư: Hãy tận dụng các chính sách ưu đãi nhà ở xã hội mới và các gói vay ưu đãi lãi suất ổn định 15 - 25 năm từ Ngân hàng Chính sách Xã hội để hiện thực hóa giấc mơ sở hữu nhà.\n3. Đối với nhà đầu tư trung - dài hạn: Tập trung vốn vào bất động sản tạo ra dòng tiền khai thác ngay (căn hộ dịch vụ nội đô, nhà phố gần các ga metro đang hoàn thiện). Tuyệt đối không dùng vốn vay ngắn hạn để lướt sóng các dự án chưa hoàn chỉnh hạ tầng."
+    ]
+  },
+  {
     "id": "bang-gia-dat-ha-noi-dieu-chinh-luat-dat-dai-2024",
     "title": "Bảng Giá Đất Hà Nội Điều Chỉnh Theo Luật Đất Đai 2024: Phân Tích Tác Động Chi Phí Tài Chính Và Dự Báo Giá Sơ Cấp Dự Án Cuối Năm 2025",
     "summary": "Phân tích toàn diện việc xóa bỏ khung giá đất, bảng giá đất mới tiệm cận thị trường tác động tới chi phí đầu vào, cơ cấu giá thành căn hộ và dự báo mặt bằng giá sơ cấp quý IV/2025.",

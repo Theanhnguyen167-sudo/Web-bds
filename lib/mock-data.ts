@@ -1,5 +1,6 @@
-  
-  export interface ListingItem {
+
+export interface ListingItem {
+
   id: string;
   code?: string;
   listing_code?: string;
