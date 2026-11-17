@@ -152,7 +152,7 @@ export const mockAdminListings: AdminListing[] = [
     status: 'active',
     createdAt: '2025-08-18',
     expiresAt: '2025-09-18',
-    images: ['https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80'],
+    images: ['https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=600&auto=format&fit=crop&q=80'],
     views: 432,
     planningZone: 'Đất ở đô thị',
     isFeatured: true
@@ -213,7 +213,7 @@ export const mockAdminListings: AdminListing[] = [
     status: 'pending',
     createdAt: '2025-08-23',
     expiresAt: '2025-09-23',
-    images: ['https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop&q=80'],
+    images: ['https://images.unsplash.com/photo-1500076656116-558758c991c1?w=600&auto=format&fit=crop&q=80'],
     views: 34,
     planningZone: 'Đất thương mại dịch vụ',
     isFeatured: false
@@ -233,7 +233,7 @@ export const mockAdminListings: AdminListing[] = [
     status: 'expired',
     createdAt: '2025-07-01',
     expiresAt: '2025-08-01',
-    images: ['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&auto=format&fit=crop&q=80'],
+    images: ['https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600&auto=format&fit=crop&q=80'],
     views: 290,
     planningZone: 'Đất ở đô thị',
     isFeatured: false

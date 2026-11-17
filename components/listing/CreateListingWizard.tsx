@@ -974,10 +974,26 @@ export const CreateListingWizard: React.FC = () => {
                             alt={`Preview ${idx + 1}`}
                             className="w-full h-full object-cover"
                           />
-                          {idx === 0 && (
+                          {idx === 0 ? (
                             <span className="absolute top-1 left-1 bg-orange-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-xs">
                               Bìa
                             </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPostingData((prev) => {
+                                  const nextImages = [...prev.images];
+                                  const [selected] = nextImages.splice(idx, 1);
+                                  return { ...prev, images: [selected, ...nextImages] };
+                                });
+                              }}
+                              className="absolute top-1 left-1 bg-black/60 hover:bg-orange-600 text-white text-[9px] font-medium px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Đặt làm ảnh bìa"
+                            >
+                              Chọn bìa
+                            </button>
                           )}
                           <button
                             type="button"
@@ -988,7 +1004,8 @@ export const CreateListingWizard: React.FC = () => {
                                 images: prev.images.filter((_, i) => i !== idx),
                               }));
                             }}
-                            className="absolute top-1 right-1 p-1 bg-black/60 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-1 right-1 p-1 bg-black/60 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Xóa ảnh này"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>

@@ -172,7 +172,7 @@ export function DistrictPropertyExplorer() {
 
     return mockListings.map((item, idx) => {
       const statusObj = statuses[idx % statuses.length];
-      const validImages = normalizeListingImages(item.images);
+      const validImages = normalizeListingImages(item.images, item.type);
 
       // Mỗi listing sở hữu bộ ảnh riêng từ đúng dữ liệu của chính nó, không lấy ảnh từ listing khác
       const gallery: GalleryImage[] = validImages.map((imgUrl, i) => ({

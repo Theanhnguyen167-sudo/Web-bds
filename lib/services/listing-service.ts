@@ -22,6 +22,8 @@ import { parseLocationCoordinates } from '@/lib/utils';
 import { normalizeListingImages } from '@/lib/listing-images';
 
 export const STORAGE_KEY_LISTINGS = 'hanoi_platform_user_listings';
+export const STORAGE_KEY_LISTINGS_VERSION = 'hanoi_platform_listings_version';
+export const LISTINGS_DATA_VERSION = 'v3_task15_sync';
 export const STORAGE_KEY_NOTIFICATIONS = 'hanoi_realty_notifications';
 export const EVENT_LISTINGS_UPDATED = 'hanoi_listings_updated';
 export const EVENT_NOTIFICATIONS_UPDATED = 'hanoi_notifications_updated';
@@ -122,27 +124,66 @@ function getInitialSeedListings(): ListingItem[] {
 }
 
 /**
- * Lấy toàn bộ danh sách listing từ LocalStorage (Client cache)
+ * Lấy toàn bộ danh sách listing từ LocalStorage (Client cache) với cơ chế tự động đồng bộ hóa phiên bản
  */
 export function getLocalListings(): ListingItem[] {
   if (typeof window === 'undefined') {
     return getInitialSeedListings();
   }
   try {
+    const currentVersion = localStorage.getItem(STORAGE_KEY_LISTINGS_VERSION);
     const raw = localStorage.getItem(STORAGE_KEY_LISTINGS);
+    const seed = getInitialSeedListings();
+    const seedMap = new Map(seed.map((s) => [s.id, s]));
+
     if (raw) {
       const parsed: ListingItem[] = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        // Tự động invalidation nếu phiên bản cache cũ hoặc chưa khớp version mới nhất
+        if (currentVersion !== LISTINGS_DATA_VERSION) {
+          // Bảo lưu toàn bộ tin do người dùng tự tạo trong session (id không thuộc danh sách mock 1-11)
+          const userCreated = parsed.filter((item) => !seedMap.has(item.id));
+          const synchronized = [
+            ...seed,
+            ...userCreated.map((item) => ({
+              ...item,
+              images: normalizeListingImages(item.images),
+            })),
+          ];
+          saveLocalListings(synchronized);
+          localStorage.setItem(STORAGE_KEY_LISTINGS_VERSION, LISTINGS_DATA_VERSION);
+          return synchronized;
+        }
+
+        // Đảm bảo dữ liệu mock luôn được đồng bộ ảnh chuẩn xác nhất theo đúng loại hình
+        const refreshed = parsed.map((item) => {
+          const matchedSeed = seedMap.get(item.id);
+          if (matchedSeed) {
+            return {
+              ...item,
+              images: matchedSeed.images,
+              type: matchedSeed.type,
+              propertyType: matchedSeed.propertyType,
+            };
+          }
+          return {
+            ...item,
+            images: normalizeListingImages(item.images),
+          };
+        });
+        return refreshed;
       }
     }
+
+    // Khởi tạo seed lần đầu
+    saveLocalListings(seed);
+    localStorage.setItem(STORAGE_KEY_LISTINGS_VERSION, LISTINGS_DATA_VERSION);
+    return seed;
   } catch (e) {
     console.warn('Lỗi đọc LocalStorage listings:', e);
   }
 
-  // Khởi tạo seed lần đầu
   const initial = getInitialSeedListings();
-  saveLocalListings(initial);
   return initial;
 }
 

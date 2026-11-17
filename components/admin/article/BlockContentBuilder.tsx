@@ -92,7 +92,7 @@ export const BlockContentBuilder: React.FC<BlockContentBuilderProps> = ({ blocks
         initialData = { title: 'Cần hỗ trợ thông tin hoặc liên hệ chủ nhà?', btnText: 'Liên hệ tư vấn', link: '/contact' };
         break;
       case 'featured_property':
-        initialData = { title: 'Nhà phố Hoàng Cầu, Đống Đa - 55m² 5 tầng', price: '12.8 Tỷ', address: 'Hoàng Cầu, Ô Chợ Dừa, Đống Đa', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80' };
+        initialData = { title: 'Nhà phố Hoàng Cầu, Đống Đa - 55m² 5 tầng', price: '12.8 Tỷ', address: 'Hoàng Cầu, Ô Chợ Dừa, Đống Đa', image: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=600&auto=format&fit=crop&q=80' };
         break;
       case 'map':
         initialData = { locationName: 'Trục đường Vành Đai 3 - Phạm Hùng, Cầu Giấy', coordinates: '21.0315, 105.7825' };

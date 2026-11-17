@@ -230,7 +230,7 @@ export default function HomePage() {
             lat: Number(row.lat) || 21.0285,
             lng: Number(row.lng) || 105.8542,
             type: row.property_type || 'house',
-            images: normalizeListingImages(row.images),
+            images: normalizeListingImages(row.images, row.property_type),
             status: row.status || 'active',
             isFeatured: Boolean(row.is_featured),
             views: Number(row.views) || 0,

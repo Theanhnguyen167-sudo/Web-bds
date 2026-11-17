@@ -1,4 +1,5 @@
-export interface ListingItem {
+  
+  export interface ListingItem {
   id: string;
   code?: string;
   listing_code?: string;
@@ -94,9 +95,9 @@ export const mockListings: ListingItem[] = [
     lng: 105.8412,
     type: "house",
     images: [
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,
@@ -127,7 +128,9 @@ export const mockListings: ListingItem[] = [
     type: "apartment",
     images: [
       "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,
@@ -159,6 +162,7 @@ export const mockListings: ListingItem[] = [
     images: [
       "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,
@@ -189,7 +193,8 @@ export const mockListings: ListingItem[] = [
     type: "house",
     images: [
       "https://images.unsplash.com/photo-1577495508048-b635879837f1?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: false,
@@ -219,8 +224,8 @@ export const mockListings: ListingItem[] = [
     lng: 105.8495,
     type: "land",
     images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1592595896551-12b371d546d5?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1628744448840-55bdb2497bd4?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,
@@ -251,7 +256,8 @@ export const mockListings: ListingItem[] = [
     type: "villa",
     images: [
       "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,
@@ -283,6 +289,7 @@ export const mockListings: ListingItem[] = [
     images: [
       "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: false,
@@ -312,8 +319,9 @@ export const mockListings: ListingItem[] = [
     lng: 105.8152,
     type: "house",
     images: [
-      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: false,
@@ -341,7 +349,7 @@ export const mockListings: ListingItem[] = [
     lng: 105.8425,
     type: "land",
     images: [
-      "https://images.unsplash.com/photo-1524813686514-a57563d77d61?w=1200&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=1200&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1545459720-aac8509eb02c?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
@@ -376,6 +384,7 @@ export const mockListings: ListingItem[] = [
     images: [
       "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=1200&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,
@@ -407,7 +416,8 @@ export const mockListings: ListingItem[] = [
     purpose: "rent",
     images: [
       "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1502005229762-ee1b2b8100ff?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&auto=format&fit=crop&q=80",
     ],
     status: "active",
     isFeatured: true,

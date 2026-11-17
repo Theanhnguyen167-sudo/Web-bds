@@ -721,7 +721,7 @@ export const ArticleEditorForm: React.FC<ArticleEditorFormProps> = ({ initialArt
                   {[
                     'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80',
                     'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=800&auto=format&fit=crop&q=80',
                   ].map((img, i) => (
                     <button
                       key={i}

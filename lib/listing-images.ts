@@ -121,7 +121,7 @@ function parsePostgresArrayString(str: string): string[] {
  * - KHÔNG tự động tạo ảnh ảo, KHÔNG gán ảnh từ listing khác.
  * - Nếu không có ảnh hợp lệ, trả về mảng rỗng [] để component hiển thị placeholder theo loại BĐS.
  */
-export function normalizeListingImages(imagesInput: unknown): string[] {
+export function normalizeListingImages(imagesInput: unknown, propertyType?: string): string[] {
   if (!imagesInput) return [];
 
   let candidates: unknown[] = [];
@@ -153,13 +153,28 @@ export function normalizeListingImages(imagesInput: unknown): string[] {
     }
   }
 
+  const isNonVilla = propertyType && ['house', 'apartment', 'land'].includes(propertyType.toLowerCase());
+
   // Lọc và chuẩn hóa từng URL hợp lệ, deduplicate giữ nguyên thứ tự
   const seen = new Set<string>();
   const validatedList: string[] = [];
 
   for (const item of candidates) {
     if (typeof item === 'string') {
-      const cleanUrl = item.trim();
+      let cleanUrl = item.trim();
+      
+      // Chặn ảnh biệt thự bể bơi mẫu rò rỉ vào nhà phố / chung cư / đất nền
+      if (isNonVilla && cleanUrl.includes('photo-1600585154340')) {
+        continue;
+      }
+
+      // Xử lý thay thế các link Unsplash bị 404 (nếu có từ cache cũ)
+      if (cleanUrl.includes('photo-1524813686514-a57563d77d61')) {
+        cleanUrl = 'https://images.unsplash.com/photo-1500076656116-558758c991c1?w=1200&auto=format&fit=crop&q=80';
+      } else if (cleanUrl.includes('photo-1502005229762-ee1b2b8100ff')) {
+        cleanUrl = 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800&auto=format&fit=crop&q=80';
+      }
+
       if (cleanUrl && isValidImageUrl(cleanUrl) && !seen.has(cleanUrl)) {
         seen.add(cleanUrl);
         validatedList.push(cleanUrl);

@@ -566,7 +566,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               lat,
               lng,
               type: row.property_type || 'house',
-              images: normalizeListingImages(row.images),
+              images: normalizeListingImages(row.images, row.property_type),
               status: row.status || 'active',
               isFeatured: row.is_featured || false,
               views: row.views || 48,
@@ -598,7 +598,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return {
             ...item,
             ...remote,
-            images: normalizeListingImages(remote.images && remote.images.length > 0 ? remote.images : item.images),
+            images: normalizeListingImages(remote.images && remote.images.length > 0 ? remote.images : item.images, item.type),
             lat: remote.lat || item.lat,
             lng: remote.lng || item.lng,
           };
@@ -611,9 +611,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           Math.abs(item.lng - 105.7825) < 0.002
         ) {
           const corrected = parseLocationCoordinates(null, item.district);
-          return { ...item, images: normalizeListingImages(item.images), lat: corrected.lat, lng: corrected.lng };
+          return { ...item, images: normalizeListingImages(item.images, item.type), lat: corrected.lat, lng: corrected.lng };
         }
-        return { ...item, images: normalizeListingImages(item.images) };
+        return { ...item, images: normalizeListingImages(item.images, item.type) };
       });
       saveStoredUserListings(mergedLocals);
 
@@ -624,7 +624,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       for (const item of supabaseListings) {
         if (!allKnownIds.has(item.id)) {
           allKnownIds.add(item.id);
-          combinedList.push({ ...item, images: normalizeListingImages(item.images) });
+          combinedList.push({ ...item, images: normalizeListingImages(item.images, item.type) });
         }
       }
 
@@ -632,7 +632,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       for (const item of mergedLocals) {
         if (!allKnownIds.has(item.id)) {
           allKnownIds.add(item.id);
-          combinedList.push({ ...item, images: normalizeListingImages(item.images) });
+          combinedList.push({ ...item, images: normalizeListingImages(item.images, item.type) });
         }
       }
 
@@ -640,7 +640,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       for (const item of mockListings) {
         if (!allKnownIds.has(item.id)) {
           allKnownIds.add(item.id);
-          combinedList.push({ ...item, images: normalizeListingImages(item.images) });
+          combinedList.push({ ...item, images: normalizeListingImages(item.images, item.type) });
         }
       }
 

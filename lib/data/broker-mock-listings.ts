@@ -20,10 +20,9 @@ export const BROKER_MOCK_LISTINGS: BrokerListing[] = [
     frontageWidth: 5.5,
     streetWidth: 4.5,
     images: [
-      'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1200&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&auto=format&fit=crop&q=80'
     ],
     legalStatus: 'Sổ đỏ chính chủ, vuông vắn, giao dịch ngay',
     legalVerified: true,
@@ -55,8 +54,8 @@ export const BROKER_MOCK_LISTINGS: BrokerListing[] = [
     direction: 'Tây Bắc',
     images: [
       'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&auto=format&fit=crop&q=80'
     ],
     legalStatus: 'Sổ hồng lâu dài, sẵn sàng bàn giao',
     legalVerified: true,
@@ -154,8 +153,8 @@ export const BROKER_MOCK_LISTINGS: BrokerListing[] = [
     frontageWidth: 4.8,
     streetWidth: 6.0,
     images: [
-      'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1502005229762-ee1b2b8ab98f?w=800&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&auto=format&fit=crop&q=80'
     ],
     legalStatus: 'Sổ đỏ phân lô quân đội, pháp lý chuẩn chỉnh',
     legalVerified: true,
