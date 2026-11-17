@@ -38,6 +38,7 @@ import {
 
 const CATEGORIES = [
   { id: 'all', label: 'Tất cả' },
+  { id: 'tin-moi-nhat', label: 'Tin mới nhất' },
   { id: 'market', label: 'Thị trường BĐS' },
   { id: 'planning', label: 'Quy hoạch & Hạ tầng' },
   { id: 'pricing', label: 'Biến động giá đất' },
@@ -45,6 +46,24 @@ const CATEGORIES = [
   { id: 'project', label: 'Dự án & Quy hoạch' },
   { id: 'investment', label: 'Tài chính & Đầu tư' },
 ];
+
+function parseDateStringToTimestamp(dateStr?: string): number {
+  if (!dateStr) return 0;
+  const match = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (match) {
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1;
+    const year = parseInt(match[3], 10);
+    return new Date(year, month, day).getTime();
+  }
+  const parsed = Date.parse(dateStr);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+function getArticlePublicationTimestamp(article: NewsArticle): number {
+  // Lấy thời điểm xuất bản nguồn gốc thực sự của tin tức (sourcePublishedAt hoặc date), TUYỆT ĐỐI không lấy updatedAt
+  return parseDateStringToTimestamp(article.sourcePublishedAt || article.date);
+}
 
 const NEWS_HEADINGS_TOC = [
   { id: 'tieu-diem-bds', label: 'Tiêu điểm BĐS' },
@@ -291,9 +310,9 @@ function NewsContent() {
 
   // Filter logic
   const filteredArticles = useMemo(() => {
-    return allNews.filter((article) => {
+    const list = allNews.filter((article) => {
       let matchCategory = true;
-      if (selectedCategory === 'all') {
+      if (selectedCategory === 'all' || selectedCategory === 'tin-moi-nhat') {
         matchCategory = true;
       } else if (selectedCategory === 'market') {
         matchCategory = article.category === 'pricing' || article.category === 'investment' || article.category === 'project' || article.category === 'market';
@@ -309,6 +328,17 @@ function NewsContent() {
 
       return matchCategory && matchSearch;
     });
+
+    // Nếu người dùng chọn tab "Tin mới nhất", sắp xếp nghiêm ngặt theo ngày xuất bản nguồn gốc thực tế (mới nhất lên đầu)
+    if (selectedCategory === 'tin-moi-nhat') {
+      return [...list].sort((a, b) => {
+        const timeB = getArticlePublicationTimestamp(b);
+        const timeA = getArticlePublicationTimestamp(a);
+        return timeB - timeA;
+      });
+    }
+
+    return list;
   }, [allNews, selectedCategory, searchQuery]);
 
   // 1. Featured articles selection (Phần Hero & Tiêu điểm)
@@ -342,14 +372,25 @@ function NewsContent() {
   }, [heroArticles]);
 
   // 2. Khối Tin mới nhất:
-  // Lấy pool bài viết đã loại trừ các bài viết ở phần Hero (nếu đang ở trang all)
+  // Lấy pool bài viết sắp xếp nghiêm ngặt theo thời điểm xuất bản nguồn gốc thực tế (mới nhất lên đầu)
+  // Tuyệt đối không dùng ngày cập nhật hệ thống (updatedAt) để tránh đẩy tin cũ lên làm tin mới
   const latestPool = useMemo(() => {
-    if (selectedCategory === 'all' && !searchQuery) {
-      return getArticlesForBlock(allNews, {
+    let pool = allNews;
+    if (selectedCategory === 'tin-moi-nhat') {
+      pool = allNews;
+    } else if (selectedCategory === 'all' && !searchQuery) {
+      pool = getArticlesForBlock(allNews, {
         exclude_ids: heroExcludeIds,
       });
+    } else {
+      pool = filteredArticles;
     }
-    return filteredArticles;
+
+    return [...pool].sort((a, b) => {
+      const timeB = getArticlePublicationTimestamp(b);
+      const timeA = getArticlePublicationTimestamp(a);
+      return timeB - timeA;
+    });
   }, [allNews, heroExcludeIds, selectedCategory, searchQuery, filteredArticles]);
 
   const leadLatestArticle = latestPool[0];
@@ -634,18 +675,26 @@ function NewsContent() {
         {/* ── 7, 8, 10, 11. LATEST NEWS + COMPACT SIDEBAR ── */}
         <section id="tin-moi-nhat" className="space-y-6 scroll-mt-32">
           
-          <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200/80 pb-3">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                {searchQuery
-                  ? `Kết quả tìm kiếm cho "${searchQuery}" (${filteredArticles.length})`
-                  : selectedCategory === 'all'
-                  ? 'Tin mới nhất'
-                  : CATEGORIES.find((c) => c.id === selectedCategory)?.label || 'Danh sách tin bài'}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  {searchQuery
+                    ? `Kết quả tìm kiếm cho "${searchQuery}" (${filteredArticles.length})`
+                    : selectedCategory === 'all' || selectedCategory === 'tin-moi-nhat'
+                    ? 'Tin mới nhất'
+                    : CATEGORIES.find((c) => c.id === selectedCategory)?.label || 'Danh sách tin bài'}
+                </h2>
+                {(selectedCategory === 'all' || selectedCategory === 'tin-moi-nhat') && !searchQuery && (
+                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80 hidden sm:inline-flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-emerald-600" />
+                    Theo ngày xuất bản nguồn
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                {selectedCategory === 'all'
-                  ? 'Tổng hợp diễn biến thị trường và thông tin bất động sản Hà Nội mới cập nhật'
+                {selectedCategory === 'all' || selectedCategory === 'tin-moi-nhat'
+                  ? 'Cập nhật liên tục các diễn biến mới nhất của thị trường bất động sản theo thời gian xuất bản nguồn gốc thực tế'
                   : `Các bài viết chuyên đề thuộc mục ${CATEGORIES.find((c) => c.id === selectedCategory)?.label}`}
               </p>
             </div>
@@ -694,14 +743,14 @@ function NewsContent() {
                         <article
                           id={`article-${latestPool[0].id}`}
                           onClick={() => handleArticleClick(latestPool[0])}
-                          className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full md:max-h-[420px] cursor-pointer"
+                          className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-lg hover:border-slate-300 transition-all duration-200 flex flex-col h-full cursor-pointer"
                         >
                           <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 shrink-0">
                             <ArticleImage
                               src={latestPool[0].image}
                               alt={latestPool[0].title}
                               category={latestPool[0].category}
-                              className="group-hover:scale-105 transition-transform duration-500"
+                              className="group-hover:scale-105 transition-transform duration-500 w-full h-full object-cover"
                             />
                             <div className="absolute top-3 left-3">
                               <span className="bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
@@ -710,33 +759,30 @@ function NewsContent() {
                             </div>
                           </div>
 
-                          <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 space-y-2.5">
-                            <div className="space-y-1.5">
+                          <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 space-y-3">
+                            <div className="space-y-2">
                               <div className="text-[10px] font-bold uppercase tracking-wider text-orange-600">
                                 {latestPool[0].categoryLabel}
                               </div>
-                              <h3
-                                className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug"
-                                style={{
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden',
-                                  wordBreak: 'normal',
-                                  overflowWrap: 'break-word',
-                                }}
-                              >
+                              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
                                 {latestPool[0].title}
                               </h3>
                               {latestPool[0].summary && (
-                                <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                                <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">
                                   {latestPool[0].summary}
                                 </p>
                               )}
                             </div>
 
-                            <div className="pt-2 border-t border-slate-100/80 flex items-center text-[11px] text-[#6B7280]">
-                              <span>{latestPool[0].date} • {formatReadTime(latestPool[0].readTime)}</span>
+                            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
+                                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                                <span>{latestPool[0].sourcePublishedAt || latestPool[0].date}</span>
+                              </div>
+                              <span className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 group-hover:text-orange-700 group-hover:translate-x-0.5 transition-all">
+                                <span>Đọc tiếp</span>
+                                <ArrowRight className="h-3.5 w-3.5" />
+                              </span>
                             </div>
                           </div>
                         </article>
@@ -745,9 +791,9 @@ function NewsContent() {
                       {/* Cột phải: Danh sách các bài viết tiếp theo có thanh cuộn mượt mà bên phải (5 cột) */}
                       {latestPool.length > 1 && (
                         <div
-                          className="md:col-span-5 flex flex-col gap-2.5 overflow-y-auto pr-1.5 custom-hero-scrollbar"
+                          className="md:col-span-5 flex flex-col gap-3 overflow-y-auto pr-1.5 custom-hero-scrollbar"
                           style={{
-                            maxHeight: '420px',
+                            maxHeight: '440px',
                             overflowY: 'auto',
                             scrollbarWidth: 'thin',
                             scrollbarColor: '#CBD5E1 #F1F5F9',
@@ -758,39 +804,46 @@ function NewsContent() {
                               key={article.id}
                               id={`article-${article.id}`}
                               onClick={() => handleArticleClick(article)}
-                              className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-2.5 sm:p-3 flex flex-row items-center gap-3 shrink-0 cursor-pointer"
+                              className="group bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 p-3 sm:p-3.5 flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0 cursor-pointer"
                             >
-                              <div className="relative aspect-square w-16 sm:w-20 rounded-xl overflow-hidden bg-slate-900 shrink-0">
+                              <div className="relative aspect-video sm:aspect-square w-full sm:w-24 rounded-xl overflow-hidden bg-slate-900 shrink-0">
                                 <ArticleImage
                                   src={article.image}
                                   alt={article.title}
                                   category={article.category}
-                                  className="group-hover:scale-105 transition-transform duration-300"
+                                  className="group-hover:scale-105 transition-transform duration-300 w-full h-full object-cover"
                                 />
-                              </div>
-
-                              <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5 space-y-1 h-full">
-                                <div>
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 block mb-0.5">
+                                <div className="absolute top-2 left-2 sm:hidden">
+                                  <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
                                     {article.categoryLabel}
                                   </span>
-                                  <h4
-                                    className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug"
-                                    style={{
-                                      display: '-webkit-box',
-                                      WebkitLineClamp: 2,
-                                      WebkitBoxOrient: 'vertical',
-                                      overflow: 'hidden',
-                                      wordBreak: 'normal',
-                                      overflowWrap: 'break-word',
-                                    }}
-                                  >
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col justify-between flex-1 min-w-0 space-y-1.5 w-full">
+                                <div>
+                                  <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider text-orange-600 mb-0.5">
+                                    {article.categoryLabel}
+                                  </span>
+                                  <h4 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-orange-600 transition-colors leading-snug line-clamp-2">
                                     {article.title}
                                   </h4>
+                                  {article.summary && (
+                                    <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mt-1">
+                                      {article.summary}
+                                    </p>
+                                  )}
                                 </div>
 
-                                <div className="text-[12px] text-[#6B7280] pt-1">
-                                  <span>{article.date} • {formatReadTime(article.readTime)}</span>
+                                <div className="pt-2 border-t border-slate-100/90 flex items-center justify-between text-[11px]">
+                                  <span className="flex items-center gap-1 text-slate-400">
+                                    <Calendar className="h-3 w-3 text-slate-400" />
+                                    <span>{article.sourcePublishedAt || article.date}</span>
+                                  </span>
+                                  <span className="inline-flex items-center gap-0.5 font-bold text-orange-600 group-hover:text-orange-700 transition-colors">
+                                    <span>Đọc tiếp</span>
+                                    <ChevronRight className="h-3 w-3" />
+                                  </span>
                                 </div>
                               </div>
                             </article>
